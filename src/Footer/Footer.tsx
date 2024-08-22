@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import "./Footer.css"
 
 type Props = {}
 
@@ -9,7 +10,9 @@ export default class Footer extends Component<Props, State> {
 
     render() {
         return (
-            <div>Footer</div>
+            <div className='footer-container'>
+                © 2024 Utah ABA Finder. All Rights Reserved.
+            </div>
         )
     }
 }

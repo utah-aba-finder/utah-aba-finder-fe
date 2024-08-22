@@ -1,0 +1,7 @@
+.footer-container {
+    border: 2px solid black;
+    padding: 3rem;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+}
