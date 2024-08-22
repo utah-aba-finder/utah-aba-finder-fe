@@ -1,4 +1,6 @@
 import React, { Component } from 'react'
+import Header from '../Header/Header'
+import Footer from '../Footer/Footer'
 
 type Props = {}
 
@@ -9,7 +11,11 @@ class Homepage extends Component<Props, State> {
 
     render() {
         return (
-            <div>Homepage</div>
+            <div>
+                <Header />
+                <h1>Homepage</h1>
+                <Footer />
+            </div>
         )
     }
 }
