@@ -20,10 +20,3 @@
 
 **Screenshots**
 
-
-
-NPM RUN DEV: start dev server
-
-NPM RUN BUILD : re set the npm 
-
-NPM RUN PREVIEW: lets you see the preview, not dev
