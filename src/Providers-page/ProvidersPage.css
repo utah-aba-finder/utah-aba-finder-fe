@@ -1,0 +1,68 @@
+.providers-page {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.find-your-provider-section {
+    width: 100%;
+}
+
+.banner-image {
+    width: 100%;
+    height: auto;
+}
+
+.provider-map-search-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.provider-map-searchbar {
+    display: flex;
+    gap: 0.5rem;
+    padding: 1rem;
+    width: 100%;
+    max-width: 600px; /* Optional: Limit the width */
+    justify-content: center;
+}
+
+.provider-map-locations {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+}
+
+.provider-map-locations-list {
+    width: 45%;
+    max-width: 600px;
+}
+.provider-map {
+    width: 50%;
+    height: 300px;
+    border: 2px solid #ccc;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.2rem;
+    color: #666;
+}
+
+.provider-list-section {
+    padding: 1rem;
+}
+
+.provider-list {
+    width: 45%;
+    margin: 0 auto;
+}
+
+.provider-card {
+    border: 1px solid #ccc;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 0.5rem;
+}
+

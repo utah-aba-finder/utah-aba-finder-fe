@@ -1,26 +1,91 @@
-import React, {useState, useEffect} from 'react'
-import { Provider } from '../Utility/Types'
+import React from 'react';
+import './ProvidersPage.css';
+import childrenBanner from '../Assets/children-banner.jpg';
 
-const Providers: React.FC = () => {
-    const [providers, setProviders] = useState<Provider[]>([])
-    useEffect(() => {
-        fetch('http://localhost:3001/providers')
-            .then(response => response.json())
-            .then(data => setProviders(data))
-    }, [])
-  return (
-    <div>Providers</div>
-  )
-}
-
-export default Providers
-
-const providers = [
+const mockProviders = {
+  data: [
     {
-        name: 'Kids On The Move',
-        website: 'kotm.org',
-        phone: '(385) 292-5633',
-        email: '',
-        address: '475 West 260 North Orem, UT 84057'
-    }
-]
+      type: 'provider',
+      id: 1,
+      attributes: {
+        name: 'A BridgeCare ABA',
+        website: 'https://www.bridgecareaba.com/locations/utah',
+        address: '1234 West Road Drive',
+        phone: '(123) 456-7890',
+        email: 'info@bridgecareaba.com',
+        insurance: 'All insurances besides Tricare',
+        locations_served: 'Salt Lake, Utah, Davis, and Weber counties',
+        cost: 'N/A',
+        ages_served: '2-16 years',
+        waitlist: 'None',
+        telehealth_services: 'Yes',
+        spanish_speakers: 'Yes',
+      },
+    },
+    {
+      type: 'provider',
+      id: 2,
+      attributes: {
+        name: 'Above & Beyond Therapy',
+        website: 'https://www.ababpa.com/',
+        address: '55 East Road Place',
+        phone: '(801) 610-2400',
+        email: 'info@ababpa.com',
+        insurance: 'Medicaid, DMBA, EMI Health, University of Utah Healthcare, Blue Cross Blue Shield',
+        locations_served: 'Utah County, Salt Lake County, Davis County, Logan to Spanish Fork, and Tooele',
+        cost: 'Out-of-Network and single-case agreements',
+        ages_served: '2-21',
+        waitlist: 'No waitlist',
+        telehealth_services: 'Yes, if necessary',
+        spanish_speakers: 'Yes',
+      },
+    },
+  ],
+};
+
+const ProvidersPage = () => {
+  return (
+    <div className="providers-page">
+      {/* Find Your Provider Section */}
+      <section className="find-your-provider-section">
+        <img src={childrenBanner} alt="Find Your Provider" className="banner-image" />
+      </section>
+
+      {/* Provider Map Search Section */}
+      <section className="provider-map-search-section">
+
+        <div className="provider-map-searchbar">
+          <input type="text" placeholder="Search for a provider..." />
+          <button className="provider-search-button">Search</button>
+          <button className="provider-county-dropdown-button">Sort by County</button>
+        </div>
+
+        <div className="provider-map-locations">
+          <div className="provider-map-locations-list">
+            <p>Provider Map List Placeholder</p>
+          </div>
+          <div className="provider-map">
+            {/* Google Map will be integrated here */}
+            <p>Map Placeholder</p>
+          </div>
+        </div>
+        
+      </section>
+
+      <section className="provider-list-section">
+        <div className="provider-list">
+          {mockProviders.data.map((provider) => (
+            <div key={provider.id} className="provider-card">
+              <h3>{provider.attributes.name}</h3>
+              <p><strong>Address:</strong> {provider.attributes.address || 'N/A'}</p>
+              <p><strong>Phone:</strong> {provider.attributes.phone || 'N/A'}</p>
+              <p><strong>Spanish speaking?</strong> {provider.attributes.spanish_speakers}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+    </div >
+  );
+};
+
+export default ProvidersPage;
