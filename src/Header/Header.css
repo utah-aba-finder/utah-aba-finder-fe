@@ -1,15 +1,5 @@
-.Header {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 3px solid orange;
-    padding-top: 1rem;
-    padding-bottom: 2rem;
-}
-
 .main-logo {
-    width: 27rem;
+    width: 24rem;
     height: auto;
 }
 
@@ -17,4 +7,17 @@
     width: 2.5rem;
     height: 2.5rem;
     margin-right: 2rem;
+}
+
+@media (max-width: 480px) {
+    .main-logo {
+        width: 10rem;
+        height: auto;
+    }
+
+    .menu {
+        width: 1.5rem;
+        height: auto;
+        margin-right: 1rem;
+    }
 }
