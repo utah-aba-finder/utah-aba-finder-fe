@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
-import Logo from '../Assets/Logo.png'
-import Menu from '../Assets/menu-icon.png'
+import Logo from '../Assets/NewLogo3.png'
+import Menu from '../Assets/menu-icon2.png'
 import "./Header.css"
 
 type Props = {}

@@ -1,5 +1,10 @@
 import React, { Component } from 'react'
 import utah from '../Assets/Utah-Background.jpg'
+import mapIcon from '../Assets/map-icon.png'
+import puzzleIcon from '../Assets/puzzle-icon.png'
+import insuranceIcon from '../Assets/insurance-icon.png'
+import familyIcon from '../Assets/family-icon.png'
+import spanishPic from '../Assets/spanish-pic.jpg'
 import "./Homepage.css"
 
 type Props = {}
@@ -61,6 +66,22 @@ class Homepage extends Component<Props, State> {
                             <p>Uintah <br /> County</p>
                             <p>Sanpete <br /> County</p>
                             <p>Wayne <br /> County</p>
+
+                            <p>Salt Lake <br /> County</p>
+                            <p>Utah <br /> County</p>
+                            <p>Davis <br /> County</p>
+                            <p>Weber <br /> County</p>
+                            <p>Iron <br /> County</p>
+                            <p>Cache <br /> County</p>
+                            <p>Box Elder <br /> County</p>
+                            <p>Washington <br /> County</p>
+                            <p>Morgan <br /> County</p>
+                            <p>Summit <br /> County</p>
+                            <p>Tooele <br /> County</p>
+                            <p>Duchesne <br /> County</p>
+                            <p>Uintah <br /> County</p>
+                            <p>Sanpete <br /> County</p>
+                            <p>Wayne <br /> County</p>
                         </div>
                     </div>
                 </div>
@@ -73,8 +94,34 @@ class Homepage extends Component<Props, State> {
                     </div>
 
                 </div>
-                <div className='icons-section'></div>
-                <div className='spanish-section'></div>
+                <div className="icons-section">
+                    <div className="icons-section-icon">
+                        <img src={mapIcon} alt="Map Icon" />
+                        <p>Locate the Providers</p>
+                    </div>
+                    <div className="icons-section-icon">
+                        <img src={puzzleIcon} alt="Puzzle Icon" />
+                        <p>Educate Yourself with Autism</p>
+                    </div>
+                    <div className="icons-section-icon">
+                        <img src={insuranceIcon} alt="Insurance Icon" />
+                        <p>Verify Insurance Coverage</p>
+                    </div>
+                    <div className="icons-section-icon">
+                        <img src={familyIcon} alt="Family Icon" />
+                        <p>Rest Assured <br /> We got you!</p>
+                    </div>
+                </div>
+                <div className='spanish-section'>
+                    <div className="spanish-section-texts">
+                        <h2>Now Available: Spanish-Speaking Providers</h2>
+                        <p className='spanish-section-description'>We know how important it is to communicate in your language. We have Spanish-speaking providers available to assist with your ABA needs in Utah.</p>
+                        <button className='spanish-section-button'>Learn More</button>
+                    </div>
+                    <div className="spanish-section-image">
+                        <img src={spanishPic} alt="Spanish picture" className='spanish-section-pic' />
+                    </div>
+                </div>
             </div>
         )
     }

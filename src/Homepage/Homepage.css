@@ -1,7 +1,7 @@
 /* DISCOVER SECTION */
 .discover-section {
     width: 100%;
-    height: 45rem;
+    height: 65rem;
     position: relative;
     display: flex;
     flex-direction: column;
@@ -108,6 +108,7 @@
     height: 8rem;
     margin-top: 0;
     z-index: 2;
+    padding: 1rem;
 }
 
 .county-section-title {
@@ -155,6 +156,7 @@
         flex-direction: column;
         height: 4.5rem;
         margin-top: 0;
+        padding: 0;
     }
 
     .county-section-title {
@@ -176,6 +178,8 @@
 .begin-section {
     display: flex;
     flex-direction: column;
+    padding-top: 2rem;
+    padding-bottom: 3rem;
 }
 
 .begin-section-description {
@@ -208,13 +212,17 @@
 }
 
 @media (max-width:540px) {
+    .begin-section {
+        padding: 1rem;
+    }
+
     .begin-section-title {
         font-size: 1rem;
         margin: 0.3rem;
     }
 
     .begin-section-description {
-        font-size: 0.8rem;
+        font-size: 0.7rem;
         max-width: 90%;
     }
 
@@ -233,4 +241,102 @@
         font-size: 0.6rem;
         padding: 0.3rem;
     }
+}
+
+/* ICONS SECTION */
+.icons-section {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 5rem;
+    padding-top: 5rem;
+    padding-bottom: 5rem;
+    background-color: rgb(255, 229, 191);
+}
+
+.icons-section-icon {
+    width: 9rem;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    margin-top: 1rem;
+}
+
+.icons-section-icon img {
+    width: 100%;
+    height: auto;
+}
+
+.icons-section-icon p {
+    margin-top: 0.5rem;
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: rgb(0, 0, 130);
+
+}
+
+@media (max-width: 540px) {
+    .icons-section {
+        gap: 2rem;
+        padding-top: 1.5rem;
+        padding-bottom: 1.5rem;
+    }
+
+    .icons-section-icon {
+        width: 3.3rem;
+        height: auto;
+    }
+
+    .icons-section p {
+        font-size: 0.5rem;
+    }
+}
+
+/* SPANISH SECTION */
+.spanish-section {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    text-align: center;
+    padding: 3rem;
+    background-color: rgb(247, 238, 228);
+}
+
+.spanish-section-texts {
+    padding-top: 4rem;
+    color: rgb(0, 0, 130);
+}
+
+.spanish-section-description {
+    max-width: 40rem;
+    color: rgb(77, 77, 77);
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.spanish-section-pic {
+    width: 18rem;
+    height: 25rem;
+    border-radius: 30px;
+}
+
+.spanish-section-pic img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.spanish-section-button {
+    color: white;
+    background-color: rgb(246, 115, 137);
+    font-size: 1rem;
+    padding: 0.5rem 3rem 0.5rem 3rem;
+    border-radius: 20px;
+    margin-top: 2rem;
+    border: none;
+    font-weight: 800;
 }
