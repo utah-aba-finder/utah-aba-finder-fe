@@ -1,5 +1,7 @@
 import './Screening2.css'
 import React, { useState } from 'react'
+import { ProgressBar } from './ProgressBar'
+
 
 interface castQuestions {
     question: string;
@@ -10,6 +12,10 @@ export const Screening2: React.FC = () => {
     const [scores, setScores] = useState<{ [key: number]: number }>({});
     const [showForm, setShowForm] = useState(true);
     const [showScore, setShowScore] = useState(false);
+    const [disclaimer, setDisclaimer] = useState(true);
+    const [currentQuestion, setCurrentQuestion] = useState(0);
+    const [fillAmount, setFillAmount] = useState(0);
+    
     const castQuestions: castQuestions[] = [
         {question: "Does s/he join in playing games with other children easily?", options: ["Yes", "No"]},
         {question: "Does s/he come up to you spontaneously for a chat?", options: ["Yes", "No"]},
@@ -52,15 +58,35 @@ export const Screening2: React.FC = () => {
         {question: "Has s/he ever been diagnosed with any of the following: Language delay, ADHD, hearing or visual difficulties, Autism Spectrum Condition (including Asperger’s Syndrome, or a physical disability?", options: ["Yes", "No"]}
     ]
 
-    const handleChange = (index: number, event: React.ChangeEvent<HTMLSelectElement>) => {
-        const score = event.target.value === '0' ? 1 : 0;
-        setScores(prev => ({ ...prev, [index]: score }));
+
+    const handleChange = (index: number, value: string) => {
+        let scoreChange = 0;
+
+  const specialRules = [1, 5, 7, 9, 12, 14, 18, 19, 20, 22, 26, 28, 30, 32, 34, 36];
+  if (specialRules.includes(index)) {
+    scoreChange = value === '1' ? 1 : 0; 
+  }
+
+  const generalRules = [3, 4, 6, 8, 10, 11, 13, 15, 16, 17, 21, 23, 24, 25, 27, 29, 31, 33, 35];
+  if (generalRules.includes(index)) {
+    scoreChange = value === '0' ? 1 : 0; 
+  }
+
+  const newScore = {...scores};
+  newScore[index] = scoreChange ? 1 : 0;;
+  setScores(newScore);
+
+  const fillAmountPercentage = (Object.keys(newScore).length / 39) * 100;
+
+  setFillAmount(fillAmountPercentage);
       };
     
       const handleSubmit = (event: React.FormEvent) => {
         event.preventDefault();
         setShowScore(true); 
         setShowForm(false);
+        setDisclaimer(false);
+        setCurrentQuestion(0);
       };
     
       const totalScore = () => {
@@ -70,32 +96,53 @@ export const Screening2: React.FC = () => {
       return (
         <div className='castWrapper'>
           <div className='castTextContainer'>
-            <h1 className='castText'>Childhood Autism Spectrum Test</h1>
-            <p className='castText'>This test is for children 4 and older. It is a simple test that can help you determine if your child may have autism. Please keep in mind that this test is not a substitute for an official diagnosis. Please seek a certified healthcare professional for an official diagnosis.</p>
+            <h1 className='castText'>Childhood Autism Spectrum Test (CAST)</h1>
+            {disclaimer && (
+                <div className='paragraphContainer'>
+                <p className='castParagraph'>This test is for children 4 and older. It is a simple test that can help you determine if your child may have autism. Please keep in mind that this test is not a substitute for an official diagnosis. Please seek a certified healthcare professional for an official diagnosis. 
+                </p>
+                <p>
+                    This test consists of 39 questions. Please answer each question to the best of your ability.
+                </p>
+                </div>
+            )}
           </div>
           <div className='castTestContainer'>
             {showForm &&(
-            <form className='castForm' onSubmit={handleSubmit}>
-              {castQuestions.map((question, index) => (
-                <div key={index} className='castQuestion'>
-                  <h3 className='castQuestionNumber'>{index + 1}.</h3>
-                  <label className='castLabel'>{question.question}</label>
-                  <select className='castSelect' onChange={(e) => handleChange(index, e)} required>
-                    <option value=''></option>
-                    <option value='1'>{question.options[0]}</option>
-                    <option value='0'>{question.options[1]}</option>
-                  </select>
-                </div>
-              ))}
-              <button type="submit" className='castSubmit'>Submit</button>
-            </form>
+                <form className='castForm' onSubmit={handleSubmit}>
+                <div className='progressBar'>
+            <ProgressBar bgcolor="#597497" fillAmount={fillAmount}  height="20px" />
+            </div>
+            {castQuestions.map((question, index) => (
+              <div key={index} className='castQuestion'>
+                <h3 className='castQuestionNumber'>{index + 1}.</h3>
+                <label className='castLabel'>{question.question}</label>
+                {question.options.map((option, optIndex) => (
+                  <span key={optIndex} className='castOption'>
+                    <input
+                      type="radio"
+                      id={`option-${index}-${optIndex}`}
+                      name={`question-${index}`}
+                      value={optIndex === 0 ? '1' : '0'}
+                      onChange={() => handleChange(index, optIndex === 0 ? '1' : '0')}
+                      required
+                    />
+                    <label htmlFor={`option-${index}-${optIndex}`}>{option}</label>
+                  </span>
+                ))}
+              </div>
+            ))}
+            <button type="submit" className='castSubmit'>Submit</button>
+          </form>
             )}
             {showScore && (
-              <div>
+              <div className='scoreWrapper'>
+                <div className='scoreContainer'>
                 <h1>Total Score: {totalScore()}</h1>
-                <p>Low risk: 0-14.</p>
-                <p>Medium risk: 15-31.</p>
-                <p>High risk: 32-39.</p>
+                <p className='low'>Low risk: 0-14.</p>
+                <p className='medium'>Medium risk: 15-31.</p>
+                <p className='high'>High risk: 32-39.</p>
+                </div>
               </div>
             )}
           </div>
