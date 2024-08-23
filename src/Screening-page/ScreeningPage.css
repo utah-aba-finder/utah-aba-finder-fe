@@ -54,33 +54,40 @@
 }
 
 .ScreeningButton1 {
+    height: 10%;
     background-color: #ea4f08;
-    border: none;
     color: white;
     padding: 15px 32px;
     text-align: center;
     text-decoration: none;
-    display: inline-block;
-    font-size: 16px;
+    font-size: 25px;
     margin: 4px 2px;
+    align-content: center;
     cursor: pointer;
     border-radius: .5rem;
 }
 
 .ScreeningButton2 {
+    height: 10%;
     background-color: #5308ea;
-    border: none;
     color: white;
     padding: 15px 32px;
     text-align: center;
     text-decoration: none;
-    display: inline-block;
-    font-size: 16px;
+    font-size: 25px;
+    align-content: center;
     margin: 4px 2px;
     cursor: pointer;
     border-radius: .5rem;
 }
 
-.ScreeningButton1:hover {
-    background-color: #ff6f3d;
+.keepInMind,
+.buttonText {
+    color: blue;
+}
+
+.ScreeningButton1:hover,
+.ScreeningButton2:hover {
+    background-color: green;
+    /* color: black; */
 }
