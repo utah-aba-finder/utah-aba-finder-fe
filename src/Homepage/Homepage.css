@@ -82,3 +82,48 @@
         font-size: 0.5rem;
     }
 }
+
+.county-section {
+    color: white;
+    background-color: rgb(255, 123, 0);
+    height: 8rem;
+}
+
+.county-section-title {
+    margin: 0;
+    padding: 0.7rem;
+}
+
+.county-section-list-wrapper {
+    overflow: hidden;
+    max-width: 100%;
+}
+
+.county-section-list {
+    display: flex;
+    flex-direction: row;
+    gap: 3rem;
+    flex-wrap: nowrap;
+    animation: moveLeft 60s linear infinite;
+    white-space: nowrap;
+    margin: 0;
+}
+
+.county-section-list p {
+    white-space: nowrap;
+    font-weight: 700;
+}
+
+@keyframes moveLeft {
+    0% {
+        transform: translateX(0);
+    }
+
+    100% {
+        transform: translateX(-100%);
+    }
+}
+
+.county-section-list-wrapper:hover .county-section-list {
+    animation-play-state: paused;
+}

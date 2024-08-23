@@ -1,6 +1,4 @@
 import React, { Component } from 'react'
-import Header from '../Header/Header'
-import Footer from '../Footer/Footer'
 import utah from '../Assets/utah.jpg'
 import "./Homepage.css"
 
@@ -14,7 +12,6 @@ class Homepage extends Component<Props, State> {
     render() {
         return (
             <div className='homepage-container'>
-                <Header />
                 <div className='discover-section'>
 
                     <img src={utah} alt="background-image" className='discover-section-backgroundImage' />
@@ -27,11 +24,47 @@ class Homepage extends Component<Props, State> {
                     </div>
 
                 </div>
-                <div className='county-section'></div>
+                <div className='county-section'>
+                    <h2 className='county-section-title'>We Cover These Counties</h2>
+                    <div className='county-section-list-wrapper'>
+                        <div className='county-section-list'>
+                            <p>Salt Lake <br /> County</p>
+                            <p>Utah <br /> County</p>
+                            <p>Davis <br /> County</p>
+                            <p>Weber <br /> County</p>
+                            <p>Iron <br /> County</p>
+                            <p>Cache <br /> County</p>
+                            <p>Box Elder <br /> County</p>
+                            <p>Washington <br /> County</p>
+                            <p>Morgan <br /> County</p>
+                            <p>Summit <br /> County</p>
+                            <p>Tooele <br /> County</p>
+                            <p>Duchesne <br /> County</p>
+                            <p>Uintah <br /> County</p>
+                            <p>Sanpete <br /> County</p>
+                            <p>Wayne <br /> County</p>
+
+                            <p>Salt Lake <br /> County</p>
+                            <p>Utah <br /> County</p>
+                            <p>Davis <br /> County</p>
+                            <p>Weber <br /> County</p>
+                            <p>Iron <br /> County</p>
+                            <p>Cache <br /> County</p>
+                            <p>Box Elder <br /> County</p>
+                            <p>Washington <br /> County</p>
+                            <p>Morgan <br /> County</p>
+                            <p>Summit <br /> County</p>
+                            <p>Tooele <br /> County</p>
+                            <p>Duchesne <br /> County</p>
+                            <p>Uintah <br /> County</p>
+                            <p>Sanpete <br /> County</p>
+                            <p>Wayne <br /> County</p>
+                        </div>
+                    </div>
+                </div>
                 <div className='begin-section'></div>
                 <div className='icons-section'></div>
                 <div className='spanish-section'></div>
-                <Footer />
             </div>
         )
     }

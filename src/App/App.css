@@ -1,3 +1,13 @@
 .App {
   text-align: center;
 }
+
+.Header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 3px solid orange;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+}
