@@ -12,3 +12,8 @@ export interface Provider {
     spanish: string;
 }
 
+export interface Screening {
+    question: string;
+    answer: string;
+}
+

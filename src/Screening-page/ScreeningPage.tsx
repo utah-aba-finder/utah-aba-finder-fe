@@ -1,15 +1,32 @@
 import React, { Component } from 'react'
+import './ScreeningPage.css'
+import { Screening } from '../Utility/Types'
+import { Link } from 'react-router-dom'
 
-type Props = {}
 
-type State = {}
+export const ScreeningPage: React.FC = () => {
 
-export default class ScreeningPage extends Component<Props, State> {
-    state = {}
-
-    render() {
         return (
-            <div>ScreeningPage</div>
+            <div className='ScreeningPageWrapper'>
+                <div className='ImageContainer'>
+                    <h1 className='toolsText'>Screening Tools</h1>
+                </div>
+                <div className='ScreeningContainer'>
+                    <div className='ScreeningMessage'>
+                        <h1 className='keepInMind'>Keep In Mind!!</h1>
+                        <p>If you think that your child may have autism, you can use these screening tools as an initial step in the assessment process.</p>
+                        <p>Please keep in mind that these tools are intended to identify potential signs of autism and are not a substitute for an official diagnosis. Please seek a certified helthcare professional for an official diagnosis.</p>
+                        <p><strong>M-CHAT:</strong> Modified Checklist for Autism in Toddlers. For children 3 and under.</p>
+                        <p><strong>CAST:</strong> Childhood Autism Spectrum Test. For children 4 and older.</p>
+                    </div>
+                    <div className='BorderDiv'></div>
+                    <div className='ScreeningButtons'>
+                        <h3 className='buttonText'>For Children 3 and Under:</h3>
+                        <Link to='/screening/m-chat' aria-label='m-cat test button'className='ScreeningButton1'>TAKE THE M-CHAT</Link>
+                        <h3 className='buttonText'>For Children 4 and Up:</h3>
+                        <Link to='/screening/cast' aria-label='cast test button'className='ScreeningButton2'>TAKE THE CAST</Link>
+                    </div>
+                </div>
+            </div>
         )
-    }
 }
