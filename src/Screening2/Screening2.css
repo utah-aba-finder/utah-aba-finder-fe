@@ -1,0 +1,26 @@
+.castWrapper {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+}
+
+.castForm {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    padding: 20px;
+    align-content: center;
+    text-align: center;
+    align-items: center;
+}
+
+.castQuestion {
+    display: flex;
+    width: 60%;
+    background-color: lightgray;
+    align-items: center;
+    padding: 5px;
+}
+
