@@ -69,15 +69,17 @@ const ProvidersPage = () => {
             <p>Map Placeholder</p>
           </div>
         </div>
-        
+
       </section>
 
       <section className="provider-list-section">
         <div className="provider-list">
           {mockProviders.data.map((provider) => (
             <div key={provider.id} className="provider-card">
-              <h3>{provider.attributes.name}</h3>
-              <p><strong>Address:</strong> {provider.attributes.address || 'N/A'}</p>
+              <div className="provider-title-and-address">
+                <h3>{provider.attributes.name}</h3>
+                <p><strong>Address:</strong> {provider.attributes.address || 'N/A'}</p>
+              </div>
               <p><strong>Phone:</strong> {provider.attributes.phone || 'N/A'}</p>
               <p><strong>Spanish speaking?</strong> {provider.attributes.spanish_speakers}</p>
             </div>

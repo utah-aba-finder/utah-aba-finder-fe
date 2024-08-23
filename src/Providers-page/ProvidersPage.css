@@ -2,6 +2,7 @@
     display: flex;
     flex-direction: column;
     gap: 2rem;
+    padding-bottom: 5rem;
 }
 
 .find-your-provider-section {
@@ -11,6 +12,8 @@
 .banner-image {
     width: 100%;
     height: auto;
+    max-height: 60vh;
+    object-fit: cover;
 }
 
 .provider-map-search-section {
@@ -18,6 +21,8 @@
     flex-direction: column;
     align-items: center;
     gap: 1rem;
+    width: 100%;
+
 }
 
 .provider-map-searchbar {
@@ -25,23 +30,31 @@
     gap: 0.5rem;
     padding: 1rem;
     width: 100%;
-    max-width: 600px; /* Optional: Limit the width */
+    max-width: 600px;
     justify-content: center;
 }
 
 .provider-map-locations {
     display: flex;
     justify-content: center;
-    gap: 2rem;
+    gap: 1rem;
+    width: 100%;
+  
 }
 
 .provider-map-locations-list {
-    width: 45%;
-    max-width: 600px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 50%;
+    height: 28rem;
+    max-width: 100%;
+    border: 2px solid #ccc;
 }
+
 .provider-map {
     width: 50%;
-    height: 300px;
+    height: 28rem;
     border: 2px solid #ccc;
     display: flex;
     justify-content: center;
@@ -55,14 +68,56 @@
 }
 
 .provider-list {
-    width: 45%;
+    width: 100%;
     margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .provider-card {
+    display: flex;
     border: 1px solid #ccc;
     padding: 1rem;
     margin-bottom: 1rem;
     border-radius: 0.5rem;
+    width: 100%;
+    max-width: 800px;
+    box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
 }
 
+
+.provider-title-and-address {
+    margin-bottom: 1rem;
+}
+
+@media (min-width: 768px) {
+    .provider-map-locations {
+        flex-direction: row;
+        padding: 0 2rem;
+    }
+
+    .provider-map-locations-list {
+        width: 45%;
+    }
+
+    .provider-map {
+        width: 50%;
+    }
+}
+
+@media (min-width: 1024px) {
+    .provider-list {
+        width: 75%;
+    }
+
+    .provider-card {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .provider-title-and-address {
+        margin-bottom: 0;
+    }
+}
