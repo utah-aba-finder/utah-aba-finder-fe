@@ -1,0 +1,93 @@
+.ScreeningPageWrapper {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+}
+
+.ImageContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 50vh;
+    background-image: url('../Assets/screening-banner.jpg');
+    background-position: center;
+    background-size: cover;
+}
+
+.toolsText {
+    position: relative;
+    width: fit-content;
+    color: white;
+    padding: 5px;
+    font-size: 3em;
+    border-radius: .5rem;
+    background-color: rgba(0, 0, 0, 0.5); }
+
+.ScreeningContainer {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    padding: 20px;
+    justify-content: space-evenly;
+}
+
+.ScreeningMessage {
+    width: 25%;
+    background-color: pink;
+    border-radius: .5rem;
+    padding: 5px;
+}
+
+.BorderDiv {
+    height: 50vh; 
+    width: 5px; 
+    background-color: gold; 
+}
+
+.ScreeningButtons {
+    display: flex;
+    flex-direction: column;
+    width: 25%;
+    justify-content: space-evenly;
+    text-align: start;
+}
+
+.ScreeningButton1 {
+    height: 10%;
+    background-color: #ea4f08;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    font-size: 25px;
+    margin: 4px 2px;
+    align-content: center;
+    cursor: pointer;
+    border-radius: .5rem;
+}
+
+.ScreeningButton2 {
+    height: 10%;
+    background-color: #5308ea;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    font-size: 25px;
+    align-content: center;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: .5rem;
+}
+
+.keepInMind,
+.buttonText {
+    color: blue;
+}
+
+.ScreeningButton1:hover,
+.ScreeningButton2:hover {
+    background-color: green;
+    /* color: black; */
+}
