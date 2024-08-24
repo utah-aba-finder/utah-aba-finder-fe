@@ -87,34 +87,34 @@ class Homepage extends Component<Props, State> {
                 </div>
                 <div className='begin-section'>
                     <h2 className='begin-section-title'>Begin Your Journey with Essential Information</h2>
-                    <p className='begin-section-description'>Not sure about your child’s condition or haven’t received a diagnosis yet? We’re here to assist you. Start by taking a simple test to see if your child meets the criteria.</p>
+                    <p className='begin-section-description'>Not sure about your child’s condition or haven’t received a diagnosis yet? <br />We’re here for you. Start by taking a simple test to see if your child meets the criteria.</p>
                     <div className='begin-section-button-container'>
                         <button className='begin-section-button1'>VIEW PROVIDERS</button>
                         <button className='begin-section-button2'>HELP WITH DIAGNOSIS</button>
                     </div>
 
                 </div>
-                <div className="icons-section">
-                    <div className="icons-section-icon">
+                <div className="icons-section" id="view">
+                    <div className="icons-section-icon" id={"block"}>
                         <img src={mapIcon} alt="Map Icon" />
                         <p>Locate the Providers</p>
                     </div>
-                    <div className="icons-section-icon">
+                    <div className="icons-section-icon" id={"block"}>
                         <img src={puzzleIcon} alt="Puzzle Icon" />
                         <p>Educate Yourself with Autism</p>
                     </div>
-                    <div className="icons-section-icon">
+                    <div className="icons-section-icon" id={"block"}>
                         <img src={insuranceIcon} alt="Insurance Icon" />
                         <p>Verify Insurance Coverage</p>
                     </div>
-                    <div className="icons-section-icon">
+                    <div className="icons-section-icon" id={"block"}>
                         <img src={familyIcon} alt="Family Icon" />
                         <p>Rest Assured <br /> We got you!</p>
                     </div>
                 </div>
                 <div className='spanish-section'>
                     <div className="spanish-section-texts">
-                        <h2>Now Available: Spanish-Speaking Providers</h2>
+                        <h2 className='spanish-section-title'>Now Available: Spanish-Speaking Providers</h2>
                         <p className='spanish-section-description'>We know how important it is to communicate in your language. We have Spanish-speaking providers available to assist with your ABA needs in Utah.</p>
                         <button className='spanish-section-button'>Learn More</button>
                     </div>

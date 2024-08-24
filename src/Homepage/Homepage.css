@@ -58,11 +58,15 @@
     background-color: #b12a33;
     color: white;
     border: none;
-    border-radius: 20px;
+    border-radius: 15px;
     font-size: 1rem;
-    padding: 0.6rem;
+    padding: 1rem;
     margin-left: 1rem;
     cursor: pointer;
+}
+
+.discover-section-button:hover {
+    transform: scale(1.05);
 }
 
 
@@ -180,12 +184,14 @@
     flex-direction: column;
     padding-top: 2rem;
     padding-bottom: 3rem;
+    font-size: 1.5rem;
 }
 
 .begin-section-description {
     margin: 0 auto;
     max-width: 70%;
     margin-bottom: 2rem;
+    font-size: 1.2rem;
 }
 
 .begin-section-button-container {
@@ -204,11 +210,18 @@
     color: white;
     font-weight: 800;
     font-size: 1rem;
-    background-color: rgb(1, 178, 1);
+    background-color: rgb(10, 150, 94);
+    cursor: pointer;
 }
 
 .begin-section-button2 {
-    background-color: rgb(18, 18, 248);
+    background-color: rgb(0, 0, 130);
+}
+
+.begin-section-button1:hover,
+.begin-section-button2:hover {
+    transform: scale(1.05);
+
 }
 
 @media (max-width:540px) {
@@ -217,22 +230,14 @@
     }
 
     .begin-section-title {
-        font-size: 1rem;
+        font-size: 0.9rem;
         margin: 0.3rem;
     }
 
     .begin-section-description {
-        font-size: 0.7rem;
-        max-width: 90%;
-    }
-
-    .begin-section-title {
-        font-size: 0.9rem;
-    }
-
-    .begin-section-description {
-        font-size: 0.7rem;
+        font-size: 0.8rem;
         margin-bottom: 0.5rem;
+        max-width: 82%;
     }
 
     .begin-section-button1,
@@ -250,8 +255,8 @@
     justify-content: center;
     align-items: center;
     gap: 5rem;
-    padding-top: 5rem;
-    padding-bottom: 5rem;
+    padding-top: 7rem;
+    padding-bottom: 7rem;
     background-color: rgb(255, 229, 191);
 }
 
@@ -264,6 +269,11 @@
     justify-content: center;
     text-align: center;
     margin-top: 1rem;
+    transition: transform 0.3s ease-in-out;
+
+    animation: appear linear;
+    animation-timeline: view();
+    animation-range: entry 0% cover 40%;
 }
 
 .icons-section-icon img {
@@ -277,6 +287,10 @@
     font-weight: 800;
     color: rgb(0, 0, 130);
 
+}
+
+.icons-section-icon:hover {
+    transform: scale(1.2);
 }
 
 @media (max-width: 540px) {
@@ -293,6 +307,21 @@
 
     .icons-section p {
         font-size: 0.5rem;
+    }
+}
+
+@keyframes appear {
+    from {
+        opacity: 0;
+        scale: 0.5;
+        transform: translateX(-100px);
+
+    }
+
+    to {
+        opacity: 1;
+        scale: 1;
+        transform: translateX(0px);
     }
 }
 
@@ -332,11 +361,48 @@
 
 .spanish-section-button {
     color: white;
-    background-color: rgb(246, 115, 137);
+    background-color: rgb(183, 107, 200);
     font-size: 1rem;
     padding: 0.5rem 3rem 0.5rem 3rem;
     border-radius: 20px;
     margin-top: 2rem;
     border: none;
     font-weight: 800;
+    cursor: pointer;
+}
+
+.spanish-section-button:hover {
+    transform: scale(1.05);
+}
+
+@media(max-width: 540px) {
+    .spanish-section {
+        padding: 1rem;
+    }
+
+    .spanish-section-pic {
+        padding-top: 1rem;
+        width: 7rem;
+        height: 9rem;
+    }
+
+    .spanish-section-texts {
+        padding-top: 0;
+        font-size: 0.9rem;
+    }
+
+    .spanish-section-title {
+        font-size: 0.9rem;
+    }
+
+    .spanish-section-description {
+        font-size: 0.6rem;
+        max-width: 17rem;
+    }
+
+    .spanish-section-button {
+        font-size: 0.7rem;
+        margin-top: 0.3rem;
+        padding: 0.3rem 2rem 0.3rem 2rem;
+    }
 }
