@@ -1,7 +1,16 @@
 .footer-container {
-    border: 2px solid black;
-    padding: 3rem;
-    position: fixed;
-    bottom: 0;
+    border: none;
+    padding-top: 8rem;
+    padding-bottom: 6rem;
     width: 100%;
+    background-color: rgb(255, 255, 255);
+    font-size: 0.8rem;
+}
+
+@media (max-width:540px) {
+    .footer-container {
+        font-size: 0.4rem;
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+    }
 }

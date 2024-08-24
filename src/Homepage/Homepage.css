@@ -1,11 +1,21 @@
+/* DISCOVER SECTION */
 .discover-section {
-    width: auto;
-    height: 45rem;
+    width: 100%;
+    height: 65rem;
+    position: relative;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    position: relative;
+}
+
+.discover-section-container {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    z-index: 1;
+    margin-bottom: 1rem;
 }
 
 .discover-section-backgroundImage {
@@ -34,59 +44,75 @@
 }
 
 .discover-section-description {
-    font-size: 1rem;
+    font-size: 1.2rem;
     color: white;
     text-align: center;
-    max-width: 18rem;
+    max-width: 30rem;
     margin: 0;
     background-color: rgba(47, 47, 47, 0.5);
     border-radius: 20px;
-    padding: 0.7rem;
+    padding: 1rem;
 }
 
 .discover-section-button {
     background-color: #b12a33;
     color: white;
     border: none;
-    border-radius: 20px;
+    border-radius: 15px;
     font-size: 1rem;
-    padding: 0.6rem;
+    padding: 1rem;
     margin-left: 1rem;
     cursor: pointer;
 }
 
-@media (max-width: 480px) {
+.discover-section-button:hover {
+    transform: scale(1.05);
+}
+
+
+@media (max-width: 540px) {
     .discover-section {
-        height: auto;
-        justify-content: flex-start;
-        align-items: center;
+        margin: 0;
+        padding-bottom: 0;
+        height: 60vh;
     }
 
     .discover-section-backgroundImage {
-        width: 100%;
-        height: auto;
+        height: 100%;
+    }
+
+    .discover-section-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 0;
     }
 
     .discover-section-title {
-        margin-top: 3rem;
         font-size: 1rem;
         max-width: 20rem;
     }
 
     .discover-section-description {
-        font-size: 0.5rem;
-        max-width: 10rem;
+        font-size: 0.7rem;
+        max-width: 20rem;
     }
 
     .discover-section-button {
-        font-size: 0.5rem;
+        font-size: 0.7rem;
+        margin-top: 1rem;
     }
+
 }
 
+/* COUNTY SECTION */
 .county-section {
     color: white;
     background-color: rgb(255, 123, 0);
     height: 8rem;
+    margin-top: 0;
+    z-index: 2;
+    padding: 1rem;
 }
 
 .county-section-title {
@@ -126,4 +152,257 @@
 
 .county-section-list-wrapper:hover .county-section-list {
     animation-play-state: paused;
+}
+
+@media(max-width:540px) {
+    .county-section {
+        display: flex;
+        flex-direction: column;
+        height: 4.5rem;
+        margin-top: 0;
+        padding: 0;
+    }
+
+    .county-section-title {
+        font-size: 0.7rem;
+    }
+
+    .county-section-list-wrapper {
+        overflow: hidden;
+    }
+
+    .county-section-list p {
+        font-size: 0.8rem;
+        text-align: center;
+        margin: 0;
+    }
+}
+
+/* BEGIN SECTION */
+.begin-section {
+    display: flex;
+    flex-direction: column;
+    padding-top: 2rem;
+    padding-bottom: 3rem;
+    font-size: 1.5rem;
+}
+
+.begin-section-description {
+    margin: 0 auto;
+    max-width: 70%;
+    margin-bottom: 2rem;
+    font-size: 1.2rem;
+}
+
+.begin-section-button-container {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+}
+
+.begin-section-button1,
+.begin-section-button2 {
+    width: 15rem;
+    height: auto;
+    padding: 1rem;
+    border-radius: 10px;
+    border: none;
+    color: white;
+    font-weight: 800;
+    font-size: 1rem;
+    background-color: rgb(10, 150, 94);
+    cursor: pointer;
+}
+
+.begin-section-button2 {
+    background-color: rgb(0, 0, 130);
+}
+
+.begin-section-button1:hover,
+.begin-section-button2:hover {
+    transform: scale(1.05);
+
+}
+
+@media (max-width:540px) {
+    .begin-section {
+        padding: 1rem;
+    }
+
+    .begin-section-title {
+        font-size: 0.9rem;
+        margin: 0.3rem;
+    }
+
+    .begin-section-description {
+        font-size: 0.8rem;
+        margin-bottom: 0.5rem;
+        max-width: 82%;
+    }
+
+    .begin-section-button1,
+    .begin-section-button2 {
+        width: 8rem;
+        font-size: 0.6rem;
+        padding: 0.3rem;
+    }
+}
+
+/* ICONS SECTION */
+.icons-section {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 5rem;
+    padding-top: 7rem;
+    padding-bottom: 7rem;
+    background-color: rgb(255, 229, 191);
+}
+
+.icons-section-icon {
+    width: 9rem;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    margin-top: 1rem;
+    transition: transform 0.3s ease-in-out;
+
+    animation: appear linear;
+    animation-timeline: view();
+    animation-range: entry 0% cover 40%;
+}
+
+.icons-section-icon img {
+    width: 100%;
+    height: auto;
+}
+
+.icons-section-icon p {
+    margin-top: 0.5rem;
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: rgb(0, 0, 130);
+
+}
+
+.icons-section-icon:hover {
+    transform: scale(1.2);
+}
+
+@media (max-width: 540px) {
+    .icons-section {
+        gap: 2rem;
+        padding-top: 1.5rem;
+        padding-bottom: 1.5rem;
+    }
+
+    .icons-section-icon {
+        width: 3.3rem;
+        height: auto;
+    }
+
+    .icons-section p {
+        font-size: 0.5rem;
+    }
+}
+
+@keyframes appear {
+    from {
+        opacity: 0;
+        scale: 0.5;
+        transform: translateX(-100px);
+
+    }
+
+    to {
+        opacity: 1;
+        scale: 1;
+        transform: translateX(0px);
+    }
+}
+
+/* SPANISH SECTION */
+.spanish-section {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    text-align: center;
+    padding: 3rem;
+    background-color: rgb(247, 238, 228);
+}
+
+.spanish-section-texts {
+    padding-top: 4rem;
+    color: rgb(0, 0, 130);
+}
+
+.spanish-section-description {
+    max-width: 40rem;
+    color: rgb(77, 77, 77);
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.spanish-section-pic {
+    width: 18rem;
+    height: 25rem;
+    border-radius: 30px;
+}
+
+.spanish-section-pic img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.spanish-section-button {
+    color: white;
+    background-color: rgb(183, 107, 200);
+    font-size: 1rem;
+    padding: 0.5rem 3rem 0.5rem 3rem;
+    border-radius: 20px;
+    margin-top: 2rem;
+    border: none;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.spanish-section-button:hover {
+    transform: scale(1.05);
+}
+
+@media(max-width: 540px) {
+    .spanish-section {
+        padding: 1rem;
+    }
+
+    .spanish-section-pic {
+        padding-top: 1rem;
+        width: 7rem;
+        height: 9rem;
+    }
+
+    .spanish-section-texts {
+        padding-top: 0;
+        font-size: 0.9rem;
+    }
+
+    .spanish-section-title {
+        font-size: 0.9rem;
+    }
+
+    .spanish-section-description {
+        font-size: 0.6rem;
+        max-width: 17rem;
+    }
+
+    .spanish-section-button {
+        font-size: 0.7rem;
+        margin-top: 0.3rem;
+        padding: 0.3rem 2rem 0.3rem 2rem;
+    }
 }
