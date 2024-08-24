@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import { Link } from 'react-router-dom'
 import utah from '../Assets/Utah-Background.jpg'
 import mapIcon from '../Assets/map-icon.png'
 import puzzleIcon from '../Assets/puzzle-icon.png'
@@ -11,6 +12,7 @@ type Props = {}
 
 type State = {}
 
+const videoSrc = require('../Assets/mainVideo.mp4');
 class Homepage extends Component<Props, State> {
     state = {}
 
@@ -19,6 +21,7 @@ class Homepage extends Component<Props, State> {
             <div className='homepage-container'>
                 <div className='discover-section'>
                     <img src={utah} alt="background-image" className='discover-section-backgroundImage' />
+                    {/* <video src={videoSrc} autoPlay loop muted className='discover-section-backgroundImage'></video> */}
                     <div className='discover-section-container'>
                         <h1 className='discover-section-title'>
                             Discover the Ideal ABA Therapy Provider <br /> for Your Child with Autism in Utah
@@ -27,7 +30,7 @@ class Homepage extends Component<Props, State> {
                             <p className='discover-section-description'>
                                 Are you feeling overwhelmed in your search for the right care? We’re here to guide you every step of the way. <br />Start your journey with confidence today.
                             </p>
-                            <button className='discover-section-button'>Start Your Journey</button>
+                            <Link to="/providers"><button className='discover-section-button'>Start Your Journey</button></Link>
                         </div>
                     </div>
                 </div>
@@ -89,8 +92,8 @@ class Homepage extends Component<Props, State> {
                     <h2 className='begin-section-title'>Begin Your Journey with Essential Information</h2>
                     <p className='begin-section-description'>Not sure about your child’s condition or haven’t received a diagnosis yet? <br />We’re here for you. Start by taking a simple test to see if your child meets the criteria.</p>
                     <div className='begin-section-button-container'>
-                        <button className='begin-section-button1'>VIEW PROVIDERS</button>
-                        <button className='begin-section-button2'>HELP WITH DIAGNOSIS</button>
+                        <Link to="/providers"><button className='begin-section-button1'>VIEW PROVIDERS</button></Link>
+                        <Link to="/screening"> <button className='begin-section-button2'>HELP WITH DIAGNOSIS</button> </Link>
                     </div>
 
                 </div>
@@ -116,7 +119,7 @@ class Homepage extends Component<Props, State> {
                     <div className="spanish-section-texts">
                         <h2 className='spanish-section-title'>Now Available: Spanish-Speaking Providers</h2>
                         <p className='spanish-section-description'>We know how important it is to communicate in your language. We have Spanish-speaking providers available to assist with your ABA needs in Utah.</p>
-                        <button className='spanish-section-button'>Learn More</button>
+                        <Link to="/providers"><button className='spanish-section-button'>Learn More</button></Link>
                     </div>
                     <div className="spanish-section-image">
                         <img src={spanishPic} alt="Spanish picture" className='spanish-section-pic' />
