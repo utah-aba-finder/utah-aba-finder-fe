@@ -92,7 +92,27 @@ const ProvidersPage: React.FC = () => {
         <div className="provider-map-searchbar">
           <input type="text" placeholder="Search for a provider..." />
           <button className="provider-search-button">Search</button>
-          <button className="provider-county-dropdown-button">Sort by County</button>
+          <div className="provider-county-dropdown">
+            <select className="provider-county-select" defaultValue="">
+              <option value="" disabled>Select a county</option>
+              <option value="salt-lake">Salt Lake County</option>
+              <option value="utah">Utah County</option>
+              <option value="davis">Davis County</option>
+              <option value="weber">Weber County</option>
+              <option value="iron">Iron County</option>
+              <option value="cache">Cache County</option>
+              <option value="box-elder">Box Elder County</option>
+              <option value="washington">Washington County</option>
+              <option value="morgan">Morgan County</option>
+              <option value="summit">Summit County</option>
+              <option value="tooele">Tooele County</option>
+              <option value="duchesne">Duchesne County</option>
+              <option value="uintah">Uintah County</option>
+              <option value="sanpete">Sanpete County</option>
+              <option value="wayne">Wayne County</option>
+            </select>
+            <span className="dropdown-arrow">&#9660;</span>
+          </div>
         </div>
 
         <div className="provider-map-locations">

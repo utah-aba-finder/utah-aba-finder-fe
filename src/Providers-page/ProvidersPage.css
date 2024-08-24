@@ -1,38 +1,100 @@
 .providers-page {
     display: flex;
     flex-direction: column;
-    gap: 2rem;
+    gap: .7rem;
     padding-bottom: 5rem;
-  }
-  
-  .find-your-provider-section {
+}
+
+.find-your-provider-section {
     width: 100%;
-  }
-  
-  .banner-image {
+}
+
+.banner-image {
     width: 100%;
     height: auto;
     max-height: 60vh;
     object-fit: cover;
-  }
-  
-  .provider-map-search-section {
+}
+
+.provider-map-search-section {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 1rem;
-  }
-  
-  .provider-map-searchbar {
+}
+
+.provider-map-searchbar {
     display: flex;
     gap: 0.5rem;
     padding: 1rem;
     width: 100%;
     max-width: 600px;
     justify-content: center;
-  }
-  
-  .provider-map-locations {
+    background-color: #f0f0f0;
+    border-radius: 0.5rem;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.provider-map-searchbar input[type="text"],
+.provider-search-button,
+.provider-county-dropdown-button {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 0.25rem;
+    background-color: #555555;
+    color: #ffffff;
+    font-size: 1rem;
+    cursor: pointer;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s, transform 0.3s;
+}
+
+.provider-map-searchbar input[type="text"]::placeholder {
+    color: #ffffff;
+}
+
+.provider-map-searchbar input[type="text"]:hover,
+.provider-search-button:hover,
+.provider-county-dropdown-button:hover {
+    background-color: #444444;
+    transform: translateY(-2px);
+}
+
+.provider-map-searchbar input[type="text"]:focus,
+.provider-search-button:focus,
+.provider-county-dropdown-button:focus {
+    outline: 2px solid #333;
+}
+
+.provider-county-dropdown {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.provider-county-select {
+    padding: 0.5rem 1.5rem;
+    border: none;
+    border-radius: 0.25rem;
+    background-color: #555555;
+    color: #ffffff;
+    font-size: 1rem;
+    outline: none;
+    appearance: none;
+}
+
+
+.dropdown-arrow {
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1rem;
+    color: #ffffff;
+    pointer-events: none;
+}
+
+.provider-map-locations {
     display: flex;
     justify-content: center;
     gap: 1rem;
@@ -40,10 +102,10 @@
     height: 25rem;
     max-width: 100%;
     box-sizing: border-box;
-  }
-  
-  .provider-map-locations-list,
-  .provider-map {
+}
+
+.provider-map-locations-list,
+.provider-map {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -52,21 +114,21 @@
     color: #666;
     height: 100%;
     box-sizing: border-box;
-  }
-  
-  .provider-map-locations-list {
+}
+
+.provider-map-locations-list {
     height: 25rem;
-  }
-  
-  .provider-map {
+}
+
+.provider-map {
     height: 25rem;
-  }
-  
-  .provider-list-section {
+}
+
+.provider-list-section {
     padding: 1rem;
-  }
-  
-  .provider-list {
+}
+
+.provider-list {
     width: 100%;
     margin: 0 auto;
     display: flex;
@@ -75,9 +137,9 @@
     gap: 1rem;
     max-width: 100%;
     box-sizing: border-box;
-  }
-  
-  .provider-card {
+}
+
+.provider-card {
     display: flex;
     flex-direction: column;
     border: 1px solid #ccc;
@@ -90,88 +152,87 @@
     transition: transform 0.3s, box-shadow 0.3s;
     margin: 0 auto;
     text-align: center;
-  }
-  
-  .provider-card:hover {
+}
+
+.provider-card:hover {
     transform: translateY(-5px);
     box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
     cursor: pointer;
-  }
-  
-  .provider-title-and-address {
+}
+
+.provider-title-and-address {
     margin-bottom: 1rem;
-  }
-  
-  /* Desktop styling */
-  @media (min-width: 1024px) {
+}
+
+/* Desktop styling */
+@media (min-width: 1024px) {
     .provider-list {
-      width: 75%;
+        width: 75%;
     }
-  
+
     .provider-card {
-      flex-direction: row;
-      justify-content: space-between;
-      align-items: center;
-      text-align: left;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        text-align: left;
     }
-  
+
     .provider-title-and-address {
-      margin-bottom: 0;
+        margin-bottom: 0;
     }
-  }
-  
-  /* Tablet */
-  @media (min-width: 768px) {
+}
+
+/* Tablet */
+@media (min-width: 768px) {
     .provider-map-locations {
-      flex-direction: row;
-      padding: 0 2rem;
+        flex-direction: row;
+        padding: 0 2rem;
     }
-  
+
     .provider-map-locations-list,
     .provider-map {
-      width: 45%;
+        width: 45%;
     }
-  }
-  
-  /* Mobile View */
-  @media (max-width: 767px) {
+}
+
+/* Mobile View */
+@media (max-width: 767px) {
     .provider-map-searchbar {
-      padding: 0 1rem;
+        padding: 0 1rem;
     }
-  
+
     .provider-map-locations {
-      flex-direction: column;
-      align-items: center;
-      gap: 1rem;
-      padding: 0 1rem;
-      box-sizing: border-box;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+        padding: 0 1rem;
+        box-sizing: border-box;
     }
-  
+
     .provider-map-locations-list,
     .provider-map {
-      width: 100%;
-      max-width: 600px;
-      height: 25rem;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      box-sizing: border-box;
+        width: 100%;
+        max-width: 600px;
+        height: 25rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-sizing: border-box;
     }
-  
+
     .provider-card {
-      flex-direction: column;
-      align-items: center;
-      padding: 1rem;
-      margin: 0 auto;
-      text-align: center;
+        flex-direction: column;
+        align-items: center;
+        padding: 1rem;
+        margin: 0 auto;
+        text-align: center;
     }
-  
+
     .provider-title-and-address {
-      margin-bottom: 1rem;
+        margin-bottom: 1rem;
     }
-  
+
     .provider-list-section {
-      padding: 1rem;
+        padding: 1rem;
     }
-  }
-  
+}
