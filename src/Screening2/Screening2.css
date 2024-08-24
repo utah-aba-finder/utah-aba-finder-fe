@@ -1,0 +1,107 @@
+.castWrapper {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+}
+
+.castForm {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    padding: 20px;
+    align-content: center;
+    text-align: center;
+    align-items: center;
+}
+
+.castTextContainer {
+    width: 100%;
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+}
+
+.paragraphContainer {
+    width: 40%;
+    text-align: center;
+}
+
+.castQuestion {
+    display: flex;
+    width: 40%;
+    background-color: lightgray;
+    align-items: center;
+    text-align: start;
+    padding: 5px;
+    border: .5px solid black;
+}
+
+.scoreWrapper {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+}
+
+.scoreContainer {
+    display: flex;
+    flex-direction: column;
+    width: 50%;
+    background-color: lightslategrey;
+    border-radius:  .5rem;
+}
+
+.low,
+.medium,
+.high {
+    font-weight: bold;
+    font-size: 25px;
+}
+
+.low {
+    color: yellow;
+}
+
+.medium {
+    color: orange;
+}
+
+.high {
+    color: rgb(195, 2, 2);
+}
+
+.castQuestionNumber {
+    text-align: center;
+}
+
+.castLabel {
+    width: 90%;
+    margin: 5px;
+    padding: 5px;
+    text-wrap: wrap;
+}
+
+.castSubmit {
+    height: 10%;
+    background-color: #ea4f08;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    font-size: 25px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: .5rem;
+}
+
+.castSubmit:hover {
+    background-color: lightgreen;
+}
+
+.progressBar {
+    position: sticky;
+    top: 20px; 
+    z-index: 100;
+    width: 30%;
+}
