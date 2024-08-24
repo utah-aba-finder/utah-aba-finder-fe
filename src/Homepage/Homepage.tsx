@@ -99,19 +99,19 @@ class Homepage extends Component<Props, State> {
                 </div>
                 <div className="icons-section" id="view">
                     <div className="icons-section-icon" id={"block"}>
-                        <img src={mapIcon} alt="Map Icon" />
+                        <Link to="/providers"><img src={mapIcon} alt="Map Icon" /></Link>
                         <p>Locate the Providers</p>
                     </div>
                     <div className="icons-section-icon" id={"block"}>
-                        <img src={puzzleIcon} alt="Puzzle Icon" />
+                        <Link to="/information"><img src={puzzleIcon} alt="Puzzle Icon" /></Link>
                         <p>Educate Yourself with Autism</p>
                     </div>
                     <div className="icons-section-icon" id={"block"}>
-                        <img src={insuranceIcon} alt="Insurance Icon" />
+                        <Link to="/providers"><img src={insuranceIcon} alt="Insurance Icon" /></Link>
                         <p>Verify Insurance Coverage</p>
                     </div>
                     <div className="icons-section-icon" id={"block"}>
-                        <img src={familyIcon} alt="Family Icon" />
+                        <Link to="/screening"><img src={familyIcon} alt="Family Icon" /></Link>
                         <p>Rest Assured <br /> We got you!</p>
                     </div>
                 </div>

@@ -9,6 +9,11 @@
     margin-right: 2rem;
 }
 
+.menu:hover,
+.main-logo:hover {
+    cursor: pointer;
+}
+
 @media (max-width: 480px) {
     .main-logo {
         width: 10rem;
@@ -20,4 +25,57 @@
         height: auto;
         margin-right: 1rem;
     }
+}
+
+.menu-content {
+    position: absolute;
+    top: 6rem;
+    right: 0;
+    background-color: rgb(88, 88, 88, 0.9);
+    border-radius: 20px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    opacity: 0;
+    z-index: 10;
+}
+
+.menu-content a {
+    text-decoration: none;
+    font-size: 1.5rem;
+    color: rgb(255, 255, 255);
+    text-align: left;
+}
+
+.menu-content a:hover {
+    color: rgb(251, 99, 57);
+}
+
+.menu-content.open {
+    transform: translateX(0);
+    opacity: 1;
+    visibility: visible;
+}
+
+@media (max-width: 480px) {
+    .main-logo {
+        width: 10rem;
+        height: auto;
+    }
+
+    .menu {
+        width: 1.5rem;
+        height: auto;
+        margin-right: 1rem;
+    }
+
+    .menu-content {
+        top: 3.5rem;
+    }
+
+    .menu-content a {
+        font-size: 1rem;
+    }
+
 }
