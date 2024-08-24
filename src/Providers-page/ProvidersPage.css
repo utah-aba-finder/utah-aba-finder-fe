@@ -3,121 +3,175 @@
     flex-direction: column;
     gap: 2rem;
     padding-bottom: 5rem;
-}
-
-.find-your-provider-section {
+  }
+  
+  .find-your-provider-section {
     width: 100%;
-}
-
-.banner-image {
+  }
+  
+  .banner-image {
     width: 100%;
     height: auto;
     max-height: 60vh;
     object-fit: cover;
-}
-
-.provider-map-search-section {
+  }
+  
+  .provider-map-search-section {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 1rem;
-    width: 100%;
-
-}
-
-.provider-map-searchbar {
+  }
+  
+  .provider-map-searchbar {
     display: flex;
     gap: 0.5rem;
     padding: 1rem;
     width: 100%;
     max-width: 600px;
     justify-content: center;
-}
-
-.provider-map-locations {
+  }
+  
+  .provider-map-locations {
     display: flex;
     justify-content: center;
     gap: 1rem;
     width: 100%;
-  
-}
-
-.provider-map-locations-list {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 50%;
-    height: 28rem;
+    height: 25rem;
     max-width: 100%;
-    border: 2px solid #ccc;
-}
-
-.provider-map {
-    width: 50%;
-    height: 28rem;
-    border: 2px solid #ccc;
+    box-sizing: border-box;
+  }
+  
+  .provider-map-locations-list,
+  .provider-map {
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 1.2rem;
+    width: 50%;
+    border: 2px solid #ccc;
     color: #666;
-}
-
-.provider-list-section {
+    height: 100%;
+    box-sizing: border-box;
+  }
+  
+  .provider-map-locations-list {
+    height: 25rem;
+  }
+  
+  .provider-map {
+    height: 25rem;
+  }
+  
+  .provider-list-section {
     padding: 1rem;
-}
-
-.provider-list {
+  }
+  
+  .provider-list {
     width: 100%;
     margin: 0 auto;
     display: flex;
     flex-direction: column;
     align-items: center;
-}
-
-.provider-card {
+    gap: 1rem;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  
+  .provider-card {
     display: flex;
+    flex-direction: column;
     border: 1px solid #ccc;
     padding: 1rem;
-    margin-bottom: 1rem;
     border-radius: 0.5rem;
     width: 100%;
     max-width: 800px;
     box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-
-.provider-title-and-address {
+    box-sizing: border-box;
+    transition: transform 0.3s, box-shadow 0.3s;
+    margin: 0 auto;
+    text-align: center;
+  }
+  
+  .provider-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+  }
+  
+  .provider-title-and-address {
     margin-bottom: 1rem;
-}
-
-@media (min-width: 768px) {
-    .provider-map-locations {
-        flex-direction: row;
-        padding: 0 2rem;
-    }
-
-    .provider-map-locations-list {
-        width: 45%;
-    }
-
-    .provider-map {
-        width: 50%;
-    }
-}
-
-@media (min-width: 1024px) {
+  }
+  
+  /* Desktop styling */
+  @media (min-width: 1024px) {
     .provider-list {
-        width: 75%;
+      width: 75%;
     }
-
+  
     .provider-card {
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: center;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      text-align: left;
     }
-
+  
     .provider-title-and-address {
-        margin-bottom: 0;
+      margin-bottom: 0;
     }
-}
+  }
+  
+  /* Tablet */
+  @media (min-width: 768px) {
+    .provider-map-locations {
+      flex-direction: row;
+      padding: 0 2rem;
+    }
+  
+    .provider-map-locations-list,
+    .provider-map {
+      width: 45%;
+    }
+  }
+  
+  /* Mobile View */
+  @media (max-width: 767px) {
+    .provider-map-searchbar {
+      padding: 0 1rem;
+    }
+  
+    .provider-map-locations {
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      padding: 0 1rem;
+      box-sizing: border-box;
+    }
+  
+    .provider-map-locations-list,
+    .provider-map {
+      width: 100%;
+      max-width: 600px;
+      height: 25rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-sizing: border-box;
+    }
+  
+    .provider-card {
+      flex-direction: column;
+      align-items: center;
+      padding: 1rem;
+      margin: 0 auto;
+      text-align: center;
+    }
+  
+    .provider-title-and-address {
+      margin-bottom: 1rem;
+    }
+  
+    .provider-list-section {
+      padding: 1rem;
+    }
+  }
+  

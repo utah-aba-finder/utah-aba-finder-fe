@@ -1,8 +1,34 @@
-import React from 'react';
+import { useState } from 'react';
 import './ProvidersPage.css';
 import childrenBanner from '../Assets/children-banner.jpg';
+import ProviderModal from './ProviderModal';
 
-const mockProviders = {
+// Define TypeScript interface for provider attributes
+interface ProviderAttributes {
+  name: string;
+  website: string;
+  address: string;
+  phone: string;
+  email: string;
+  insurance: string;
+  locations_served: string;
+  cost: string;
+  ages_served: string;
+  waitlist: string;
+  telehealth_services: string;
+  spanish_speakers: string;
+}
+
+// Define TypeScript interface for the mock data
+interface MockProviders {
+  data: {
+    type: string;
+    id: number;
+    attributes: ProviderAttributes;
+  }[];
+}
+
+const mockProviders: MockProviders = {
   data: [
     {
       type: 'provider',
@@ -43,7 +69,17 @@ const mockProviders = {
   ],
 };
 
-const ProvidersPage = () => {
+const ProvidersPage: React.FC = () => {
+  const [selectedProvider, setSelectedProvider] = useState<ProviderAttributes | null>(null);
+
+  const handleCardClick = (provider: ProviderAttributes) => {
+    setSelectedProvider(provider);
+  };
+
+  const handleCloseModal = () => {
+    setSelectedProvider(null);
+  };
+
   return (
     <div className="providers-page">
       {/* Find Your Provider Section */}
@@ -53,7 +89,6 @@ const ProvidersPage = () => {
 
       {/* Provider Map Search Section */}
       <section className="provider-map-search-section">
-
         <div className="provider-map-searchbar">
           <input type="text" placeholder="Search for a provider..." />
           <button className="provider-search-button">Search</button>
@@ -69,13 +104,16 @@ const ProvidersPage = () => {
             <p>Map Placeholder</p>
           </div>
         </div>
-
       </section>
 
       <section className="provider-list-section">
         <div className="provider-list">
           {mockProviders.data.map((provider) => (
-            <div key={provider.id} className="provider-card">
+            <div
+              key={provider.id}
+              className="provider-card"
+              onClick={() => handleCardClick(provider.attributes)}
+            >
               <div className="provider-title-and-address">
                 <h3>{provider.attributes.name}</h3>
                 <p><strong>Address:</strong> {provider.attributes.address || 'N/A'}</p>
@@ -86,7 +124,12 @@ const ProvidersPage = () => {
           ))}
         </div>
       </section>
-    </div >
+
+      {/* Render modal if a provider is selected */}
+      {selectedProvider && (
+        <ProviderModal provider={selectedProvider} onClose={handleCloseModal} />
+      )}
+    </div>
   );
 };
 
