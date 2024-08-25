@@ -25,6 +25,7 @@ const Header: React.FC = () => {
                 <Link to="/providers" onClick={toggleMenu}>Find Providers</Link>
                 <Link to="/screening" onClick={toggleMenu}>Screening Tools</Link>
                 <Link to="/information" onClick={toggleMenu}>Information</Link>
+                <Link to="/providerLogin" onClick={toggleMenu}>Provider Login</Link>
             </div>
         </div>
     );

@@ -2,7 +2,7 @@ import './App.css';
 import { Routes, Route } from 'react-router-dom';
 import Homepage from '../Homepage/Homepage';
 import InformationPage from '../Information-page/InformationPage';
-import LoginPage from '../Login-page/LoginPage';
+import {LoginPage} from '../Provider-login/LoginPage';
 import ProvidersPage from '../Providers-page/ProvidersPage';
 import { ScreeningPage } from '../Screening-page/ScreeningPage';
 import { Screening2 } from '../Screening2/Screening2';
@@ -21,6 +21,7 @@ function App() {
           <Route path='/screening' element={<ScreeningPage />} />
           <Route path='/login' element={<LoginPage />} />
           <Route path='/screening/cast' element={<Screening2 />} />
+          <Route path='/providerLogin' element={<LoginPage />} />
           <Route path='*' element={<div>404: Page Not Found.</div>} />
         </Routes>
       </header>
