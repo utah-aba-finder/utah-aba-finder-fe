@@ -80,12 +80,11 @@ const ProvidersPage: React.FC = () => {
 
   return (
     <div className="providers-page">
-      {/* Find Your Provider Section */}
       <section className="find-your-provider-section">
         <img src={childrenBanner} alt="Find Your Provider" className="banner-image" />
+        <h1 className='providers-banner-title'>Find Your Provider</h1>
       </section>
 
-      {/* Provider Map Search Section */}
       <section className="provider-map-search-section">
         <div className="provider-map-searchbar">
           <input type="text" placeholder="Search for a provider..." />
@@ -143,7 +142,6 @@ const ProvidersPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Render modal if a provider is selected */}
       {selectedProvider && (
         <ProviderModal provider={selectedProvider} onClose={handleCloseModal} />
       )}
