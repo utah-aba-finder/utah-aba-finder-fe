@@ -11,7 +11,7 @@ export default class Footer extends Component<Props, State> {
     render() {
         return (
             <div className='footer-container'>
-                © 2024 Utah ABA Finder. All Rights Reserved.
+                © 2024 Utah ABA Locator. All Rights Reserved.
             </div>
         )
     }
