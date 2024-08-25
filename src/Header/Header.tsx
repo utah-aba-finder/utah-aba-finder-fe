@@ -1,21 +1,33 @@
-import React, { Component } from 'react'
-import Logo from '../Assets/NewLogo3.png'
-import Menu from '../Assets/menu-icon2.png'
-import "./Header.css"
+import React from 'react';
+import { Link } from 'react-router-dom';
+import Logo from '../Assets/NewLogo3.png';
+import Menu from '../Assets/menu.png';
+import Close from '../Assets/close.png';
+import "./Header.css";
 
-type Props = {}
+const Header: React.FC = () => {
+    const [menuOpen, setMenuOpen] = React.useState<boolean>(false);
 
-type State = {}
+    const toggleMenu = () => {
+        setMenuOpen(prevMenuOpen => !prevMenuOpen);
+    };
 
-export default class Header extends Component<Props, State> {
-    state = {}
-
-    render() {
-        return (
-            <div className='Header'>
-                <img src={Logo} alt="main-logo" className="main-logo" />
-                <img src={Menu} alt="menu" className="menu" />
+    return (
+        <div className='Header'>
+            <Link to="/"><img src={Logo} alt="main-logo" className="main-logo" /></Link>
+            <img
+                src={menuOpen ? Close : Menu}
+                className={`menu ${menuOpen ? 'open' : ''}`}
+                onClick={toggleMenu}
+            />
+            <div className={`menu-content ${menuOpen ? 'open' : ''}`}>
+                <Link to="/" onClick={toggleMenu}>Home</Link>
+                <Link to="/providers" onClick={toggleMenu}>Find Providers</Link>
+                <Link to="/screening" onClick={toggleMenu}>Screening Tools</Link>
+                <Link to="/information" onClick={toggleMenu}>Information</Link>
             </div>
-        )
-    }
+        </div>
+    );
 }
+
+export default Header;
