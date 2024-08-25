@@ -97,68 +97,48 @@
     background-color: green;
 }
 
-@media(max-width:540px) {
+@media (max-width: 540px) {
     .ScreeningContainer {
-        display: flex;
-        width: 100%;
-        height: 100%;
-        justify-content: space-evenly;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 10px;
+        padding: 0;
     }
 
-    .ScreeningMessage {
-        width: 30%;
-        background-color: pink;
-        border-radius: .5rem;
-        padding: 20px;
-        font-size: 0.7rem;
-        text-align: left;
-        color: rgb(64, 64, 64);
+    .BorderDiv {
+        width: 90%;
+        height: 5px;
+        margin-top: 15px;
     }
 
     .ScreeningButtons {
-        display: flex;
+        width: 50%;
+    }
+
+    .ScreeningMessage {
+        width: 80%;
+    }
+}
+
+@media (max-width: 932px) and (orientation: landscape){
+    .ScreeningContainer {
         flex-direction: column;
-        justify-content: start;
-        text-align: start;
+        align-items: center;
+        margin-top: 10px;
+        padding: 0;
     }
 
-    .ScreeningButton1 {
-        height: 10%;
-        background-color: #ea4f08;
-        color: white;
-        padding: 15px 32px;
-        text-align: center;
-        text-decoration: none;
-        font-size: 12px;
-        margin: 4px 2px;
-        align-content: center;
-        cursor: pointer;
-        border-radius: .5rem;
+    .BorderDiv {
+        width: 90%;
+        height: 5px;
+        margin-top: 15px;
     }
 
-    .ScreeningButton2 {
-        height: 10%;
-        background-color: #7146c6;
-        color: white;
-        padding: 15px 32px;
-        text-align: center;
-        text-decoration: none;
-        font-size: 12px;
-        align-content: center;
-        margin: 4px 2px;
-        cursor: pointer;
-        border-radius: .5rem;
+    .ScreeningButtons {
+        width: 50%;
     }
 
-    .toolsText {
-        font-size: 1.5rem;
-    }
-
-    .buttonText {
-        font-size: 1rem;
-    }
-
-    .keepInMind {
-        font-size: 1rem;
+    .ScreeningMessage {
+        width: 80%;
     }
 }

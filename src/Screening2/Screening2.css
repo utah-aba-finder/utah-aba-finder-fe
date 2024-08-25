@@ -105,3 +105,47 @@
     z-index: 100;
     width: 30%;
 }
+
+@media (max-width: 540px) {
+    @media (max-width: 540px) {
+        .castWrapper {
+            display: flex;
+            width: 100%;
+            justify-content: center;
+            align-items: center;
+            align-content: center;
+        }
+        .castTextContainer {
+            width: 100%;
+            text-align: center;
+        }
+        .castQuestion {
+            width: 90%;
+        }
+        .castTestContainer {
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            display: flex;
+        }
+        .scoreWrapper {
+            display: flex;
+            width: 100%;
+        }
+        .scoreContainer {
+            width: 80%;
+        }
+    
+        .castLabel {
+            width: 100%;
+        }
+    
+        .castQuestionNumber {
+            width: 10%;
+        }
+    
+        .paragraphContainer {
+            width: 90%;
+        }
+    }
+}    
