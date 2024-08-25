@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import Logo from '../Assets/NewLogo3.png';
 import Menu from '../Assets/menu.png';
-import Close from '../Assets/close.png';
+import Close from '../Assets/close.png'
 import "./Header.css";
 
 const Header: React.FC = () => {
