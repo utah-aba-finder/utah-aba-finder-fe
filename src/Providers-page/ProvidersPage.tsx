@@ -3,7 +3,6 @@ import './ProvidersPage.css';
 import childrenBanner from '../Assets/children-banner.jpg';
 import ProviderModal from './ProviderModal';
 
-// Define TypeScript interface for provider attributes
 interface ProviderAttributes {
   name: string;
   website: string;
@@ -19,7 +18,6 @@ interface ProviderAttributes {
   spanish_speakers: string;
 }
 
-// Define TypeScript interface for the mock data
 interface MockProviders {
   data: {
     type: string;

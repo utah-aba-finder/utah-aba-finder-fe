@@ -25,8 +25,6 @@ function App() {
         </Routes>
       </header>
       <Footer />
-      <ProvidersPage />
-      <Footer />
     </div>
   );
 }
