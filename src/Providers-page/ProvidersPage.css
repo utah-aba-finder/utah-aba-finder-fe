@@ -6,14 +6,28 @@
 }
 
 .find-your-provider-section {
+    position: relative;
     width: 100%;
 }
 
 .banner-image {
     width: 100%;
-    height: auto;
-    max-height: 60vh;
+    height: 30vh;
     object-fit: cover;
+}
+
+.providers-banner-title {
+    position: absolute;
+    top: 40%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 2.5rem;
+    text-align: center;
+    background-color: rgba(0, 0, 0, 0.5);
+    padding: 1rem;
+    border-radius: 10px;
+    z-index: 10;
 }
 
 .provider-map-search-section {
@@ -199,6 +213,10 @@
 @media (max-width: 767px) {
     .provider-map-searchbar {
         padding: 0 1rem;
+    }
+
+    .providers-banner-title {
+        font-size: 1.2rem;
     }
 
     .provider-map-locations {

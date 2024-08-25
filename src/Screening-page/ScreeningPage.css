@@ -20,7 +20,7 @@
     position: relative;
     width: fit-content;
     color: white;
-    padding: 5px;
+    padding: 1rem;
     font-size: 3em;
     border-radius: .5rem;
     background-color: rgba(0, 0, 0, 0.5);
@@ -117,10 +117,29 @@
 
     .ScreeningMessage {
         width: 80%;
+        font-size: 1rem;
     }
+
+    .keepInMind {
+        font-size: 1.1rem;
+    }
+
+    .toolsText {
+        font-size: 1.2rem;
+    }
+
+    .buttonText {
+        font-size: 1.2rem;
+    }
+
+    .ScreeningButton1,
+    .ScreeningButton2 {
+        font-size: 0.9rem;
+    }
+
 }
 
-@media (max-width: 932px) and (orientation: landscape){
+@media (max-width: 932px) and (orientation: landscape) {
     .ScreeningContainer {
         flex-direction: column;
         align-items: center;
