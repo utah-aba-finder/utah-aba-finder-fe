@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import './ProvidersPage.css';
 import childrenBanner from '../Assets/children-banner.jpg';
 import ProviderModal from './ProviderModal';
+import SearchBar from './SearchBar';
+import GoogleMap from './GoogleMap';
 
 interface ProviderAttributes {
   name: string;
@@ -38,7 +40,7 @@ const mockProviders: MockProviders = {
         phone: '(123) 456-7890',
         email: 'info@bridgecareaba.com',
         insurance: 'All insurances besides Tricare',
-        locations_served: 'Salt Lake, Utah, Davis, and Weber counties',
+        locations_served: 'Salt Lake, Utah, Davis, and Weber',
         cost: 'N/A',
         ages_served: '2-16 years',
         waitlist: 'None',
@@ -51,16 +53,34 @@ const mockProviders: MockProviders = {
       id: 2,
       attributes: {
         name: 'Above & Beyond Therapy',
-        website: 'https://www.ababpa.com/',
-        address: '55 East Road Place',
+        website: 'https://www.abtaba.com/locations/aba-therapy-in-utah',
+        address: '311 Boulevard of The Americas, Suite 304 Lakewood, NJ 08701',
         phone: '(801) 610-2400',
         email: 'info@ababpa.com',
         insurance: 'Medicaid, DMBA, EMI Health, University of Utah Healthcare, Blue Cross Blue Shield',
-        locations_served: 'Utah County, Salt Lake County, Davis County, Logan to Spanish Fork, and Tooele',
+        locations_served: 'Utah, Salt Lake, Davis, and Tooele',
         cost: 'Out-of-Network and single-case agreements',
         ages_served: '2-21',
         waitlist: 'No waitlist',
         telehealth_services: 'Yes, if necessary',
+        spanish_speakers: 'Yes',
+      },
+    },
+    {
+      type: 'provider',
+      id: 3,
+      attributes: {
+        name: 'Autism Specialists',
+        website: 'https://www.bridgecareaba.com/locations/utah',
+        address: '1234 West Road Drive',
+        phone: '(123) 456-7890',
+        email: 'info@bridgecareaba.com',
+        insurance: 'All insurances besides Tricare',
+        locations_served: 'Iron, Wayne, and Sanpete',
+        cost: 'N/A',
+        ages_served: '2-16 years',
+        waitlist: 'None',
+        telehealth_services: 'Yes',
         spanish_speakers: 'Yes',
       },
     },
@@ -69,8 +89,15 @@ const mockProviders: MockProviders = {
 
 const ProvidersPage: React.FC = () => {
   const [selectedProvider, setSelectedProvider] = useState<ProviderAttributes | null>(null);
+  const [filteredProviders, setFilteredProviders] = useState<ProviderAttributes[]>([]); 
+  const [selectedCounty, setSelectedCounty] = useState<string>('');
+  const [mapAddress, setMapAddress] = useState<string>('Utah'); 
 
   const handleCardClick = (provider: ProviderAttributes) => {
+    setMapAddress(provider.address); // Update map address
+  };
+
+  const handleProviderCardClick = (provider: ProviderAttributes) => {
     setSelectedProvider(provider);
   };
 
@@ -78,48 +105,58 @@ const ProvidersPage: React.FC = () => {
     setSelectedProvider(null);
   };
 
+  const handleSearch = (query: string) => {
+    const normalizedCounty = selectedCounty.replace(/-/g, ' ').toLowerCase();
+
+    const filtered = mockProviders.data
+      .map(p => p.attributes)
+      .filter(provider => 
+        provider.name.toLowerCase().includes(query.toLowerCase()) && 
+        provider.locations_served.toLowerCase().includes(normalizedCounty)
+      );
+
+    setFilteredProviders(filtered);
+
+    if (filtered.length > 0) {
+      setMapAddress(filtered[0].address);
+    } else {
+      setMapAddress('Utah'); 
+    }
+  };
+
+  const handleCountyChange = (county: string) => {
+    setSelectedCounty(county);
+  };
+
   return (
     <div className="providers-page">
       <section className="find-your-provider-section">
         <img src={childrenBanner} alt="Find Your Provider" className="banner-image" />
-        <h1 className='providers-banner-title'>Find Your Provider</h1>
+        <h1 className="providers-banner-title">Find Your Provider</h1>
       </section>
 
-      <section className="provider-map-search-section">
-        <div className="provider-map-searchbar">
-          <input type="text" placeholder="Search for a provider..." />
-          <button className="provider-search-button">Search</button>
-          <div className="provider-county-dropdown">
-            <select className="provider-county-select" defaultValue="">
-              <option value="" disabled>Select a county</option>
-              <option value="salt-lake">Salt Lake County</option>
-              <option value="utah">Utah County</option>
-              <option value="davis">Davis County</option>
-              <option value="weber">Weber County</option>
-              <option value="iron">Iron County</option>
-              <option value="cache">Cache County</option>
-              <option value="box-elder">Box Elder County</option>
-              <option value="washington">Washington County</option>
-              <option value="morgan">Morgan County</option>
-              <option value="summit">Summit County</option>
-              <option value="tooele">Tooele County</option>
-              <option value="duchesne">Duchesne County</option>
-              <option value="uintah">Uintah County</option>
-              <option value="sanpete">Sanpete County</option>
-              <option value="wayne">Wayne County</option>
-            </select>
-            <span className="dropdown-arrow">&#9660;</span>
-          </div>
-        </div>
+      <SearchBar onSearch={handleSearch} onCountyChange={handleCountyChange} />
 
-        <div className="provider-map-locations">
-          <div className="provider-map-locations-list">
-            <p>Provider Map List Placeholder</p>
-          </div>
-          <div className="provider-map">
-            {/* Google Map will be integrated here */}
-            <p>Map Placeholder</p>
-          </div>
+      <section className="searched-provider-map-locations">
+        <div className="searched-provider-map-locations-list">
+          {filteredProviders.length > 0 ? (
+            filteredProviders.map((provider, index) => (
+              <div
+                key={index}
+                className="searched-provider-card"
+                onClick={() => handleCardClick(provider)}
+              >
+                <h3>{provider.name}</h3>
+                <p><strong>Address:</strong> {provider.address || 'N/A'}</p>
+                <p><strong>Phone:</strong> {provider.phone || 'N/A'}</p>
+              </div>
+            ))
+          ) : (
+            <p>Search to find provider locations on the map.</p> 
+          )}
+        </div>
+        <div className="provider-map">
+          <GoogleMap address={mapAddress} />
         </div>
       </section>
 
@@ -129,22 +166,26 @@ const ProvidersPage: React.FC = () => {
             <div
               key={provider.id}
               className="provider-card"
-              onClick={() => handleCardClick(provider.attributes)}
+              onClick={() => handleProviderCardClick(provider.attributes)}
             >
               <div className="provider-title-and-address">
                 <h3>{provider.attributes.name}</h3>
-                <p><strong>Address:</strong> {provider.attributes.address || 'N/A'}</p>
+                <p>
+                  <strong>Address:</strong> {provider.attributes.address || 'N/A'}
+                </p>
               </div>
-              <p><strong>Phone:</strong> {provider.attributes.phone || 'N/A'}</p>
-              <p><strong>Spanish speaking?</strong> {provider.attributes.spanish_speakers}</p>
+              <p>
+                <strong>Phone:</strong> {provider.attributes.phone || 'N/A'}
+              </p>
+              <p>
+                <strong>Spanish speaking?</strong> {provider.attributes.spanish_speakers}
+              </p>
             </div>
           ))}
         </div>
       </section>
 
-      {selectedProvider && (
-        <ProviderModal provider={selectedProvider} onClose={handleCloseModal} />
-      )}
+      {selectedProvider && <ProviderModal provider={selectedProvider} onClose={handleCloseModal} />}
     </div>
   );
 };
