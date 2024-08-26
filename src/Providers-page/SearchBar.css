@@ -1,0 +1,150 @@
+.input-error {
+    border: 2px solid red;
+}
+
+.error-message {
+    color: red;
+    font-size: 0.875em;
+    margin-top: 4px;
+}
+
+.input-container {
+    position: relative;
+}
+
+.provider-map-search-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.provider-map-searchbar {
+    display: flex;
+    gap: 0.5rem;
+    padding: 1rem;
+    width: 100%;
+    max-width: 600px;
+    justify-content: center;
+    background-color: #f0f0f0;
+    border-radius: 0.5rem;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.provider-map-searchbar input[type="text"],
+.provider-search-button,
+.provider-county-dropdown-button {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 0.25rem;
+    background-color: #555555;
+    color: #ffffff;
+    font-size: 1rem;
+    cursor: pointer;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s, transform 0.3s;
+}
+
+.provider-map-searchbar input[type="text"]::placeholder {
+    color: #ffffff;
+}
+
+.provider-map-searchbar input[type="text"]:hover,
+.provider-search-button:hover,
+.provider-county-dropdown-button:hover {
+    background-color: #444444;
+    transform: translateY(-2px);
+}
+
+.provider-map-searchbar input[type="text"]:focus,
+.provider-search-button:focus,
+.provider-county-dropdown-button:focus {
+    outline: 2px solid #333;
+}
+
+.provider-county-dropdown {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.provider-county-select {
+    padding: 0.5rem 1rem; /* Adjust padding to accommodate arrow */
+    margin-right: 2px; /* Adjust margin to shift the dropdown to the right */
+    border: none;
+    border-radius: 0.25rem;
+    background-color: #555555;
+    color: #ffffff;
+    font-size: 1rem;
+    outline: none;
+    appearance: none; /* Hide default arrow */
+    width: 100%; /* Ensure the select element takes full width */
+    box-sizing: border-box; /* Make sure padding and border are included in element's width and height */
+}
+
+.dropdown-arrow {
+    position: absolute;
+    right: 1rem; /* Adjust position for better alignment */
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1rem;
+    color: #ffffff;
+    pointer-events: none; /* Prevent the arrow from blocking clicks */
+}
+
+.provider-county-dropdown::after {
+    content: "\25BC"; /* Unicode for downward arrow */
+    position: absolute;
+    right: 1rem; /* Adjust the positioning */
+    top: 50%;
+    transform: translateY(-50%);
+    color: #ffffff;
+    pointer-events: none;
+    font-size: 1rem;
+}
+
+.searched-provider-map-locations {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    width: 100%;
+    height: 25rem;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.searched-provider-card {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #ccc;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    width: 100%;
+    max-width: 800px;
+    box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box;
+    transition: transform 0.3s, box-shadow 0.3s;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.searched-provider-map-locations-list,
+.provider-map {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 50%;
+    border: 2px solid #ccc;
+    color: #666;
+    height: 100%;
+    box-sizing: border-box;
+}
+
+.provider-map-locations-list {
+    height: 25rem;
+}
+
+.provider-map {
+    height: 25rem;
+}
