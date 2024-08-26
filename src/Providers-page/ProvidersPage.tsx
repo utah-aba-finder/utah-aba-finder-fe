@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './ProvidersPage.css';
 import childrenBanner from '../Assets/children-banner.jpg';
 import ProviderModal from './ProviderModal';
@@ -89,16 +89,23 @@ const mockProviders: MockProviders = {
 
 const ProvidersPage: React.FC = () => {
   const [selectedProvider, setSelectedProvider] = useState<ProviderAttributes | null>(null);
-  const [filteredProviders, setFilteredProviders] = useState<ProviderAttributes[]>([]); 
+  const [allProviders, setAllProviders] = useState<ProviderAttributes[]>([]);
+  const [filteredProviders, setFilteredProviders] = useState<ProviderAttributes[]>([]);
   const [selectedCounty, setSelectedCounty] = useState<string>('');
-  const [mapAddress, setMapAddress] = useState<string>('Utah'); 
+  const [mapAddress, setMapAddress] = useState<string>('Utah');
 
-  const handleCardClick = (provider: ProviderAttributes) => {
-    setMapAddress(provider.address); // Update map address
-  };
+  useEffect(() => {
+    const providersList = mockProviders.data.map(p => p.attributes);
+    setAllProviders(providersList);
+    setFilteredProviders(providersList);
+  }, []);
 
   const handleProviderCardClick = (provider: ProviderAttributes) => {
     setSelectedProvider(provider);
+  };
+
+  const handleViewOnMapClick = (address: string) => {
+    setMapAddress(address);
   };
 
   const handleCloseModal = () => {
@@ -108,19 +115,17 @@ const ProvidersPage: React.FC = () => {
   const handleSearch = (query: string) => {
     const normalizedCounty = selectedCounty.replace(/-/g, ' ').toLowerCase();
 
-    const filtered = mockProviders.data
-      .map(p => p.attributes)
-      .filter(provider => 
-        provider.name.toLowerCase().includes(query.toLowerCase()) && 
-        provider.locations_served.toLowerCase().includes(normalizedCounty)
-      );
+    const filtered = allProviders.filter(provider =>
+      provider.name.toLowerCase().includes(query.toLowerCase()) &&
+      provider.locations_served.toLowerCase().includes(normalizedCounty)
+    );
 
     setFilteredProviders(filtered);
 
     if (filtered.length > 0) {
       setMapAddress(filtered[0].address);
     } else {
-      setMapAddress('Utah'); 
+      setMapAddress('Utah');
     }
   };
 
@@ -137,52 +142,42 @@ const ProvidersPage: React.FC = () => {
 
       <SearchBar onSearch={handleSearch} onCountyChange={handleCountyChange} />
 
-      <section className="searched-provider-map-locations">
-        <div className="searched-provider-map-locations-list">
-          {filteredProviders.length > 0 ? (
-            filteredProviders.map((provider, index) => (
-              <div
-                key={index}
-                className="searched-provider-card"
-                onClick={() => handleCardClick(provider)}
-              >
-                <h3>{provider.name}</h3>
-                <p><strong>Address:</strong> {provider.address || 'N/A'}</p>
-                <p><strong>Phone:</strong> {provider.phone || 'N/A'}</p>
-              </div>
-            ))
-          ) : (
-            <p>Search to find provider locations on the map.</p> 
-          )}
-        </div>
-        <div className="provider-map">
+      <section className="google-map-section">
+       
           <GoogleMap address={mapAddress} />
-        </div>
+      
       </section>
 
       <section className="provider-list-section">
-        <div className="provider-list">
-          {mockProviders.data.map((provider) => (
-            <div
-              key={provider.id}
-              className="provider-card"
-              onClick={() => handleProviderCardClick(provider.attributes)}
-            >
-              <div className="provider-title-and-address">
-                <h3>{provider.attributes.name}</h3>
-                <p>
-                  <strong>Address:</strong> {provider.attributes.address || 'N/A'}
-                </p>
-              </div>
-              <p>
-                <strong>Phone:</strong> {provider.attributes.phone || 'N/A'}
-              </p>
-              <p>
-                <strong>Spanish speaking?</strong> {provider.attributes.spanish_speakers}
-              </p>
-            </div>
-          ))}
-        </div>
+        
+          <div className="searched-provider-map-locations-list">
+            {filteredProviders.length > 0 ? (
+              filteredProviders.map((provider, index) => (
+                <div key={index} className="searched-provider-card">
+                  <h3>{provider.name}</h3>
+                  <p><strong>Address:</strong> {provider.address || 'N/A'}</p>
+                  <p><strong>Phone:</strong> {provider.phone || 'N/A'}</p>
+                  <div className="provider-card-buttons">
+                    <button
+                      className="view-details-button"
+                      onClick={() => handleProviderCardClick(provider)}
+                    >
+                      View Details
+                    </button>
+                    <button
+                      className="view-on-map-button"
+                      onClick={() => handleViewOnMapClick(provider.address)}
+                    >
+                      View on Map
+                    </button>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p>No providers found matching your search criteria.</p>
+            )}
+          </div>
+       
       </section>
 
       {selectedProvider && <ProviderModal provider={selectedProvider} onClose={handleCloseModal} />}
