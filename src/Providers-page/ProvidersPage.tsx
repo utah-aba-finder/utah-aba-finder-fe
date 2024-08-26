@@ -94,6 +94,10 @@ const ProvidersPage: React.FC = () => {
   const [mapAddress, setMapAddress] = useState<string>('Utah'); 
 
   const handleCardClick = (provider: ProviderAttributes) => {
+    setMapAddress(provider.address); // Update map address
+  };
+
+  const handleProviderCardClick = (provider: ProviderAttributes) => {
     setSelectedProvider(provider);
   };
 
@@ -102,24 +106,23 @@ const ProvidersPage: React.FC = () => {
   };
 
   const handleSearch = (query: string) => {
-  const normalizedCounty = selectedCounty.replace(/-/g, ' ').toLowerCase();
+    const normalizedCounty = selectedCounty.replace(/-/g, ' ').toLowerCase();
 
-  const filtered = mockProviders.data
-    .map(p => p.attributes)
-    .filter(provider => 
-      provider.name.toLowerCase().includes(query.toLowerCase()) && 
-      provider.locations_served.toLowerCase().includes(normalizedCounty)
-    );
+    const filtered = mockProviders.data
+      .map(p => p.attributes)
+      .filter(provider => 
+        provider.name.toLowerCase().includes(query.toLowerCase()) && 
+        provider.locations_served.toLowerCase().includes(normalizedCounty)
+      );
 
-  setFilteredProviders(filtered);
+    setFilteredProviders(filtered);
 
-
-  if (filtered.length > 0) {
-    setMapAddress(filtered[0].address);
-  } else {
-    setMapAddress('Utah'); 
-  }
-};
+    if (filtered.length > 0) {
+      setMapAddress(filtered[0].address);
+    } else {
+      setMapAddress('Utah'); 
+    }
+  };
 
   const handleCountyChange = (county: string) => {
     setSelectedCounty(county);
@@ -138,7 +141,11 @@ const ProvidersPage: React.FC = () => {
         <div className="searched-provider-map-locations-list">
           {filteredProviders.length > 0 ? (
             filteredProviders.map((provider, index) => (
-              <div key={index} className="searched-provider-card">
+              <div
+                key={index}
+                className="searched-provider-card"
+                onClick={() => handleCardClick(provider)}
+              >
                 <h3>{provider.name}</h3>
                 <p><strong>Address:</strong> {provider.address || 'N/A'}</p>
                 <p><strong>Phone:</strong> {provider.phone || 'N/A'}</p>
@@ -159,7 +166,7 @@ const ProvidersPage: React.FC = () => {
             <div
               key={provider.id}
               className="provider-card"
-              onClick={() => handleCardClick(provider.attributes)}
+              onClick={() => handleProviderCardClick(provider.attributes)}
             >
               <div className="provider-title-and-address">
                 <h3>{provider.attributes.name}</h3>
