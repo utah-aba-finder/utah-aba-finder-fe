@@ -39,6 +39,7 @@
     gap: 1rem;
     opacity: 0;
     z-index: 10;
+    pointer-events: none;
 }
 
 .menu-content a {
@@ -56,6 +57,7 @@
     transform: translateX(0);
     opacity: 1;
     visibility: visible;
+    pointer-events: auto;
 }
 
 @media (max-width: 480px) {
