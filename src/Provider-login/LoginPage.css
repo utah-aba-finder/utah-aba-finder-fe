@@ -42,6 +42,13 @@
     display: flex;
     flex-direction: column;
     width: fit-content;
+    align-items: center;
+}
+
+.email,
+.password,
+.username {
+    font-size: 30px;
 }
 
 .input {
@@ -50,7 +57,9 @@
     justify-content: space-between; 
     margin: 10px;
     height: 80px;
+    width: 80%;
     position: relative;
+    text-wrap: nowrap;
 }
 
 .userIcon,
@@ -61,15 +70,15 @@
 }
 
 .userIcon {
-    left: 17.5rem;
+    left: 21.5rem;
 }
 
 .lockIcon {
-    left: 11rem;
+    left: 8.5rem;
 }
 
 .mailIcon {
-    left: 6.5rem;
+    left: 5.5rem;
 }
 
 .eyeButton {
@@ -85,13 +94,15 @@
 
 .eye {
     position: absolute;
-    right: -1;
+    margin: 5px;
+    right: 0;
+    bottom: -1.5rem;
     cursor: pointer;
     color: white;
 }
 
 .input input {
-    width: calc(100% - 60px); 
+    width: calc(100% - 90px); 
     height: 50%;
     background-color: transparent;
     border: none;
@@ -101,3 +112,28 @@
     padding-left: 50px;
 }
 
+.loginButton {
+    background-color: rgb(251, 99, 57);
+    color: white;
+    font-size: 1.5rem;
+    padding: 1rem;
+    border-radius: 10px;
+    cursor: pointer;
+    margin-top: 1rem;
+}
+
+.forgot-password {
+    color: white;
+    font-size: 1.5rem;
+    margin-top: 1rem;
+}
+
+.forgot-password span {
+    color: rgb(251, 99, 57);
+    cursor: pointer;
+}
+
+.loginButton:hover {
+    background-color: rgb(255, 255, 255);
+    color: rgb(251, 99, 57);
+}

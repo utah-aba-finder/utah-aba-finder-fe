@@ -13,21 +13,21 @@ export const LoginPage: React.FC = () => {
         return (
             <div className='loginWrapper'>
                 <div className='loginContainer'>
-                    <img src={notes} alt='notepad' className='loginImage' />
                     <h1 className='loginImageText'>Provider Sign Up</h1>
+                    <img src={notes} alt='notepad' className='loginImage' />
                     <form className='loginForm'>
                         <div className='input'>
-                            <label htmlFor='username'>Provider Name (business):</label>
+                            <label className='username' htmlFor='username'>Provider Name (business):</label>
                             <User className='userIcon'/>
                             <input type='text' id='username' name='username' required />
                         </div>
                         <div className='input'> 
-                            <label htmlFor='email'>Email:</label>
+                            <label className='email' htmlFor='email'>Email:</label>
                             <Mail className='mailIcon'/>
                             <input type='email' id='email' name='email' required />
                         </div>
                         <div className='input'>
-                            <label htmlFor='password'>Password:</label>
+                            <label className='password' htmlFor='password'>Password:</label>
                             <Lock className='lockIcon'/>
                             <input type={showPassword ? 'text' : 'password'} id='password' name='password' required />
                             <button className='eyeButton'type='button' onClick={handleShowPassword}>

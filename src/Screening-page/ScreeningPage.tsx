@@ -24,7 +24,7 @@ export const ScreeningPage: React.FC = () => {
                 <div className='BorderDiv'></div>
                 <div className='ScreeningButtons'>
                     <h3 className='buttonText'>For Children 3 and Under:</h3>
-                    <a href='https://www.mchatscreen.com/wp-content/uploads/2015/09/M-CHAT-R_F_Rev_Aug2018.pdf' aria-label='m-cat test button' className='ScreeningButton1'>TAKE THE M-CHAT</a>
+                    <a href='https://www.mchatscreen.com/' aria-label='m-cat test button' className='ScreeningButton1'>TAKE THE M-CHAT</a>
                     <h3 className='buttonText'>For Children 4 and Up:</h3>
                     <Link to='/screening/cast' aria-label='cast test button' className='ScreeningButton2'>TAKE THE CAST</Link>
                 </div>
