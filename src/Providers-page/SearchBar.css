@@ -70,33 +70,33 @@
 }
 
 .provider-county-select {
-    padding: 0.5rem 1rem; /* Adjust padding to accommodate arrow */
-    margin-right: 2px; /* Adjust margin to shift the dropdown to the right */
+    padding: 0.5rem 1rem; 
+    margin-right: 2px; 
     border: none;
     border-radius: 0.25rem;
     background-color: #555555;
     color: #ffffff;
     font-size: 1rem;
     outline: none;
-    appearance: none; /* Hide default arrow */
-    width: 100%; /* Ensure the select element takes full width */
-    box-sizing: border-box; /* Make sure padding and border are included in element's width and height */
+    appearance: none; 
+    width: 100%;
+    box-sizing: border-box; 
 }
 
 .dropdown-arrow {
     position: absolute;
-    right: 1rem; /* Adjust position for better alignment */
+    right: 1rem; 
     top: 50%;
     transform: translateY(-50%);
     font-size: 1rem;
     color: #ffffff;
-    pointer-events: none; /* Prevent the arrow from blocking clicks */
+    pointer-events: none; 
 }
 
 .provider-county-dropdown::after {
-    content: "\25BC"; /* Unicode for downward arrow */
+    content: "\25BC"; 
     position: absolute;
-    right: 1rem; /* Adjust the positioning */
+    right: 1rem; 
     top: 50%;
     transform: translateY(-50%);
     color: #ffffff;
