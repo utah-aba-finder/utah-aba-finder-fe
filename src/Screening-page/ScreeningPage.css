@@ -45,7 +45,7 @@
 }
 
 .BorderDiv {
-    height: 50vh;
+    height: 70vh;
     width: 5px;
     background-color: gold;
 }
@@ -105,6 +105,10 @@
         padding: 0;
     }
 
+    .toolsText {
+        font-size: 2em;
+    }
+
     .BorderDiv {
         width: 90%;
         height: 5px;
@@ -145,6 +149,10 @@
         align-items: center;
         margin-top: 10px;
         padding: 0;
+    }
+
+    .toolsText {
+        font-size: 2em;
     }
 
     .BorderDiv {
