@@ -6,6 +6,7 @@ import SearchBar from './SearchBar';
 import GoogleMap from './GoogleMap';
 import { mockProviders } from './MockProviders';
 import type { ProviderAttributes } from './MockProviders';
+import klayLogo from './klay.png'; // Import the logo image
 
 const ProvidersPage: React.FC = () => {
   const [selectedProvider, setSelectedProvider] = useState<ProviderAttributes | null>(null);
@@ -15,8 +16,8 @@ const ProvidersPage: React.FC = () => {
   const [selectedInsurance, setSelectedInsurance] = useState<string>('');
   const [selectedSpanish, setSelectedSpanish] = useState<string>('');
   const [mapAddress, setMapAddress] = useState<string>('Utah');
-  const [isFiltered, setIsFiltered] = useState<boolean>(false); 
-  
+  const [isFiltered, setIsFiltered] = useState<boolean>(false);
+
   useEffect(() => {
     const providersList = mockProviders.data.map(p => p.attributes);
     setAllProviders(providersList);
@@ -48,7 +49,7 @@ const ProvidersPage: React.FC = () => {
     );
 
     setFilteredProviders(filtered);
-    setIsFiltered(true); 
+    setIsFiltered(true);
     if (filtered.length > 0) {
       setMapAddress(filtered[0].address);
     } else {
@@ -57,12 +58,12 @@ const ProvidersPage: React.FC = () => {
   };
 
   const handleResetSearch = () => {
-    setFilteredProviders(allProviders); 
+    setFilteredProviders(allProviders);
     setSelectedCounty('');
     setSelectedInsurance('');
     setSelectedSpanish('');
-    setIsFiltered(false); 
-    setMapAddress('Utah'); 
+    setIsFiltered(false);
+    setMapAddress('Utah');
   };
 
   const handleCountyChange = (county: string) => {
@@ -89,7 +90,7 @@ const ProvidersPage: React.FC = () => {
         onCountyChange={handleCountyChange}
         onInsuranceChange={handleInsuranceChange}
         onSpanishChange={handleSpanishChange}
-        onReset={handleResetSearch} 
+        onReset={handleResetSearch}
       />
 
       <section className="google-map-section">
@@ -105,12 +106,16 @@ const ProvidersPage: React.FC = () => {
           filteredProviders.map((provider, index) => (
             <div key={index} className="searched-provider-card">
               <div className="searched-provider-card-content">
-                <div className="searched-provider-card-title">
-                  <h3>{provider.name}</h3>
-                  <p><strong>Address:</strong> {provider.address || 'N/A'}</p>
-                </div>
-                <div className="searched-provider-card-info">
-                  <p><strong>Phone:</strong> {provider.phone || 'N/A'}</p>
+                <img src={klayLogo} alt="Provider Logo" className="provider-logo" />
+                <div className="title-and-info">
+                  <div className="searched-provider-card-title">
+                    <h3>{provider.name}</h3>
+                    <h4>{provider.address || 'N/A'}</h4>
+                  </div>
+                  <div className="searched-provider-card-info">
+                    <p><strong>Phone:</strong> {provider.phone || 'N/A'}</p>
+                    <p><strong>Email:</strong> {provider.email || 'N/A'}</p>
+                  </div>
                 </div>
               </div>
               <div className="provider-card-buttons">
