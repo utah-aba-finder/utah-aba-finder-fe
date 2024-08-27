@@ -32,7 +32,7 @@
 
 .loginForm {
     position: absolute;
-    bottom: 30%;
+    bottom: 40%;
     color: white;
     font-size: 2.5rem;
     text-align: center;
@@ -54,12 +54,11 @@
 .input {
     display: flex;
     align-items: center;
-    justify-content: space-between; 
+    justify-content: center; 
     margin: 10px;
-    height: 80px;
+    height: 50px;
     width: 80%;
     position: relative;
-    text-wrap: nowrap;
 }
 
 .userIcon,
@@ -69,16 +68,10 @@
     pointer-events: none; 
 }
 
-.userIcon {
-    left: 21.5rem;
-}
-
-.lockIcon {
-    left: 8.5rem;
-}
-
+.userIcon,
+.lockIcon,
 .mailIcon {
-    left: 5.5rem;
+    left: 1rem;
 }
 
 .eyeButton {
@@ -95,8 +88,8 @@
 .eye {
     position: absolute;
     margin: 5px;
-    right: 0;
-    bottom: -1.5rem;
+    right: 1rem;
+    bottom: -.5rem;
     cursor: pointer;
     color: white;
 }
@@ -112,6 +105,16 @@
     padding-left: 50px;
 }
 
+.input input::placeholder {
+    color: silver;
+}
+
+.submit-container {
+    width: 100%;
+    display: flex;
+    justify-content: space-evenly;
+}
+
 .loginButton {
     background-color: rgb(251, 99, 57);
     color: white;
@@ -120,6 +123,7 @@
     border-radius: 10px;
     cursor: pointer;
     margin-top: 1rem;
+    border: none;
 }
 
 .forgot-password {

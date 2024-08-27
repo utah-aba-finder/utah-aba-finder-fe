@@ -17,19 +17,19 @@ export const LoginPage: React.FC = () => {
                     <img src={notes} alt='notepad' className='loginImage' />
                     <form className='loginForm'>
                         <div className='input'>
-                            <label className='username' htmlFor='username'>Provider Name (business):</label>
+                            {/* <label className='username' htmlFor='username'>Provider Name :</label> */}
                             <User className='userIcon'/>
-                            <input type='text' id='username' name='username' required />
+                            <input type='text' id='username' name='username' placeholder='Provider Name'required />
                         </div>
                         <div className='input'> 
-                            <label className='email' htmlFor='email'>Email:</label>
+                            {/* <label className='email' htmlFor='email'>Email:</label> */}
                             <Mail className='mailIcon'/>
-                            <input type='email' id='email' name='email' required />
+                            <input type='email' id='email' name='email' placeholder='Email'required />
                         </div>
                         <div className='input'>
-                            <label className='password' htmlFor='password'>Password:</label>
+                            {/* <label className='password' htmlFor='password'>Password:</label> */}
                             <Lock className='lockIcon'/>
-                            <input type={showPassword ? 'text' : 'password'} id='password' name='password' required />
+                            <input type={showPassword ? 'text' : 'password'} placeholder='Password'id='password' name='password' required />
                             <button className='eyeButton'type='button' onClick={handleShowPassword}>
                                 {showPassword ? <EyeOff className='eye'/> : <Eye className='eye'/>}
                             </button>
