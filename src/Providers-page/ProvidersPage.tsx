@@ -15,8 +15,8 @@ const ProvidersPage: React.FC = () => {
   const [selectedInsurance, setSelectedInsurance] = useState<string>('');
   const [selectedSpanish, setSelectedSpanish] = useState<string>('');
   const [mapAddress, setMapAddress] = useState<string>('Utah');
-  const [isFiltered, setIsFiltered] = useState<boolean>(false); // New state for tracking if search is filtered
-
+  const [isFiltered, setIsFiltered] = useState<boolean>(false); 
+  
   useEffect(() => {
     const providersList = mockProviders.data.map(p => p.attributes);
     setAllProviders(providersList);
@@ -48,8 +48,7 @@ const ProvidersPage: React.FC = () => {
     );
 
     setFilteredProviders(filtered);
-    setIsFiltered(true); // Update state to indicate that a filter is applied
-
+    setIsFiltered(true); 
     if (filtered.length > 0) {
       setMapAddress(filtered[0].address);
     } else {
@@ -58,12 +57,12 @@ const ProvidersPage: React.FC = () => {
   };
 
   const handleResetSearch = () => {
-    setFilteredProviders(allProviders); // Reset to the full providers list
+    setFilteredProviders(allProviders); 
     setSelectedCounty('');
     setSelectedInsurance('');
     setSelectedSpanish('');
-    setIsFiltered(false); // Reset the filtered state
-    setMapAddress('Utah'); // Optionally reset the map address to the default
+    setIsFiltered(false); 
+    setMapAddress('Utah'); 
   };
 
   const handleCountyChange = (county: string) => {
@@ -90,7 +89,7 @@ const ProvidersPage: React.FC = () => {
         onCountyChange={handleCountyChange}
         onInsuranceChange={handleInsuranceChange}
         onSpanishChange={handleSpanishChange}
-        onReset={handleResetSearch} // Make sure onReset is included here
+        onReset={handleResetSearch} 
       />
 
       <section className="google-map-section">

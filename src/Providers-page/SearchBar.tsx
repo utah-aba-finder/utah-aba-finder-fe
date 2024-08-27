@@ -16,16 +16,16 @@ const SearchBar: React.FC<SearchBarProps> = ({
   onCountyChange,
   onInsuranceChange,
   onSpanishChange,
-  onReset // Add this line
+  onReset 
 }) => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedCounty, setSelectedCounty] = useState<string>('');
   const [selectedInsurance, setSelectedInsurance] = useState<string>('');
-  const [selectedSpanish, setSelectedSpanish] = useState<string>(''); // New state for Spanish
+  const [selectedSpanish, setSelectedSpanish] = useState<string>('');
   const [inputError, setInputError] = useState<boolean>(false);
   const [countyError, setCountyError] = useState<boolean>(false);
   const [insuranceError, setInsuranceError] = useState<boolean>(false);
-  const [spanishError, setSpanishError] = useState<boolean>(false); // New error state for Spanish
+  const [spanishError, setSpanishError] = useState<boolean>(false);
 
   const handleSearch = () => {
     let isValid = true;
@@ -73,7 +73,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
     setCountyError(false);
     setInsuranceError(false);
     setSpanishError(false);
-    onReset(); // Call onReset prop
+    onReset();
   };
 
   const handleCountyChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -163,11 +163,10 @@ const SearchBar: React.FC<SearchBarProps> = ({
               <option value="Insurance Company 4">Insurance Company 4</option>
               <option value="Insurance Company 5">Insurance Company 5</option>
               <option value="Insurance Company 6">Insurance Company 6</option>
-              {/* Add more insurance companies here */}
             </select>
           </div>
 
-          <div className="provider-spanish-dropdown"> {/* New Spanish dropdown */}
+          <div className="provider-spanish-dropdown"> 
             <select
               className={`provider-spanish-select ${spanishError ? 'input-error' : ''}`}
               value={selectedSpanish}
@@ -182,7 +181,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
           <button className="provider-search-button" onClick={handleSearch}>
             Search
           </button>
-          <button className="provider-reset-button" onClick={handleReset}> {/* New reset button */}
+          <button className="provider-reset-button" onClick={handleReset}> 
             Reset
           </button>
         </div>
