@@ -4,95 +4,18 @@ import childrenBanner from '../Assets/children-banner.jpg';
 import ProviderModal from './ProviderModal';
 import SearchBar from './SearchBar';
 import GoogleMap from './GoogleMap';
-
-interface ProviderAttributes {
-  name: string;
-  website: string;
-  address: string;
-  phone: string;
-  email: string;
-  insurance: string;
-  locations_served: string;
-  cost: string;
-  ages_served: string;
-  waitlist: string;
-  telehealth_services: string;
-  spanish_speakers: string;
-}
-
-interface MockProviders {
-  data: {
-    type: string;
-    id: number;
-    attributes: ProviderAttributes;
-  }[];
-}
-
-const mockProviders: MockProviders = {
-  data: [
-    {
-      type: 'provider',
-      id: 1,
-      attributes: {
-        name: 'A BridgeCare ABA',
-        website: 'https://www.bridgecareaba.com/locations/utah',
-        address: '1234 West Road Drive',
-        phone: '(123) 456-7890',
-        email: 'info@bridgecareaba.com',
-        insurance: 'All insurances besides Tricare',
-        locations_served: 'Salt Lake, Utah, Davis, and Weber',
-        cost: 'N/A',
-        ages_served: '2-16 years',
-        waitlist: 'None',
-        telehealth_services: 'Yes',
-        spanish_speakers: 'Yes',
-      },
-    },
-    {
-      type: 'provider',
-      id: 2,
-      attributes: {
-        name: 'Above & Beyond Therapy',
-        website: 'https://www.abtaba.com/locations/aba-therapy-in-utah',
-        address: '311 Boulevard of The Americas, Suite 304 Lakewood, NJ 08701',
-        phone: '(801) 610-2400',
-        email: 'info@ababpa.com',
-        insurance: 'Medicaid, DMBA, EMI Health, University of Utah Healthcare, Blue Cross Blue Shield',
-        locations_served: 'Utah, Salt Lake, Davis, and Tooele',
-        cost: 'Out-of-Network and single-case agreements',
-        ages_served: '2-21',
-        waitlist: 'No waitlist',
-        telehealth_services: 'Yes, if necessary',
-        spanish_speakers: 'Yes',
-      },
-    },
-    {
-      type: 'provider',
-      id: 3,
-      attributes: {
-        name: 'Autism Specialists',
-        website: 'https://www.bridgecareaba.com/locations/utah',
-        address: '1234 West Road Drive',
-        phone: '(123) 456-7890',
-        email: 'info@bridgecareaba.com',
-        insurance: 'All insurances besides Tricare',
-        locations_served: 'Iron, Wayne, and Sanpete',
-        cost: 'N/A',
-        ages_served: '2-16 years',
-        waitlist: 'None',
-        telehealth_services: 'Yes',
-        spanish_speakers: 'Yes',
-      },
-    },
-  ],
-};
+import { mockProviders } from './MockProviders';
+import type { ProviderAttributes } from './MockProviders';
 
 const ProvidersPage: React.FC = () => {
   const [selectedProvider, setSelectedProvider] = useState<ProviderAttributes | null>(null);
   const [allProviders, setAllProviders] = useState<ProviderAttributes[]>([]);
   const [filteredProviders, setFilteredProviders] = useState<ProviderAttributes[]>([]);
   const [selectedCounty, setSelectedCounty] = useState<string>('');
+  const [selectedInsurance, setSelectedInsurance] = useState<string>('');
+  const [selectedSpanish, setSelectedSpanish] = useState<string>('');
   const [mapAddress, setMapAddress] = useState<string>('Utah');
+  const [isFiltered, setIsFiltered] = useState<boolean>(false); // New state for tracking if search is filtered
 
   useEffect(() => {
     const providersList = mockProviders.data.map(p => p.attributes);
@@ -114,13 +37,18 @@ const ProvidersPage: React.FC = () => {
 
   const handleSearch = (query: string) => {
     const normalizedCounty = selectedCounty.replace(/-/g, ' ').toLowerCase();
+    const normalizedInsurance = selectedInsurance.replace(/-/g, ' ').toLowerCase();
+    const normalizedSpanish = selectedSpanish.toLowerCase();
 
     const filtered = allProviders.filter(provider =>
       provider.name.toLowerCase().includes(query.toLowerCase()) &&
-      provider.locations_served.toLowerCase().includes(normalizedCounty)
+      provider.locations_served.toLowerCase().includes(normalizedCounty) &&
+      provider.insurance.toLowerCase().includes(normalizedInsurance) &&
+      (normalizedSpanish === 'any' || provider.spanish_speakers.toLowerCase() === normalizedSpanish)
     );
 
     setFilteredProviders(filtered);
+    setIsFiltered(true); // Update state to indicate that a filter is applied
 
     if (filtered.length > 0) {
       setMapAddress(filtered[0].address);
@@ -129,8 +57,25 @@ const ProvidersPage: React.FC = () => {
     }
   };
 
+  const handleResetSearch = () => {
+    setFilteredProviders(allProviders); // Reset to the full providers list
+    setSelectedCounty('');
+    setSelectedInsurance('');
+    setSelectedSpanish('');
+    setIsFiltered(false); // Reset the filtered state
+    setMapAddress('Utah'); // Optionally reset the map address to the default
+  };
+
   const handleCountyChange = (county: string) => {
     setSelectedCounty(county);
+  };
+
+  const handleInsuranceChange = (insurance: string) => {
+    setSelectedInsurance(insurance);
+  };
+
+  const handleSpanishChange = (spanish: string) => {
+    setSelectedSpanish(spanish);
   };
 
   return (
@@ -140,44 +85,54 @@ const ProvidersPage: React.FC = () => {
         <h1 className="providers-banner-title">Find Your Provider</h1>
       </section>
 
-      <SearchBar onSearch={handleSearch} onCountyChange={handleCountyChange} />
+      <SearchBar
+        onSearch={handleSearch}
+        onCountyChange={handleCountyChange}
+        onInsuranceChange={handleInsuranceChange}
+        onSpanishChange={handleSpanishChange}
+        onReset={handleResetSearch} // Make sure onReset is included here
+      />
 
       <section className="google-map-section">
-       
-          <GoogleMap address={mapAddress} />
-      
+        <GoogleMap address={mapAddress} />
       </section>
 
-      <section className="provider-list-section">
-        
-          <div className="searched-provider-map-locations-list">
-            {filteredProviders.length > 0 ? (
-              filteredProviders.map((provider, index) => (
-                <div key={index} className="searched-provider-card">
+      <section className="provider-title-section">
+        <h3>{isFiltered ? 'Filtered Search of Providers' : 'Total Providers List'}</h3>
+      </section>
+
+      <section className="searched-provider-map-locations-list-section">
+        {filteredProviders.length > 0 ? (
+          filteredProviders.map((provider, index) => (
+            <div key={index} className="searched-provider-card">
+              <div className="searched-provider-card-content">
+                <div className="searched-provider-card-title">
                   <h3>{provider.name}</h3>
                   <p><strong>Address:</strong> {provider.address || 'N/A'}</p>
-                  <p><strong>Phone:</strong> {provider.phone || 'N/A'}</p>
-                  <div className="provider-card-buttons">
-                    <button
-                      className="view-details-button"
-                      onClick={() => handleProviderCardClick(provider)}
-                    >
-                      View Details
-                    </button>
-                    <button
-                      className="view-on-map-button"
-                      onClick={() => handleViewOnMapClick(provider.address)}
-                    >
-                      View on Map
-                    </button>
-                  </div>
                 </div>
-              ))
-            ) : (
-              <p>No providers found matching your search criteria.</p>
-            )}
-          </div>
-       
+                <div className="searched-provider-card-info">
+                  <p><strong>Phone:</strong> {provider.phone || 'N/A'}</p>
+                </div>
+              </div>
+              <div className="provider-card-buttons">
+                <button
+                  className="view-details-button"
+                  onClick={() => handleProviderCardClick(provider)}
+                >
+                  View Details
+                </button>
+                <button
+                  className="view-on-map-button"
+                  onClick={() => handleViewOnMapClick(provider.address)}
+                >
+                  View on Map
+                </button>
+              </div>
+            </div>
+          ))
+        ) : (
+          <p>No providers found matching your search criteria.</p>
+        )}
       </section>
 
       {selectedProvider && <ProviderModal provider={selectedProvider} onClose={handleCloseModal} />}

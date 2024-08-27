@@ -6,25 +6,40 @@ import './SearchBar.css';
 interface SearchBarProps {
   onSearch: (query: string) => void;
   onCountyChange: (county: string) => void;
+  onInsuranceChange: (insurance: string) => void;
+  onSpanishChange: (spanish: string) => void;
+  onReset: () => void; // Add this line
 }
 
-const SearchBar: React.FC<SearchBarProps> = ({ onSearch, onCountyChange }) => {
+const SearchBar: React.FC<SearchBarProps> = ({
+  onSearch,
+  onCountyChange,
+  onInsuranceChange,
+  onSpanishChange,
+  onReset // Add this line
+}) => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedCounty, setSelectedCounty] = useState<string>('');
+  const [selectedInsurance, setSelectedInsurance] = useState<string>('');
+  const [selectedSpanish, setSelectedSpanish] = useState<string>(''); // New state for Spanish
   const [inputError, setInputError] = useState<boolean>(false);
   const [countyError, setCountyError] = useState<boolean>(false);
+  const [insuranceError, setInsuranceError] = useState<boolean>(false);
+  const [spanishError, setSpanishError] = useState<boolean>(false); // New error state for Spanish
 
   const handleSearch = () => {
     let isValid = true;
 
     setInputError(false);
     setCountyError(false);
+    setInsuranceError(false);
+    setSpanishError(false); // Reset Spanish error
 
-    if (!searchQuery) {
-      setInputError(true);
-      toast.error('Please enter a search query.');
-      isValid = false;
-    }
+    // if (!searchQuery) {
+    //   setInputError(true);
+    //   toast.error('Please enter a search query.');
+    //   isValid = false;
+    // }
 
     if (!selectedCounty) {
       setCountyError(true);
@@ -32,9 +47,33 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch, onCountyChange }) => {
       isValid = false;
     }
 
+    if (!selectedInsurance) {
+      setInsuranceError(true);
+      toast.error('Please select an insurance company.');
+      isValid = false;
+    }
+
+    if (!selectedSpanish) {
+      setSpanishError(true);
+      toast.error('Please select if Spanish is spoken.');
+      isValid = false;
+    }
+
     if (isValid) {
       onSearch(searchQuery);
     }
+  };
+
+  const handleReset = () => {
+    setSearchQuery('');
+    setSelectedCounty('');
+    setSelectedInsurance('');
+    setSelectedSpanish('');
+    setInputError(false);
+    setCountyError(false);
+    setInsuranceError(false);
+    setSpanishError(false);
+    onReset(); // Call onReset prop
   };
 
   const handleCountyChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -44,6 +83,26 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch, onCountyChange }) => {
 
     if (county) {
       setCountyError(false);
+    }
+  };
+
+  const handleInsuranceChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const insurance = event.target.value;
+    setSelectedInsurance(insurance);
+    onInsuranceChange(insurance);
+
+    if (insurance) {
+      setInsuranceError(false);
+    }
+  };
+
+  const handleSpanishChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const spanish = event.target.value;
+    setSelectedSpanish(spanish);
+    onSpanishChange(spanish);
+
+    if (spanish) {
+      setSpanishError(false);
     }
   };
 
@@ -66,14 +125,13 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch, onCountyChange }) => {
             onChange={handleInputChange}
             className={inputError ? 'input-error' : ''}
           />
-
           <div className="provider-county-dropdown">
             <select
               className={`provider-county-select ${countyError ? 'input-error' : ''}`}
               value={selectedCounty}
               onChange={handleCountyChange}
             >
-              <option value="" disabled>Select a county</option>
+              <option value="" disabled>County</option>
               <option value="salt-lake">Salt Lake County</option>
               <option value="utah">Utah County</option>
               <option value="davis">Davis County</option>
@@ -92,9 +150,40 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch, onCountyChange }) => {
               <span className="dropdown-arrow">&#9660;</span>
             </select>
           </div>
+          <div className="provider-insurance-dropdown">
+            <select
+              className={`provider-insurance-select ${insuranceError ? 'input-error' : ''}`}
+              value={selectedInsurance}
+              onChange={handleInsuranceChange}
+            >
+              <option value="" disabled>Insurance</option>
+              <option value="Insurance Company 1">Insurance Company 1</option>
+              <option value="Insurance Company 2">Insurance Company 2</option>
+              <option value="Insurance Company 3">Insurance Company 3</option>
+              <option value="Insurance Company 4">Insurance Company 4</option>
+              <option value="Insurance Company 5">Insurance Company 5</option>
+              <option value="Insurance Company 6">Insurance Company 6</option>
+              {/* Add more insurance companies here */}
+            </select>
+          </div>
+
+          <div className="provider-spanish-dropdown"> {/* New Spanish dropdown */}
+            <select
+              className={`provider-spanish-select ${spanishError ? 'input-error' : ''}`}
+              value={selectedSpanish}
+              onChange={handleSpanishChange}
+            >
+              <option value="" disabled>Spanish?</option>
+              <option value="yes">Yes</option>
+              <option value="no">No</option>
+            </select>
+          </div>
 
           <button className="provider-search-button" onClick={handleSearch}>
             Search
+          </button>
+          <button className="provider-reset-button" onClick={handleReset}> {/* New reset button */}
+            Reset
           </button>
         </div>
       </section>

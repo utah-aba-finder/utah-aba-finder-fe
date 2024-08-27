@@ -1,8 +1,9 @@
 .providers-page {
     display: flex;
     flex-direction: column;
-    gap: .7rem;
-    padding-bottom: 5rem;
+    gap: 0.7rem;
+    padding-bottom: 1rem;
+    background-color: #cecab2e4;
 }
 
 .find-your-provider-section {
@@ -12,7 +13,7 @@
 
 .banner-image {
     width: 100%;
-    height: 30vh;
+    height: 50vh;
     object-fit: cover;
 }
 
@@ -29,24 +30,18 @@
     border-radius: 10px;
     z-index: 10;
 }
+
 .google-map-section {
     display: flex;
     justify-content: center;
     gap: 1rem;
     width: 100%;
-    height: 25rem;
+    height: 33rem;
     max-width: 100%;
     box-sizing: border-box;
     overflow: hidden;
-}
-.searched-provider-map-locations-list {
-    width: 100%;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-    max-width: 100%;
+    padding-left: 1rem;
+    padding-right: 1rem;
 }
 
 .searched-provider-card {
@@ -57,97 +52,66 @@
     border-radius: 5px;
     background-color: #f9f9f9;
     width: 90%;
-   height: 50%;
+    height: auto;
     margin: 0.5rem auto;
+    background-color: #eac461;
+    display: flex;
+    flex-direction: column;
 }
 
-.searched-provider-card:hover {
-    background-color: #e0e0e0;
+.searched-provider-card-title {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
 }
 
-.provider-card:hover {
+.searched-provider-card-info {
+    display: flex;
+    flex: 1;
+    align-items: flex-start;
+    padding-left: 1rem;
+}
+
+.searched-provider-card-title h3 {
+    margin-bottom: 0.5rem;
+}
+
+.provider-card-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+.view-details-button,
+.view-on-map-button {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 0.25rem;
+    background-color: #555555;
+    color: #ffffff;
+    font-size: 1rem;
+    cursor: pointer;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s, transform 0.3s;
+}
+
+.view-details-button:hover,
+.view-on-map-button:hover {
     transform: translateY(-5px);
     box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
     cursor: pointer;
+    transition: background-color 0.3s, transform 0.3s;
+    background-color: #6c6c6c;
+}
+.searched-provider-card:hover {
+    background-color: #e5d895;
+    transform: translateY(-5px);
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.3s;
 }
 
-.provider-title-and-address {
-    margin-bottom: 1rem;
-}
-
-/* Desktop styling */
-@media (min-width: 1024px) {
-    .provider-list {
-        width: 75%;
-    }
-
-    .provider-card {
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: center;
-        text-align: left;
-    }
-
-    .provider-title-and-address {
-        margin-bottom: 0;
-    }
-}
-
-/* Tablet */
-@media (min-width: 768px) {
-    .searched-provider-map-locations {
-        flex-direction: row;
-        padding: 0 2rem;
-    }
-
-    .searched-provider-map-locations-list,
-    .provider-map {
-        width: 45%;
-    }
-}
-
-/* Mobile View */
-@media (max-width: 767px) {
-    .provider-map-searchbar {
-        padding: 0 1rem;
-    }
-
-    .providers-banner-title {
-        font-size: 1.2rem;
-    }
-
-    .searched-provider-map-locations {
-        flex-direction: column;
-        align-items: center;
-        gap: 1rem;
-        padding: 0 1rem;
-        box-sizing: border-box;
-    }
-
-    .searched-provider-map-locations-list,
-    .provider-map {
-        width: 100%;
-        max-width: 600px;
-        height: 25rem;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        box-sizing: border-box;
-    }
-
-    .provider-card {
-        flex-direction: column;
-        align-items: center;
-        padding: 1rem;
-        margin: 0 auto;
-        text-align: center;
-    }
-
-    .provider-title-and-address {
-        margin-bottom: 1rem;
-    }
-
-    .provider-list-section {
-        padding: 1rem;
-    }
+.searched-provider-card-content {
+    display: flex;
+    justify-content: space-between;
 }
