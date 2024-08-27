@@ -141,3 +141,14 @@
     background-color: rgb(255, 255, 255);
     color: rgb(251, 99, 57);
 }
+
+.gray {
+    background: #eaeaea;
+    color: #676767
+}
+
+.signupMessage {
+    width: 100%;
+    font-size: 15px;
+    height: 100%;
+}

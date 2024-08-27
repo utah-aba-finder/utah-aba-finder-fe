@@ -8,6 +8,7 @@ import { ScreeningPage } from '../Screening-page/ScreeningPage';
 import { Screening2 } from '../Screening2/Screening2';
 import Header from '../Header/Header'
 import Footer from '../Footer/Footer'
+import { PageNotFound } from '../PageNotFound/PageNotFound';
 
 function App() {
   return (
@@ -22,7 +23,7 @@ function App() {
           <Route path='/login' element={<LoginPage />} />
           <Route path='/screening/cast' element={<Screening2 />} />
           <Route path='/providerLogin' element={<LoginPage />} />
-          <Route path='*' element={<div>404: Page Not Found.</div>} />
+          <Route path='*' element={<PageNotFound />} />
         </Routes>
       </header>
       <Footer />
