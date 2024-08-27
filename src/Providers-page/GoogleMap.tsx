@@ -9,6 +9,7 @@ const GoogleMap: React.FC<GoogleMapProps> = ({ address }) => {
 
   return (
     <iframe
+      title='mapFeature'
       width="100%"
       height="100%"
       style={{ border: 0 }}
