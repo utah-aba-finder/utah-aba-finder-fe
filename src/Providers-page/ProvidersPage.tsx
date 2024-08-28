@@ -4,8 +4,7 @@ import childrenBanner from '../Assets/children-banner.jpg';
 import ProviderModal from './ProviderModal';
 import SearchBar from './SearchBar';
 import GoogleMap from './GoogleMap';
-import { mockProviders } from './MockProviders';
-import type { ProviderAttributes } from './MockProviders';
+import { mockProviders, ProviderAttributes } from './NewMockProviders';
 import klayLogo from './klay.png';
 
 const ProvidersPage: React.FC = () => {
@@ -19,6 +18,7 @@ const ProvidersPage: React.FC = () => {
   const [isFiltered, setIsFiltered] = useState<boolean>(false);
 
   useEffect(() => {
+    // Map the mockProviders data to the ProviderAttributes structure
     const providersList = mockProviders.data.map(p => p.attributes);
     setAllProviders(providersList);
     setFilteredProviders(providersList);
@@ -43,15 +43,20 @@ const ProvidersPage: React.FC = () => {
 
     const filtered = allProviders.filter(provider =>
       provider.name.toLowerCase().includes(query.toLowerCase()) &&
-      provider.locations_served.toLowerCase().includes(normalizedCounty) &&
-      provider.insurance.toLowerCase().includes(normalizedInsurance) &&
-      (normalizedSpanish === 'any' || provider.spanish_speakers.toLowerCase() === normalizedSpanish)
+      provider.counties_served.some(county => county.county.toLowerCase().includes(normalizedCounty)) &&
+      provider.insurance.some(ins => ins.name.toLowerCase().includes(normalizedInsurance)) &&
+      (normalizedSpanish === 'any' || (provider.spanish_speakers?.toLowerCase() || 'no') === normalizedSpanish)
     );
 
     setFilteredProviders(filtered);
     setIsFiltered(true);
     if (filtered.length > 0) {
-      setMapAddress(filtered[0].address);
+      const firstLocation = filtered[0].locations[0];
+      if (firstLocation.city && firstLocation.state && firstLocation.address_1) {
+        setMapAddress(`${firstLocation.address_1}, ${firstLocation.city}, ${firstLocation.state}`);
+      } else {
+        setMapAddress('Utah');
+      }
     } else {
       setMapAddress('Utah');
     }
@@ -110,10 +115,14 @@ const ProvidersPage: React.FC = () => {
                 <div className="title-and-info">
                   <div className="searched-provider-card-title">
                     <h3>{provider.name}</h3>
-                    <h4>{provider.address || 'N/A'}</h4>
+                    <h4>
+                      {provider.locations[0].address_1 || 'No Address Provided'}, 
+                      {provider.locations[0].city || 'No City Provided'}, 
+                      {provider.locations[0].state || 'No State Provided'}
+                    </h4>
                   </div>
                   <div className="searched-provider-card-info">
-                    <p><strong>Phone:</strong> {provider.phone || 'N/A'}</p>
+                    <p><strong>Phone:</strong> {provider.locations[0].phone || 'N/A'}</p>
                     <p><strong>Email:</strong> {provider.email || 'N/A'}</p>
                   </div>
                 </div>
@@ -127,7 +136,7 @@ const ProvidersPage: React.FC = () => {
                 </button>
                 <button
                   className="view-on-map-button"
-                  onClick={() => handleViewOnMapClick(provider.address)}
+                  onClick={() => handleViewOnMapClick(`${provider.locations[0].address_1 || ''}, ${provider.locations[0].city || ''}, ${provider.locations[0].state || ''}`)}
                 >
                   View on Map
                 </button>
