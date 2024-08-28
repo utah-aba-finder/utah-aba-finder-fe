@@ -94,6 +94,8 @@ class Homepage extends Component<Props, State> {
                     <div className='begin-section-button-container'>
                         <Link to="/providers"><button className='begin-section-button1'>VIEW PROVIDERS</button></Link>
                         <Link to="/screening"> <button className='begin-section-button2'>HELP WITH DIAGNOSIS</button> </Link>
+                        <Link to="/contact"> <button className='begin-section-button3'>CONTACT US</button> </Link>
+
                     </div>
 
                 </div>
