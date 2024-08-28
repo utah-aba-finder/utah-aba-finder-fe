@@ -6,7 +6,7 @@ import SearchBar from './SearchBar';
 import GoogleMap from './GoogleMap';
 import { mockProviders } from './MockProviders';
 import type { ProviderAttributes } from './MockProviders';
-import klayLogo from './klay.png'; // Import the logo image
+import klayLogo from './klay.png';
 
 const ProvidersPage: React.FC = () => {
   const [selectedProvider, setSelectedProvider] = useState<ProviderAttributes | null>(null);
@@ -98,7 +98,7 @@ const ProvidersPage: React.FC = () => {
       </section>
 
       <section className="provider-title-section">
-        <h3>{isFiltered ? 'Filtered Search of Providers' : 'Total Providers List'}</h3>
+        <h2>{isFiltered ? 'Filtered Search of Providers' : 'Total Providers List'}</h2>
       </section>
 
       <section className="searched-provider-map-locations-list-section">
