@@ -8,7 +8,7 @@ interface SearchBarProps {
   onCountyChange: (county: string) => void;
   onInsuranceChange: (insurance: string) => void;
   onSpanishChange: (spanish: string) => void;
-  onReset: () => void; // Add this line
+  onReset: () => void; 
 }
 
 const SearchBar: React.FC<SearchBarProps> = ({
@@ -33,7 +33,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
     setInputError(false);
     setCountyError(false);
     setInsuranceError(false);
-    setSpanishError(false); // Reset Spanish error
+    setSpanishError(false);
 
     // if (!searchQuery) {
     //   setInputError(true);

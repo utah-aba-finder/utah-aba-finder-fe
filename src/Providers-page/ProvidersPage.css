@@ -3,7 +3,7 @@
     flex-direction: column;
     gap: 0.7rem;
     padding-bottom: 1rem;
-    background-color: #cecab2e4;
+    background-color: #c9c29ae4;
 }
 
 .find-your-provider-section {
@@ -44,55 +44,138 @@
     padding-right: 1rem;
 }
 
+.searched-provider-map-locations-list-section {
+    font-family: 'Open Sans', sans-serif;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+}
+
 .searched-provider-card {
-    border: 1px solid #ddd;
-    padding: 1rem;
-    margin-bottom: 1rem;
-    cursor: pointer;
-    border-radius: 5px;
-    background-color: #f9f9f9;
+    display: flex;
+    flex-direction: column;
+    max-width: 55rem;
     width: 90%;
-    height: auto;
-    margin: 0.5rem auto;
-    background-color: #eac461;
+    overflow: hidden;
+    border-radius: 0.5em;
+    background: white;
+    margin: .6em;
+    padding: .6rem;
+    box-shadow: 0 1.5em 2.5em -0.5em rgba(0, 0, 0, 0.1);
+    transition: transform 0.45s ease, background 0.45s ease;
+}
+
+.searched-provider-card h3 {
+    color: #21343a;
+    font-size: 2em;
+    font-weight: 900;
+    line-height: 1;
+    padding-bottom: 0.3em;
+    margin: 0 0 0.142857143em;
+    border-bottom: 2px solid #6685a5;
+    transition: color 0.45s ease, border 0.45s ease;
+}
+
+.searched-provider-card h4 {
+    color: #627084;
+    font-size: 1.1em;
+    font-weight: 650;
+    line-height: 1;
+    transition: color 0.45s ease;
+}
+
+.searched-provider-card p {
+    color: #627084;
+    font-size: 1em;
+    font-weight: 700;
+    line-height: 1;
+    transition: color 0.45s ease;
+    opacity: 0;
+    transform: translateY(-1em);
+    transition: opacity 0.45s ease, transform 0.5s ease;
+}
+
+.searched-provider-card-content {
     display: flex;
     flex-direction: column;
 }
 
-.searched-provider-card-title {
+.title-and-info {
     display: flex;
     flex-direction: column;
-    flex: 1;
+
+    padding-left: 0;
 }
 
 .searched-provider-card-info {
-    display: flex;
-    flex: 1;
-    align-items: flex-start;
-    padding-left: 1rem;
+    padding-left: 0;
 }
 
-.searched-provider-card-title h3 {
-    margin-bottom: 0.5rem;
+.view-details-button,
+.view-on-map-button {
+    font-size: 1.125em;
+    font-weight: 600;
+    line-height: 1.2;
+    margin: auto 0 0;
+    transition: color 0.45s ease;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.view-details-button {
+    margin-right: 1rem;
+}
+
+.provider-logo {
+    width: 50px;
+    height: auto;
+    padding: .4rem;
 }
 
 .provider-card-buttons {
     display: flex;
+    align-items: center;
     justify-content: center;
-    gap: 1rem;
-    margin-top: 1rem;
+    padding-bottom: .5rem;
 }
+
 .view-details-button,
 .view-on-map-button {
-    padding: 0.5rem 1rem;
     border: none;
     border-radius: 0.25rem;
     background-color: #555555;
     color: #ffffff;
-    font-size: 1rem;
+    font-size: 1.3rem;
     cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 0.25em;
     box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
     transition: background-color 0.3s, transform 0.3s;
+    width: 100%;
+    text-align: left;
+    margin-bottom: 0.5rem;
+}
+
+.searched-provider-card:hover {
+    background: #c4b56b;
+    transform: scale(1.02);
+}
+
+.searched-provider-card:hover h3 {
+    color: #FFFFFF;
+    border-bottom-color: #A754C4;
+}
+
+.searched-provider-card:hover h4 {
+    color: #FFFFFF;
+    border-bottom-color: #A754C4;
+}
+
+.searched-provider-card:hover p {
+    color: #FFFFFF;
+    opacity: 1;
+    transform: none;
 }
 
 .view-details-button:hover,
@@ -101,17 +184,52 @@
     box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
     cursor: pointer;
     transition: background-color 0.3s, transform 0.3s;
-    background-color: #6c6c6c;
-}
-.searched-provider-card:hover {
-    background-color: #e5d895;
-    transform: translateY(-5px);
-    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
-    cursor: pointer;
-    transition: background-color 0.3s, transform 0.3s;
+    background-color: #ffffff;
+    color: #555555;
 }
 
-.searched-provider-card-content {
-    display: flex;
-    justify-content: space-between;
+@media screen and (min-width: 768px) {
+    .searched-provider-card-content {
+        flex-direction: row;
+    }
+
+    .title-and-info {
+        flex-direction: row;
+        align-items: center;
+        padding-left: 6rem;
+    }
+
+    .searched-provider-card-info {
+        padding-left: 1rem;
+    }
+
+    .provider-card-buttons {
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .view-details-button,
+    .view-on-map-button {
+        width: auto;
+        margin-bottom: 0;
+    }
+
+    .provider-logo {
+        width: 20%;
+        margin-bottom: 0;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .title-and-info {
+        padding-left: .5rem;
+    }
+}
+
+@media screen and (max-width: 500px) {
+    .view-details-button,
+    .view-on-map-button {
+        width: auto;
+        margin-bottom: 0;
+    }
 }

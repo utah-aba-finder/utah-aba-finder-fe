@@ -20,7 +20,6 @@
     flex-direction: row;
     gap: 0.5rem;
     padding: 1rem;
-    max-width: 840px;
     justify-content: center;
     background-color: #ffffff;
     border-radius: 0.5rem;
@@ -43,6 +42,19 @@
     transition: background-color 0.3s, transform 0.3s;
 }
 
+.provider-reset-button {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 0.25rem;
+    background-color: #b73939;
+    color: #ffffff;
+    font-size: 1rem;
+    font-weight: 750;
+    cursor: pointer;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s, transform 0.3s;
+}
+
 .provider-map-searchbar input[type="text"]::placeholder {
     color: #ffffff;
 }
@@ -53,6 +65,11 @@
 .provider-search-button:hover,
 .provider-spanish-select:hover {
     background-color: #444444;
+    transform: translateY(-2px);
+}
+
+.provider-reset-button:hover {
+    background-color: #e68181;
     transform: translateY(-2px);
 }
 
@@ -146,12 +163,13 @@
 
 .provider-search-button {
     background-color: #007bff;
+    font-weight: 750;
     color: white;
     border: none;
     padding: 0.5rem 1rem;
     border-radius: 4px;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .provider-search-button:hover {
@@ -162,16 +180,23 @@
     border: 2px solid red;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 840px) {
     .provider-map-searchbar {
         flex-direction: column;
         gap: 1rem;
+        width: 80%;
+    }
+
+    .provider-county-select,
+    .provider-insurance-select,
+    .provider-spanish-select {
+        width: 100%;
     }
 
     .provider-county-dropdown::after {
         content: "\25BC";
         position: absolute;
-        right: 1.70rem;
+        right: 1rem;
         top: 50%;
         transform: translateY(-50%);
         color: #ffffff;
@@ -182,7 +207,7 @@
     .provider-insurance-dropdown::after {
         content: "\25BC";
         position: absolute;
-        right: 1.50rem;
+        right: 1rem;
         top: 50%;
         transform: translateY(-50%);
         color: #ffffff;
@@ -193,7 +218,7 @@
     .provider-spanish-dropdown::after {
         content: "\25BC";
         position: absolute;
-        right: 6.10rem;
+        right: 1rem;
         top: 50%;
         transform: translateY(-50%);
         color: #ffffff;
