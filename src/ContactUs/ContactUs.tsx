@@ -14,7 +14,6 @@ const ContactUs: React.FC = () => {
             toast.error('Please enter a valid email address with "@" and ".com"');
             return;
         }
-
     };
 
     return (
