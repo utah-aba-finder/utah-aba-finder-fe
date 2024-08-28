@@ -18,14 +18,15 @@ const Header: React.FC = () => {
             <img
                 src={menuOpen ? Close : Menu}
                 className={`menu ${menuOpen ? 'open' : ''}`}
+                alt='menu'
                 onClick={toggleMenu}
             />
             <div className={`menu-content ${menuOpen ? 'open' : ''}`}>
-                <Link to="/" onClick={toggleMenu}>Home</Link>
-                <Link to="/providers" onClick={toggleMenu}>Find Providers</Link>
-                <Link to="/screening" onClick={toggleMenu}>Screening Tools</Link>
-                <Link to="/information" onClick={toggleMenu}>Information</Link>
-                <Link to="/providerLogin" onClick={toggleMenu}>Provider Login</Link>
+                <Link className='navLink' to="/" onClick={toggleMenu}>Home</Link>
+                <Link className='navLink' to="/providers" onClick={toggleMenu}>Find Providers</Link>
+                <Link className='navLink' to="/screening" onClick={toggleMenu}>Screening Tools</Link>
+                <Link className='navLink' to="/information" onClick={toggleMenu}>Information</Link>
+                <Link className='navLink' to="/providerLogin" onClick={toggleMenu}>Provider Login</Link>
             </div>
         </div>
     );

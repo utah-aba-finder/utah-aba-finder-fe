@@ -1,0 +1,81 @@
+.signupImageText {
+    position: absolute;
+    color: white;
+    font-size: 2.5rem;
+    text-align: center;
+    background-color: rgba(0, 0, 0, 0.5);
+    padding: 1rem;
+    border-radius: 10px;
+    top: 2%;
+    left: 38%;
+}
+
+.signupContainer {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+}
+
+.signupForm {
+    position: absolute;
+    bottom: 40%;
+    left: 20%;
+    color: white;
+    font-size: 2.5rem;
+    text-align: center;
+    background-color: rgba(0, 0, 0, 0.5);
+    padding: 1rem;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    width: fit-content;
+    align-items: center;
+}
+
+.signupInstructions {
+    position: absolute;
+    bottom: 35%;
+    background-color: rgba(0, 0, 0, 0.5);
+    width: 30%;
+    padding: 1rem;
+    color: rgb(251, 99, 57);
+    right: 20%;
+    border-radius: .5rem;
+}
+
+.step1,
+.step2,
+.step3 {
+    display: flex;
+    align-items: center;
+    margin: 1rem;
+    text-wrap: wrap;
+}
+
+.instructionIcons {
+    width: 100%;
+    padding: 1rem;
+    justify-self: start;
+}
+
+.iconContainer {
+    width: 20%;
+    margin-right: 5px;
+}
+
+.messageContainer {
+    width: 80%;
+}
+
+.downArrow {
+    display: flex;
+    width: 100%;
+    align-content: start;
+}
+
+.arrow {
+    margin-left: 3.5rem;
+}
