@@ -180,7 +180,7 @@
     border: 2px solid red;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 840px) {
     .provider-map-searchbar {
         flex-direction: column;
         gap: 1rem;
