@@ -1,11 +1,12 @@
 import React from 'react';
 
 interface GoogleMapProps {
-  address: string;
+  address?: string; // Make address optional
 }
 
 const GoogleMap: React.FC<GoogleMapProps> = ({ address }) => {
-  const encodedAddress = encodeURIComponent(address || 'Utah');
+  const defaultAddress = 'Utah'; // Default address
+  const encodedAddress = encodeURIComponent(address || defaultAddress);
 
   return (
     <iframe
