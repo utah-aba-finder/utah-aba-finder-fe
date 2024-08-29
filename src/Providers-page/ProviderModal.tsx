@@ -39,7 +39,6 @@ interface ProviderModalProps {
 const ProviderModal: React.FC<ProviderModalProps> = ({ provider, onClose }) => {
   if (!provider) return null;
 
-  // Get the main address (address_1 and address_2)
   const address = provider.locations[0]?.address_1 || 'N/A';
   const address2 = provider.locations[0]?.address_2 ? `, ${provider.locations[0]?.address_2}` : '';
   const city = provider.locations[0]?.city || 'N/A';
@@ -47,7 +46,6 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ provider, onClose }) => {
   const zip = provider.locations[0]?.zip || 'N/A';
   const phone = provider.locations[0]?.phone || 'N/A';
 
-  // Join insurance names
   const insuranceNames = provider.insurance.map(i => i.name).join(', ');
 
   return (

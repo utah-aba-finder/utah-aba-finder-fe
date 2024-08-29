@@ -16,8 +16,10 @@ const ProvidersPage: React.FC = () => {
   const [selectedSpanish, setSelectedSpanish] = useState<string>('');
   const [mapAddress, setMapAddress] = useState<string>('Utah');
   const [isFiltered, setIsFiltered] = useState<boolean>(false);
+  const [currentPage, setCurrentPage] = useState<number>(1);
 
-  const mapSectionRef = useRef<HTMLDivElement>(null); // Add a ref for the map section
+  const mapSectionRef = useRef<HTMLDivElement>(null);
+  const providersPerPage = 5;
 
   useEffect(() => {
     const providersList: ProviderAttributes[] = mockProviders.data.map((provider: MockProviderData) => ({
@@ -56,6 +58,7 @@ const ProvidersPage: React.FC = () => {
 
     setFilteredProviders(filtered);
     setIsFiltered(true);
+    setCurrentPage(1);
   }, [allProviders, selectedCounty, selectedInsurance, selectedSpanish]);
 
   useEffect(() => {
@@ -67,9 +70,10 @@ const ProvidersPage: React.FC = () => {
   };
 
   const handleViewOnMapClick = (address: string | null) => {
+    console.log('Address being sent to GoogleMap:', address); // Log the address
     setMapAddress(address || 'Utah');
     if (mapSectionRef.current) {
-      mapSectionRef.current.scrollIntoView({ behavior: 'smooth' }); 
+      mapSectionRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
@@ -84,6 +88,7 @@ const ProvidersPage: React.FC = () => {
     setSelectedSpanish('');
     setIsFiltered(false);
     setMapAddress('Utah');
+    setCurrentPage(1);
   };
 
   const handleCountyChange = (county: string) => {
@@ -115,8 +120,71 @@ const ProvidersPage: React.FC = () => {
       at_home_services: p.attributes.at_home_services,
       in_clinic_services: p.attributes.in_clinic_services,
     })));
+    setCurrentPage(1);
   };
 
+  const totalPages = Math.ceil(filteredProviders.length / providersPerPage);
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(prevPage => prevPage + 1);
+    }
+  };
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(prevPage => prevPage - 1);
+    }
+  };
+
+  const indexOfLastProvider = currentPage * providersPerPage;
+  const indexOfFirstProvider = indexOfLastProvider - providersPerPage;
+  const currentProviders = filteredProviders.slice(indexOfFirstProvider, indexOfLastProvider);
+
+  const renderViewOnMapButton = (provider: ProviderAttributes) => {
+  const isAddressAvailable = provider.locations.length > 0 && provider.locations[0]?.address_1;
+  
+  if (provider.locations.length > 1) {
+    return (
+      <select
+        className={`view-on-map-dropdown ${!isAddressAvailable ? 'disabled' : ''}`}
+        onChange={(e) => {
+          const index = e.target.value;
+          const location = provider.locations[parseInt(index)];
+          const fullAddress = `${location.address_1 || ''} ${location.address_2 || ''}, ${location.city || ''}, ${location.state || ''} ${location.zip || ''}`.trim();
+          console.log('Selected Address from Dropdown:', fullAddress); // Log the selected address
+          handleViewOnMapClick(fullAddress);
+        }}
+        defaultValue=""
+        disabled={!isAddressAvailable}
+      >
+        <option value="" disabled>Select Location to View on Map</option>
+        {provider.locations.map((location, index) => (
+          <option key={index} value={index}>
+            {location.name} - {location.address_1 || ''}, {location.city}, {location.state} {location.zip}
+          </option>
+        ))}
+      </select>
+    );
+  }
+
+  return (
+    <button
+      className={`view-on-map-button ${!isAddressAvailable ? 'disabled' : ''}`}
+      onClick={() => {
+        const location = provider.locations[0];
+        const fullAddress = `${location.address_1 || ''} ${location.address_2 || ''}, ${location.city || ''}, ${location.state || ''} ${location.zip || ''}`.trim();
+        console.log('Address from Button Click:', fullAddress); // Log the address when button is clicked
+        handleViewOnMapClick(fullAddress);
+      }}
+      disabled={!isAddressAvailable}
+    >
+      View on Map
+    </button>
+  );
+};
+  
+  
   return (
     <div className="providers-page">
       <section className="find-your-provider-section">
@@ -143,42 +211,46 @@ const ProvidersPage: React.FC = () => {
       </section>
 
       <section className="searched-provider-map-locations-list-section">
-        {filteredProviders.length > 0 ? (
-          filteredProviders.map((provider, index) => (
-            <div key={index} className="searched-provider-card">
-              <div className="searched-provider-card-content">
-                <img src={klayLogo} alt="Provider Logo" className="provider-logo" />
-                <div className="title-and-info">
-                  <div className="searched-provider-card-title">
-                    <h3>{provider.name}</h3>
-                    <h4>{provider.locations[0]?.address_1 || 'N/A'} {provider.locations[0]?.address_2 || 'N/A'}, {provider.locations[0]?.city || 'N/A'}, {provider.locations[0]?.state || 'N/A'}, {provider.locations[0]?.zip || 'N/A'}</h4>
-                  </div>
-                  <div className="searched-provider-card-info">
-                    <p><strong>Phone:</strong> {provider.locations[0]?.phone || 'N/A'}</p>
-                    <p><strong>Email:</strong> {provider.email || 'N/A'}</p>
-                  </div>
+        {currentProviders.map((provider, index) => (
+          <div key={index} className="searched-provider-card">
+            <div className="searched-provider-card-content">
+              <img src={klayLogo} alt="Provider Logo" className="provider-logo" />
+              <div className="title-and-info">
+                <div className="searched-provider-card-title">
+                  <h3>{provider.name}</h3>
+                  <h4>{provider.locations[0]?.address_1 || 'Physical address is not available for this provider.'} {provider.locations[0]?.address_2} {provider.locations[0]?.city} {provider.locations[0]?.state} {provider.locations[0]?.zip}</h4>
+                </div>
+                <div className="searched-provider-card-info">
+                  <p><strong>Phone:</strong> {provider.locations[0]?.phone || 'N/A'}</p>
+                  <p><strong>Email:</strong> {provider.email || 'N/A'}</p>
                 </div>
               </div>
-              <div className="provider-card-buttons">
-                <button
-                  className="view-details-button"
-                  onClick={() => handleProviderCardClick(provider)}
-                >
-                  View Details
-                </button>
-                <button
-                  className="view-on-map-button"
-                  onClick={() => handleViewOnMapClick(provider.locations[0]?.address_1)}
-                >
-                  View on Map
-                </button>
-              </div>
             </div>
-          ))
-        ) : (
-          <p>No providers found matching your search criteria.</p>
-        )}
+            <div className="provider-card-buttons">
+              <button
+                className="view-details-button"
+                onClick={() => handleProviderCardClick(provider)}
+              >
+                View Details
+              </button>
+              {renderViewOnMapButton(provider)}
+            </div>
+          </div>
+        ))}
       </section>
+
+      <div className="pagination-controls">
+        {currentPage > 1 && (
+          <button className="pagination-button" onClick={handlePreviousPage}>
+            &lt; Previous
+          </button>
+        )}
+        {currentPage < totalPages && (
+          <button className="pagination-button" onClick={handleNextPage}>
+            Next &gt;
+          </button>
+        )}
+      </div>
 
       {selectedProvider && <ProviderModal provider={selectedProvider} onClose={handleCloseModal} />}
     </div>

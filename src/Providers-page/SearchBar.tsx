@@ -6,7 +6,7 @@ import { MockProviders } from './NewMockProviders';
 
 interface SearchBarProps {
   mockProviders: MockProviders;
-  onResults: (results: MockProviders) => void; // Pass filtered results back to parent
+  onResults: (results: MockProviders) => void;
   onSearch: (query: string) => void;
   onCountyChange: (county: string) => void;
   onInsuranceChange: (insurance: string) => void;
@@ -95,8 +95,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
     setCountyError(false);
     setInsuranceError(false);
     setSpanishError(false);
-
-    onResults(mockProviders); // Reset to all providers
+    onResults(mockProviders);
     onReset();
   };
 
@@ -148,6 +147,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
               <option value="Health Choice Utah">Health Choice Utah</option>
               <option value="Healthy U Medicaid (University of Utah Health Plans)">Healthy U Medicaid (University of Utah Health Plans)</option>
               <option value="United HealthCare (UHC)">United HealthCare (UHC)</option>
+              <option value="Deseret Mutual Benefit Administrators (DMBA)">Deseret Mutual Benefit Administrators (DMBA)</option>
             </select>
           </div>
 

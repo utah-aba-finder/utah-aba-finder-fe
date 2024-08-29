@@ -1,7 +1,7 @@
 import React from 'react';
 
 interface GoogleMapProps {
-  address?: string; // Make address optional
+  address?: string;
 }
 
 const GoogleMap: React.FC<GoogleMapProps> = ({ address }) => {
@@ -13,7 +13,7 @@ const GoogleMap: React.FC<GoogleMapProps> = ({ address }) => {
       title='mapFeature'
       width="100%"
       height="100%"
-      style={{ border: 0 }}
+      style={{ border: 0,borderRadius: '0.5rem' }}
       loading="lazy"
       allowFullScreen
       referrerPolicy="no-referrer-when-downgrade"
