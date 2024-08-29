@@ -91,17 +91,17 @@
     }
 
     .discover-section-title {
-        font-size: 1rem;
-        max-width: 20rem;
+        font-size: 1.3rem;
+        max-width: 100%;
     }
 
     .discover-section-description {
-        font-size: 0.7rem;
-        max-width: 20rem;
+        font-size: 0.86rem;
+        max-width: 95%
     }
 
     .discover-section-button {
-        font-size: 0.7rem;
+        font-size: 1.1rem;
         margin-top: 1rem;
     }
 
@@ -174,7 +174,7 @@
     }
 
     .county-section-list p {
-        font-size: 0.8rem;
+        font-size: 0.9rem;
         text-align: center;
         margin: 0;
     }
@@ -239,14 +239,15 @@
     }
 
     .begin-section-title {
-        font-size: 0.9rem;
+        font-size: 1.1rem;
         margin: 0.3rem;
+        max-width: 100%;
     }
 
     .begin-section-description {
-        font-size: 0.8rem;
+        font-size: 0.7rem;
         margin-bottom: 0.5rem;
-        max-width: 82%;
+        max-width: 100%;
     }
 
     .begin-section-button1,
@@ -312,7 +313,7 @@
     }
 
     .icons-section-icon {
-        width: 3.3rem;
+        width: 4rem;
         height: auto;
     }
 
@@ -405,11 +406,11 @@
     }
 
     .spanish-section-title {
-        font-size: 0.9rem;
+        font-size: 1.2rem;
     }
 
     .spanish-section-description {
-        font-size: 0.6rem;
+        font-size: 0.7rem;
         max-width: 17rem;
     }
 
