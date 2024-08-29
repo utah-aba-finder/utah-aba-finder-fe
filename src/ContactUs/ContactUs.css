@@ -87,3 +87,12 @@ input:focus:invalid {
     --clr-error: red;
     --clr-warning: orange;
 }
+
+@media (max-width: 540px) {
+
+    .contact-input-name,
+    .contact-input-email,
+    .contact-input-message {
+        width: 60%;
+    }
+}
