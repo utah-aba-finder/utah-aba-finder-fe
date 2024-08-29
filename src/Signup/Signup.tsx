@@ -1,23 +1,66 @@
 import { User, Mail, MessageCircleMore, StickyNote, LockKeyhole, MoveDown, FilePenLine } from 'lucide-react';
 import './Signup.css';
-import notes from '../Assets/behaviorPlan.jpg';
+import { useState } from 'react';
+import emailjs from '@emailjs/browser';
+import { toast, ToastContainer } from 'react-toastify';
+
+interface EmailJSResponse {
+  text: string;
+  status: number;
+}
 
 export const Signup = () => {
+  const [provider, setProvider] = useState('');
+  const [message, setMessage] = useState('');
+  const [email, setEmail] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+const submitInquiry = (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
+
+  const templateParams = {
+    provider: provider,
+    message: message,
+    email: email
+  }
+
+  setIsLoading(true);
+  emailjs.send('service_d6byt4s','template_rdrgmli', templateParams, 'YtcUeRrOLBFogwZI7')
+  .then((res: EmailJSResponse) => {
+      toast.success(`Email sent successfully!, ${res.text}`);
+      setEmail('');
+      setProvider('');
+      setMessage('');
+      setIsLoading(false);
+    })
+    .catch((err: any) => { 
+      toast.error(`Error sending email, ${err}`);
+      setIsLoading(false);
+    });
+}
+
+if(isLoading) {
+    toast.info('Sending email...');
+}
   return (
     <section className='signupWrapper'>
+        <ToastContainer />
         <div className='signupContainer'>
             <h1 className='signupImageText'>Provider Sign Up</h1>
-            <img src={notes} alt='notepad' className='loginImage' />
         
-            <form className='signupForm'> <div className='input'>
+            <form className='signupForm' onSubmit={submitInquiry}> <div className='input'>
             <User className='userIcon'/>
-                    <input type='text' id='username' name='username' placeholder='Provider Name'required />
+                    <input type='text' id='username' name='username' value={provider} placeholder='Provider Name'required onChange={(e) => setProvider(e.target.value)}/>
                 </div>
                 <div className='input'> 
                     <Mail className='mailIcon'/>
-                    <input type='email' id='email' name='email' placeholder='Email'required />
+                    <input type='email' id='email' name='email' placeholder='Email'
+                    required value={email}
+                    onChange={(e) => setEmail(e.target.value)}/>
                 </div>
-                    <div className='input'><MessageCircleMore className='textIcon' /><textarea placeholder="Tell us who you are and why you're interested in signing up" className='signupMessage'/></div> 
+                    <div className='input'><MessageCircleMore className='textIcon' /><textarea placeholder="Tell us who you are and why you're interested in signing up" className='signupMessage'
+                    value={message}
+                    onChange={(e)=> setMessage(e.target.value)}/></div> 
                     <button type='submit' className= 'loginButton' >Sign Up</button>
 
             </form>

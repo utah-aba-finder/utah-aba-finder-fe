@@ -1,28 +1,36 @@
+.signupWrapper{
+    background-image: url('../Assets/behaviorPlan.jpg');
+    background-size: cover;
+    background-position: center;
+    height: 100vh;
+    display: flex;
+    padding: 5%;
+    width: 100%;
+}
+
 .signupImageText {
     position: absolute;
-    color: rgb(251, 99, 57);
+    color: white;
     font-size: 2.5rem;
     text-align: center;
-    background-color: rgba(0, 0, 0, 0.8);
+    background-color: rgba(0, 0, 0, 0.5);
     padding: 1rem;
     border-radius: 10px;
-    top: 2%;
-    left: 38%;
+    bottom: 90%;
+    left: 35%;
 }
 
 .signupContainer {
     position: relative;
     display: flex;
-    flex-direction: column;
+    justify-content: space-evenly;
     align-items: center;
+    align-content: center;
     height: 100%;
     width: 100%;
 }
 
 .signupForm {
-    position: absolute;
-    bottom: 40%;
-    left: 20%;
     color: white;
     font-size: 2.5rem;
     text-align: center;
@@ -36,13 +44,10 @@
 }
 
 .signupInstructions {
-    position: absolute;
-    bottom: 20%;
     background-color: rgba(0, 0, 0, .9);
-    width: 30%;
+    width: 40%;
     padding: 1rem;
     color: rgb(251, 99, 57);
-    right: 20%;
     border-radius: .5rem;
 }
 
@@ -85,7 +90,7 @@
 .arrow1,
 .arrow2,
 .arrow3 {
-    margin-left: 3.7rem;
+    margin-left: 4.5rem;
 }
 
 .textIcon {
@@ -124,65 +129,60 @@
 
 @media (max-width: 540px){
     .signupWrapper {
-        position: static;
         width: 100%;
-        height: 100vh;
+        height: 100%;
+        padding: 0;
     }
     .signupContainer {
-        position: static;
         display: flex;
-        flex-direction: column;
+        flex-direction: column-reverse;
         align-items: center;
-        padding: 1rem;
+        margin-top: 10rem;
+        padding: 0;
     }
 
     .signupImageText { 
-        top: 5%;/* Remove absolute positioning */
+        top: -20%;
+        left: 10%;
         font-size: 2rem;
-        text-align: center;
-        margin-bottom: 1rem;
+        height: fit-content;
     }
 
     .signupForm {
-        position: static; /* Remove absolute positioning */
         width: 100%;
         font-size: 1.5rem;
         margin-top: 1rem;
     }
 
     .signupInstructions {
-        position: static; /* Remove absolute positioning */
-        width: 100%;
-        height: auto;
-        font-size: 1rem;
-        margin-top: 1rem;
+        width: 80%;
+        font-size: .8rem;
+        display: flex;
+        flex-direction: column;
     }
 
     .step1,
     .step2,
     .step3,
     .step4 {
-        flex-direction: column;
+        width: 100%;
         align-items: center;
     }
 
     .iconContainer {
-        width: 100%;
+        width: 10%;
         margin-bottom: 0.5rem;
     }
 
     .messageContainer {
         width: 100%;
-    }
-
-    .downArrow {
-        justify-content: center;
+        margin-left: 10px;
     }
 
     .arrow1,
     .arrow2,
     .arrow3 {
-        margin-left: 0;
-        margin-top: 0.5rem;
+        margin-left: 2.2rem;
+        margin-top: .5rem;
     }
 }
