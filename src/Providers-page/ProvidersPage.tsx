@@ -4,7 +4,8 @@ import childrenBanner from '../Assets/children-banner.jpg';
 import ProviderModal from './ProviderModal';
 import SearchBar from './SearchBar';
 import GoogleMap from './GoogleMap';
-import { mockProviders, MockProviders, MockProviderData, ProviderAttributes } from './NewMockProviders';
+import { fetchProviders } from '../Utility/ApiCall';
+import { MockProviders, ProviderAttributes } from '../Utility/Types';
 import klayLogo from './klay.png';
 
 const ProvidersPage: React.FC = () => {
@@ -22,26 +23,19 @@ const ProvidersPage: React.FC = () => {
   const providersPerPage = 5;
 
   useEffect(() => {
-    const providersList: ProviderAttributes[] = mockProviders.data.map((provider: MockProviderData) => ({
-      name: provider.attributes.name,
-      locations: provider.attributes.locations,
-      insurance: provider.attributes.insurance,
-      counties_served: provider.attributes.counties_served,
-      website: provider.attributes.website,
-      email: provider.attributes.email,
-      cost: provider.attributes.cost,
-      min_age: provider.attributes.min_age,
-      max_age: provider.attributes.max_age,
-      waitlist: provider.attributes.waitlist,
-      telehealth_services: provider.attributes.telehealth_services,
-      spanish_speakers: provider.attributes.spanish_speakers,
-      at_home_services: provider.attributes.at_home_services,
-      in_clinic_services: provider.attributes.in_clinic_services,
-    }));
+    const getProviders = async () => {
+      try {
+        const providersList: MockProviders = await fetchProviders();
+        const mappedProviders = providersList.data.map(provider => provider.attributes);
+        setAllProviders(mappedProviders);
+        setFilteredProviders(mappedProviders);
+        setMapAddress('Utah');
+      } catch (error) {
+        console.error('Error loading providers:', error);
+      }
+    };
 
-    setAllProviders(providersList);
-    setFilteredProviders(providersList);
-    setMapAddress('Utah');
+    getProviders();
   }, []);
 
   const handleSearch = useCallback((query: string) => {
@@ -70,7 +64,6 @@ const ProvidersPage: React.FC = () => {
   };
 
   const handleViewOnMapClick = (address: string | null) => {
-    console.log('Address being sent to GoogleMap:', address); // Log the address
     setMapAddress(address || 'Utah');
     if (mapSectionRef.current) {
       mapSectionRef.current.scrollIntoView({ behavior: 'smooth' });
@@ -142,49 +135,47 @@ const ProvidersPage: React.FC = () => {
   const currentProviders = filteredProviders.slice(indexOfFirstProvider, indexOfLastProvider);
 
   const renderViewOnMapButton = (provider: ProviderAttributes) => {
-  const isAddressAvailable = provider.locations.length > 0 && provider.locations[0]?.address_1;
-  
-  if (provider.locations.length > 1) {
+    const isAddressAvailable = provider.locations.length > 0 && provider.locations[0]?.address_1;
+
+    if (provider.locations.length > 1) {
+      return (
+        <select
+          className={`view-on-map-dropdown ${!isAddressAvailable ? 'disabled' : ''}`}
+          onChange={(e) => {
+            const index = e.target.value;
+            const location = provider.locations[parseInt(index)];
+            const fullAddress = `${location.address_1 || ''} ${location.address_2 || ''}, ${location.city || ''}, ${location.state || ''} ${location.zip || ''}`.trim();
+            console.log('Selected Address from Dropdown:', fullAddress);
+            handleViewOnMapClick(fullAddress);
+          }}
+          defaultValue=""
+          disabled={!isAddressAvailable}
+        >
+          <option value="" disabled>Select Location to View on Map</option>
+          {provider.locations.map((location, index) => (
+            <option key={index} value={index}>
+              {location.name} - {location.address_1 || ''}, {location.city}, {location.state} {location.zip}
+            </option>
+          ))}
+        </select>
+      );
+    }
+
     return (
-      <select
-        className={`view-on-map-dropdown ${!isAddressAvailable ? 'disabled' : ''}`}
-        onChange={(e) => {
-          const index = e.target.value;
-          const location = provider.locations[parseInt(index)];
+      <button
+        className={`view-on-map-button ${!isAddressAvailable ? 'disabled' : ''}`}
+        onClick={() => {
+          const location = provider.locations[0];
           const fullAddress = `${location.address_1 || ''} ${location.address_2 || ''}, ${location.city || ''}, ${location.state || ''} ${location.zip || ''}`.trim();
-          console.log('Selected Address from Dropdown:', fullAddress); // Log the selected address
           handleViewOnMapClick(fullAddress);
         }}
-        defaultValue=""
         disabled={!isAddressAvailable}
       >
-        <option value="" disabled>Select Location to View on Map</option>
-        {provider.locations.map((location, index) => (
-          <option key={index} value={index}>
-            {location.name} - {location.address_1 || ''}, {location.city}, {location.state} {location.zip}
-          </option>
-        ))}
-      </select>
+        View on Map
+      </button>
     );
-  }
+  };
 
-  return (
-    <button
-      className={`view-on-map-button ${!isAddressAvailable ? 'disabled' : ''}`}
-      onClick={() => {
-        const location = provider.locations[0];
-        const fullAddress = `${location.address_1 || ''} ${location.address_2 || ''}, ${location.city || ''}, ${location.state || ''} ${location.zip || ''}`.trim();
-        console.log('Address from Button Click:', fullAddress); // Log the address when button is clicked
-        handleViewOnMapClick(fullAddress);
-      }}
-      disabled={!isAddressAvailable}
-    >
-      View on Map
-    </button>
-  );
-};
-  
-  
   return (
     <div className="providers-page">
       <section className="find-your-provider-section">
@@ -193,7 +184,6 @@ const ProvidersPage: React.FC = () => {
       </section>
 
       <SearchBar
-        mockProviders={mockProviders}
         onResults={handleResults}
         onSearch={handleSearch}
         onCountyChange={handleCountyChange}
@@ -207,7 +197,11 @@ const ProvidersPage: React.FC = () => {
       </section>
 
       <section className="provider-title-section">
-        <h2>{isFiltered ? 'Filtered Search of Providers' : 'Total Providers List'}</h2>
+        <h2>
+          {isFiltered
+            ? `Showing ${filteredProviders.length} of ${allProviders.length} Providers`
+            : `Showing ${allProviders.length} of ${allProviders.length} Providers`}
+        </h2>
       </section>
 
       <section className="searched-provider-map-locations-list-section">

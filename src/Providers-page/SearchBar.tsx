@@ -2,10 +2,9 @@ import React, { useState, useCallback } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './SearchBar.css';
-import { MockProviders } from './NewMockProviders';
+import { MockProviders } from '../Utility/Types';
 
 interface SearchBarProps {
-  mockProviders: MockProviders;
   onResults: (results: MockProviders) => void;
   onSearch: (query: string) => void;
   onCountyChange: (county: string) => void;
@@ -15,7 +14,6 @@ interface SearchBarProps {
 }
 
 const SearchBar: React.FC<SearchBarProps> = ({
-  mockProviders,
   onResults,
   onSearch,
   onCountyChange,
@@ -65,26 +63,13 @@ const SearchBar: React.FC<SearchBarProps> = ({
     }
 
     if (isValid) {
-      const filteredProviders = mockProviders.data.filter(provider => {
-        const nameMatches = provider.attributes.name?.toLowerCase().includes(searchQuery.toLowerCase());
-        const countyMatches = provider.attributes.counties_served.some(countyObj =>
-          countyObj.county?.toLowerCase().includes(selectedCounty.toLowerCase())
-        );
-        const insuranceMatches = provider.attributes.insurance.some(ins =>
-          ins.name?.toLowerCase() === selectedInsurance.toLowerCase()
-        );
-        const spanishMatches = provider.attributes.spanish_speakers?.toLowerCase() === selectedSpanish.toLowerCase();
-
-        return nameMatches && countyMatches && insuranceMatches && spanishMatches;
-      });
-
-      onResults({ data: filteredProviders });
       onSearch(searchQuery);
       onCountyChange(selectedCounty);
       onInsuranceChange(selectedInsurance);
       onSpanishChange(selectedSpanish);
+      onResults({ data: [] });
     }
-  }, [searchQuery, selectedCounty, selectedInsurance, selectedSpanish, mockProviders, onResults, onSearch, onCountyChange, onInsuranceChange, onSpanishChange]);
+  }, [searchQuery, selectedCounty, selectedInsurance, selectedSpanish, onResults, onSearch, onCountyChange, onInsuranceChange, onSpanishChange]);
 
   const handleReset = () => {
     setSearchQuery('');
@@ -95,7 +80,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
     setCountyError(false);
     setInsuranceError(false);
     setSpanishError(false);
-    onResults(mockProviders);
+
     onReset();
   };
 

@@ -5,7 +5,7 @@ interface GoogleMapProps {
 }
 
 const GoogleMap: React.FC<GoogleMapProps> = ({ address }) => {
-  const defaultAddress = 'Utah'; // Default address
+  const defaultAddress = 'Utah';
   const encodedAddress = encodeURIComponent(address || defaultAddress);
 
   return (
