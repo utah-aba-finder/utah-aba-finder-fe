@@ -10,6 +10,7 @@ import Header from '../Header/Header'
 import Footer from '../Footer/Footer'
 import { PageNotFound } from '../PageNotFound/PageNotFound';
 import ContactUs from '../ContactUs/ContactUs';
+import { Signup } from '../Signup/Signup';
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
           <Route path='/screening/cast' element={<Screening2 />} />
           <Route path='/providerLogin' element={<LoginPage />} />
           <Route path='/contact' element={<ContactUs />} />
+          <Route path='/signup' element={<Signup />} />
           <Route path='*' element={<PageNotFound />} />
         </Routes>
       </header>

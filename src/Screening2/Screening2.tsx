@@ -13,7 +13,6 @@ export const Screening2: React.FC = () => {
     const [showForm, setShowForm] = useState(true);
     const [showScore, setShowScore] = useState(false);
     const [disclaimer, setDisclaimer] = useState(true);
-    const [currentQuestion, setCurrentQuestion] = useState(0);
     const [fillAmount, setFillAmount] = useState(0);
     
     const castQuestions: castQuestions[] = [
@@ -86,7 +85,6 @@ export const Screening2: React.FC = () => {
         setShowScore(true); 
         setShowForm(false);
         setDisclaimer(false);
-        setCurrentQuestion(0);
       };
     
       const totalScore = () => {

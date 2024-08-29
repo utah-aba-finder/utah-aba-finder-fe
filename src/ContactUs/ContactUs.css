@@ -60,7 +60,9 @@
     font-weight: 600;
 }
 
-input {
+.contact-input-message,
+.contact-input-email,
+.contact-input-name {
     outline: 2px solid hsl(0, 0%, 58%);
 }
 
@@ -84,4 +86,17 @@ input:focus:invalid {
     --clr-success: green;
     --clr-error: red;
     --clr-warning: orange;
+}
+
+@media (max-width: 540px) {
+
+    .contact-input-name,
+    .contact-input-email,
+    .contact-input-message {
+        width: 60%;
+    }
+
+    .contact-page-button {
+        width: 40%;
+    }
 }

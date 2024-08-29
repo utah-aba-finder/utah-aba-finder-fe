@@ -12,7 +12,6 @@ type Props = {}
 
 type State = {}
 
-const videoSrc = require('../Assets/mainVideo.mp4');
 class Homepage extends Component<Props, State> {
     state = {}
 
@@ -21,7 +20,6 @@ class Homepage extends Component<Props, State> {
             <div className='homepage-container'>
                 <div className='discover-section'>
                     <img src={utah} alt="background-image" className='discover-section-backgroundImage' />
-                    {/* <video src={videoSrc} autoPlay loop muted className='discover-section-backgroundImage'></video> */}
                     <div className='discover-section-container'>
                         <h1 className='discover-section-title'>
                             Discover the Ideal ABA Therapy Provider <br /> for Your Child with Autism in Utah
@@ -90,10 +88,10 @@ class Homepage extends Component<Props, State> {
                 </div>
                 <div className='begin-section'>
                     <h2 className='begin-section-title'>Begin Your Journey with Essential Information</h2>
-                    <p className='begin-section-description'>Not sure about your child’s condition or haven’t received a diagnosis yet? <br />We’re here for you. Start by taking a simple test to see if your child meets the criteria.</p>
+                    <p className='begin-section-description'>Not sure about your child’s condition or haven’t received a diagnosis yet? <br />We’re here for you. Start by taking a simple screening test to see if your child meets the criteria.</p>
                     <div className='begin-section-button-container'>
                         <Link to="/providers"><button className='begin-section-button1'>VIEW PROVIDERS</button></Link>
-                        <Link to="/screening"> <button className='begin-section-button2'>HELP WITH DIAGNOSIS</button> </Link>
+                        <Link to="/screening"> <button className='begin-section-button2'>SCREENING TOOLS</button> </Link>
                         <Link to="/contact"> <button className='begin-section-button3'>CONTACT US</button> </Link>
 
                     </div>
@@ -124,7 +122,7 @@ class Homepage extends Component<Props, State> {
                         <Link to="/providers"><button className='spanish-section-button'>Learn More</button></Link>
                     </div>
                     <div className="spanish-section-image">
-                        <img src={spanishPic} alt="Spanish picture" className='spanish-section-pic' />
+                        <img src={spanishPic} alt="Spanish" className='spanish-section-pic' />
                     </div>
                 </div>
             </div>
