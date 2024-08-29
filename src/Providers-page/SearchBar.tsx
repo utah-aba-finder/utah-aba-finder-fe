@@ -1,22 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css'; 
+import 'react-toastify/dist/ReactToastify.css';
 import './SearchBar.css';
+import { MockProviders } from '../Utility/Types';
 
 interface SearchBarProps {
+  onResults: (results: MockProviders) => void;
   onSearch: (query: string) => void;
   onCountyChange: (county: string) => void;
   onInsuranceChange: (insurance: string) => void;
   onSpanishChange: (spanish: string) => void;
-  onReset: () => void; 
+  onReset: () => void;
 }
 
 const SearchBar: React.FC<SearchBarProps> = ({
+  onResults,
   onSearch,
   onCountyChange,
   onInsuranceChange,
   onSpanishChange,
-  onReset 
+  onReset
 }) => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedCounty, setSelectedCounty] = useState<string>('');
@@ -27,7 +30,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
   const [insuranceError, setInsuranceError] = useState<boolean>(false);
   const [spanishError, setSpanishError] = useState<boolean>(false);
 
-  const handleSearch = () => {
+  const handleSearch = useCallback(() => {
     let isValid = true;
 
     setInputError(false);
@@ -41,17 +44,17 @@ const SearchBar: React.FC<SearchBarProps> = ({
     //   isValid = false;
     // }
 
-    if (!selectedCounty) {
-      setCountyError(true);
-      toast.error('Please select a county.');
-      isValid = false;
-    }
+    // if (!selectedCounty) {
+    //   setCountyError(true);
+    //   toast.error('Please select a county.');
+    //   isValid = false;
+    // }
 
-    if (!selectedInsurance) {
-      setInsuranceError(true);
-      toast.error('Please select an insurance company.');
-      isValid = false;
-    }
+    // if (!selectedInsurance) {
+    //   setInsuranceError(true);
+    //   toast.error('Please select an insurance company.');
+    //   isValid = false;
+    // }
 
     if (!selectedSpanish) {
       setSpanishError(true);
@@ -61,8 +64,12 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
     if (isValid) {
       onSearch(searchQuery);
+      onCountyChange(selectedCounty);
+      onInsuranceChange(selectedInsurance);
+      onSpanishChange(selectedSpanish);
+      onResults({ data: [] });
     }
-  };
+  }, [searchQuery, selectedCounty, selectedInsurance, selectedSpanish, onResults, onSearch, onCountyChange, onInsuranceChange, onSpanishChange]);
 
   const handleReset = () => {
     setSearchQuery('');
@@ -73,45 +80,8 @@ const SearchBar: React.FC<SearchBarProps> = ({
     setCountyError(false);
     setInsuranceError(false);
     setSpanishError(false);
+
     onReset();
-  };
-
-  const handleCountyChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const county = event.target.value;
-    setSelectedCounty(county);
-    onCountyChange(county);
-
-    if (county) {
-      setCountyError(false);
-    }
-  };
-
-  const handleInsuranceChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const insurance = event.target.value;
-    setSelectedInsurance(insurance);
-    onInsuranceChange(insurance);
-
-    if (insurance) {
-      setInsuranceError(false);
-    }
-  };
-
-  const handleSpanishChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const spanish = event.target.value;
-    setSelectedSpanish(spanish);
-    onSpanishChange(spanish);
-
-    if (spanish) {
-      setSpanishError(false);
-    }
-  };
-
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(event.target.value);
-
-    if (event.target.value) {
-      setInputError(false);
-    }
   };
 
   return (
@@ -122,55 +92,55 @@ const SearchBar: React.FC<SearchBarProps> = ({
             type="text"
             placeholder="Search for a provider..."
             value={searchQuery}
-            onChange={handleInputChange}
+            onChange={(e) => setSearchQuery(e.target.value)}
             className={inputError ? 'input-error' : ''}
           />
           <div className="provider-county-dropdown">
             <select
               className={`provider-county-select ${countyError ? 'input-error' : ''}`}
               value={selectedCounty}
-              onChange={handleCountyChange}
+              onChange={(e) => setSelectedCounty(e.target.value)}
             >
               <option value="" disabled>County</option>
-              <option value="salt-lake">Salt Lake County</option>
-              <option value="utah">Utah County</option>
-              <option value="davis">Davis County</option>
-              <option value="weber">Weber County</option>
-              <option value="iron">Iron County</option>
-              <option value="cache">Cache County</option>
-              <option value="box-elder">Box Elder County</option>
-              <option value="washington">Washington County</option>
-              <option value="morgan">Morgan County</option>
-              <option value="summit">Summit County</option>
-              <option value="tooele">Tooele County</option>
-              <option value="duchesne">Duchesne County</option>
-              <option value="uintah">Uintah County</option>
-              <option value="sanpete">Sanpete County</option>
-              <option value="wayne">Wayne County</option>
-              <span className="dropdown-arrow">&#9660;</span>
+              <option value="Salt Lake">Salt Lake County</option>
+              <option value="Utah">Utah County</option>
+              <option value="Davis">Davis County</option>
+              <option value="Weber">Weber County</option>
+              <option value="Iron">Iron County</option>
+              <option value="Cache">Cache County</option>
+              <option value="Box-Elder">Box Elder County</option>
+              <option value="Washington">Washington County</option>
+              <option value="Morgan">Morgan County</option>
+              <option value="Summit">Summit County</option>
+              <option value="Tooele">Tooele County</option>
+              <option value="Duchesne">Duchesne County</option>
+              <option value="Uintah">Uintah County</option>
+              <option value="Sanpete">Sanpete County</option>
+              <option value="Wayne">Wayne County</option>
             </select>
           </div>
           <div className="provider-insurance-dropdown">
             <select
               className={`provider-insurance-select ${insuranceError ? 'input-error' : ''}`}
               value={selectedInsurance}
-              onChange={handleInsuranceChange}
+              onChange={(e) => setSelectedInsurance(e.target.value)}
             >
               <option value="" disabled>Insurance</option>
-              <option value="Insurance Company 1">Insurance Company 1</option>
-              <option value="Insurance Company 2">Insurance Company 2</option>
-              <option value="Insurance Company 3">Insurance Company 3</option>
-              <option value="Insurance Company 4">Insurance Company 4</option>
-              <option value="Insurance Company 5">Insurance Company 5</option>
-              <option value="Insurance Company 6">Insurance Company 6</option>
+              <option value="Aetna">Aetna</option>
+              <option value="Regence (BCBS)">Regence (BCBS)</option>
+              <option value="Cigna">Cigna</option>
+              <option value="Health Choice Utah">Health Choice Utah</option>
+              <option value="Healthy U Medicaid (University of Utah Health Plans)">Healthy U Medicaid (University of Utah Health Plans)</option>
+              <option value="United HealthCare (UHC)">United HealthCare (UHC)</option>
+              <option value="Deseret Mutual Benefit Administrators (DMBA)">Deseret Mutual Benefit Administrators (DMBA)</option>
             </select>
           </div>
 
-          <div className="provider-spanish-dropdown"> 
+          <div className="provider-spanish-dropdown">
             <select
               className={`provider-spanish-select ${spanishError ? 'input-error' : ''}`}
               value={selectedSpanish}
-              onChange={handleSpanishChange}
+              onChange={(e) => setSelectedSpanish(e.target.value)}
             >
               <option value="" disabled>Spanish?</option>
               <option value="yes">Yes</option>
@@ -181,7 +151,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
           <button className="provider-search-button" onClick={handleSearch}>
             Search
           </button>
-          <button className="provider-reset-button" onClick={handleReset}> 
+          <button className="provider-reset-button" onClick={handleReset}>
             Reset
           </button>
         </div>
