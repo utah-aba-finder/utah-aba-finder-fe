@@ -95,4 +95,8 @@ input:focus:invalid {
     .contact-input-message {
         width: 60%;
     }
+
+    .contact-page-button {
+        width: 40%;
+    }
 }
