@@ -60,7 +60,9 @@
     font-weight: 600;
 }
 
-input {
+.contact-input-message,
+.contact-input-email,
+.contact-input-name {
     outline: 2px solid hsl(0, 0%, 58%);
 }
 

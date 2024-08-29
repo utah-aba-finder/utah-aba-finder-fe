@@ -1,7 +1,6 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import './PageNotFound.css'
-const videoSrc = require('../Assets/404message.mp4');
 
 export const PageNotFound = () => {
   return (
