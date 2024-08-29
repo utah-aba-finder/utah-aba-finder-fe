@@ -1,18 +1,19 @@
 import React from 'react';
 
 interface GoogleMapProps {
-  address: string;
+  address?: string;
 }
 
 const GoogleMap: React.FC<GoogleMapProps> = ({ address }) => {
-  const encodedAddress = encodeURIComponent(address || 'Utah');
+  const defaultAddress = 'Utah';
+  const encodedAddress = encodeURIComponent(address || defaultAddress);
 
   return (
     <iframe
       title='mapFeature'
       width="100%"
       height="100%"
-      style={{ border: 0 }}
+      style={{ border: 0,borderRadius: '0.5rem' }}
       loading="lazy"
       allowFullScreen
       referrerPolicy="no-referrer-when-downgrade"
