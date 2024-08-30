@@ -1,12 +1,12 @@
 import React, { useState, useCallback } from 'react';
-import { ToastContainer, toast } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './SearchBar.css';
 import { MockProviders } from '../Utility/Types';
 
 interface SearchBarProps {
   onResults: (results: MockProviders) => void;
-  onSearch: (query: string) => void;
+  onSearch: (params: { query: string; county: string; insurance: string; spanish: string }) => void; // Update this line
   onCountyChange: (county: string) => void;
   onInsuranceChange: (insurance: string) => void;
   onSpanishChange: (spanish: string) => void;
@@ -38,38 +38,16 @@ const SearchBar: React.FC<SearchBarProps> = ({
     setInsuranceError(false);
     setSpanishError(false);
 
-    // if (!searchQuery) {
-    //   setInputError(true);
-    //   toast.error('Please enter a search query.');
-    //   isValid = false;
-    // }
-
-    // if (!selectedCounty) {
-    //   setCountyError(true);
-    //   toast.error('Please select a county.');
-    //   isValid = false;
-    // }
-
-    // if (!selectedInsurance) {
-    //   setInsuranceError(true);
-    //   toast.error('Please select an insurance company.');
-    //   isValid = false;
-    // }
-
-    if (!selectedSpanish) {
-      setSpanishError(true);
-      toast.error('Please select if Spanish is spoken.');
-      isValid = false;
-    }
-
     if (isValid) {
-      onSearch(searchQuery);
-      onCountyChange(selectedCounty);
-      onInsuranceChange(selectedInsurance);
-      onSpanishChange(selectedSpanish);
-      onResults({ data: [] });
+      const searchParams = {
+        query: searchQuery,
+        county: selectedCounty,
+        insurance: selectedInsurance,
+        spanish: selectedSpanish
+      };
+      onSearch(searchParams); // Pass search parameters as an object
     }
-  }, [searchQuery, selectedCounty, selectedInsurance, selectedSpanish, onResults, onSearch, onCountyChange, onInsuranceChange, onSpanishChange]);
+  }, [searchQuery, selectedCounty, selectedInsurance, selectedSpanish, onSearch]);
 
   const handleReset = () => {
     setSearchQuery('');
@@ -101,7 +79,8 @@ const SearchBar: React.FC<SearchBarProps> = ({
               value={selectedCounty}
               onChange={(e) => setSelectedCounty(e.target.value)}
             >
-              <option value="" disabled>County</option>
+              {/* <option value="" disabled>County</option> */}
+              <option value="">All Counties</option>
               <option value="Salt Lake">Salt Lake County</option>
               <option value="Utah">Utah County</option>
               <option value="Davis">Davis County</option>
@@ -125,7 +104,8 @@ const SearchBar: React.FC<SearchBarProps> = ({
               value={selectedInsurance}
               onChange={(e) => setSelectedInsurance(e.target.value)}
             >
-              <option value="" disabled>Insurance</option>
+              {/* <option value="" disabled>Insurance</option> */}
+              <option value="">All Insurances</option>
               <option value="Aetna">Aetna</option>
               <option value="Regence (BCBS)">Regence (BCBS)</option>
               <option value="Cigna">Cigna</option>

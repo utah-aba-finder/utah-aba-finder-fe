@@ -206,7 +206,7 @@
     margin: 0 5px;
     border-radius: 5px;
     box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
-    transition: background-color 0.3s, transform 0.3s; 
+    transition: background-color 0.3s, transform 0.3s;
 }
 
 .pagination-button:hover {

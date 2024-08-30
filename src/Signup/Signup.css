@@ -218,6 +218,7 @@
         display: flex;
         width: 90%;
         margin-left: 4.5rem;
+
     }
 }
 
@@ -408,6 +409,14 @@
         text-wrap: wrap;
     }
 
+<<<<<<< HEAD
+=======
+    .downArrow {
+        display: flex;
+        width: 90%;
+    }
+
+>>>>>>> c54882fafb51aef01d70b23bea3f3de0c10ea129
     textarea::placeholder {
         font-size: 1.2rem;
     }
