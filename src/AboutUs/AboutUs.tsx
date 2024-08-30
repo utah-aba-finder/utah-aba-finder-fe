@@ -4,6 +4,9 @@ import LinkedinIcon from '../Assets/linkedin-icon.png';
 import smileIcon from '../Assets/smile-icon.png';
 import githubIcon from '../Assets/github-icon.png';
 import seongPic from '../Assets/seong-pic.jpg';
+import jordanPic from '../Assets/jordan-pic.jpg';
+import kevinPic from '../Assets/kevin-pic.png';
+
 import './AboutUs.css';
 
 const bannerVideo = require('../Assets/AboutUs-banner.mp4');
@@ -48,7 +51,7 @@ const AboutUs: React.FC = () => {
                     <h1 className="front-end-title">Front End</h1>
 
                     <div className="profile-card">
-                        <img src={smileIcon} alt="Smile" className="profile-icon" />
+                        <img src={jordanPic} alt="jordan" className="profile-icon" />
                         <div className="profile-info">
                             <h3>Jordan Williamson</h3>
                             <p> Jordan Williamson is a front-end developer with a background as a Military Working Dog Handler in the U.S. Army, holding degrees in Criminal Justice and IT, passionate about creating accessible user interfaces that help others.</p>
@@ -64,7 +67,7 @@ const AboutUs: React.FC = () => {
                     </div>
 
                     <div className="profile-card">
-                        <img src={smileIcon} alt="Smile" className="profile-icon" />
+                        <img src={kevinPic} alt="kevin" className="profile-icon" />
                         <div className="profile-info">
                             <h3>Kevin Nelson</h3>
                             <p>Kevin is a dedicated professional with a passion for exploring the world, having traveled across every continent, and brings a deep appreciation for diversity and adaptability to his collaborative work.</p>

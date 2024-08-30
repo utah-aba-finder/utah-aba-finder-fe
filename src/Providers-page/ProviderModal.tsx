@@ -60,7 +60,7 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ provider, onClose }) => {
                 {location.city && <span>{location.city}, </span>}
                 {location.state && <span>{location.state} </span>}
                 {location.zip && <span>{location.zip}</span>}
-                {location.phone && <span> - Phone: {location.phone}</span>}
+                {location.phone && <span> - Phone: <a href={`tel:${location.phone}`}>{location.phone}</a></span>}
               </p>
             ))
           ) : (
