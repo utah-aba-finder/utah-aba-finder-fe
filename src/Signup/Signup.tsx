@@ -66,39 +66,21 @@ export const Signup = () => {
                 </form>
                 <section className='signupInstructions'>
                     <h1>How It Works</h1>
-                    <div className='step1'>
-                        <div className='iconContainer'>
-                            <Mail className='instructionIcons' />
+                    <div className="instructionContainer">
+                        <div className="iconColumn">
+                            <Mail className="instructionIcon1" />
+                            <MoveDown className="arrow1" />
+                            <StickyNote className="instructionIcon2" />
+                            <MoveDown className="arrow2" />
+                            <LockKeyhole className="instructionIcon3" />
+                            <MoveDown className="arrow3" />
+                            <FilePenLine className="instructionIcon4" />
                         </div>
-                        <div className='messageContainer'>
-                            <p>Email your information</p>
-                        </div>
-                    </div>
-                    <div className='downArrow'><MoveDown className='arrow1' /></div>
-                    <div className='step2'>
-                        <div className='iconContainer'>
-                            <StickyNote className='instructionIcons' />
-                        </div>
-                        <div className='messageContainer'>
-                            <p>Admin will review your info and request some type of proof to confirm ownership as well as send a form to gather data</p>
-                        </div>
-                    </div>
-                    <div className='downArrow'><MoveDown className='arrow2' /></div>
-                    <div className='step3'>
-                        <div className='iconContainer'>
-                            <LockKeyhole className='instructionIcons' />
-                        </div>
-                        <div className='messageContainer'>
-                            <p>Admin will provide a temporary password and initiliaze your information</p>
-                        </div>
-                    </div>
-                    <div className='downArrow'><MoveDown className='arrow3' /></div>
-                    <div className='step4'>
-                        <div className='iconContainer'>
-                            <FilePenLine className='instructionIcons' />
-                        </div>
-                        <div className='messageContainer'>
-                            <p>As a provider you can now update your information as often as needed!</p>
+                        <div className="messageColumn">
+                            <p className='step1'>Email your information</p>
+                            <p className='step2'>Admin will review your info and request some type of proof to confirm ownership as well as send a form to gather data</p>
+                            <p className='step3'>Admin will provide a temporary password and initiliaze your information</p>
+                            <p className='step4'>As a provider you can now update your information as often as needed!</p>
                         </div>
                     </div>
                 </section>
