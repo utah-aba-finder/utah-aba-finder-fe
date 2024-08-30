@@ -39,3 +39,10 @@
         transform: rotate(0deg);
     }
 }
+
+
+@media (max-width: 768px) {
+    .pageNotFoundWrapper img {
+        width: 100%;
+    }
+}
