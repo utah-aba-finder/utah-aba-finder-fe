@@ -1,52 +1,143 @@
 .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: #fff;
+  border-radius: 16px;
+  padding: 2rem;
+  width: 90%;
+  max-width: 700px;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+  position: relative;
+  z-index: 1001;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: fadeIn 0.4s ease-in-out;
+}
+
+.modal-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background-color: transparent;
+  border: none;
+  font-size: 1.5rem;
+  color: #666;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.modal-close:hover {
+  color: #e74c3c;
+}
+
+.modal-provider-logo {
+  width: 60%;
+  height: auto;
+  margin-bottom: 1rem;
+}
+
+.location-info {
+  max-width: 100%;
+}
+
+.company-info {
+  text-align: center;
+}
+
+.company-info h2 {
+  font-size: 1.8rem;
+  margin: 0.5rem 0;
+  color: #333;
+}
+
+.company-info h3 {
+  font-size: 1rem;
+  margin: 0.5rem 0;
+  color: #777;
+}
+
+.contact-info {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.contact-info p {
+  margin: 0.3rem 0;
+  font-size: 1rem;
+  color: #707070;
+}
+
+.details {
+  width: 100%;
+  max-width: 600px;
+  background-color: white;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 1px 3px rgba(0, 0, 0, 0.1);
+  text-align: left;
+}
+
+.details p {
+  font-size: 1rem;
+  margin: 0.5rem 0;
+  color: #555;
+}
+
+.details strong {
+  color: #333;
+}
+
+.email-text a {
+  text-decoration: none;
+  color: black;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
   }
-  
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+
+@media (max-width: 540px) {
   .modal-content {
-    background: white;
-    padding: 1.5rem; 
-    border-radius: 8px;
-    width: 90%;
-    max-width: 90vw; 
-    max-height: 90vh; 
-    overflow-y: auto; 
-    box-sizing: border-box; 
-    position: relative; 
+    padding: 1rem;
   }
-  
-  .modal-close {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: #f44336;
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 30px;
-    height: 30px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
+
+  .modal-provider-logo {
+    width: 100px;
   }
-  
-  .modal-close:hover {
-    background: #c62828;
+
+  .company-info {
+    max-width: 100%;
   }
-  
-  @media (max-width: 480px) {
-    .modal-content {
-      padding: 0.5rem;
-      max-width: 80vw;
-    }
+
+  .company-info h2 {
+    font-size: 1.4rem;
   }
-  
+
+  .company-info h3,
+  .contact-info p,
+  .details p {
+    font-size: 0.8rem;
+
+  }
+}
