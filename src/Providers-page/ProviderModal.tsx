@@ -2,6 +2,7 @@ import React from 'react';
 import './ProviderModal.css';
 
 interface Location {
+  name?: string | null;
   address_1: string | null;
   address_2?: string | null;
   city: string | null;
@@ -29,6 +30,7 @@ interface ProviderAttributes {
   at_home_services?: string | null;
   in_clinic_services?: string | null;
   counties_served: { county: string | null }[];
+  logo?: string | null;
 }
 
 interface ProviderModalProps {
@@ -39,35 +41,44 @@ interface ProviderModalProps {
 const ProviderModal: React.FC<ProviderModalProps> = ({ provider, onClose }) => {
   if (!provider) return null;
 
-  const address = provider.locations[0]?.address_1 || 'N/A';
-  const address2 = provider.locations[0]?.address_2 ? `, ${provider.locations[0]?.address_2}` : '';
-  const city = provider.locations[0]?.city || 'N/A';
-  const state = provider.locations[0]?.state || 'N/A';
-  const zip = provider.locations[0]?.zip || 'N/A';
-  const phone = provider.locations[0]?.phone || 'N/A';
-
-  const insuranceNames = provider.insurance.map(i => i.name).join(', ');
-
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-content">
         <button className="modal-close" onClick={onClose}>X</button>
-        <h2>{provider.name}</h2>
-        {provider.website && (
-          <p><strong>Website:</strong> <a href={provider.website} target="_blank" rel="noopener noreferrer">{provider.website}</a></p>
-        )}
-        <p><strong>Address:</strong> {address}{address2}, {city}, {state}, {zip}</p>
-        <p><strong>Phone:</strong> {phone}</p>
-        <p><strong>Email:</strong> {provider.email || 'N/A'}</p>
-        <p><strong>Insurance:</strong> {insuranceNames || 'N/A'}</p>
-        <p><strong>Cost:</strong> {provider.cost || 'N/A'}</p>
-        <p><strong>Ages Served:</strong> {provider.min_age || 'N/A'} - {provider.max_age || 'N/A'}</p>
-        <p><strong>Waitlist:</strong> {provider.waitlist || 'N/A'}</p>
-        <p><strong>Telehealth Services:</strong> {provider.telehealth_services || 'N/A'}</p>
-        <p><strong>Spanish Speakers:</strong> {provider.spanish_speakers || 'N/A'}</p>
-        <p><strong>At Home Services:</strong> {provider.at_home_services || 'N/A'}</p>
-        <p><strong>In Clinic Services:</strong> {provider.in_clinic_services || 'N/A'}</p>
-        <p><strong>Counties Served:</strong> {provider.counties_served.map(c => c.county).join(', ') || 'N/A'}</p>
+        <img src={provider.logo ?? undefined} alt={provider.name ?? undefined} className="modal-provider-logo" />
+
+        <div className="company-info">
+          <h2>{provider.name}</h2>
+
+          {provider.locations.length > 0 ? (
+            provider.locations.slice(0, 4).map((location, index) => (
+              <p key={index}>
+                <strong>Location {index + 1}:</strong>
+                {location.name && <span> {location.name}, </span>}
+                {location.address_1 && <span>{location.address_1}, </span>}
+                {location.address_2 && <span>{location.address_2}, </span>}
+                {location.city && <span>{location.city}, </span>}
+                {location.state && <span>{location.state} </span>}
+                {location.zip && <span>{location.zip}</span>}
+                {location.phone && <span> - Phone: {location.phone}</span>}
+              </p>
+            ))
+          ) : (
+            <p><strong>Physical address is not available for this provider</strong></p>
+          )}
+
+          <p><strong>Website:</strong> <a href={provider.website ?? undefined} target="_blank" rel="noopener noreferrer">{provider.website ?? 'N/A'}</a></p>
+          <p className='email-text'><strong>Email:</strong> <a href={`mailto:${provider.email ?? ''}`} target="_blank" rel="noopener noreferrer">{provider.email ?? 'Does not have an email'}</a></p>
+        </div>
+
+        <div className="details">
+          <p><strong>Counties Served:</strong> {provider.counties_served[0]?.county || 'N/A'}</p>
+          <p><strong>Ages Served:</strong> {provider.min_age} - {provider.max_age} years</p>
+          <p><strong>Waitlist:</strong> {provider.waitlist || 'N/A'}</p>
+          <p><strong>Telehealth Services:</strong> {provider.telehealth_services || 'N/A'}</p>
+          <p><strong>Spanish Speakers:</strong> {provider.spanish_speakers || 'N/A'}</p>
+          <p><strong>Insurance:</strong> {provider.insurance.map(i => i.name).join(', ') || 'N/A'}</p>
+        </div>
       </div>
     </div>
   );

@@ -13,7 +13,7 @@ const AboutUs: React.FC = () => {
         <div className="about-us-container">
 
             <div className="about-us-banner">
-                <video className="about-us-banner-video" autoPlay muted loop>
+                <video className="about-us-banner-video" autoPlay muted loop playsInline>
                     <source src={bannerVideo} type="video/mp4" />
                     Your browser does not support the video tag.
                 </video>
