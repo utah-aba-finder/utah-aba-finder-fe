@@ -56,11 +56,11 @@ const SearchBar: React.FC<SearchBarProps> = ({
     //   isValid = false;
     // }
 
-    if (!selectedSpanish) {
-      setSpanishError(true);
-      toast.error('Please select if Spanish is spoken.');
-      isValid = false;
-    }
+    // if (!selectedSpanish) {
+    //   setSpanishError(true);
+    //   toast.error('Please select if Spanish is spoken.');
+    //   isValid = false;
+    // }
 
     if (isValid) {
       onSearch(searchQuery);
