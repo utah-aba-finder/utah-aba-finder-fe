@@ -100,7 +100,7 @@
 }
 
 .step2,
-.instructionIcon2
+.instructionIcon2,
 .arrow2 {
     animation: fadeIn 4s ease-in-out;
 }
