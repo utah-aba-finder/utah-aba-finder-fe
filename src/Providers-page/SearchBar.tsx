@@ -6,7 +6,7 @@ import { MockProviders } from '../Utility/Types';
 
 interface SearchBarProps {
   onResults: (results: MockProviders) => void;
-  onSearch: (params: { query: string; county: string; insurance: string; spanish: string }) => void; // Update this line
+  onSearch: (params: { query: string; county: string; insurance: string; spanish: string }) => void; 
   onCountyChange: (county: string) => void;
   onInsuranceChange: (insurance: string) => void;
   onSpanishChange: (spanish: string) => void;

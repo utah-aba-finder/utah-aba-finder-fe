@@ -6,7 +6,7 @@ import SearchBar from './SearchBar';
 import GoogleMap from './GoogleMap';
 import { fetchProviders } from '../Utility/ApiCall';
 import { MockProviders, ProviderAttributes } from '../Utility/Types';
-import klayLogo from './klay.png';
+import puzzleLogo from './puzzle.png';
 
 const ProvidersPage: React.FC = () => {
   const [selectedProvider, setSelectedProvider] = useState<ProviderAttributes | null>(null);
@@ -20,7 +20,7 @@ const ProvidersPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
 
   const mapSectionRef = useRef<HTMLDivElement>(null);
-  const providersPerPage = 5;
+  const providersPerPage = 8;
 
   useEffect(() => {
     const getProviders = async () => {
@@ -112,6 +112,7 @@ const ProvidersPage: React.FC = () => {
       spanish_speakers: p.attributes.spanish_speakers,
       at_home_services: p.attributes.at_home_services,
       in_clinic_services: p.attributes.in_clinic_services,
+      logo: p.attributes.logo
     })));
     setCurrentPage(1);
   };
@@ -205,10 +206,12 @@ const ProvidersPage: React.FC = () => {
       </section>
 
       <section className="searched-provider-map-locations-list-section">
-        {currentProviders.map((provider, index) => (
-          <div key={index} className="searched-provider-card">
-            <div className="searched-provider-card-content">
-              <img src={klayLogo} alt="Provider Logo" className="provider-logo" />
+        <div className="provider-cards-grid">
+          {currentProviders.map((provider, index) => (
+            <div key={index} className="searched-provider-card">
+
+              <img src={provider.logo || puzzleLogo} alt="Provider Logo" className="provider-logo" />
+              
               <div className="title-and-info">
                 <div className="searched-provider-card-title">
                   <h3>{provider.name}</h3>
@@ -217,21 +220,26 @@ const ProvidersPage: React.FC = () => {
                 <div className="searched-provider-card-info">
                   <p><strong>Phone:</strong> {provider.locations[0]?.phone || 'N/A'}</p>
                   <p><strong>Email:</strong> {provider.email || 'N/A'}</p>
+
+
+                  <div className="provider-card-buttons">
+                    <button
+                      className="view-details-button"
+                      onClick={() => handleProviderCardClick(provider)}
+                    >
+                      View Details
+                    </button>
+                    {renderViewOnMapButton(provider)}
+                  </div>
+
                 </div>
               </div>
+
             </div>
-            <div className="provider-card-buttons">
-              <button
-                className="view-details-button"
-                onClick={() => handleProviderCardClick(provider)}
-              >
-                View Details
-              </button>
-              {renderViewOnMapButton(provider)}
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </section>
+
 
       <div className="pagination-controls">
         {currentPage > 1 && (

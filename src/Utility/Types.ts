@@ -16,12 +16,6 @@ export interface CountiesServed {
     county: string | null;
 }
 
-export interface Services {
-    telehealth_services: string | null;
-    spanish_speakers: string | null;
-    at_home_services: string | null;
-    in_clinic_services: string | null;
-}
 
 export interface ProviderAttributes {
     name: string | null;
@@ -38,6 +32,7 @@ export interface ProviderAttributes {
     spanish_speakers: string | null;
     at_home_services: string | null;
     in_clinic_services: string | null;
+    logo: string | null;
 }
 
 export interface MockProviderData {
