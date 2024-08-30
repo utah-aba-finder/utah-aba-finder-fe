@@ -12,8 +12,11 @@ const ProvidersPage: React.FC = () => {
   const [selectedProvider, setSelectedProvider] = useState<ProviderAttributes | null>(null);
   const [allProviders, setAllProviders] = useState<ProviderAttributes[]>([]);
   const [filteredProviders, setFilteredProviders] = useState<ProviderAttributes[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedCounty, setSelectedCounty] = useState<string>('');
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedInsurance, setSelectedInsurance] = useState<string>('');
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedSpanish, setSelectedSpanish] = useState<string>('');
   const [mapAddress, setMapAddress] = useState<string>('Utah');
   const [isFiltered, setIsFiltered] = useState<boolean>(false);
