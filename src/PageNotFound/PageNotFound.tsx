@@ -7,6 +7,7 @@ export const PageNotFound = () => {
     <div className='pageNotFoundWrapper'>
          <img 
           src={require('../Assets/404Image.png')} 
+          alt='404 Error'
         />
       
       <section className='button-container'>
