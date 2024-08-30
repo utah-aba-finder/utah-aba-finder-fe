@@ -5,17 +5,10 @@ import './PageNotFound.css'
 export const PageNotFound = () => {
   return (
     <div className='pageNotFoundWrapper'>
-         <video 
-        autoPlay 
-        loop 
-        muted 
-        className='pageNotFoundImage'
-      >
-        <source 
-          src={require('../Assets/404message.mp4')} 
-          type="video/mp4" 
+         <img 
+          src={require('../Assets/404Image.png')} 
         />
-      </video>
+      
       <section className='button-container'>
         <Link to='/'><button className='homeButton'>Home</button></Link>
       </section>
