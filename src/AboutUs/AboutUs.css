@@ -152,6 +152,10 @@
 }
 
 @media (max-width: 540px) {
+    .about-us-title {
+        font-size: 2rem;
+    }
+
     .about-us-portfolio {
         flex-direction: column;
         align-items: center;
