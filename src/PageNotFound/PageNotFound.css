@@ -1,15 +1,17 @@
 .pageNotFoundWrapper {
     width: 100%;
-    height: 100vh; 
+    height: 100%; 
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
 }
 
-.pageNotFoundImage {
-    width: 40%; 
+.pageNotFoundWrapper img {
+    width: 50%; 
     height: 100%; 
+    transform-origin: center;
+    animation: rotateIn 2s ease-out forwards;
 }
 
 .homeButton {
@@ -27,3 +29,20 @@
     background-color: rgb(255, 0, 0);
 }
 
+@keyframes rotateIn {
+    0% {
+        opacity: 0;
+        transform: rotate(90deg);
+    }
+    100% {
+        opacity: 1;
+        transform: rotate(0deg);
+    }
+}
+
+
+@media (max-width: 768px) {
+    .pageNotFoundWrapper img {
+        width: 100%;
+    }
+}
