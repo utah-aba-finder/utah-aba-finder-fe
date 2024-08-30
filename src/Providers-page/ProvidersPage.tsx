@@ -38,25 +38,25 @@ const ProvidersPage: React.FC = () => {
     getProviders();
   }, []);
 
-  const handleSearch = useCallback((query: string) => {
-    const normalizedCounty = selectedCounty.toLowerCase();
-    const normalizedInsurance = selectedInsurance.toLowerCase();
-    const normalizedSpanish = selectedSpanish.toLowerCase();
+  const handleSearch = useCallback(({ query, county, insurance, spanish }: { query: string; county: string; insurance: string; spanish: string }) => {
+    const normalizedCounty = county.toLowerCase();
+    const normalizedInsurance = insurance.toLowerCase();
+    const normalizedSpanish = spanish.toLowerCase();
 
     const filtered = allProviders.filter(provider =>
       provider.name?.toLowerCase().includes(query.toLowerCase()) &&
-      (!selectedCounty || provider.counties_served.some(c => c.county?.toLowerCase().includes(normalizedCounty))) &&
-      (!selectedInsurance || provider.insurance.some(i => i.name?.toLowerCase().includes(normalizedInsurance))) &&
-      (selectedSpanish === '' || (provider.spanish_speakers && provider.spanish_speakers.toLowerCase() === normalizedSpanish))
+      (!county || provider.counties_served.some(c => c.county?.toLowerCase().includes(normalizedCounty))) &&
+      (!insurance || provider.insurance.some(i => i.name?.toLowerCase().includes(normalizedInsurance))) &&
+      (spanish === '' || (provider.spanish_speakers && provider.spanish_speakers.toLowerCase() === normalizedSpanish))
     );
 
     setFilteredProviders(filtered);
     setIsFiltered(true);
     setCurrentPage(1);
-  }, [allProviders, selectedCounty, selectedInsurance, selectedSpanish]);
+  }, [allProviders]);
 
   useEffect(() => {
-    handleSearch('');
+    handleSearch({ query: '', county: '', insurance: '', spanish: '' });
   }, [handleSearch]);
 
   const handleProviderCardClick = (provider: ProviderAttributes) => {

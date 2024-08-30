@@ -56,7 +56,7 @@
 }
 
 .provider-map-searchbar input[type="text"]::placeholder {
-    color: #ffffff;
+    color: #d2d2d2;
 }
 
 .provider-map-searchbar input[type="text"]:hover,
@@ -95,7 +95,7 @@
     appearance: none;
     padding: 0.5rem 1rem;
     background-color: #555555;
-    color: #ffffff;
+    color: #d2d2d2;
     border: none;
     border-radius: 0.25rem;
     font-size: 1rem;
@@ -109,7 +109,7 @@
     appearance: none;
     padding: 0.5rem 1rem;
     background-color: #555555;
-    color: #ffffff;
+    color: #d2d2d2;
     border: none;
     border-radius: 0.25rem;
     font-size: 1rem;
@@ -123,7 +123,7 @@
     appearance: none;
     padding: 0.5rem 1rem;
     background-color: #555555;
-    color: #ffffff;
+    color: #d2d2d2;
     border: none;
     border-radius: 0.25rem;
     font-size: 1rem;
