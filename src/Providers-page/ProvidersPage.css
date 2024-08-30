@@ -23,7 +23,7 @@
     left: 50%;
     transform: translate(-50%, -50%);
     color: white;
-    font-size: 2rem;
+    font-size: 2.5rem;
     text-align: center;
     background-color: rgba(0, 0, 0, 0.5);
     padding: 1rem;
@@ -272,7 +272,16 @@
 
 }
 
+@media (max-width: 540px) {
+    .providers-banner-title {
+        font-size: 2rem;
+
+    }
+}
+
+
 @media screen and (min-width: 768px) {
+
     .searched-provider-card-content {
         flex-direction: row;
     }
