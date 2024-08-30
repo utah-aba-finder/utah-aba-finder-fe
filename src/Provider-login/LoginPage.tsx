@@ -1,6 +1,5 @@
 import React, {useState} from 'react'
 import './LoginPage.css'
-import notes from '../Assets/behaviorPlan.jpg'
 import { User, Lock, Eye, EyeOff } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -16,7 +15,6 @@ export const LoginPage: React.FC = () => {
             <div className='loginWrapper'>
                 <div className='loginContainer'>
                     <h1 className='loginImageText'>Provider Login</h1>
-                    <img src={notes} alt='notepad' className='loginImage' />
                     <form className='loginForm'> <div className='input'>
                             <User className='userIcon'/>
                             <input type='text' id='username' name='username' placeholder='User Name'required />
