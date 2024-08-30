@@ -99,4 +99,8 @@ input:focus:invalid {
     .contact-page-button {
         width: 40%;
     }
+
+    .contact-banner-title {
+        font-size: 2rem;
+    }
 }
