@@ -47,10 +47,8 @@
 
 .searched-provider-map-locations-list-section {
     font-family: 'Open Sans', sans-serif;
-    
     justify-content: center;
     width: 100%;
-    padding: 0 2rem;
 }
 
 .provider-cards-grid {
@@ -58,21 +56,16 @@
     grid-template-columns: repeat(1, 1fr);
     gap: 2rem; /* Increased gap for better spacing */
     width: 100%;
-    max-width: 1200px; /* Limit the width of the grid to center it better */
-    margin: 0 auto; /* Center the grid container */
+    max-width: 1800px; /* Limit the width of the grid to center it better */
+    margin: 0 auto; 
 }
 
 @media screen and (min-width: 768px) {
     .provider-cards-grid {
-        grid-template-columns: repeat(2, minmax(300px, 1fr)); /* Ensure columns have a minimum width */
-        justify-content: space-between; /* Space between the two columns */
-    }
-
-    .searched-provider-card {
-        max-width: 100%;
+        grid-template-columns: repeat(2, minmax(700px, 1fr)); 
+        justify-content: space-between;
     }
 }
-
 
 .searched-provider-card h3 {
     color: #21343a;
@@ -104,15 +97,14 @@
     transition: opacity 0.45s ease, transform 0.5s ease;
 }
 
-
 .title-and-info {
     display: flex;
     flex-direction: column;
-    padding-left: 0;
 }
 
-.searched-provider-card-info {
-    padding-left: 0;
+.searched-provider-card-title {
+    padding-top: .4rem;
+    width: 80%;
 }
 
 .view-details-button,
@@ -129,41 +121,53 @@
     cursor: pointer;
 }
 
-.view-details-button {
-    margin-right: 1rem;
-}
-
 .searched-provider-card {
     display: flex;
-    
-    max-width: 55rem;
-    width: 90%;
+    justify-content: center;
+    align-items: center;
     overflow: hidden;
     border-radius: 0.5em;
-    background: rgb(232, 183, 84);
-    margin: .6em;
+    background: rgb(208, 208, 208);
     padding: .6rem;
     box-shadow: 0 1.5em 2.5em -0.5em rgba(0, 0, 0, 0.1);
     transition: transform 0.45s ease, background 0.45s ease;
+    padding: 2rem;
+    gap: 1em;
 }
 
 .provider-logo {
     border-radius: 1em;
-    max-width: 100%;
-    height: auto;
-    padding: .5rem;
-    background-color: rgb(93, 91, 89);
+    width: 15rem;
+    height: 8rem;
+    justify-content: center;
+    align-content: center;
+    align-items: center;
+    margin-left: 10px;
+    border-color: #21343a;
+    
 }
 
 .provider-card-buttons {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding-bottom: .5rem;
+    flex-direction: column; 
+    gap: 0.5rem;
+    padding-bottom: 0.5rem;
+}
+
+.searched-provider-card.multiple-locations .provider-card-buttons {
+    flex-direction: column; 
+    align-items: center; 
+    gap: .5rem; 
+    justify-content: center;
+    width: 85%;
 }
 
 .view-details-button,
 .view-on-map-button {
+    width: 100%;
+    text-align: left;
     border: none;
     border-radius: 0.25rem;
     background-color: #555555;
@@ -171,11 +175,23 @@
     font-size: 1.3rem;
     cursor: pointer;
     padding: 0.5rem;
-    border-radius: 0.25em;
     box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
     transition: background-color 0.3s, transform 0.3s;
-    width: 100%;
+    margin-bottom: 0.5rem;
+}
+
+.view-on-map-dropdown {
+    width: 80%;
     text-align: left;
+    border: none;
+    border-radius: 0.25rem;
+    background-color: #555555;
+    color: #ffffff;
+    font-size: 1.3rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s, transform 0.3s;
     margin-bottom: 0.5rem;
 }
 
@@ -245,7 +261,6 @@
     padding: 0.5rem;
     box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
     transition: background-color 0.3s, transform 0.3s;
-    text-align: left;
 }
 
 .view-on-map-dropdown option {
@@ -275,23 +290,17 @@
 @media (max-width: 540px) {
     .providers-banner-title {
         font-size: 2rem;
-
     }
 }
 
 
 @media screen and (min-width: 768px) {
-
     .searched-provider-card-content {
         flex-direction: row;
     }
 
     .title-and-info {
         align-items: center;
-    }
-
-    .searched-provider-card-info {
-        padding-left: 1rem;
     }
 
     .provider-card-buttons {
@@ -304,24 +313,5 @@
         width: auto;
         margin-bottom: 0;
     }
-
-    .provider-logo {
-        width: 20%;
-        margin-bottom: 0;
-    }
 }
 
-@media screen and (max-width: 768px) {
-    .title-and-info {
-        padding-left: .5rem;
-    }
-}
-
-@media screen and (max-width: 6000px) {
-
-    .view-details-button,
-    .view-on-map-button {
-        width: auto;
-        margin-bottom: 0;
-    }
-}

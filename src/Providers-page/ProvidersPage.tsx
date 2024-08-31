@@ -150,7 +150,6 @@ const ProvidersPage: React.FC = () => {
             const index = e.target.value;
             const location = provider.locations[parseInt(index)];
             const fullAddress = `${location.address_1 || ''} ${location.address_2 || ''}, ${location.city || ''}, ${location.state || ''} ${location.zip || ''}`.trim();
-            console.log('Selected Address from Dropdown:', fullAddress);
             handleViewOnMapClick(fullAddress);
           }}
           defaultValue=""
@@ -212,19 +211,29 @@ const ProvidersPage: React.FC = () => {
       <section className="searched-provider-map-locations-list-section">
         <div className="provider-cards-grid">
           {currentProviders.map((provider, index) => (
-            <div key={index} className="searched-provider-card">
-
+            <div
+              key={index}
+              className={`searched-provider-card ${provider.locations.length > 1 ? 'multiple-locations' : ''}`}
+            >
               <img src={provider.logo || puzzleLogo} alt="Provider Logo" className="provider-logo" />
-              
+
               <div className="title-and-info">
                 <div className="searched-provider-card-title">
                   <h3>{provider.name}</h3>
-                  <h4>{provider.locations[0]?.address_1 || 'Physical address is not available for this provider.'} {provider.locations[0]?.address_2} {provider.locations[0]?.city} {provider.locations[0]?.state} {provider.locations[0]?.zip}</h4>
+                  <h4>
+                    {provider.locations[0]?.address_1 ||
+                      'Physical address is not available for this provider.'}{' '}
+                    {provider.locations[0]?.address_2} {provider.locations[0]?.city}{' '}
+                    {provider.locations[0]?.state} {provider.locations[0]?.zip}
+                  </h4>
                 </div>
                 <div className="searched-provider-card-info">
-                  <p><strong>Phone:</strong> {provider.locations[0]?.phone || 'N/A'}</p>
-                  <p><strong>Email:</strong> {provider.email || 'N/A'}</p>
-
+                  <p>
+                    <strong>Phone:</strong> {provider.locations[0]?.phone || 'N/A'}
+                  </p>
+                  <p>
+                    <strong>Email:</strong> {provider.email || 'N/A'}
+                  </p>
 
                   <div className="provider-card-buttons">
                     <button
@@ -235,10 +244,8 @@ const ProvidersPage: React.FC = () => {
                     </button>
                     {renderViewOnMapButton(provider)}
                   </div>
-
                 </div>
               </div>
-
             </div>
           ))}
         </div>
