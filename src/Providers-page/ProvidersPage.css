@@ -33,16 +33,17 @@
 
 .google-map-section {
     display: flex;
+    align-items: center;
     justify-content: center;
     border-radius: 0.25rem;
     gap: 1rem;
     width: 100%;
-    height: 45rem;
+    height: 40rem;
     max-width: 100%;
     box-sizing: border-box;
     overflow: hidden;
-    padding-left: 1rem;
-    padding-right: 1rem;
+    padding-left: 1.8rem;
+    padding-right: 1.8rem;
 }
 
 .searched-provider-map-locations-list-section {
@@ -54,22 +55,22 @@
 .provider-cards-grid {
     display: grid;
     grid-template-columns: repeat(1, 1fr);
-    gap: 2rem; /* Increased gap for better spacing */
-    width: 100%;
-    max-width: 1800px; /* Limit the width of the grid to center it better */
-    margin: 0 auto; 
+    gap: 1.6rem;
+    max-width: 1250px;
+    margin: 0 auto;
 }
 
 @media screen and (min-width: 768px) {
     .provider-cards-grid {
-        grid-template-columns: repeat(2, minmax(700px, 1fr)); 
+        grid-template-columns: repeat(2, minmax(600px, 1fr));
         justify-content: space-between;
     }
+
 }
 
 .searched-provider-card h3 {
     color: #21343a;
-    font-size: 2em;
+    font-size: 1.5em;
     font-weight: 900;
     line-height: 1;
     padding-bottom: 0.3em;
@@ -80,7 +81,7 @@
 
 .searched-provider-card h4 {
     color: #5f3e2e;
-    font-size: 1.1em;
+    font-size: 1em;
     font-weight: 650;
     line-height: 1;
     transition: color 0.45s ease;
@@ -102,16 +103,11 @@
     flex-direction: column;
 }
 
-.searched-provider-card-title {
-    padding-top: .4rem;
-    width: 80%;
-}
-
 .view-details-button,
 .view-on-map-button,
 .view-on-map-dropdown,
 .pagination-button {
-    font-size: 1.125em;
+    font-size: 1em;
     font-weight: 600;
     line-height: 1.2;
     margin: auto 0 0;
@@ -131,8 +127,10 @@
     padding: .6rem;
     box-shadow: 0 1.5em 2.5em -0.5em rgba(0, 0, 0, 0.1);
     transition: transform 0.45s ease, background 0.45s ease;
-    padding: 2rem;
+    padding: 1.2rem;
     gap: 1em;
+    max-width: 600px;
+    max-height: 300px;
 }
 
 .provider-logo {
@@ -142,24 +140,24 @@
     justify-content: center;
     align-content: center;
     align-items: center;
-    margin-left: 10px;
+    margin-left: 5px;
 }
 
 .provider-card-buttons {
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-direction: column; 
+    flex-direction: column;
     gap: 0.5rem;
-    padding-bottom: 0.5rem;
+    padding-bottom: 0.2rem;
 }
 
 .searched-provider-card.multiple-locations .provider-card-buttons {
-    flex-direction: column; 
-    align-items: center; 
-    gap: .5rem; 
+    flex-direction: column;
+    align-items: center;
+    gap: .5rem;
     justify-content: center;
-    width: 85%;
+    width: 80%;
 }
 
 .view-details-button,
@@ -170,7 +168,7 @@
     border-radius: 0.25rem;
     background-color: #555555;
     color: #ffffff;
-    font-size: 1.3rem;
+    font-size: 1rem;
     cursor: pointer;
     padding: 0.5rem;
     box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
@@ -179,13 +177,13 @@
 }
 
 .view-on-map-dropdown {
-    width: 80%;
-    text-align: left;
+    width: 120%;
+    text-align: center;
     border: none;
     border-radius: 0.25rem;
     background-color: #555555;
     color: #ffffff;
-    font-size: 1.3rem;
+    font-size: 1rem;
     cursor: pointer;
     padding: 0.5rem;
     box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
@@ -254,9 +252,8 @@
     border-radius: 0.25rem;
     background-color: #555555;
     color: #ffffff;
-    font-size: 1.3rem;
+    font-size: 1rem;
     cursor: pointer;
-    padding: 0.5rem;
     box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
     transition: background-color 0.3s, transform 0.3s;
 }
@@ -289,8 +286,82 @@
     .providers-banner-title {
         font-size: 2rem;
     }
-}
 
+    .provider-logo {
+        border-radius: 1em;
+        width: 7rem;
+        height: 5rem;
+        justify-content: center;
+        align-content: center;
+        align-items: center;
+        margin-left: 2px;
+    }
+
+    .searched-provider-card {
+        margin-left: 1em;
+        margin-right: 1em;
+    }
+
+    .searched-provider-card h3 {
+        font-size: 1.3em;
+    }
+
+    .searched-provider-card h4 {
+        font-size: .8em;
+    }
+
+    .searched-provider-card p {
+        font-size: .75em;
+    }
+
+    .searched-provider-card-info {
+        max-width: 11.99rem
+    }
+
+    .title-and-info {
+        max-height: 18.5rem;
+    }
+
+    .view-on-map-dropdown {
+        width: 94%;
+    }
+
+    .google-map-section {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0.25rem;
+        gap: 1rem;
+        width: 100%;
+        height: 30rem;
+        max-width: 100%;
+        box-sizing: border-box;
+        overflow: hidden;
+        padding-left: .3rem;
+        padding-right: .3rem;
+    }
+
+    .provider-card-buttons {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        gap: 0.1rem;
+        text-align: center;
+        align-items: center;
+        justify-content: center;
+        padding: 1.1em;
+    }
+
+    .view-details-button,
+    .view-on-map-button,
+    .view-on-map-dropdown,
+    .pagination-button {
+        font-size: .9em;
+        font-weight: 600;
+
+    }
+}
 
 @media screen and (min-width: 768px) {
     .searched-provider-card-content {
@@ -311,5 +382,6 @@
         width: auto;
         margin-bottom: 0;
     }
-}
 
+
+}
