@@ -40,7 +40,9 @@ A website designed to help parents locate autism treatment providers in Utah. Us
 ![Screenshot 2024-09-04 at 4 56 11 PM](https://github.com/user-attachments/assets/cc26d8fc-5e65-40eb-b55e-875c2fa26ea4)
 ![Screenshot 2024-09-04 at 4 56 02 PM](https://github.com/user-attachments/assets/2905565d-aede-4d13-9312-019b09cc180b)
 
-
+### Figma & Github Project Board
+![Screenshot 2024-09-04 at 5 00 52 PM](https://github.com/user-attachments/assets/752fc671-970f-4a32-862f-8b019c6fe2bd)
+![Screenshot 2024-09-04 at 5 01 16 PM](https://github.com/user-attachments/assets/88f4342a-8276-4474-bc19-f7d1ab327f9a)
 
 ## Installation Instructions
 ### To start the app
@@ -51,6 +53,7 @@ A website designed to help parents locate autism treatment providers in Utah. Us
 
 ## Pre-Planning
 Used Github Project to plan & track workflow. [here](https://github.com/orgs/utah-aba-finder/projects/2)
+<br />
 Used Figma for pre-planning. [here](https://www.figma.com/design/WvGbb3HtesLKsSkRSfVLLk/Capstone-Layout?node-id=0-1&node-type=CANVAS&t=Gw1f0YBeOdh9hA3Y-0)
 
 
