@@ -36,7 +36,6 @@ A website designed to help parents locate autism treatment providers in Utah. Us
 ![Screenshot 2024-09-04 at 4 44 06 PM](https://github.com/user-attachments/assets/20c13b14-e6f2-4c8e-b227-3b38a50bcb86)
 
 
-
 ## Installation Instructions
 ### To start the app
 - [ ]  Clone down the repository onto your local machine using `git clone git@github.com:utah-aba-finder/utah-aba-finder-fe.git`
@@ -44,11 +43,8 @@ A website designed to help parents locate autism treatment providers in Utah. Us
 - [ ]  Run `npm start` then visit the local host to view the application in your browser.
 
 
-
-
 ## Pre-Planning
 Used Github Project for Pre-planning. [here](https://github.com/orgs/utah-aba-finder/projects/2)
-
 
 
 ## Learning Goals
@@ -57,10 +53,17 @@ Used Github Project for Pre-planning. [here](https://github.com/orgs/utah-aba-fi
   * Utilize PR templates and a project board for efficient workflow management.
   
 ## Challenges
-
+  * Learning and integrating TypeScript with React was a significant challenge.
   
 ## Wins
+  * We were able to sccuessfully integrate Typescript into the project
+  * Acheived a clean and modular project structure, made code easier to manage and maintain over time.
+  * Delivered a responsive and user-friendly UI, mobile-view ready website.
+  * Excellent communications.
+
 
 
 ## Contributions
+[Jordan Williamson - LinkedIn](https://www.linkedin.com/in/jordan-williamson-a079b3271/)
+[Kevin Nelson - LinkedIn](https://www.linkedin.com/in/kevinnelson418/)
 [Seong Kang - LinkedIn](https://www.linkedin.com/in/seong-kang/)
