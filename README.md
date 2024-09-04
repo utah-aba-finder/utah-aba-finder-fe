@@ -7,7 +7,7 @@ A website designed to help parents locate autism treatment providers in Utah. Us
 [Check out my project HERE](https://utahabalocator.com/)
 
 ## Preview
-
+![preview](https://github.com/user-attachments/assets/691968bb-1a09-48d5-b178-0a8427d6326e)
 
 
 ## Screenshots
