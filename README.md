@@ -4,7 +4,7 @@
 ## Abstract
 A website designed to help parents locate autism treatment providers in Utah. Users can search for and filter providers by county, insurance, and availability of Spanish-speaking services, using a Google Maps embedded API. The site will also feature autism screening tools, such as the M-CHAT and the CAST, along with educational resources about autism. Users can contact the admin via email using EmailJS, and providers will have the ability to log in and edit their information as needed.
 
-[Check out my project HERE](https://utahabalocator.com/)
+[Check out the deployed website HERE](https://utahabalocator.com/)
 
 ## Preview
 ![preview](https://github.com/user-attachments/assets/691968bb-1a09-48d5-b178-0a8427d6326e)
@@ -50,11 +50,12 @@ A website designed to help parents locate autism treatment providers in Utah. Us
 
 
 ## Pre-Planning
-Used Github Project for Pre-planning. [here](https://github.com/orgs/utah-aba-finder/projects/2)
+Used Github Project to plan & track workflow. [here](https://github.com/orgs/utah-aba-finder/projects/2)
+Used Figma for pre-planning. [here](https://www.figma.com/design/WvGbb3HtesLKsSkRSfVLLk/Capstone-Layout?node-id=0-1&node-type=CANVAS&t=Gw1f0YBeOdh9hA3Y-0)
 
 
 ## Learning Goals
-  * Gain experience with Typescript and react.
+  * Gain experience with Typescript and React.
   * Develop a modular project structure.
   * Utilize PR templates and a project board for efficient workflow management.
   
@@ -69,7 +70,7 @@ Used Github Project for Pre-planning. [here](https://github.com/orgs/utah-aba-fi
 
 
 
-## Contributions
+## FE Contributors
 [Jordan Williamson - LinkedIn](https://www.linkedin.com/in/jordan-williamson-a079b3271/)
 [Kevin Nelson - LinkedIn](https://www.linkedin.com/in/kevinnelson418/)
 [Seong Kang - LinkedIn](https://www.linkedin.com/in/seong-kang/)
