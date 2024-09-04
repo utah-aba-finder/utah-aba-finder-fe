@@ -1,46 +1,66 @@
-# Getting Started with Create React App
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+![NewLogo3](https://github.com/user-attachments/assets/601bb8f0-827d-4b67-a5d4-fa6a085a414b)
 
-## Available Scripts
+## Abstract
+A website designed to help parents locate autism treatment providers in Utah. Users can search for and filter providers by county, insurance, and availability of Spanish-speaking services, using a Google Maps embedded API. The site will also feature autism screening tools, such as the M-CHAT and the CAST, along with educational resources about autism. Users can contact the admin via email using EmailJS, and providers will have the ability to log in and edit their information as needed.
 
-In the project directory, you can run:
+[Check out my project HERE](https://utahabalocator.com/)
 
-### `npm start`
+## Preview
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
 
-### `npm test`
+## Screenshots
+### Home Page
+![Screenshot 2024-09-04 at 4 42 44 PM](https://github.com/user-attachments/assets/2d1367e6-8d01-4dd5-af33-036246138a69)
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### Providers Page
+![Screenshot 2024-09-04 at 4 42 55 PM](https://github.com/user-attachments/assets/5dcdcc3f-2d59-497a-9fe6-10da6fad43ee)
 
-### `npm run build`
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Screening Page
+![Screenshot 2024-09-04 at 4 43 07 PM](https://github.com/user-attachments/assets/c8f33bcb-1f2a-43cf-b0d6-448ae6648446)
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### Information Page
+![Screenshot 2024-09-04 at 4 43 18 PM](https://github.com/user-attachments/assets/2eb271ed-64ef-4b94-82cc-f3a5cf7a7dd8)
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### Provider Login Page
+![Screenshot 2024-09-04 at 4 43 27 PM](https://github.com/user-attachments/assets/73994b09-6c05-4886-8c64-7c500f4e9fc6)
 
-### `npm run eject`
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+### Contact Page
+![Screenshot 2024-09-04 at 4 43 39 PM](https://github.com/user-attachments/assets/5bfa728a-e67b-49fb-9552-6bf8f0a79766)
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### About Us Page
+![Screenshot 2024-09-04 at 4 43 52 PM](https://github.com/user-attachments/assets/82b05a46-1a7c-4866-a5ca-2b091967f385)
+![Screenshot 2024-09-04 at 4 44 06 PM](https://github.com/user-attachments/assets/20c13b14-e6f2-4c8e-b227-3b38a50bcb86)
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
 
-## Learn More
+## Installation Instructions
+### To start the app
+- [ ]  Clone down the repository onto your local machine using `git clone git@github.com:utah-aba-finder/utah-aba-finder-fe.git`
+- [ ]  Once cloned down, cd into the direction and install dependencies by running `npm install`
+- [ ]  Run `npm start` then visit the local host to view the application in your browser.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+
+
+## Pre-Planning
+Used Github Project for Pre-planning. [here](https://github.com/orgs/utah-aba-finder/projects/2)
+
+
+
+## Learning Goals
+  * Gain experience with Typescript and react.
+  * Develop a modular project structure.
+  * Utilize PR templates and a project board for efficient workflow management.
+  
+## Challenges
+
+  
+## Wins
+
+
+## Contributions
+[Seong Kang - LinkedIn](https://www.linkedin.com/in/seong-kang/)
