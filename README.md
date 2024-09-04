@@ -74,6 +74,6 @@ Used Figma for pre-planning. [here](https://www.figma.com/design/WvGbb3HtesLKsSk
 
 
 ## FE Contributors
-[Jordan Williamson - LinkedIn](https://www.linkedin.com/in/jordan-williamson-a079b3271/)
-[Kevin Nelson - LinkedIn](https://www.linkedin.com/in/kevinnelson418/)
+[Jordan Williamson - LinkedIn](https://www.linkedin.com/in/jordan-williamson-a079b3271/) <br />
+[Kevin Nelson - LinkedIn](https://www.linkedin.com/in/kevinnelson418/) <br />
 [Seong Kang - LinkedIn](https://www.linkedin.com/in/seong-kang/)
