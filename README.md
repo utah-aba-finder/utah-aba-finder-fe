@@ -36,6 +36,12 @@ A website designed to help parents locate autism treatment providers in Utah. Us
 ![Screenshot 2024-09-04 at 4 44 06 PM](https://github.com/user-attachments/assets/20c13b14-e6f2-4c8e-b227-3b38a50bcb86)
 
 
+### Mobile View of the Website
+![Screenshot 2024-09-04 at 4 56 11 PM](https://github.com/user-attachments/assets/cc26d8fc-5e65-40eb-b55e-875c2fa26ea4)
+![Screenshot 2024-09-04 at 4 56 02 PM](https://github.com/user-attachments/assets/2905565d-aede-4d13-9312-019b09cc180b)
+
+
+
 ## Installation Instructions
 ### To start the app
 - [ ]  Clone down the repository onto your local machine using `git clone git@github.com:utah-aba-finder/utah-aba-finder-fe.git`
