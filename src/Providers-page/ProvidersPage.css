@@ -31,19 +31,23 @@
     z-index: 1;
 }
 
+.map{
+    padding-left: 1.8rem;
+    padding-right: 1.8rem;
+}
+
 .google-map-section {
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 0.25rem;
+    border-radius: 0.65rem;
+    border: 3px solid #6082a8;
     gap: 1rem;
     width: 100%;
     height: 40rem;
     max-width: 100%;
     box-sizing: border-box;
     overflow: hidden;
-    padding-left: 1.8rem;
-    padding-right: 1.8rem;
 }
 
 .searched-provider-map-locations-list-section {
@@ -330,16 +334,17 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        border-radius: 0.25rem;
         gap: 1rem;
         width: 100%;
-        height: 30rem;
+        height: 40rem;
         max-width: 100%;
         box-sizing: border-box;
         overflow: hidden;
-        padding-left: .3rem;
-        padding-right: .3rem;
+        padding-left: 1.8rem;
+        padding-right: 1.8rem;
+        border: 3px solid #4a90e2; /* Add a colored border (light blue in this case) */
     }
+    
 
     .provider-card-buttons {
         display: flex;

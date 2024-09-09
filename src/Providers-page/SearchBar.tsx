@@ -6,47 +6,35 @@ import { MockProviders } from '../Utility/Types';
 
 interface SearchBarProps {
   onResults: (results: MockProviders) => void;
-  onSearch: (params: { query: string; county: string; insurance: string; spanish: string }) => void; 
+  onSearch: (params: { query: string; county: string; insurance: string; spanish: string }) => void;
   onCountyChange: (county: string) => void;
-  onInsuranceChange: (insurance: string) => void;
+  insuranceOptions: string[];
+  onInsuranceChange: (insurance: string) => void; // <- Added this prop
   onSpanishChange: (spanish: string) => void;
   onReset: () => void;
 }
 
 const SearchBar: React.FC<SearchBarProps> = ({
-  onResults,
   onSearch,
   onCountyChange,
-  onInsuranceChange,
+  insuranceOptions,
+  onInsuranceChange, // <- Added this
   onSpanishChange,
-  onReset
+  onReset,
 }) => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedCounty, setSelectedCounty] = useState<string>('');
   const [selectedInsurance, setSelectedInsurance] = useState<string>('');
   const [selectedSpanish, setSelectedSpanish] = useState<string>('');
-  const [inputError, setInputError] = useState<boolean>(false);
-  const [countyError, setCountyError] = useState<boolean>(false);
-  const [insuranceError, setInsuranceError] = useState<boolean>(false);
-  const [spanishError, setSpanishError] = useState<boolean>(false);
-
+  
   const handleSearch = useCallback(() => {
-    let isValid = true;
-
-    setInputError(false);
-    setCountyError(false);
-    setInsuranceError(false);
-    setSpanishError(false);
-
-    if (isValid) {
-      const searchParams = {
-        query: searchQuery,
-        county: selectedCounty,
-        insurance: selectedInsurance,
-        spanish: selectedSpanish
-      };
-      onSearch(searchParams); // Pass search parameters as an object
-    }
+    const searchParams = {
+      query: searchQuery,
+      county: selectedCounty,
+      insurance: selectedInsurance,
+      spanish: selectedSpanish,
+    };
+    onSearch(searchParams);
   }, [searchQuery, selectedCounty, selectedInsurance, selectedSpanish, onSearch]);
 
   const handleReset = () => {
@@ -54,11 +42,6 @@ const SearchBar: React.FC<SearchBarProps> = ({
     setSelectedCounty('');
     setSelectedInsurance('');
     setSelectedSpanish('');
-    setInputError(false);
-    setCountyError(false);
-    setInsuranceError(false);
-    setSpanishError(false);
-
     onReset();
   };
 
@@ -71,11 +54,10 @@ const SearchBar: React.FC<SearchBarProps> = ({
             placeholder="Search for a provider..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className={inputError ? 'input-error' : ''}
           />
           <div className="provider-county-dropdown">
-            <select
-              className={`provider-county-select ${countyError ? 'input-error' : ''}`}
+          <select
+              className={`provider-county-select`}
               value={selectedCounty}
               onChange={(e) => setSelectedCounty(e.target.value)}
             >
@@ -98,31 +80,32 @@ const SearchBar: React.FC<SearchBarProps> = ({
               <option value="Wayne">Wayne County</option>
             </select>
           </div>
+
           <div className="provider-insurance-dropdown">
             <select
-              className={`provider-insurance-select ${insuranceError ? 'input-error' : ''}`}
+              className="provider-insurance-select"
               value={selectedInsurance}
-              onChange={(e) => setSelectedInsurance(e.target.value)}
+              onChange={(e) => {
+                setSelectedInsurance(e.target.value);
+                onInsuranceChange(e.target.value);
+              }}
             >
-              {/* <option value="" disabled>Insurance</option> */}
               <option value="">All Insurances</option>
-              <option value="Aetna">Aetna</option>
-              <option value="Regence (BCBS)">Regence (BCBS)</option>
-              <option value="Cigna">Cigna</option>
-              <option value="Health Choice Utah">Health Choice Utah</option>
-              <option value="Healthy U Medicaid (University of Utah Health Plans)">Healthy U Medicaid (University of Utah Health Plans)</option>
-              <option value="United HealthCare (UHC)">United HealthCare (UHC)</option>
-              <option value="Deseret Mutual Benefit Administrators (DMBA)">Deseret Mutual Benefit Administrators (DMBA)</option>
+              {insuranceOptions.map((insurance, index) => (
+                <option key={index} value={insurance}>
+                  {insurance}
+                </option>
+              ))}
             </select>
           </div>
 
           <div className="provider-spanish-dropdown">
             <select
-              className={`provider-spanish-select ${spanishError ? 'input-error' : ''}`}
+              className="provider-spanish-select"
               value={selectedSpanish}
               onChange={(e) => setSelectedSpanish(e.target.value)}
             >
-              <option value="" disabled>Spanish?</option>
+              <option value="">Spanish?</option>
               <option value="yes">Yes</option>
               <option value="no">No</option>
             </select>

@@ -13,6 +13,7 @@ const ProvidersPage: React.FC = () => {
   const [selectedProvider, setSelectedProvider] = useState<ProviderAttributes | null>(null);
   const [allProviders, setAllProviders] = useState<ProviderAttributes[]>([]);
   const [filteredProviders, setFilteredProviders] = useState<ProviderAttributes[]>([]);
+  const [uniqueInsuranceOptions, setUniqueInsuranceOptions] = useState<string[]>([])
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedCounty, setSelectedCounty] = useState<string>('');
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -33,6 +34,12 @@ const ProvidersPage: React.FC = () => {
         const mappedProviders = providersList.data.map(provider => provider.attributes);
         setAllProviders(mappedProviders);
         setFilteredProviders(mappedProviders);
+
+        const uniqueInsurances = Array.from(new Set(
+          mappedProviders.flatMap(provider => provider.insurance.map(ins => ins.name || ''))
+        ))
+
+        setUniqueInsuranceOptions(uniqueInsurances);
         setMapAddress('Utah');
       } catch (error) {
         console.error('Error loading providers:', error);
@@ -45,19 +52,21 @@ const ProvidersPage: React.FC = () => {
   const handleSearch = useCallback(({ query, county, insurance, spanish }: { query: string; county: string; insurance: string; spanish: string }) => {
     const normalizedCounty = county.toLowerCase();
     const normalizedInsurance = insurance.toLowerCase();
-    const normalizedSpanish = spanish.toLowerCase();
 
     const filtered = allProviders.filter(provider =>
       provider.name?.toLowerCase().includes(query.toLowerCase()) &&
       (!county || provider.counties_served.some(c => c.county?.toLowerCase().includes(normalizedCounty))) &&
       (!insurance || provider.insurance.some(i => i.name?.toLowerCase().includes(normalizedInsurance))) &&
-      (spanish === '' || (provider.spanish_speakers && provider.spanish_speakers.toLowerCase() === normalizedSpanish))
+      (spanish === '' ||
+        (spanish === 'no' && (!provider.spanish_speakers || provider.spanish_speakers.toLowerCase() === 'no')) ||
+        (spanish === 'yes' && provider.spanish_speakers && provider.spanish_speakers.toLowerCase() === 'yes'))
     );
 
     setFilteredProviders(filtered);
     setIsFiltered(true);
     setCurrentPage(1);
   }, [allProviders]);
+
 
   useEffect(() => {
     handleSearch({ query: '', county: '', insurance: '', spanish: '' });
@@ -81,7 +90,7 @@ const ProvidersPage: React.FC = () => {
   const handleResetSearch = () => {
     setFilteredProviders(allProviders);
     setSelectedCounty('');
-    setSelectedInsurance('');
+    // setSelectedInsurance('');
     setSelectedSpanish('');
     setIsFiltered(false);
     setMapAddress('Utah');
@@ -187,19 +196,21 @@ const ProvidersPage: React.FC = () => {
         <h1 className="providers-banner-title">Find Your Provider</h1>
       </section>
 
+      <div className="map">
+        <section className="google-map-section" ref={mapSectionRef}>
+          <GoogleMap address={mapAddress} />
+        </section>
+      </div>
+      
       <SearchBar
         onResults={handleResults}
         onSearch={handleSearch}
         onCountyChange={handleCountyChange}
         onInsuranceChange={handleInsuranceChange}
+        insuranceOptions={uniqueInsuranceOptions}
         onSpanishChange={handleSpanishChange}
         onReset={handleResetSearch}
       />
-
-      <section className="google-map-section" ref={mapSectionRef}>
-        <GoogleMap address={mapAddress} />
-      </section>
-
       <section className="provider-title-section">
         <h2>
           {isFiltered
