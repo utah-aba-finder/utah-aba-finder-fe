@@ -22,7 +22,7 @@ class Homepage extends Component<Props, State> {
                     <img src={utah} alt="background-image" className='discover-section-backgroundImage' />
                     <div className='discover-section-container'>
                         <h1 className='discover-section-title'>
-                            Discover the Ideal ABA Therapy Provider <br /> for Your Child with Autism in Utah
+                            Discover the Ideal ABA Therapy Provider <br /> for Your Child in Utah
                         </h1>
                         <div className='discover-section-content'>
                             <p className='discover-section-description'>
