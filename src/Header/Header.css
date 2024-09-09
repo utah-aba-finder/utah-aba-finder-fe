@@ -61,6 +61,8 @@
 
 .menu-content a:hover {
     color: rgb(253, 111, 54);
+    border-bottom: 2px solid rgb(253, 111, 54);
+
 }
 
 .menu-content.open {
