@@ -42,7 +42,7 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ provider, onClose }) => {
   if (!provider) return null;
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-overlay">
       <div className="modal-content">
         <button className="modal-close" onClick={onClose}>X</button>
         <img src={provider.logo ?? undefined} alt={provider.name ?? undefined} className="modal-provider-logo" />
