@@ -99,7 +99,7 @@ export const Screening2: React.FC = () => {
                 <div className='paragraphContainer'>
                 <p className='castParagraph'>This test is for children 4 and older. It is a simple test that can help you determine if your child may have autism. Please keep in mind that this test is not a substitute for an official diagnosis. Please seek a certified healthcare professional for an official diagnosis. 
                 </p>
-                <p>
+                <p className='castQuestionMessage'>
                     This test consists of 39 questions. Please answer each question to the best of your ability.
                 </p>
                 </div>
