@@ -28,8 +28,8 @@ export const LoginPage: React.FC = () => {
                         </div>
                                 <div className="forgot-password">Forgot Password <span>Click Here!</span></div>
                         <div className="submit-container">
-                            <Link to='/signup' className= 'loginButton' >Sign Up</Link>
-                            <button type='submit' className= 'loginButton' >Login</button>
+                            <Link to='/signup' id='signup' className= 'loginButton' >Sign Up</Link>
+                            <button type='submit' id='login' className= 'loginButton' >Login</button>
                         </div>
                     </form>
                 </div>

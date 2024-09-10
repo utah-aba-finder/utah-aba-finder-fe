@@ -1,4 +1,4 @@
-describe('template spec', () => {
+describe('cast test, tests', () => {
  beforeEach(() => {
     cy.visit('http://localhost:3000/screening/cast')
   })

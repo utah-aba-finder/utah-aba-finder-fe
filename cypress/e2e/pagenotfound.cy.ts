@@ -1,5 +1,15 @@
-describe('template spec', () => {
-  it('passes', () => {
-    cy.visit('https://example.cypress.io')
+describe('page not found test', () => {
+  beforeEach(() => {
+    cy.visit('http://localhost:3000/no')
+  })
+  it("should show a error message or image if the page doesn't exist", () => {
+    cy.get('.pageNotFoundWrapper').should('exist')
+    cy.get('img').should('exist')
+  })
+  it('should have a button to go back to the home page', () => {
+    cy.get('.homeButton').should('exist')
+    .and('contain', 'Home')
+    .click()
+    .url().should('include', '/')
   })
 })

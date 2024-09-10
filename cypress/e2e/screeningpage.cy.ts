@@ -1,4 +1,4 @@
-describe('template spec', () => {
+describe('screening page test', () => {
  beforeEach(() => {
     cy.visit('http://localhost:3000/screening')
   })
