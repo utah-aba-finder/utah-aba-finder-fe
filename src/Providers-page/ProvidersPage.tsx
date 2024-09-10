@@ -20,6 +20,7 @@ const ProvidersPage: React.FC = () => {
   const [selectedInsurance, setSelectedInsurance] = useState<string>('');
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedSpanish, setSelectedSpanish] = useState<string>('');
+  const [selectedService, setSelectedService] = useState<string>('');
   const [mapAddress, setMapAddress] = useState<string>('Utah');
   const [isFiltered, setIsFiltered] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -36,7 +37,7 @@ const ProvidersPage: React.FC = () => {
         setFilteredProviders(mappedProviders);
 
         const uniqueInsurances = Array.from(new Set(
-          mappedProviders.flatMap(provider => provider.insurance.map(ins => ins.name || ''))
+          mappedProviders.flatMap(provider => provider.insurance.map(ins => ins.name || '')).sort()
         ))
 
         setUniqueInsuranceOptions(uniqueInsurances);
@@ -49,9 +50,22 @@ const ProvidersPage: React.FC = () => {
     getProviders();
   }, []);
 
-  const handleSearch = useCallback(({ query, county, insurance, spanish }: { query: string; county: string; insurance: string; spanish: string }) => {
+  const handleSearch = useCallback(({ query, county, insurance, spanish, service }: { query: string; county: string; insurance: string; spanish: string }) => {
     const normalizedCounty = county.toLowerCase();
     const normalizedInsurance = insurance.toLowerCase();
+
+    const serviceFilter = (provider: ProviderAttributes) => {
+      switch (service) {
+        case 'telehealth':
+          return provider.telehealth_services?.toLowerCase() === 'yes';
+        case 'at_home':
+          return provider.at_home_services?.toLowerCase() === 'yes';
+        case 'in_clinic':
+          return provider.in_clinic_services?.toLowerCase() === 'yes';
+        default:
+          return true;
+      }
+    };
 
     const filtered = allProviders.filter(provider =>
       provider.name?.toLowerCase().includes(query.toLowerCase()) &&
@@ -59,7 +73,8 @@ const ProvidersPage: React.FC = () => {
       (!insurance || provider.insurance.some(i => i.name?.toLowerCase().includes(normalizedInsurance))) &&
       (spanish === '' ||
         (spanish === 'no' && (!provider.spanish_speakers || provider.spanish_speakers.toLowerCase() === 'no')) ||
-        (spanish === 'yes' && provider.spanish_speakers && provider.spanish_speakers.toLowerCase() === 'yes'))
+        (spanish === 'yes' && provider.spanish_speakers && provider.spanish_speakers.toLowerCase() === 'yes')) &&
+      serviceFilter(provider)
     );
 
     setFilteredProviders(filtered);
@@ -69,7 +84,7 @@ const ProvidersPage: React.FC = () => {
 
 
   useEffect(() => {
-    handleSearch({ query: '', county: '', insurance: '', spanish: '' });
+    handleSearch({ query: '', county: '', insurance: '', spanish: '', service: '' });
   }, [handleSearch]);
 
   const handleProviderCardClick = (provider: ProviderAttributes) => {
@@ -90,8 +105,9 @@ const ProvidersPage: React.FC = () => {
   const handleResetSearch = () => {
     setFilteredProviders(allProviders);
     setSelectedCounty('');
-    // setSelectedInsurance('');
+    setSelectedInsurance('');
     setSelectedSpanish('');
+    setSelectedService('');
     setIsFiltered(false);
     setMapAddress('Utah');
     setCurrentPage(1);
@@ -107,6 +123,10 @@ const ProvidersPage: React.FC = () => {
 
   const handleSpanishChange = (spanish: string) => {
     setSelectedSpanish(spanish);
+  };
+
+  const handleServiceChange = (service: string) => {
+    setSelectedService(service);
   };
 
   const handleResults = (results: MockProviders) => {
@@ -130,10 +150,37 @@ const ProvidersPage: React.FC = () => {
     setCurrentPage(1);
   };
 
-  const totalPages = Math.ceil(filteredProviders.length / providersPerPage);
+  const filteredWithService = filteredProviders.filter(provider => {
+    switch (selectedService) {
+      case 'telehealth':
+        return provider.telehealth_services?.toLowerCase() === 'yes';
+      case 'at_home':
+        return provider.at_home_services?.toLowerCase() === 'yes';
+      case 'in_clinic':
+        return provider.in_clinic_services?.toLowerCase() === 'yes';
+      default:
+        return false;
+    }
+  });
+
+  const filteredWithoutService = filteredProviders.filter(provider => {
+    switch (selectedService) {
+      case 'telehealth':
+        return provider.telehealth_services === null;
+      case 'at_home':
+        return provider.at_home_services === null;
+      case 'in_clinic':
+        return provider.in_clinic_services === null;
+      default:
+        return false;
+    }
+  });
+
+  const totalPagesWithService = Math.ceil(filteredWithService.length / providersPerPage);
+  const totalPagesWithoutService = Math.ceil(filteredWithoutService.length / providersPerPage);
 
   const handleNextPage = () => {
-    if (currentPage < totalPages) {
+    if (currentPage < totalPagesWithService || currentPage < totalPagesWithoutService) {
       setCurrentPage(prevPage => prevPage + 1);
     }
   };
@@ -146,6 +193,7 @@ const ProvidersPage: React.FC = () => {
 
   const indexOfLastProvider = currentPage * providersPerPage;
   const indexOfFirstProvider = indexOfLastProvider - providersPerPage;
+  
   const currentProviders = filteredProviders.slice(indexOfFirstProvider, indexOfLastProvider);
 
   const renderViewOnMapButton = (provider: ProviderAttributes) => {
@@ -201,7 +249,7 @@ const ProvidersPage: React.FC = () => {
           <GoogleMap address={mapAddress} />
         </section>
       </div>
-      
+
       <SearchBar
         onResults={handleResults}
         onSearch={handleSearch}
