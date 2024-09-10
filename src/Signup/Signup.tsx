@@ -1,4 +1,4 @@
-import { User, Mail, MessageCircleMore, StickyNote, LockKeyhole, MoveDown, FilePenLine } from 'lucide-react';
+import { User, Mail, NotebookPen, Search, LockKeyhole, MoveDown, FilePenLine } from 'lucide-react';
 import './Signup.css';
 import { useState } from 'react';
 import emailjs from '@emailjs/browser';
@@ -58,9 +58,9 @@ export const Signup = () => {
                             required value={email}
                             onChange={(e) => setEmail(e.target.value)} />
                     </div>
-                    <div className='input'><MessageCircleMore className='textIcon' /><textarea placeholder="Tell us who you are and why you're interested in signing up" className='signupMessage'
-                        value={message}
-                        onChange={(e) => setMessage(e.target.value)} /></div>
+                    <div className='input'>
+                        
+                    </div>
                     <button type='submit' className='loginButton' >Sign Up</button>
 
                 </form>
@@ -68,18 +68,18 @@ export const Signup = () => {
                     <h1>How It Works</h1>
                     <div className="instructionContainer">
                         <div className="iconColumn">
-                            <Mail className="instructionIcon1" />
+                            <NotebookPen  className="instructionIcon1" />
                             <MoveDown className="arrow1" />
-                            <StickyNote className="instructionIcon2" />
+                            <Search className="instructionIcon2" />
                             <MoveDown className="arrow2" />
                             <LockKeyhole className="instructionIcon3" />
                             <MoveDown className="arrow3" />
                             <FilePenLine className="instructionIcon4" />
                         </div>
                         <div className="messageColumn">
-                            <p className='step1'>Email your information</p>
-                            <p className='step2'>Admin will review your info and request some type of proof to confirm ownership as well as send a form to gather data</p>
-                            <p className='step3'>Admin will provide a temporary password and initiliaze your information</p>
+                            <p className='step1'>Fill out the form with all necessary information.</p>
+                            <p className='step2'>Admin will review your information and approve the request if everything is met.</p>
+                            <p className='step3'>Admin will provide a temporary password and login.</p>
                             <p className='step4'>As a provider you can now update your information as often as needed!</p>
                         </div>
                     </div>
