@@ -76,6 +76,8 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ provider, onClose }) => {
           <p><strong>Ages Served:</strong> {provider.min_age} - {provider.max_age} years</p>
           <p><strong>Waitlist:</strong> {provider.waitlist || 'N/A'}</p>
           <p><strong>Telehealth Services:</strong> {provider.telehealth_services || 'N/A'}</p>
+          <p><strong>At Home Services:</strong> {provider.at_home_services || 'N/A'}</p>
+          <p><strong>In-Clinic Services:</strong> {provider.in_clinic_services || 'N/A'}</p>
           <p><strong>Spanish Speakers:</strong> {provider.spanish_speakers || 'N/A'}</p>
           <p><strong>Insurance:</strong> {provider.insurance.map(i => i.name).join(', ') || 'N/A'}</p>
         </div>

@@ -4,9 +4,9 @@ import childrenBanner from '../Assets/children-banner.jpg';
 import ProviderModal from './ProviderModal';
 import SearchBar from './SearchBar';
 import GoogleMap from './GoogleMap';
+import ProviderCard from './ProviderCard';
 import { fetchProviders } from '../Utility/ApiCall';
 import { MockProviders, ProviderAttributes } from '../Utility/Types';
-import puzzleLogo from './puzzle.png';
 
 
 const ProvidersPage: React.FC = () => {
@@ -38,8 +38,7 @@ const ProvidersPage: React.FC = () => {
 
         const uniqueInsurances = Array.from(new Set(
           mappedProviders.flatMap(provider => provider.insurance.map(ins => ins.name || '')).sort()
-        ))
-
+        ));
         setUniqueInsuranceOptions(uniqueInsurances);
         setMapAddress('Utah');
       } catch (error) {
@@ -50,39 +49,56 @@ const ProvidersPage: React.FC = () => {
     getProviders();
   }, []);
 
-  const handleSearch = useCallback(({ query, county, insurance, spanish, service }: { query: string; county: string; insurance: string; spanish: string }) => {
+  const handleSearch = useCallback(({ query, county, insurance, spanish, service }: { query: string; county: string; insurance: string; spanish: string; service: string }) => {
     const normalizedCounty = county.toLowerCase();
     const normalizedInsurance = insurance.toLowerCase();
-
+  
     const serviceFilter = (provider: ProviderAttributes) => {
+      if (!service) return true;
       switch (service) {
         case 'telehealth':
-          return provider.telehealth_services?.toLowerCase() === 'yes';
+          return (
+            provider.telehealth_services?.toLowerCase() === 'yes' ||
+            provider.telehealth_services === null ||
+            provider.telehealth_services.toLowerCase() === 'limited'
+          );
         case 'at_home':
-          return provider.at_home_services?.toLowerCase() === 'yes';
+          return (
+            provider.at_home_services?.toLowerCase() === 'yes' ||
+            provider.at_home_services === null ||
+            provider.at_home_services.toLowerCase() === 'limited'
+          );
         case 'in_clinic':
-          return provider.in_clinic_services?.toLowerCase() === 'yes';
+          return (
+            provider.in_clinic_services?.toLowerCase() === 'yes' ||
+            provider.in_clinic_services === null ||
+            provider.in_clinic_services.toLowerCase() === 'limited'
+          );
         default:
           return true;
       }
     };
-
+  
     const filtered = allProviders.filter(provider =>
       provider.name?.toLowerCase().includes(query.toLowerCase()) &&
       (!county || provider.counties_served.some(c => c.county?.toLowerCase().includes(normalizedCounty))) &&
       (!insurance || provider.insurance.some(i => i.name?.toLowerCase().includes(normalizedInsurance))) &&
       (spanish === '' ||
         (spanish === 'no' && (!provider.spanish_speakers || provider.spanish_speakers.toLowerCase() === 'no')) ||
-        (spanish === 'yes' && provider.spanish_speakers && provider.spanish_speakers.toLowerCase() === 'yes')) &&
+        (spanish === 'yes' && (
+          provider.spanish_speakers?.toLowerCase() === 'yes' ||
+          provider.spanish_speakers === null ||
+          provider.spanish_speakers.toLowerCase() === 'limited'
+        ))
+      ) &&
       serviceFilter(provider)
     );
-
+  
     setFilteredProviders(filtered);
     setIsFiltered(true);
     setCurrentPage(1);
   }, [allProviders]);
-
-
+  
   useEffect(() => {
     handleSearch({ query: '', county: '', insurance: '', spanish: '', service: '' });
   }, [handleSearch]);
@@ -159,7 +175,7 @@ const ProvidersPage: React.FC = () => {
       case 'in_clinic':
         return provider.in_clinic_services?.toLowerCase() === 'yes';
       default:
-        return false;
+        return true;
     }
   });
 
@@ -176,11 +192,15 @@ const ProvidersPage: React.FC = () => {
     }
   });
 
-  const totalPagesWithService = Math.ceil(filteredWithService.length / providersPerPage);
-  const totalPagesWithoutService = Math.ceil(filteredWithoutService.length / providersPerPage);
+  const combinedProviders = [...filteredWithService, ...filteredWithoutService];
+  const indexOfLastProvider = currentPage * providersPerPage;
+  const indexOfFirstProvider = indexOfLastProvider - providersPerPage;
+  const paginatedProviders = combinedProviders.slice(indexOfFirstProvider, indexOfLastProvider);
+
+  const totalPages = Math.ceil(combinedProviders.length / providersPerPage);
 
   const handleNextPage = () => {
-    if (currentPage < totalPagesWithService || currentPage < totalPagesWithoutService) {
+    if (currentPage < totalPages) {
       setCurrentPage(prevPage => prevPage + 1);
     }
   };
@@ -190,11 +210,6 @@ const ProvidersPage: React.FC = () => {
       setCurrentPage(prevPage => prevPage - 1);
     }
   };
-
-  const indexOfLastProvider = currentPage * providersPerPage;
-  const indexOfFirstProvider = indexOfLastProvider - providersPerPage;
-  
-  const currentProviders = filteredProviders.slice(indexOfFirstProvider, indexOfLastProvider);
 
   const renderViewOnMapButton = (provider: ProviderAttributes) => {
     const isAddressAvailable = provider.locations.length > 0 && provider.locations[0]?.address_1;
@@ -249,67 +264,36 @@ const ProvidersPage: React.FC = () => {
           <GoogleMap address={mapAddress} />
         </section>
       </div>
-
-      <SearchBar
-        onResults={handleResults}
-        onSearch={handleSearch}
-        onCountyChange={handleCountyChange}
-        onInsuranceChange={handleInsuranceChange}
-        insuranceOptions={uniqueInsuranceOptions}
-        onSpanishChange={handleSpanishChange}
-        onReset={handleResetSearch}
-      />
       <section className="provider-title-section">
         <h2>
           {isFiltered
-            ? `Showing ${filteredProviders.length} of ${allProviders.length} Providers`
-            : `Showing ${allProviders.length} of ${allProviders.length} Providers`}
+            ? `Showing ${paginatedProviders.length} of ${combinedProviders.length} Providers`
+            : `Showing ${allProviders.length} Providers`}
         </h2>
       </section>
+            <SearchBar
+              onResults={handleResults}
+              onSearch={handleSearch}
+              onCountyChange={handleCountyChange}
+              onInsuranceChange={handleInsuranceChange}
+              insuranceOptions={uniqueInsuranceOptions}
+              onSpanishChange={handleSpanishChange}
+              onServiceChange={handleServiceChange}
+              onReset={handleResetSearch}
+            />
 
       <section className="searched-provider-map-locations-list-section">
         <div className="provider-cards-grid">
-          {currentProviders.map((provider, index) => (
-            <div
+          {paginatedProviders.map((provider, index) => (
+            <ProviderCard
               key={index}
-              className={`searched-provider-card ${provider.locations.length > 1 ? 'multiple-locations' : ''}`}
-            >
-              <img src={provider.logo || puzzleLogo} alt="Provider Logo" className="provider-logo" />
-
-              <div className="title-and-info">
-                <div className="searched-provider-card-title">
-                  <h3>{provider.name}</h3>
-                  <h4>
-                    {provider.locations[0]?.address_1 ||
-                      'Physical address is not available for this provider.'}{' '}
-                    {provider.locations[0]?.address_2} {provider.locations[0]?.city}{' '}
-                    {provider.locations[0]?.state} {provider.locations[0]?.zip}
-                  </h4>
-                </div>
-                <div className="searched-provider-card-info">
-                  <p>
-                    <strong>Phone:</strong> {provider.locations[0]?.phone || 'N/A'}
-                  </p>
-                  <p>
-                    <strong>Email:</strong> {provider.email || 'N/A'}
-                  </p>
-
-                  <div className="provider-card-buttons">
-                    <button
-                      className="view-details-button"
-                      onClick={() => handleProviderCardClick(provider)}
-                    >
-                      View Details
-                    </button>
-                    {renderViewOnMapButton(provider)}
-                  </div>
-                </div>
-              </div>
-            </div>
+              provider={provider}
+              onViewDetails={handleProviderCardClick}
+              renderViewOnMapButton={renderViewOnMapButton}
+            />
           ))}
         </div>
       </section>
-
 
       <div className="pagination-controls">
         {currentPage > 1 && (

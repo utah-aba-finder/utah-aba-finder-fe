@@ -6,11 +6,12 @@ import { MockProviders } from '../Utility/Types';
 
 interface SearchBarProps {
   onResults: (results: MockProviders) => void;
-  onSearch: (params: { query: string; county: string; insurance: string; spanish: string }) => void;
+  onSearch: (params: { query: string; county: string; insurance: string; spanish: string; service: string; }) => void;
   onCountyChange: (county: string) => void;
   insuranceOptions: string[];
-  onInsuranceChange: (insurance: string) => void; // <- Added this prop
+  onInsuranceChange: (insurance: string) => void;
   onSpanishChange: (spanish: string) => void;
+  onServiceChange: (service: string) => void;
   onReset: () => void;
 }
 
@@ -18,14 +19,16 @@ const SearchBar: React.FC<SearchBarProps> = ({
   onSearch,
   onCountyChange,
   insuranceOptions,
-  onInsuranceChange, // <- Added this
+  onInsuranceChange,
   onSpanishChange,
+  onServiceChange,
   onReset,
 }) => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedCounty, setSelectedCounty] = useState<string>('');
   const [selectedInsurance, setSelectedInsurance] = useState<string>('');
   const [selectedSpanish, setSelectedSpanish] = useState<string>('');
+  const [selectedService, setSelectedService] = useState<string>('');
   
   const handleSearch = useCallback(() => {
     const searchParams = {
@@ -33,15 +36,17 @@ const SearchBar: React.FC<SearchBarProps> = ({
       county: selectedCounty,
       insurance: selectedInsurance,
       spanish: selectedSpanish,
+      service: selectedService,
     };
     onSearch(searchParams);
-  }, [searchQuery, selectedCounty, selectedInsurance, selectedSpanish, onSearch]);
+  }, [searchQuery, selectedCounty, selectedInsurance, selectedSpanish, selectedService, onSearch]);
 
   const handleReset = () => {
     setSearchQuery('');
     setSelectedCounty('');
     setSelectedInsurance('');
     setSelectedSpanish('');
+    setSelectedService('');
     onReset();
   };
 
@@ -107,7 +112,22 @@ const SearchBar: React.FC<SearchBarProps> = ({
             >
               <option value="">Spanish?</option>
               <option value="yes">Yes</option>
-              <option value="no">No</option>
+            </select>
+          </div>
+
+          <div className="provider-service-dropdown">
+            <select
+              className="provider-service-select"
+              value={selectedService}
+              onChange={(e) => {
+                setSelectedService(e.target.value);
+                
+              }}
+            >
+              <option value="">All Services</option>
+              <option value="telehealth">Telehealth Services</option>
+              <option value="at_home">At Home Services</option>
+              <option value="in_clinic">In Clinic Services</option>
             </select>
           </div>
 
