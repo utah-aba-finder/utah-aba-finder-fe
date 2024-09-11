@@ -10,6 +10,14 @@
     justify-content: center;
     z-index: 1000;
   }
+
+  .insurancesForm {
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+    justify-content: center;
+    color: rgb(251, 99, 57);
+  }
   
   .insuranceModal-content {
     background-color: #715d5d;
@@ -23,7 +31,7 @@
     display: flex;
     flex-wrap: wrap;
     font-size: 20px;
-    /* flex-direction: column; */
+    margin: 20px;
     align-items: center;
     animation: fadeIn 0.4s ease-in-out;
   }
@@ -50,57 +58,6 @@
     margin-bottom: 1rem;
   }
   
-  .location-info {
-    max-width: 100%;
-  }
-  
-  .company-info {
-    text-align: center;
-  }
-  
-  .company-info h2 {
-    font-size: 1.8rem;
-    margin: 0.5rem 0;
-    color: #333;
-  }
-  
-  .company-info h3 {
-    font-size: 1rem;
-    margin: 0.5rem 0;
-    color: #777;
-  }
-  
-  .contact-info {
-    text-align: center;
-    margin-bottom: 1.5rem;
-  }
-  
-  .contact-info p {
-    margin: 0.3rem 0;
-    font-size: 1rem;
-    color: #707070;
-  }
-  
-  .details {
-    width: 100%;
-    max-width: 600px;
-    background-color: white;
-    padding: 1rem;
-    border-radius: 8px;
-    box-shadow: 1px 3px rgba(0, 0, 0, 0.1);
-    text-align: left;
-  }
-  
-  .details p {
-    font-size: 1rem;
-    margin: 0.5rem 0;
-    color: #555;
-  }
-  
-  .details strong {
-    color: #333;
-  }
-  
   @keyframes fadeIn {
     from {
       opacity: 0;
@@ -115,26 +72,11 @@
   
   
   @media (max-width: 540px) {
-    .modal-content {
+    .insuranceModal-content {
       padding: 1rem;
     }
   
-    .modal-provider-logo {
+    .insuranceModal-provider-logo {
       width: 100px;
-    }
-  
-    .company-info {
-      max-width: 100%;
-    }
-  
-    .company-info h2 {
-      font-size: 1.4rem;
-    }
-  
-    .company-info h3,
-    .contact-info p,
-    .details p {
-      font-size: 0.8rem;
-  
     }
   }

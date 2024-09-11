@@ -56,34 +56,44 @@ export const InsuranceModal: React.FC<InsuranceModalProps> = ({ isOpen, onClose,
         getProviders();
       }, []);
 
-    const handleSubmit = () => {
+      const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault(); 
         const selectedInsuranceNames = Object.keys(selectedInsurances).filter(name => selectedInsurances[name]);
         onSelect(selectedInsuranceNames);
         onClose();
     };
 
+    const handleClose = (e: React.SyntheticEvent) => {
+        e.stopPropagation(); 
+        onClose();
+    };
+
     return (
-        <div className="insuranceModal-overlay">
-        <div className="insuranceModal-content">
-          <button className="insuranceModal-close" onClick={onClose}>X</button>
-                            {allInsurances.map((insurance) => (
-                                <div key={insurance.name} className='insuranceInput'>
-                                    <input 
-                                        type="checkbox"
-                                        id={insurance.name}
-                                        name="insurance"
-                                        value={insurance.name}
-                                        checked={!!selectedInsurances[insurance.name]}
-                                        onChange={(e) => handleSelect(e, insurance.name)} 
-                                    />
-                                    <label htmlFor={insurance.name}>{insurance.name}</label>
-                                </div>
-                            ))}
-                        <button  onClick={handleSubmit}  className="custom-submit-button">
+        <div className="insuranceModal-overlay" onClick={handleClose}>
+            <div className="insuranceModal-content" onClick={(e) => e.stopPropagation()}>
+                <button className="insuranceModal-close" onClick={handleClose}>X</button>
+                <form onSubmit={handleSubmit} className='insurancesForm'>
+                    {allInsurances.map((insurance) => (
+                        <div key={insurance.name} className='insuranceInput'>
+                            <input 
+                                type="checkbox"
+                                id={insurance.name}
+                                name="insurance"
+                                value={insurance.name}
+                                checked={!!selectedInsurances[insurance.name]}
+                                onChange={(e) => handleSelect(e, insurance.name)}
+                            />
+                            <label htmlFor={insurance.name}>{insurance.name}</label>
+                        </div>
+                    ))}
+                    <div className='buttonContainer'>
+                        <button type="submit" className="custom-submit-button">
                             Submit
                         </button>
-                        <button onClick={onClose}  className="custom-cancel-button">Cancel</button>
+                        <button type="button" onClick={handleClose} className="custom-cancel-button">Cancel</button>
                     </div>
-                </div>
+                </form>
+            </div>
+        </div>
     );
 };

@@ -89,8 +89,9 @@ export const Signup = () => {
                             onChange={(e) => setEmail(e.target.value)} />
                     </div>
                     <Button type="button" onClick={() => setIsModalOpen(!isModalOpen)}>Add Insurances</Button>
-
+                    {isModalOpen &&
                     <InsuranceModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSelect={handleSelect}  />
+                    }
                     <button type='submit' className='loginButton' >Sign Up</button>
 
                 </form>
