@@ -1,84 +1,140 @@
-.custom-modal {
-    max-width: 90vw;
-    margin: 0 auto;
-    text-align: center;
-}
-
-.custom-modal-content {
+.insuranceModal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(243, 237, 237, 0.8);
     display: flex;
-    /* flex-direction: column; */
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+  
+  .insuranceModal-content {
+    background-color: #715d5d;
+    border-radius: 16px;
     padding: 2rem;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    background-color: #e7dddd;
-}
-
-.custom-modal-body {
-    /* Remove flex-grow */
-    flex: 1;
+    width: 90%;
+    max-width: 700px;
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+    position: relative;
+    z-index: 1001;
     display: flex;
     flex-wrap: wrap;
-    justify-content: space-between;
-}
-
-.custom-modal-header {
-    font-size: 1.25rem;
-    font-weight: bold;
-    text-align: left;
-    margin-bottom: 1rem;
-}
-
-.custom-modal-close-button {
+    font-size: 20px;
+    /* flex-direction: column; */
+    align-items: center;
+    animation: fadeIn 0.4s ease-in-out;
+  }
+  
+  .insuranceModal-close {
     position: absolute;
     top: 1rem;
     right: 1rem;
-    width: 5%;
-    font-size: 5%;
-}
-
-.custom-modal-box {
-    /* Remove max-height */
-    /* overflow-y: auto; */
-}
-
-.custom-modal-footer {
-    /* Remove justify-content */
-}
-
-.custom-submit-button,
-.custom-cancel-button {
-    font-size: 1rem;
-    padding: 0.75rem 1.5rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.custom-cancel-button {
     background-color: transparent;
     border: none;
-    color: #888;
+    font-size: 1.5rem;
+    color: red;
     cursor: pointer;
-}
-
-/* Additional styles for better visual hierarchy */
-.custom-modal-header {
-    border-bottom: 1px solid #ddd;
-}
-
-.custom-modal-body {
-    scrollbar-width: thin;
-    scrollbar-color: #888 #fff;
-}
-
-.custom-modal-body::-webkit-scrollbar {
-    width: 8px;
-}
-
-.custom-modal-body::-webkit-scrollbar-track {
-    background: #fff;
-}
-
-.custom-modal-body::-webkit-scrollbar-thumb {
-    background-color: #888;
-    border-radius: 20px;
-}
+    transition: color 0.3s ease;
+  }
+  
+  .insuranceModal-close:hover {
+    color: #e74c3c;
+  }
+  
+  .modal-provider-logo {
+    width: 60%;
+    height: auto;
+    margin-bottom: 1rem;
+  }
+  
+  .location-info {
+    max-width: 100%;
+  }
+  
+  .company-info {
+    text-align: center;
+  }
+  
+  .company-info h2 {
+    font-size: 1.8rem;
+    margin: 0.5rem 0;
+    color: #333;
+  }
+  
+  .company-info h3 {
+    font-size: 1rem;
+    margin: 0.5rem 0;
+    color: #777;
+  }
+  
+  .contact-info {
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+  
+  .contact-info p {
+    margin: 0.3rem 0;
+    font-size: 1rem;
+    color: #707070;
+  }
+  
+  .details {
+    width: 100%;
+    max-width: 600px;
+    background-color: white;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 1px 3px rgba(0, 0, 0, 0.1);
+    text-align: left;
+  }
+  
+  .details p {
+    font-size: 1rem;
+    margin: 0.5rem 0;
+    color: #555;
+  }
+  
+  .details strong {
+    color: #333;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: scale(0.9);
+    }
+  
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  
+  
+  @media (max-width: 540px) {
+    .modal-content {
+      padding: 1rem;
+    }
+  
+    .modal-provider-logo {
+      width: 100px;
+    }
+  
+    .company-info {
+      max-width: 100%;
+    }
+  
+    .company-info h2 {
+      font-size: 1.4rem;
+    }
+  
+    .company-info h3,
+    .contact-info p,
+    .details p {
+      font-size: 0.8rem;
+  
+    }
+  }

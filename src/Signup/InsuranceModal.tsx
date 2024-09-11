@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton, Button, Box, VStack } from "@chakra-ui/react";
+// import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton, Button, Box, VStack } from "@chakra-ui/react";
 import './InsuranceModal.css';
 import { fetchProviders } from '../Utility/ApiCall';
 import { MockProviders } from '../Utility/Types';
@@ -29,8 +29,25 @@ export const InsuranceModal: React.FC<InsuranceModalProps> = ({ isOpen, onClose,
         const getProviders = async () => {
           try {
             const providersList: MockProviders = await fetchProviders();
-            const mappedProviders = providersList.data.flatMap(provider => provider.attributes.insurance);
-            setAllInsurances(mappedProviders as Insurance[]);
+            const uniqueInsurances = new Set<string>();
+            
+            // Map over providers, add unique insurances to the Set
+            providersList.data.forEach(provider => {
+                provider.attributes.insurance?.forEach(insurance => {
+                    uniqueInsurances.add(insurance.name || '');
+                });
+            });
+
+            // Convert the Set back to an array of Insurance objects
+            const mappedProviders = Array.from(uniqueInsurances).map(name => ({ name }));
+
+            // Sort the insurances alphabetically
+            const sortedInsurances = mappedProviders.sort((a, b) => {
+                const nameA = a.name.toLowerCase();
+                const nameB = b.name.toLowerCase();
+                return nameA.localeCompare(nameB);
+            });
+            setAllInsurances(sortedInsurances );
           } catch (error) {
             console.error('Error loading providers:', error);
           }
@@ -46,9 +63,9 @@ export const InsuranceModal: React.FC<InsuranceModalProps> = ({ isOpen, onClose,
     };
 
     return (
-        <div className="modal-overlay">
-        <div className="modal-content">
-          <button className="modal-close" onClick={onClose}>X</button>
+        <div className="insuranceModal-overlay">
+        <div className="insuranceModal-content">
+          <button className="insuranceModal-close" onClick={onClose}>X</button>
                             {allInsurances.map((insurance) => (
                                 <div key={insurance.name} className='insuranceInput'>
                                     <input 
@@ -62,7 +79,7 @@ export const InsuranceModal: React.FC<InsuranceModalProps> = ({ isOpen, onClose,
                                     <label htmlFor={insurance.name}>{insurance.name}</label>
                                 </div>
                             ))}
-                        <button  onClick={handleSubmit}  className= "custom-submit-button">
+                        <button  onClick={handleSubmit}  className="custom-submit-button">
                             Submit
                         </button>
                         <button onClick={onClose}  className="custom-cancel-button">Cancel</button>
