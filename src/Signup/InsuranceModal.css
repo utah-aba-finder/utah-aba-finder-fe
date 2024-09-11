@@ -1,0 +1,84 @@
+.custom-modal {
+    max-width: 90vw;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.custom-modal-content {
+    display: flex;
+    /* flex-direction: column; */
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    background-color: #e7dddd;
+}
+
+.custom-modal-body {
+    /* Remove flex-grow */
+    flex: 1;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+.custom-modal-header {
+    font-size: 1.25rem;
+    font-weight: bold;
+    text-align: left;
+    margin-bottom: 1rem;
+}
+
+.custom-modal-close-button {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 5%;
+    font-size: 5%;
+}
+
+.custom-modal-box {
+    /* Remove max-height */
+    /* overflow-y: auto; */
+}
+
+.custom-modal-footer {
+    /* Remove justify-content */
+}
+
+.custom-submit-button,
+.custom-cancel-button {
+    font-size: 1rem;
+    padding: 0.75rem 1.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.custom-cancel-button {
+    background-color: transparent;
+    border: none;
+    color: #888;
+    cursor: pointer;
+}
+
+/* Additional styles for better visual hierarchy */
+.custom-modal-header {
+    border-bottom: 1px solid #ddd;
+}
+
+.custom-modal-body {
+    scrollbar-width: thin;
+    scrollbar-color: #888 #fff;
+}
+
+.custom-modal-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+.custom-modal-body::-webkit-scrollbar-track {
+    background: #fff;
+}
+
+.custom-modal-body::-webkit-scrollbar-thumb {
+    background-color: #888;
+    border-radius: 20px;
+}
