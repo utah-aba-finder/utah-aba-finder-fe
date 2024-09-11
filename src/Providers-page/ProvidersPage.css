@@ -1,7 +1,7 @@
 .providers-page {
     display: flex;
     flex-direction: column;
-    gap: 0.7rem;
+    gap: 0.5rem;
     padding-bottom: 1rem;
     background-color: #ffffffe4;
 }
@@ -31,19 +31,23 @@
     z-index: 1;
 }
 
+.map {
+    padding-left: 1.8rem;
+    padding-right: 1.8rem;
+}
+
 .google-map-section {
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 0.25rem;
+    border-radius: 0.8rem;
+    border: 5px solid #c4b56b;
     gap: 1rem;
     width: 100%;
     height: 40rem;
     max-width: 100%;
     box-sizing: border-box;
     overflow: hidden;
-    padding-left: 1.8rem;
-    padding-right: 1.8rem;
 }
 
 .searched-provider-map-locations-list-section {
@@ -60,13 +64,6 @@
     margin: 0 auto;
 }
 
-@media screen and (min-width: 768px) {
-    .provider-cards-grid {
-        grid-template-columns: repeat(2, minmax(600px, 1fr));
-        justify-content: space-between;
-    }
-
-}
 
 .searched-provider-card h3 {
     color: #21343a;
@@ -282,6 +279,14 @@
 
 }
 
+@media screen and (min-width: 768px) {
+    .provider-cards-grid {
+        grid-template-columns: repeat(2, minmax(600px, 1fr));
+        justify-content: space-between;
+    }
+
+}
+
 @media (max-width: 540px) {
     .providers-banner-title {
         font-size: 2rem;
@@ -326,19 +331,23 @@
         width: 94%;
     }
 
+    .map {
+        padding-left: .5rem;
+        padding-right: .5rem;
+    }
+
     .google-map-section {
         display: flex;
         align-items: center;
         justify-content: center;
-        border-radius: 0.25rem;
         gap: 1rem;
         width: 100%;
-        height: 30rem;
+        height: 40rem;
         max-width: 100%;
         box-sizing: border-box;
         overflow: hidden;
-        padding-left: .3rem;
-        padding-right: .3rem;
+        border-radius: 0.8rem;
+        border: 5px solid #c4b56b;
     }
 
     .provider-card-buttons {
