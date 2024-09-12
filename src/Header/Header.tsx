@@ -12,17 +12,35 @@ const Header: React.FC = () => {
         setMenuOpen(prevMenuOpen => !prevMenuOpen);
     };
 
+    const handleKeyDown = (event: React.KeyboardEvent<HTMLImageElement>) => {
+        if (event.key === 'Enter') {
+            toggleMenu();
+        }
+    };
+
     return (
-        <div className='Header'>
-            <Link to="/"><img src={Logo} alt="main-logo" className="main-logo" tabIndex={0} /></Link>
+        <header className='Header'>
+            <Link to="/" aria-label="Homepage">
+                <img
+                    src={Logo}
+                    alt="main-logo"
+                    className="main-logo"
+                    tabIndex={0}
+                    role="button"
+                    onKeyDown={handleKeyDown}
+                />
+            </Link>
             <img
                 src={menuOpen ? Close : Menu}
                 className={`menu ${menuOpen ? 'open' : ''}`}
                 alt='menu'
                 onClick={toggleMenu}
+                role="button"
+                tabIndex={0}
+                aria-expanded={menuOpen}
+                aria-controls="menu-content"
             />
-
-            <div className={`menu-content ${menuOpen ? 'open' : ''}`} tabIndex={0}>
+            <nav id="menu-content" className={`menu-content ${menuOpen ? 'open' : ''}`} tabIndex={0}>
                 <Link to="/" onClick={toggleMenu}>Home</Link>
                 <Link to="/providers" onClick={toggleMenu}>Find Providers</Link>
                 <Link to="/screening" onClick={toggleMenu}>Screening Tools</Link>
@@ -30,8 +48,8 @@ const Header: React.FC = () => {
                 <Link to="/providerLogin" onClick={toggleMenu}>Provider Login</Link>
                 <Link to="/contact" onClick={toggleMenu}>Contact</Link>
                 <Link to="/about" onClick={toggleMenu}>About Us</Link>
-            </div>
-        </div>
+            </nav>
+        </header>
     );
 }
 
