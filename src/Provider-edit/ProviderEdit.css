@@ -1,0 +1,70 @@
+.provider-edit-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+#dropdown-menu {
+    width: 31.5%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.provider-edit-form input {
+    width: 30%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.select-insurance-button {
+    width: 31.5%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.waitList-section,
+.clinic-section,
+.spanish-speaking-section {
+    display: flex;
+    border: 1px solid #ccc;
+    padding: 10px;
+    border-radius: 5px;
+    width: 30%;
+}
+
+#time-service,
+#frequency-service,
+#clinic-service,
+#spanish-speaking {
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.buttons-section {
+    display: flex;
+    justify-content: space-between;
+    width: 30%;
+}
+
+.cancel-button,
+.save-button {
+    width: 40%;
+    padding: 10px;
+    margin-top: 5rem;
+    margin-bottom: 5rem;
+    border: 1.5px solid black;
+    border-radius: 5px;
+    background-color: white;
+    color: black;
+}
+
+.cancel-button:hover,
+.save-button:hover {
+    background-color: rgb(255, 64, 0);
+    color: white;
+}
