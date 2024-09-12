@@ -78,7 +78,7 @@ input:focus:invalid {
     outline-color: var(--clr-warning);
 }
 
-.contact-input-message {
+.contact-input-message:valid {
     height: 7vh;
 }
 
