@@ -21,6 +21,7 @@ const ProvidersPage: React.FC = () => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedSpanish, setSelectedSpanish] = useState<string>('');
   const [selectedService, setSelectedService] = useState<string>('');
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedWaitList, setSelectedWaitList] = useState<string>('');
   const [mapAddress, setMapAddress] = useState<string>('Utah');
   const [isFiltered, setIsFiltered] = useState<boolean>(false);

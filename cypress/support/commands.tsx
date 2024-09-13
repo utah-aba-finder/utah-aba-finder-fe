@@ -4,4 +4,3 @@ Cypress.Commands.add('setUpProvidersIntercepts', () => {
       fixture: 'providerspage.json',
     }).as('fetchProviders');
   });
-  
