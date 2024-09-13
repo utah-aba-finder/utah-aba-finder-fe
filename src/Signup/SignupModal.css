@@ -17,14 +17,30 @@
     /* width: 100%; */
     justify-content: center;
     align-content: center;
+    height: 100%;
+    max-height: 90vh;
     color: rgb(251, 99, 57);
 }
 
 .signupForm {
     display: flex;
-    width: fit-content
+    width: fit-content;
 }
 
 .locationHeader {
     font-size: 20px;
+}
+.closeButton {
+    display: flex;
+    padding: none;
+    justify-content: end;
+    align-items: end;
+    width: 100%;
+}
+.close {
+    cursor: pointer;
+}
+
+.close:hover {
+    color: red;
 }

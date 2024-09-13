@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from '@chakra-ui/react';
 import { InsuranceModal } from './InsuranceModal';
-import { User, Mail, Globe, DollarSign, Calendar, Clock, Home, Building, NotebookPen, MoveDown, Search, LockKeyhole, FilePenLine } from 'lucide-react';import './Signup.css';
+import { X, User, Mail, Globe, DollarSign, Calendar, Clock, Home, Building, NotebookPen, MoveDown, Search, LockKeyhole, FilePenLine } from 'lucide-react';import './Signup.css';
 import { useState} from 'react';
 import emailjs from '@emailjs/browser';
 import { toast, ToastContainer } from 'react-toastify';
@@ -130,6 +130,9 @@ const handleSelect = (selectedInsurances: string[]) => {
         <ToastContainer />
       <div className="signup-modal-content">
         <form className='signupForm'>
+        <div className='closeButton'>
+      <X onClick={onClose} className='close'/>
+        </div>
           <input
             type='text'
             name='name'
@@ -137,6 +140,20 @@ const handleSelect = (selectedInsurances: string[]) => {
             placeholder='Provider Name'
             onChange={handleInputChange}
           />
+           <input
+                    type='email'
+                    name='email'
+                    value={providerData.email}
+                    placeholder='Email'
+                    onChange={handleInputChange}
+                />
+                <input
+                    type='url'
+                    name='website'
+                    value={providerData.website}
+                    placeholder='Website'
+                    onChange={handleInputChange}
+                />
           {providerData.locations.map((location, index) => (
             <div key={index} className='locationSection'>
               <h3 className='locationHeader'>Location {index + 1}</h3>
@@ -154,7 +171,7 @@ const handleSelect = (selectedInsurances: string[]) => {
               />
               <input
                 type='text'
-                placeholder='Address 2'
+                placeholder='suite/unit'
                 value={location.address_2}
                 onChange={(e) => handleLocationChange(index, 'address_2', e.target.value)}
               />
@@ -185,20 +202,7 @@ const handleSelect = (selectedInsurances: string[]) => {
             </div>
           ))}
           <Button onClick={addLocation}>Add Location</Button>
-          <input
-            type='email'
-            name='email'
-            value={providerData.email}
-            placeholder='Email'
-            onChange={handleInputChange}
-          />
-          <input
-            type='url'
-            name='website'
-            value={providerData.website}
-            placeholder='Website'
-            onChange={handleInputChange}
-          />
+          
           <input
             type='text'
             name='cost'
@@ -263,8 +267,8 @@ const handleSelect = (selectedInsurances: string[]) => {
             placeholder='In Clinic Services'
             onChange={handleInputChange}
           />
+        <Button className='submitButton'>Register</Button>
         </form>
-        <Button onClick={onClose}>Close</Button>
       </div>
     </div>
   );
