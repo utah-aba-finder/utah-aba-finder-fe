@@ -12,6 +12,7 @@ import { PageNotFound } from '../PageNotFound/PageNotFound';
 import ContactUs from '../ContactUs/ContactUs';
 import { Signup } from '../Signup/Signup';
 import AboutUs from '../AboutUs/AboutUs';
+import ProviderEdit from '../Provider-edit/ProviderEdit';
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
           <Route path='/contact' element={<ContactUs />} />
           <Route path='/signup' element={<Signup />} />
           <Route path='/about' element={<AboutUs />} />
+          <Route path='/providerEdit' element={<ProviderEdit />} />
           <Route path='*' element={<PageNotFound />} />
         </Routes>
       </header>
