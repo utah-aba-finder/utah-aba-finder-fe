@@ -147,10 +147,13 @@ const ProvidersPage: React.FC = () => {
 
   const handleResults = (results: MockProviders) => {
     setFilteredProviders(results.data.map(p => ({
+      id: p.attributes.id,
       name: p.attributes.name,
       locations: p.attributes.locations,
       insurance: p.attributes.insurance,
       counties_served: p.attributes.counties_served,
+      username: p.attributes.username,
+      password: p.attributes.password,
       website: p.attributes.website,
       email: p.attributes.email,
       cost: p.attributes.cost,

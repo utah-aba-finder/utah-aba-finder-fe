@@ -30,7 +30,7 @@ function App() {
           <Route path='/contact' element={<ContactUs />} />
           <Route path='/signup' element={<Signup />} />
           <Route path='/about' element={<AboutUs />} />
-          <Route path='/providerEdit' element={<ProviderEdit />} />
+          {/* <Route path='/providerEdit' element={<ProviderEdit />} /> */}
           <Route path='*' element={<PageNotFound />} />
         </Routes>
       </header>
