@@ -1,0 +1,521 @@
+{
+    "data": [
+        {
+            "id": 1,
+            "type": "provider",
+            "attributes": {
+                "name": "Catalyst Behavior Solutions",
+                "locations": [
+                    {
+                        "name": "South Ogden",
+                        "address_1": "6033 Fashion Point Dr",
+                        "address_2": null,
+                        "city": "South Ogden",
+                        "state": "UT",
+                        "zip": "84403",
+                        "phone": "1-866-569-7395"
+                    },
+                    {
+                        "name": "Farmington",
+                        "address_1": "1438 N Hwy 89",
+                        "address_2": "Suite 130",
+                        "city": "Farmington",
+                        "state": "UT",
+                        "zip": "84025",
+                        "phone": null
+                    }
+                ],
+                "website": "https://catalystbehavior.com/",
+                "email": null,
+                "cost": "Discount offered for prepaying services\r\n RBT $80, $64 with prepay discount. BCaBA/student\r\n $100, $80 with prepay discount BCBA $150, $120\r\n with prepay\r\n discount.",
+                "insurance": [
+                    {
+                        "name": "Blue Cross Blue Shield (BCBS)"
+                    },
+                    {
+                        "name": "Cigna"
+                    },
+                    {
+                        "name": "Medicaid"
+                    },
+                    {
+                        "name": "Select Health"
+                    },
+                    {
+                        "name": "TRICARE"
+                    },
+                    {
+                        "name": "United HealthCare (UHC)"
+                    }
+                ],
+                "counties_served": [
+                    {
+                        "county": "Davis, Weber, Morgan"
+                    }
+                ],
+                "min_age": 2.0,
+                "max_age": 21.0,
+                "waitlist": "Availability for daytime hours for kids ages 2-\r\n 6, after school services typically several months",
+                "telehealth_services": "Yes",
+                "spanish_speakers": "limited",
+                "at_home_services": "Yes",
+                "in_clinic_services": "Yes"
+            }
+        },
+        {
+            "id": 2,
+            "type": "provider",
+            "attributes": {
+                "name": "Above & Beyond Therapy",
+                "locations": [
+                    {
+                        "name": "https://www.abtaba.com/locations/aba-therapy-in-utah",
+                        "address_1": null,
+                        "address_2": null,
+                        "city": null,
+                        "state": null,
+                        "zip": null,
+                        "phone": "(801) 630-2040"
+                    }
+                ],
+                "website": "https://www.abtaba.com/",
+                "email": "info@abtaba.com",
+                "cost": "Out-of-Network and single-case agreements.",
+                "insurance": [
+                    {
+                        "name": "Blue Cross Blue Shield (BCBS)"
+                    },
+                    {
+                        "name": "Deseret Mutual Benefit Administrators (DMBA)"
+                    },
+                    {
+                        "name": "EMI Health"
+                    },
+                    {
+                        "name": "Medicaid"
+                    },
+                    {
+                        "name": "University of Utah Health Plans"
+                    }
+                ],
+                "counties_served": [
+                    {
+                        "county": "Utah, Salt Lake, Davis, Logan to Spanish Fork, Tooele"
+                    }
+                ],
+                "min_age": 2.0,
+                "max_age": 21.0,
+                "waitlist": "No",
+                "telehealth_services": "Yes",
+                "spanish_speakers": "Yes",
+                "at_home_services": "No",
+                "in_clinic_services": "Yes"
+            }
+        },
+        {
+            "id": 3,
+            "type": "provider",
+            "attributes": {
+                "name": "ABA Pediatric Autism Services",
+                "locations": [
+                    {
+                        "name": "https://www.abapediatricautismservices.com/locations",
+                        "address_1": "744 E 400 S",
+                        "address_2": "Suite B",
+                        "city": "Salt Lake City",
+                        "state": "UT",
+                        "zip": "84102",
+                        "phone": "(801) 477-5177"
+                    }
+                ],
+                "website": "www.abapediatricautismservices.com",
+                "email": "info@abapediatricautismservices.com",
+                "cost": "Private pay rates available upon request",
+                "insurance": [
+                    {
+                        "name": "Blue Cross Blue Shield (BCBS)"
+                    },
+                    {
+                        "name": "Optum (UnitedHealth Group)"
+                    },
+                    {
+                        "name": "PEHP (Public Employees Health Program)"
+                    },
+                    {
+                        "name": "Select Health"
+                    },
+                    {
+                        "name": "United HealthCare (UHC)"
+                    },
+                    {
+                        "name": "University of Utah Health Plans"
+                    }
+                ],
+                "counties_served": [
+                    {
+                        "county": "Davis, Salt Lake, Weber"
+                    }
+                ],
+                "min_age": 1.5,
+                "max_age": 6.0,
+                "waitlist": "No",
+                "telehealth_services": "limited",
+                "spanish_speakers": null,
+                "at_home_services": null,
+                "in_clinic_services": null
+            }
+        },
+        {
+            "id": 4,
+            "type": "provider",
+            "attributes": {
+                "name": "Blue Autism Center",
+                "locations": [
+                    {
+                        "name": null,
+                        "address_1": "2540 East Bengal Blvd",
+                        "address_2": "suite 300",
+                        "city": "Cottonwood Heights",
+                        "state": "UT",
+                        "zip": "84121",
+                        "phone": "(801) 495-5105"
+                    }
+                ],
+                "website": "https://www.blueautism.com/",
+                "email": null,
+                "cost": "Contact office",
+                "insurance": [
+                    {
+                        "name": "Contact us"
+                    },
+                    {
+                        "name": "Blue Cross Blue Shield (BCBS)"
+                    },
+                    {
+                        "name": "Cigna"
+                    },
+                    {
+                        "name": "Medicaid"
+                    },
+                    {
+                        "name": "Optum (UnitedHealth Group)"
+                    },
+                    {
+                        "name": "Select Health"
+                    }
+                ],
+                "counties_served": [
+                    {
+                        "county": "Cottonwood Heights"
+                    }
+                ],
+                "min_age": 1.5,
+                "max_age": 18.0,
+                "waitlist": "No",
+                "telehealth_services": "Yes",
+                "spanish_speakers": "No",
+                "at_home_services": "Yes",
+                "in_clinic_services": "No"
+            }
+        },
+        {
+            "id": 5,
+            "type": "provider",
+            "attributes": {
+                "name": "Affinity Autism Services",
+                "locations": [
+                    {
+                        "name": null,
+                        "address_1": "1970 W 7800 S",
+                        "address_2": null,
+                        "city": "West Jordan",
+                        "state": "UT",
+                        "zip": "84088",
+                        "phone": "(801) 506-6695"
+                    }
+                ],
+                "website": "www.affinityautism.com",
+                "email": "Affinity@affinitytreatment.com",
+                "cost": "Private pay rates available upon request",
+                "insurance": [
+                    {
+                        "name": "Meritain (Aetna)"
+                    },
+                    {
+                        "name": "Anthem (BCBS)"
+                    },
+                    {
+                        "name": "Regence (BCBS)"
+                    },
+                    {
+                        "name": "Cigna"
+                    },
+                    {
+                        "name": "Compsych"
+                    },
+                    {
+                        "name": "Deseret Mutual Benefit Administrators (DMBA)"
+                    },
+                    {
+                        "name": "EMI Health"
+                    },
+                    {
+                        "name": "Medicaid"
+                    },
+                    {
+                        "name": "MotivHealth"
+                    },
+                    {
+                        "name": "Select Health"
+                    },
+                    {
+                        "name": "UMR (UHC)"
+                    },
+                    {
+                        "name": "United HealthCare (UHC)"
+                    },
+                    {
+                        "name": "University of Utah Health Plans"
+                    },
+                    {
+                        "name": "Utah’s Children’s Health Insurance Program (CHIP)"
+                    },
+                    {
+                        "name": "Contact us"
+                    }
+                ],
+                "counties_served": [
+                    {
+                        "county": "Utah, Salt Lake, Iron, Davis, Weber"
+                    }
+                ],
+                "min_age": 1.5,
+                "max_age": 21.0,
+                "waitlist": "12 months",
+                "telehealth_services": "limited",
+                "spanish_speakers": "limited",
+                "at_home_services": "Yes",
+                "in_clinic_services": "Yes"
+            }
+        },
+        {
+            "id": 6,
+            "type": "provider",
+            "attributes": {
+                "name": "A.B.I. Learning Center",
+                "locations": [
+                    {
+                        "name": null,
+                        "address_1": "12637 S 265 W",
+                        "address_2": "Suite 300",
+                        "city": "Draper",
+                        "state": "UT",
+                        "zip": "84020",
+                        "phone": "(801) 998-8428"
+                    }
+                ],
+                "website": "www.abilearningcenter.com",
+                "email": "Office@abilearningcenter.com",
+                "cost": "Bill insurance or private pay is $50 an hour for RBT, BCaBA, and BCBA",
+                "insurance": [
+                    {
+                        "name": "Administrator Benefits"
+                    },
+                    {
+                        "name": "Aetna"
+                    },
+                    {
+                        "name": "Meritain (Aetna)"
+                    },
+                    {
+                        "name": "Blue Cross Blue Shield (BCBS)"
+                    },
+                    {
+                        "name": "EMI Health"
+                    },
+                    {
+                        "name": "Medicaid"
+                    },
+                    {
+                        "name": "Optum (UnitedHealth Group)"
+                    },
+                    {
+                        "name": "Optum (UnitedHealth Group)"
+                    },
+                    {
+                        "name": "PEHP (Public Employees Health Program)"
+                    },
+                    {
+                        "name": "Tall Tree"
+                    },
+                    {
+                        "name": "TRICARE"
+                    },
+                    {
+                        "name": "United HealthCare (UHC)"
+                    },
+                    {
+                        "name": "University of Utah Health Plans"
+                    }
+                ],
+                "counties_served": [
+                    {
+                        "county": "Utah, Salt Lake, Davis"
+                    }
+                ],
+                "min_age": 1.5,
+                "max_age": 18.0,
+                "waitlist": "24 months",
+                "telehealth_services": "limited",
+                "spanish_speakers": "Yes",
+                "at_home_services": "No",
+                "in_clinic_services": "Yes"
+            }
+        },
+        {
+            "id": 7,
+            "type": "provider",
+            "attributes": {
+                "name": "Achieving Abilities LLC",
+                "locations": [
+                    {
+                        "name": null,
+                        "address_1": "1392 West Turf Farm Way",
+                        "address_2": "Suite 1-153",
+                        "city": "Payson",
+                        "state": "UT",
+                        "zip": "84651",
+                        "phone": "(801) 935-5796"
+                    }
+                ],
+                "website": "www.achievingabilities.com",
+                "email": "info@achievingabilities.com",
+                "cost": null,
+                "insurance": [
+                    {
+                        "name": "Contact us"
+                    },
+                    {
+                        "name": "Beacon Health"
+                    },
+                    {
+                        "name": "Blue Cross Blue Shield (BCBS)"
+                    },
+                    {
+                        "name": "Cigna"
+                    },
+                    {
+                        "name": "Deseret Mutual Benefit Administrators (DMBA)"
+                    },
+                    {
+                        "name": "Medicaid"
+                    },
+                    {
+                        "name": "Optum (UnitedHealth Group)"
+                    },
+                    {
+                        "name": "PEHP (Public Employees Health Program)"
+                    },
+                    {
+                        "name": "TRICARE"
+                    },
+                    {
+                        "name": "University of Utah Health Plans"
+                    }
+                ],
+                "counties_served": [
+                    {
+                        "county": "Utah, Cache"
+                    }
+                ],
+                "min_age": 1.5,
+                "max_age": 18.0,
+                "waitlist": "Contact provider",
+                "telehealth_services": "No",
+                "spanish_speakers": "No",
+                "at_home_services": "Yes",
+                "in_clinic_services": "Yes"
+            }
+        },
+        {
+            "id": 8,
+            "type": "provider",
+            "attributes": {
+                "name": "ABS Kids",
+                "locations": [
+                    {
+                        "name": "Salt Lake County",
+                        "address_1": "515 S 700 E",
+                        "address_2": "#2A",
+                        "city": "Salt Lake City",
+                        "state": "UT",
+                        "zip": "84102",
+                        "phone": "(801) 935-4171"
+                    },
+                    {
+                        "name": "Utah County Office",
+                        "address_1": "1140 W 1130 S",
+                        "address_2": "Building B",
+                        "city": "Orem",
+                        "state": "UT",
+                        "zip": "84058",
+                        "phone": "(800) 434-8923"
+                    },
+                    {
+                        "name": "Davis County Office",
+                        "address_1": "2940 Church St",
+                        "address_2": "Suite #303",
+                        "city": "Layton",
+                        "state": "UT",
+                        "zip": "84040",
+                        "phone": "(800) 434-8923"
+                    }
+                ],
+                "website": "www.abskids.com",
+                "email": "info@alternativebehaviorstrategies.com",
+                "cost": "Intake and assessment $480 (6hrs. $80hr.)\r\n RBT $380 weekly (1hr supervised\r\n $80 + 30 hrs. at\r\n $30hr direct care)",
+                "insurance": [
+                    {
+                        "name": "Regence (BCBS)"
+                    },
+                    {
+                        "name": "Blue Cross Blue Shield (BCBS)"
+                    },
+                    {
+                        "name": "Cigna"
+                    },
+                    {
+                        "name": "EMI Health"
+                    },
+                    {
+                        "name": "Medicaid"
+                    },
+                    {
+                        "name": "Optum (UnitedHealth Group)"
+                    },
+                    {
+                        "name": "PEHP (Public Employees Health Program)"
+                    },
+                    {
+                        "name": "TRICARE"
+                    },
+                    {
+                        "name": "University of Utah Health Plans"
+                    }
+                ],
+                "counties_served": [
+                    {
+                        "county": "Salt Lake, Bountiful, Lehi, Tooele, Richfield"
+                    }
+                ],
+                "min_age": 1.5,
+                "max_age": null,
+                "waitlist": "8 months",
+                "telehealth_services": "Yes",
+                "spanish_speakers": "Yes",
+                "at_home_services": "Yes",
+                "in_clinic_services": "Limited"
+            }
+        }
+    ]
+}
