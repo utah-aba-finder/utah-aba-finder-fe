@@ -66,6 +66,7 @@
     padding: 1rem;
     margin-left: 1rem;
     cursor: pointer;
+    text-decoration: none;
 }
 
 .discover-section-button:hover {
@@ -106,6 +107,7 @@
     .discover-section-button {
         font-size: 1.1rem;
         margin-top: 1rem;
+        text-decoration: none;
     }
 
 }
@@ -113,7 +115,7 @@
 /* COUNTY SECTION */
 .county-section {
     color: white;
-    background-color: rgb(255, 123, 0);
+    background-color: rgb(255, 106, 0);
     height: 8rem;
     margin-top: 0;
     z-index: 2;
@@ -122,7 +124,7 @@
 
 .county-section-title {
     margin: 0;
-    padding: 0.7rem;
+    padding: 0.9rem;
 }
 
 .county-section-list-wrapper {
@@ -141,8 +143,10 @@
 }
 
 .county-section-list p {
+    color: white;
     white-space: nowrap;
     font-weight: 700;
+    font-size: 1rem;
 }
 
 @keyframes moveLeft {
@@ -203,6 +207,7 @@
     display: flex;
     justify-content: center;
     gap: 2rem;
+    text-decoration: none;
 }
 
 .begin-section-button1,
@@ -214,10 +219,11 @@
     border-radius: 10px;
     border: none;
     color: white;
-    font-weight: 800;
-    font-size: 1rem;
+    font-weight: 500;
+    font-size: 1.3rem;
     background-color: rgb(10, 150, 94);
     cursor: pointer;
+    text-decoration: none;
 }
 
 .begin-section-button2 {
@@ -377,13 +383,14 @@
 .spanish-section-button {
     color: white;
     background-color: rgb(183, 107, 200);
-    font-size: 1rem;
+    font-size: 1.3rem;
     padding: 0.5rem 3rem 0.5rem 3rem;
     border-radius: 20px;
     margin-top: 2rem;
     border: none;
-    font-weight: 800;
+    font-weight: 500;
     cursor: pointer;
+    text-decoration: none;
 }
 
 .spanish-section-button:hover {

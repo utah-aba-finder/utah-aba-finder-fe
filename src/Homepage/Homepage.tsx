@@ -28,7 +28,7 @@ class Homepage extends Component<Props, State> {
                             <p className='discover-section-description'>
                                 Are you feeling overwhelmed in your search for the right care? We’re here to guide you every step of the way. <br />Start your journey with confidence today.
                             </p>
-                            <Link to="/providers"><button className='discover-section-button'>Start Your Journey</button></Link>
+                            <Link to="/providers" className='discover-section-button'>Start Your Journey</Link>
                         </div>
                     </div>
                 </div>
@@ -90,10 +90,9 @@ class Homepage extends Component<Props, State> {
                     <h2 className='begin-section-title'>Begin Your Journey with Essential Information</h2>
                     <p className='begin-section-description'>Not sure about your child’s condition or haven’t received a diagnosis yet? <br />We’re here for you. Start by taking a simple screening test to see if your child meets the criteria.</p>
                     <div className='begin-section-button-container'>
-                        <Link to="/providers"><button className='begin-section-button1'>VIEW PROVIDERS</button></Link>
-                        <Link to="/screening"> <button className='begin-section-button2'>SCREENING TOOLS</button> </Link>
-                        <Link to="/contact"> <button className='begin-section-button3'>CONTACT US</button> </Link>
-
+                        <Link to="/providers" className='begin-section-button1'> VIEW PROVIDERS</Link>
+                        <Link to="/screening" className='begin-section-button2'>SCREENING TOOLS </Link>
+                        <Link to="/contact" className='begin-section-button3'> CONTACT US</Link>
                     </div>
 
                 </div>
@@ -119,7 +118,7 @@ class Homepage extends Component<Props, State> {
                     <div className="spanish-section-texts">
                         <h2 className='spanish-section-title'>Now Available: Spanish-Speaking Providers</h2>
                         <p className='spanish-section-description'>We know how important it is to communicate in your language. We have Spanish-speaking providers available to assist with your ABA needs in Utah.</p>
-                        <Link to="/providers"><button className='spanish-section-button'>Learn More</button></Link>
+                        <Link to="/providers" className='spanish-section-button'>Learn More</Link>
                     </div>
                     <div className="spanish-section-image">
                         <img src={spanishPic} alt="Spanish" className='spanish-section-pic' />
