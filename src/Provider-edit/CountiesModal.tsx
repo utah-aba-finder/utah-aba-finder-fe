@@ -41,7 +41,9 @@ const CountiesModal: React.FC<{
                         </div>
                     ))}
                 </div>
-                <button onClick={onClose}>Close</button>
+                <button 
+                className="counties-options-button"
+                onClick={onClose}>Close</button>
             </div>
         </>
     );
