@@ -21,6 +21,8 @@ const ProvidersPage: React.FC = () => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedSpanish, setSelectedSpanish] = useState<string>('');
   const [selectedService, setSelectedService] = useState<string>('');
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [selectedWaitList, setSelectedWaitList] = useState<string>('');
   const [mapAddress, setMapAddress] = useState<string>('Utah');
   const [isFiltered, setIsFiltered] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -49,7 +51,7 @@ const ProvidersPage: React.FC = () => {
     getProviders();
   }, []);
 
-  const handleSearch = useCallback(({ query, county, insurance, spanish, service }: { query: string; county: string; insurance: string; spanish: string; service: string }) => {
+  const handleSearch = useCallback(({ query, county, insurance, spanish, service, waitlist }: { query: string; county: string; insurance: string; spanish: string; service: string; waitlist: string }) => {
     const normalizedCounty = county.toLowerCase();
     const normalizedInsurance = insurance.toLowerCase();
   
@@ -57,26 +59,21 @@ const ProvidersPage: React.FC = () => {
       if (!service) return true;
       switch (service) {
         case 'telehealth':
-          return (
-            provider.telehealth_services?.toLowerCase() === 'yes' ||
-            provider.telehealth_services === null ||
-            provider.telehealth_services.toLowerCase() === 'limited'
-          );
+          return provider.telehealth_services?.toLowerCase() === 'yes' || provider.telehealth_services === null || provider.telehealth_services.toLowerCase() === 'limited';
         case 'at_home':
-          return (
-            provider.at_home_services?.toLowerCase() === 'yes' ||
-            provider.at_home_services === null ||
-            provider.at_home_services.toLowerCase() === 'limited'
-          );
+          return provider.at_home_services?.toLowerCase() === 'yes' || provider.at_home_services === null || provider.at_home_services.toLowerCase() === 'limited';
         case 'in_clinic':
-          return (
-            provider.in_clinic_services?.toLowerCase() === 'yes' ||
-            provider.in_clinic_services === null ||
-            provider.in_clinic_services.toLowerCase() === 'limited'
-          );
+          return provider.in_clinic_services?.toLowerCase() === 'yes' || provider.in_clinic_services === null || provider.in_clinic_services.toLowerCase() === 'limited';
         default:
           return true;
       }
+    };
+  
+    const waitlistFilter = (provider: ProviderAttributes) => {
+      if (!waitlist) return true;
+      return waitlist === 'yes'
+        ? provider.waitlist?.toLowerCase() !== 'no'
+        : provider.waitlist?.toLowerCase() === 'no';
     };
   
     const filtered = allProviders.filter(provider =>
@@ -85,13 +82,9 @@ const ProvidersPage: React.FC = () => {
       (!insurance || provider.insurance.some(i => i.name?.toLowerCase().includes(normalizedInsurance))) &&
       (spanish === '' ||
         (spanish === 'no' && (!provider.spanish_speakers || provider.spanish_speakers.toLowerCase() === 'no')) ||
-        (spanish === 'yes' && (
-          provider.spanish_speakers?.toLowerCase() === 'yes' ||
-          provider.spanish_speakers === null ||
-          provider.spanish_speakers.toLowerCase() === 'limited'
-        ))
-      ) &&
-      serviceFilter(provider)
+        (spanish === 'yes' && (provider.spanish_speakers?.toLowerCase() === 'yes' || provider.spanish_speakers === null || provider.spanish_speakers.toLowerCase() === 'limited'))) &&
+      serviceFilter(provider) &&
+      waitlistFilter(provider)
     );
   
     setFilteredProviders(filtered);
@@ -100,7 +93,7 @@ const ProvidersPage: React.FC = () => {
   }, [allProviders]);
   
   useEffect(() => {
-    handleSearch({ query: '', county: '', insurance: '', spanish: '', service: '' });
+    handleSearch({ query: '', county: '', insurance: '', spanish: '', service: '', waitlist: '' });
   }, [handleSearch]);
 
   const handleProviderCardClick = (provider: ProviderAttributes) => {
@@ -124,6 +117,7 @@ const ProvidersPage: React.FC = () => {
     setSelectedInsurance('');
     setSelectedSpanish('');
     setSelectedService('');
+    setSelectedWaitList('');
     setIsFiltered(false);
     setMapAddress('Utah');
     setCurrentPage(1);
@@ -144,6 +138,10 @@ const ProvidersPage: React.FC = () => {
   const handleServiceChange = (service: string) => {
     setSelectedService(service);
   };
+
+  const handleWaitListChange = (waitlist: string) => {
+    setSelectedWaitList(waitlist)
+  }
 
   const handleResults = (results: MockProviders) => {
     setFilteredProviders(results.data.map(p => ({
@@ -279,6 +277,7 @@ const ProvidersPage: React.FC = () => {
               insuranceOptions={uniqueInsuranceOptions}
               onSpanishChange={handleSpanishChange}
               onServiceChange={handleServiceChange}
+              onWaitListChange={handleWaitListChange}
               onReset={handleResetSearch}
             />
 

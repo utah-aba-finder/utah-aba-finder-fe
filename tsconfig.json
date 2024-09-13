@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    "target": "es6",
+    "baseUrl": "./",
     "lib": [
       "dom",
       "dom.iterable",
@@ -13,16 +14,22 @@
     "strict": true,
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
-    "module": "esnext",
+    "module": "commonjs",
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
+    "paths": {
+      "@/*": ["src/*"]
+    },
     "types": ["cypress", "node"]
   },
   "include": [
     "src",
-    "**/*.ts"
+    "**/*.ts",
+    "cypress/**/*.ts",
+    "cypress/support/commands.d.tsx",
+    "cypress/support/commands.tsx"
   ]
 }

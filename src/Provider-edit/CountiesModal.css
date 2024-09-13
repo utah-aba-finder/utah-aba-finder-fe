@@ -48,7 +48,7 @@
     cursor: pointer;
 }
 
-button {
+.counties-options-button {
     display: block;
     width: 31.5%;
     padding: 10px 20px;
@@ -60,11 +60,11 @@ button {
     margin: 0 auto;
 }
 
-button:hover {
+.counties-options-button:hover {
     background-color: #e65c00;
 }
 
-button:focus {
+.counties-options-button:focus {
     outline: none;
     box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.2);
 }
