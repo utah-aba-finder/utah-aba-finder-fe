@@ -31,7 +31,8 @@
 .provider-insurance-select,
 .provider-spanish-select,
 .provider-search-button,
-.provider-service-select {
+.provider-service-select,
+.provider-waitlist-select {
     padding: 0.5rem 1rem;
     border: none;
     border-radius: 0.25rem;
@@ -65,7 +66,8 @@
 .provider-insurance-select:hover,
 .provider-search-button:hover,
 .provider-spanish-select:hover,
-.provider-service-select:hover {
+.provider-service-select:hover,
+.provider-waitlist-select:hover {
     background-color: #444444;
     transform: translateY(-2px);
 }
@@ -80,13 +82,15 @@
 .provider-insurance-select:focus,
 .provider-search-button:focus,
 .provider-spanish-select:focus,
-.provider-service-dropdown::focus {
+.provider-service-dropdown:focus,
+.provider-waitlist-dropdown:focus {
     outline: 2px solid #333;
 }
 
 .provider-county-dropdown,
 .provider-insurance-dropdown,
-.provider-service-dropdown {
+.provider-service-dropdown,
+.provider-waitlist-dropdown {
     position: relative;
     display: flex;
     align-items: center;
@@ -149,6 +153,20 @@
     margin-right: 2px;
 }
 
+.provider-waitlist-select{
+    width: 175px;
+    box-sizing: border-box;
+    appearance: none;
+    padding: 0.5rem 1rem;
+    background-color: #555555;
+    color: #d2d2d2;
+    border: none;
+    border-radius: 0.25rem;
+    font-size: 1rem;
+    outline: none;
+    margin-right: 2px;
+}
+
 .dropdown-arrow {
     position: absolute;
     right: 1rem;
@@ -162,7 +180,8 @@
 .provider-county-dropdown::after,
 .provider-insurance-dropdown::after,
 .provider-spanish-dropdown::after,
-.provider-service-dropdown::after {
+.provider-service-dropdown::after,
+.provider-waitlist-dropdown::after {
     content: "\25BC";
     position: absolute;
     right: .5rem;
@@ -209,7 +228,8 @@
     .provider-county-select,
     .provider-insurance-select,
     .provider-spanish-select,
-    .provider-service-select {
+    .provider-service-select,
+    .provider-waitlist-select {
         width: 100%;
     }
 
@@ -247,6 +267,16 @@
     }
 
     .provider-service-dropdown::after {
+        content: "\25BC";
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #ffffff;
+        pointer-events: none;
+        font-size: 1rem;
+    }
+    .provider-waitlist-dropdown::after {
         content: "\25BC";
         position: absolute;
         right: 1rem;

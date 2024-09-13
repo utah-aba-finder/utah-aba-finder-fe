@@ -6,12 +6,13 @@ import { MockProviders } from '../Utility/Types';
 
 interface SearchBarProps {
   onResults: (results: MockProviders) => void;
-  onSearch: (params: { query: string; county: string; insurance: string; spanish: string; service: string; }) => void;
+  onSearch: (params: { query: string; county: string; insurance: string; spanish: string; service: string; waitlist: string; }) => void;
   onCountyChange: (county: string) => void;
   insuranceOptions: string[];
   onInsuranceChange: (insurance: string) => void;
   onSpanishChange: (spanish: string) => void;
   onServiceChange: (service: string) => void;
+  onWaitListChange: (waitlist: string) => void;
   onReset: () => void;
 }
 
@@ -22,14 +23,17 @@ const SearchBar: React.FC<SearchBarProps> = ({
   onInsuranceChange,
   onSpanishChange,
   onServiceChange,
+  onWaitListChange,
   onReset,
+
 }) => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedCounty, setSelectedCounty] = useState<string>('');
   const [selectedInsurance, setSelectedInsurance] = useState<string>('');
   const [selectedSpanish, setSelectedSpanish] = useState<string>('');
   const [selectedService, setSelectedService] = useState<string>('');
-  
+  const [selectedWaitList, setSelectedWaitList] = useState<string>('');
+
   const handleSearch = useCallback(() => {
     const searchParams = {
       query: searchQuery,
@@ -37,9 +41,10 @@ const SearchBar: React.FC<SearchBarProps> = ({
       insurance: selectedInsurance,
       spanish: selectedSpanish,
       service: selectedService,
+      waitlist: selectedWaitList,
     };
     onSearch(searchParams);
-  }, [searchQuery, selectedCounty, selectedInsurance, selectedSpanish, selectedService, onSearch]);
+  }, [searchQuery, selectedCounty, selectedInsurance, selectedSpanish, selectedService, selectedWaitList, onSearch]);
 
   const handleReset = () => {
     setSearchQuery('');
@@ -47,6 +52,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
     setSelectedInsurance('');
     setSelectedSpanish('');
     setSelectedService('');
+    setSelectedWaitList('')
     onReset();
   };
 
@@ -61,7 +67,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
             onChange={(e) => setSearchQuery(e.target.value)}
           />
           <div className="provider-county-dropdown">
-          <select
+            <select
               className={`provider-county-select`}
               value={selectedCounty}
               onChange={(e) => setSelectedCounty(e.target.value)}
@@ -121,13 +127,22 @@ const SearchBar: React.FC<SearchBarProps> = ({
               value={selectedService}
               onChange={(e) => {
                 setSelectedService(e.target.value);
-                
               }}
             >
               <option value="">All Services</option>
               <option value="telehealth">Telehealth Services</option>
               <option value="at_home">At Home Services</option>
               <option value="in_clinic">In Clinic Services</option>
+            </select>
+          </div>
+
+          <div className="provider-waitlist-dropdown">
+            <select
+              className="provider-waitlist-select"
+              value={selectedWaitList}
+              onChange={(e) => setSelectedWaitList(e.target.value)}>
+              <option value="">All Waitlist Status</option>
+              <option value="No">No Waitlist</option>
             </select>
           </div>
 
