@@ -133,7 +133,7 @@ export const LoginPage: React.FC = () => {
                         </div>
                         <div className="forgot-password">Forgot Password <span>Click Here!</span></div>
                         <div className="submit-container">
-                            <button type='submit' id='signup' className='loginButton' disabled>Sign Up</button>
+                            <button type='submit' id='signup' className='loginButton' disabled={true}>Sign Up</button>
                             <button type='submit' id='login' className='loginButton'>Login</button>
                         </div>
                     </form>

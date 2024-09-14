@@ -82,14 +82,14 @@ const ProvidersPage: React.FC = () => {
     const filtered = allProviders.filter(provider =>
       provider.name?.toLowerCase().includes(query.toLowerCase()) &&
       (!county || provider.counties_served.some(c => c.county?.toLowerCase().includes(normalizedCounty))) &&
-      (!insurance || provider.insurance.some(i => i.name?.toLowerCase().includes(normalizedInsurance))) &&
+      (!insurance || provider.insurance.some(i => i.name?.toLowerCase().includes(normalizedInsurance)))  &&
       (spanish === '' ||
         (spanish === 'no' && (!provider.spanish_speakers || provider.spanish_speakers.toLowerCase() === 'no')) ||
         (spanish === 'yes' && (
           provider.spanish_speakers?.toLowerCase() === 'yes' ||
           provider.spanish_speakers === null ||
           provider.spanish_speakers.toLowerCase() === 'limited'
-        ))
+        )) 
       ) &&
       serviceFilter(provider)
     );
