@@ -48,7 +48,7 @@
     margin-right: 10px;
 }
 
-button {
+.insuranceModalButton {
     display: block;
     padding: 10px 20px;
     background-color: #ff6f00;
@@ -59,6 +59,6 @@ button {
     margin: 0 auto;
 }
 
-button:hover {
+.insuranceModalButton:hover {
     background-color: #ff4d00;
 }

@@ -77,15 +77,15 @@
 .mailIcon {
     left: 1.2rem;
 }
-
 .eyeButton {
     position: absolute;
-    right: 0;
-    top: 2rem;
+    right: 1%;
+    top: 2;
     background-color: transparent;
     border: none;
-    font-size: 2.5rem;
+    width: fit-content;
     cursor: pointer;
+    padding: 0;
 }
 
 .eye {

@@ -2,7 +2,7 @@ import React, {useState} from 'react'
 import './LoginPage.css'
 import { User, Lock, Eye, EyeOff } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { ProviderAttributes as ProviderAttributesType } from '../Utility/Types';
+import { ProviderAttributes as ProviderAttributesType, Location } from '../Utility/Types';
 import  ProviderEdit  from '../Provider-edit/ProviderEdit'
 import { Insurance } from '../Utility/Types';
 import { MockProviderData, MockProviders } from '../Utility/Types';
@@ -133,6 +133,7 @@ export const LoginPage: React.FC = () => {
                         </div>
                         <div className="forgot-password">Forgot Password <span>Click Here!</span></div>
                         <div className="submit-container">
+                            <button type='submit' id='signup' className='loginButton' disabled>Sign Up</button>
                             <button type='submit' id='login' className='loginButton'>Login</button>
                         </div>
                     </form>
