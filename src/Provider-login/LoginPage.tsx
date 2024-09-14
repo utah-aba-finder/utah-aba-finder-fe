@@ -137,11 +137,11 @@ export const LoginPage: React.FC = () => {
                             <button type='submit' id='login' className='loginButton'>Login</button>
                         </div>
                     </form>
-                    {isLoggedIn && currentProvider ? (
+                    {/* {isLoggedIn && currentProvider ? (
                         <ProviderEdit loggedInProvider={currentProvider} />
                     ) : (
                         error && <div className="error-message">{error}</div>
-                    )}
+                    )} */}
                 </div>
             </div>
         )
