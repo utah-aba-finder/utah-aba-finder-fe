@@ -8,12 +8,11 @@ import ProviderCard from './ProviderCard';
 import { fetchProviders } from '../Utility/ApiCall';
 import { MockProviders, ProviderAttributes } from '../Utility/Types';
 
-
 const ProvidersPage: React.FC = () => {
   const [selectedProvider, setSelectedProvider] = useState<ProviderAttributes | null>(null);
   const [allProviders, setAllProviders] = useState<ProviderAttributes[]>([]);
   const [filteredProviders, setFilteredProviders] = useState<ProviderAttributes[]>([]);
-  const [uniqueInsuranceOptions, setUniqueInsuranceOptions] = useState<string[]>([])
+  const [uniqueInsuranceOptions, setUniqueInsuranceOptions] = useState<string[]>([]);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedCounty, setSelectedCounty] = useState<string>('');
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -21,7 +20,6 @@ const ProvidersPage: React.FC = () => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedSpanish, setSelectedSpanish] = useState<string>('');
   const [selectedService, setSelectedService] = useState<string>('');
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedWaitList, setSelectedWaitList] = useState<string>('');
   const [mapAddress, setMapAddress] = useState<string>('Utah');
   const [isFiltered, setIsFiltered] = useState<boolean>(false);
@@ -54,7 +52,7 @@ const ProvidersPage: React.FC = () => {
   const handleSearch = useCallback(({ query, county, insurance, spanish, service, waitlist }: { query: string; county: string; insurance: string; spanish: string; service: string; waitlist: string }) => {
     const normalizedCounty = county.toLowerCase();
     const normalizedInsurance = insurance.toLowerCase();
-  
+
     const serviceFilter = (provider: ProviderAttributes) => {
       if (!service) return true;
       switch (service) {
@@ -68,14 +66,19 @@ const ProvidersPage: React.FC = () => {
           return true;
       }
     };
-  
+
     const waitlistFilter = (provider: ProviderAttributes) => {
-      if (!waitlist) return true;
+      if (waitlist === '6 Months or Less') {
+        const waitlistTime = provider.waitlist ? parseInt(provider.waitlist, 10) : null;
+        return waitlistTime !== null && waitlistTime <= 6;
+      } else if (!waitlist) {
+        return true;
+      }
       return waitlist === 'yes'
         ? provider.waitlist?.toLowerCase() !== 'no'
         : provider.waitlist?.toLowerCase() === 'no';
     };
-  
+
     const filtered = allProviders.filter(provider =>
       provider.name?.toLowerCase().includes(query.toLowerCase()) &&
       (!county || provider.counties_served.some(c => c.county?.toLowerCase().includes(normalizedCounty))) &&
@@ -86,12 +89,12 @@ const ProvidersPage: React.FC = () => {
       serviceFilter(provider) &&
       waitlistFilter(provider)
     );
-  
+
     setFilteredProviders(filtered);
     setIsFiltered(true);
     setCurrentPage(1);
   }, [allProviders]);
-  
+
   useEffect(() => {
     handleSearch({ query: '', county: '', insurance: '', spanish: '', service: '', waitlist: '' });
   }, [handleSearch]);
@@ -140,11 +143,11 @@ const ProvidersPage: React.FC = () => {
   };
 
   const handleWaitListChange = (waitlist: string) => {
-    setSelectedWaitList(waitlist)
-  }
+    setSelectedWaitList(waitlist);
+  };
 
   const handleResults = (results: MockProviders) => {
-    setFilteredProviders(results.data.map(p => ({
+    const mappedResults = results.data.map(p => ({
       name: p.attributes.name,
       locations: p.attributes.locations,
       insurance: p.attributes.insurance,
@@ -160,7 +163,17 @@ const ProvidersPage: React.FC = () => {
       at_home_services: p.attributes.at_home_services,
       in_clinic_services: p.attributes.in_clinic_services,
       logo: p.attributes.logo
-    })));
+    }));
+
+    const filteredResults = mappedResults.filter(provider =>
+      (!selectedService || (selectedService === 'telehealth' && provider.telehealth_services?.toLowerCase() === 'yes') ||
+      (selectedService === 'at_home' && provider.at_home_services?.toLowerCase() === 'yes') ||
+      (selectedService === 'in_clinic' && provider.in_clinic_services?.toLowerCase() === 'yes')) &&
+      (!selectedWaitList || (selectedWaitList === '6 Months or Less' && (provider.waitlist ? parseInt(provider.waitlist, 10) <= 6 : false)) ||
+      (selectedWaitList === 'no' && provider.waitlist?.toLowerCase() === 'no'))
+    );
+
+    setFilteredProviders(filteredResults);
     setCurrentPage(1);
   };
 
@@ -234,7 +247,6 @@ const ProvidersPage: React.FC = () => {
         </select>
       );
     }
-
     return (
       <button
         className={`view-on-map-button ${!isAddressAvailable ? 'disabled' : ''}`}
@@ -269,17 +281,17 @@ const ProvidersPage: React.FC = () => {
             : `Showing ${allProviders.length} Providers`}
         </h2>
       </section>
-            <SearchBar
-              onResults={handleResults}
-              onSearch={handleSearch}
-              onCountyChange={handleCountyChange}
-              onInsuranceChange={handleInsuranceChange}
-              insuranceOptions={uniqueInsuranceOptions}
-              onSpanishChange={handleSpanishChange}
-              onServiceChange={handleServiceChange}
-              onWaitListChange={handleWaitListChange}
-              onReset={handleResetSearch}
-            />
+      <SearchBar
+        onResults={handleResults}
+        onSearch={handleSearch}
+        onCountyChange={handleCountyChange}
+        onInsuranceChange={handleInsuranceChange}
+        insuranceOptions={uniqueInsuranceOptions}
+        onSpanishChange={handleSpanishChange}
+        onServiceChange={handleServiceChange}
+        onWaitListChange={handleWaitListChange}
+        onReset={handleResetSearch}
+      />
 
       <section className="searched-provider-map-locations-list-section">
         <div className="provider-cards-grid">

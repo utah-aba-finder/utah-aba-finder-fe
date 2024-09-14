@@ -25,7 +25,6 @@ const SearchBar: React.FC<SearchBarProps> = ({
   onServiceChange,
   onWaitListChange,
   onReset,
-
 }) => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedCounty, setSelectedCounty] = useState<string>('');
@@ -43,6 +42,12 @@ const SearchBar: React.FC<SearchBarProps> = ({
       service: selectedService,
       waitlist: selectedWaitList,
     };
+
+    // If waitlist is "6 Months or Less", modify searchParams to include waitlists of 6 months or less
+    if (selectedWaitList === '6 Months or Less') {
+      searchParams.waitlist = '6 Months or Less';
+    }
+
     onSearch(searchParams);
   }, [searchQuery, selectedCounty, selectedInsurance, selectedSpanish, selectedService, selectedWaitList, onSearch]);
 
@@ -52,7 +57,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
     setSelectedInsurance('');
     setSelectedSpanish('');
     setSelectedService('');
-    setSelectedWaitList('')
+    setSelectedWaitList('');
     onReset();
   };
 
@@ -72,7 +77,6 @@ const SearchBar: React.FC<SearchBarProps> = ({
               value={selectedCounty}
               onChange={(e) => setSelectedCounty(e.target.value)}
             >
-              {/* <option value="" disabled>County</option> */}
               <option value="">All Counties</option>
               <option value="Beaver">Beaver County</option>
               <option value="Box-Elder">Box Elder County</option>
@@ -139,9 +143,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
             <select
               className="provider-service-select"
               value={selectedService}
-              onChange={(e) => {
-                setSelectedService(e.target.value);
-              }}
+              onChange={(e) => setSelectedService(e.target.value)}
             >
               <option value="">All Services</option>
               <option value="telehealth">Telehealth Services</option>
@@ -154,9 +156,11 @@ const SearchBar: React.FC<SearchBarProps> = ({
             <select
               className="provider-waitlist-select"
               value={selectedWaitList}
-              onChange={(e) => setSelectedWaitList(e.target.value)}>
+              onChange={(e) => setSelectedWaitList(e.target.value)}
+            >
               <option value="">All Waitlist Status</option>
               <option value="No">No Waitlist</option>
+              <option value="6 Months or Less">6 Months or Less</option>
             </select>
           </div>
 
