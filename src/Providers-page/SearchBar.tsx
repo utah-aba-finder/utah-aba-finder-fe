@@ -25,7 +25,6 @@ const SearchBar: React.FC<SearchBarProps> = ({
   onServiceChange,
   onWaitListChange,
   onReset,
-
 }) => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedCounty, setSelectedCounty] = useState<string>('');
@@ -43,6 +42,12 @@ const SearchBar: React.FC<SearchBarProps> = ({
       service: selectedService,
       waitlist: selectedWaitList,
     };
+
+    // If waitlist is "6 Months or Less", modify searchParams to include waitlists of 6 months or less
+    if (selectedWaitList === '6 Months or Less') {
+      searchParams.waitlist = '6 Months or Less';
+    }
+
     onSearch(searchParams);
   }, [searchQuery, selectedCounty, selectedInsurance, selectedSpanish, selectedService, selectedWaitList, onSearch]);
 
@@ -52,7 +57,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
     setSelectedInsurance('');
     setSelectedSpanish('');
     setSelectedService('');
-    setSelectedWaitList('')
+    setSelectedWaitList('');
     onReset();
   };
 
@@ -60,35 +65,51 @@ const SearchBar: React.FC<SearchBarProps> = ({
     <>
       <section className="provider-map-search-section">
         <div className="provider-map-searchbar">
+
           <input
+            className="provider-text-select"
             type="text"
             placeholder="Search for a provider..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
+
           <div className="provider-county-dropdown">
             <select
               className={`provider-county-select`}
               value={selectedCounty}
               onChange={(e) => setSelectedCounty(e.target.value)}
             >
-              {/* <option value="" disabled>County</option> */}
               <option value="">All Counties</option>
-              <option value="Salt Lake">Salt Lake County</option>
-              <option value="Utah">Utah County</option>
-              <option value="Davis">Davis County</option>
-              <option value="Weber">Weber County</option>
-              <option value="Iron">Iron County</option>
-              <option value="Cache">Cache County</option>
+              <option value="Beaver">Beaver County</option>
               <option value="Box-Elder">Box Elder County</option>
-              <option value="Washington">Washington County</option>
+              <option value="Cache">Cache County</option>
+              <option value="Carbon">Carbon County</option>
+              <option value="Daggett">Daggett County</option>
+              <option value="Davis">Davis County</option>
+              <option value="Duchesne">Duchesne County</option>
+              <option value="Emery">Emery County</option>
+              <option value="Garfield">Garfield County</option>
+              <option value="Grand">Grand County</option>
+              <option value="Iron">Iron County</option>
+              <option value="Juab">Juab County</option>
+              <option value="Kane">Kane County</option>
+              <option value="Millard">Millard County</option>
               <option value="Morgan">Morgan County</option>
+              <option value="Piute">Piute County</option>
+              <option value="Rich">Rich County</option>
+              <option value="Salt Lake">Salt Lake County</option>
+              <option value="San Juan">San Juan County</option>
+              <option value="Sanpete">Sanpete County</option>
+              <option value="Sevier">Sevier County</option>
               <option value="Summit">Summit County</option>
               <option value="Tooele">Tooele County</option>
-              <option value="Duchesne">Duchesne County</option>
               <option value="Uintah">Uintah County</option>
-              <option value="Sanpete">Sanpete County</option>
+              <option value="Utah">Utah County</option>
+              <option value="Wasatch">Wasatch County</option>
+              <option value="Washington">Washington County</option>
               <option value="Wayne">Wayne County</option>
+              <option value="Weber">Weber County</option>
             </select>
           </div>
 
@@ -125,9 +146,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
             <select
               className="provider-service-select"
               value={selectedService}
-              onChange={(e) => {
-                setSelectedService(e.target.value);
-              }}
+              onChange={(e) => setSelectedService(e.target.value)}
             >
               <option value="">All Services</option>
               <option value="telehealth">Telehealth Services</option>
@@ -140,18 +159,22 @@ const SearchBar: React.FC<SearchBarProps> = ({
             <select
               className="provider-waitlist-select"
               value={selectedWaitList}
-              onChange={(e) => setSelectedWaitList(e.target.value)}>
+              onChange={(e) => setSelectedWaitList(e.target.value)}
+            >
               <option value="">All Waitlist Status</option>
               <option value="No">No Waitlist</option>
+              <option value="6 Months or Less">6 Months or Less</option>
             </select>
           </div>
 
-          <button className="provider-search-button" onClick={handleSearch}>
-            Search
-          </button>
-          <button className="provider-reset-button" onClick={handleReset}>
-            Reset
-          </button>
+          <div className="search-bar-buttons">
+            <button className="provider-search-button" onClick={handleSearch}>
+              Search
+            </button>
+            <button className="provider-reset-button" onClick={handleReset}>
+              Reset
+            </button>
+          </div>
         </div>
       </section>
       <ToastContainer />

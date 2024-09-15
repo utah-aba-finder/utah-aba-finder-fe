@@ -13,7 +13,7 @@
 
 .banner-image {
     width: 100%;
-    height: 30vh;
+    height: 62vh;
     object-fit: cover;
 }
 
@@ -62,6 +62,7 @@
     gap: 1.6rem;
     max-width: 1250px;
     margin: 0 auto;
+    justify-items: center;
 }
 
 
@@ -279,7 +280,11 @@
 
 }
 
-@media screen and (min-width: 768px) {
+@media (max-width: 1280px) {
+
+}
+
+@media screen and (min-width: 1262px) {
     .provider-cards-grid {
         grid-template-columns: repeat(2, minmax(600px, 1fr));
         justify-content: space-between;
@@ -287,7 +292,7 @@
 
 }
 
-@media (max-width: 540px) {
+@media (max-width: 768px) {
     .providers-banner-title {
         font-size: 2rem;
     }
@@ -332,8 +337,8 @@
     }
 
     .map {
-        padding-left: .5rem;
-        padding-right: .5rem;
+        padding-left: .15rem;
+        padding-right: .15rem;
     }
 
     .google-map-section {
@@ -371,6 +376,7 @@
 
     }
 }
+
 
 @media screen and (min-width: 768px) {
     .searched-provider-card-content {
