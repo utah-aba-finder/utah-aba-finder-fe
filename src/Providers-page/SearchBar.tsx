@@ -65,12 +65,15 @@ const SearchBar: React.FC<SearchBarProps> = ({
     <>
       <section className="provider-map-search-section">
         <div className="provider-map-searchbar">
+
           <input
+            className="provider-text-select"
             type="text"
             placeholder="Search for a provider..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
+
           <div className="provider-county-dropdown">
             <select
               className={`provider-county-select`}
@@ -164,12 +167,14 @@ const SearchBar: React.FC<SearchBarProps> = ({
             </select>
           </div>
 
-          <button className="provider-search-button" onClick={handleSearch}>
-            Search
-          </button>
-          <button className="provider-reset-button" onClick={handleReset}>
-            Reset
-          </button>
+          <div className="search-bar-buttons">
+            <button className="provider-search-button" onClick={handleSearch}>
+              Search
+            </button>
+            <button className="provider-reset-button" onClick={handleReset}>
+              Reset
+            </button>
+          </div>
         </div>
       </section>
       <ToastContainer />
