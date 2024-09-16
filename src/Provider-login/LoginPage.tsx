@@ -1,111 +1,83 @@
-import React, {useState} from 'react'
+import React, {useState, useEffect} from 'react'
 import './LoginPage.css'
 import { User, Lock, Eye, EyeOff } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { ProviderAttributes as ProviderAttributesType, Location } from '../Utility/Types';
+import { Link, useNavigate } from 'react-router-dom';
+import { ProviderAttributes, Location } from '../Utility/Types';
 import  ProviderEdit  from '../Provider-edit/ProviderEdit'
 import { Insurance } from '../Utility/Types';
 import { MockProviderData, MockProviders } from '../Utility/Types';
+import { useAuth } from './AuthProvider';
+import { toast } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export const LoginPage: React.FC = () => {
         const [showPassword, setShowPassword] = useState(false);  
         const [username, setUsername] = useState('');
         const [password, setPassword] = useState('');
         const [error, setError] = useState('');
-        // Mock data for providers
-        const mockProviders: ProviderAttributesType[] = [
-            {
-                id: 1,
-                name: "Dr. John Doe",
-                username: "johndoe",
-                password: "password123",
-                email: "john.doe@example.com",
-                locations: [
-                    {
-                        name: "Main Clinic",
-                        address_1: "123 Main St",
-                        address_2: "Suite 100",
-                        city: "Anytown",
-                        state: "ST",
-                        zip: "12345",
-                        phone: "123-456-7890"
-                    }
-                ],
-                website: "https://www.johndoe.com",
-                cost: "$100-$150 per session",
-                insurance: [],
-                counties_served: [],
-                min_age: 5,
-                max_age: 18,
-                waitlist: "2-3 weeks",
-                telehealth_services: "Yes",
-                spanish_speakers: "No",
-                at_home_services: "No",
-                in_clinic_services: "Yes",
-                logo: "https://example.com/logo.png"
-            },
-            {
-                id: 2,
-                name: "Dr. Jane Smith",
-                username: "janesmith",
-                password: "securepass456",
-                email: "jane.smith@example.com",
-                locations: [
-                    {
-                        name: "Downtown Office",
-                        address_1: "456 Oak Ave",
-                        address_2: "",
-                        city: "Metropolis",
-                        state: "ST",
-                        zip: "67890",
-                        phone: "987-654-3210"
-                    }
-                ],
-                website: "https://www.janesmith.com",
-                cost: "$80-$120 per session",
-                insurance: [],
-                counties_served: [],
-                min_age: 3,
-                max_age: 21,
-                waitlist: "1 week",
-                telehealth_services: "Yes",
-                spanish_speakers: "Yes",
-                at_home_services: "Yes",
-                in_clinic_services: "Yes",
-                logo: "https://example.com/logo2.png"
-            }
-        ];
+        const navigate = useNavigate();
 
         const [isLoggedIn, setIsLoggedIn] = useState(false);
-        const [currentProvider, setCurrentProvider] = useState<ProviderAttributesType | undefined>();
+        const [currentProvider, setCurrentProvider] = useState<ProviderAttributes | undefined>();
+        const { setToken } = useAuth();
+        const [showError, setShowError] = useState(false);
 
+        useEffect(() => {
+            if (error) {
+                setShowError(true);
+                const timer = setTimeout(() => setShowError(false), 3000);
+                return () => clearTimeout(timer);
+            }
+        }, [error]);
+    
         const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
             e.preventDefault();
             setError('');
-    
+
             try {
-                // For demonstration purposes, we'll use mock data instead of actual API call
-                // Remove this line when implementing real API calls
-                const mockResponse = { ok: true, json: () => Promise.resolve({ provider: mockProviders.find(p => p.username === username && p.password === password) }) };
-    
-                // Replace 'mockResponse' with 'response' when using actual API
-                if (mockResponse.ok) {
-                    const data = await mockResponse.json();
-                    if (data.provider) {
-                        setCurrentProvider(data.provider);
-                        setIsLoggedIn(true);
-                        console.log('Login successful', data.provider);
-                    } else {
-                        setError('Invalid username or password');
-                    }
+                const response = await fetch('https://c9d8bfc6-16f1-40be-9dff-f69da7621219.mock.pstmn.io/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        user: {
+                        email: username,
+                        password: password
+                        }
+                }),
+        });
+        
+        const responseText = await response.text();
+        console.log('Response Text:', responseText);
+        console.log('Response Status:', response.status);
+
+        if (response.ok) {
+            try {
+                const data = JSON.parse(responseText);
+                if (data.token) {
+                    setIsLoggedIn(true);
+                    setCurrentProvider(data.provider);
+                    console.log('Login successful', data.provider);
+                    setToken(data.token); // Store the token
+                    navigate('/providerEdit');
                 } else {
-                    setError('Invalid username or password');
+                    toast.error("Invalid email or password. Please try again.");
                 }
-            } catch (err) {
-                setError('An error occurred. Please try again.');
-                console.error('Login error:', err);
+            } catch (parseError) {
+                console.error('Error parsing response:', parseError);
+                toast.error(`Unexpected response format. Please try again later.`);
             }
-        };
+        } else {
+            setError(`Login failed. Status: ${response.status}, Message: ${responseText}`);
+            toast.error(`Login failed. Status: ${response.status}, Message: ${responseText}`);
+        }
+    } catch (err) {
+        console.error('Login error:', err);
+        toast.error(`An error occurred. Please try again. Details: ${err}`);
+    }
+}
 
         const handleShowPassword = () => {
             setShowPassword(!showPassword);
@@ -113,9 +85,10 @@ export const LoginPage: React.FC = () => {
 
         return (
             <div className='loginWrapper'>
+                <ToastContainer />
                 <div className='loginContainer'>
                     <h1 className='loginImageText'>Provider Login</h1>
-                    <form onSubmit={handleLogin} className='loginForm'>
+                    <form  className='loginForm' onSubmit={handleLogin}>
                         <div className='input'>
                             <User className='userIcon'/>
                             <input type='text' id='username' name='username' placeholder='User Name'
@@ -137,11 +110,6 @@ export const LoginPage: React.FC = () => {
                             <button type='submit' id='login' className='loginButton'>Login</button>
                         </div>
                     </form>
-                    {/* {isLoggedIn && currentProvider ? (
-                        <ProviderEdit loggedInProvider={currentProvider} />
-                    ) : (
-                        error && <div className="error-message">{error}</div>
-                    )} */}
                 </div>
             </div>
         )

@@ -8,12 +8,11 @@ import ProviderCard from './ProviderCard';
 import { fetchProviders } from '../Utility/ApiCall';
 import { MockProviders, ProviderAttributes } from '../Utility/Types';
 
-
 const ProvidersPage: React.FC = () => {
   const [selectedProvider, setSelectedProvider] = useState<ProviderAttributes | null>(null);
   const [allProviders, setAllProviders] = useState<ProviderAttributes[]>([]);
   const [filteredProviders, setFilteredProviders] = useState<ProviderAttributes[]>([]);
-  const [uniqueInsuranceOptions, setUniqueInsuranceOptions] = useState<string[]>([])
+  const [uniqueInsuranceOptions, setUniqueInsuranceOptions] = useState<string[]>([]);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedCounty, setSelectedCounty] = useState<string>('');
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -21,6 +20,7 @@ const ProvidersPage: React.FC = () => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedSpanish, setSelectedSpanish] = useState<string>('');
   const [selectedService, setSelectedService] = useState<string>('');
+  const [selectedWaitList, setSelectedWaitList] = useState<string>('');
   const [mapAddress, setMapAddress] = useState<string>('Utah');
   const [isFiltered, setIsFiltered] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -37,7 +37,7 @@ const ProvidersPage: React.FC = () => {
         setFilteredProviders(mappedProviders);
 
         const uniqueInsurances = Array.from(new Set(
-          mappedProviders.flatMap(provider => provider.insurance.map(ins => ins.name || '')).sort()
+          mappedProviders.flatMap(provider => provider.insurance.map(ins => ins.name || '')).sort() as string[]
         ));
         setUniqueInsuranceOptions(uniqueInsurances);
         setMapAddress('Utah');
@@ -49,58 +49,54 @@ const ProvidersPage: React.FC = () => {
     getProviders();
   }, []);
 
-  const handleSearch = useCallback(({ query, county, insurance, spanish, service }: { query: string; county: string; insurance: string; spanish: string; service: string }) => {
+  const handleSearch = useCallback(({ query, county, insurance, spanish, service, waitlist }: { query: string; county: string; insurance: string; spanish: string; service: string; waitlist: string }) => {
     const normalizedCounty = county.toLowerCase();
     const normalizedInsurance = insurance.toLowerCase();
-  
+
     const serviceFilter = (provider: ProviderAttributes) => {
       if (!service) return true;
       switch (service) {
         case 'telehealth':
-          return (
-            provider.telehealth_services?.toLowerCase() === 'yes' ||
-            provider.telehealth_services === null ||
-            provider.telehealth_services.toLowerCase() === 'limited'
-          );
+          return provider.telehealth_services?.toLowerCase() === 'yes' || provider.telehealth_services === null || provider.telehealth_services.toLowerCase() === 'limited';
         case 'at_home':
-          return (
-            provider.at_home_services?.toLowerCase() === 'yes' ||
-            provider.at_home_services === null ||
-            provider.at_home_services.toLowerCase() === 'limited'
-          );
+          return provider.at_home_services?.toLowerCase() === 'yes' || provider.at_home_services === null || provider.at_home_services.toLowerCase() === 'limited';
         case 'in_clinic':
-          return (
-            provider.in_clinic_services?.toLowerCase() === 'yes' ||
-            provider.in_clinic_services === null ||
-            provider.in_clinic_services.toLowerCase() === 'limited'
-          );
+          return provider.in_clinic_services?.toLowerCase() === 'yes' || provider.in_clinic_services === null || provider.in_clinic_services.toLowerCase() === 'limited';
         default:
           return true;
       }
     };
-  
+
+    const waitlistFilter = (provider: ProviderAttributes) => {
+      if (waitlist === '6 Months or Less') {
+        const waitlistTime = provider.waitlist ? parseInt(provider.waitlist, 10) : null;
+        return waitlistTime !== null && waitlistTime <= 6;
+      } else if (!waitlist) {
+        return true;
+      }
+      return waitlist === 'yes'
+        ? provider.waitlist?.toLowerCase() !== 'no'
+        : provider.waitlist?.toLowerCase() === 'no';
+    };
+
     const filtered = allProviders.filter(provider =>
       provider.name?.toLowerCase().includes(query.toLowerCase()) &&
       (!county || provider.counties_served.some(c => c.county?.toLowerCase().includes(normalizedCounty))) &&
-      (!insurance || provider.insurance.some(i => i.name?.toLowerCase().includes(normalizedInsurance)))  &&
+      (!insurance || provider.insurance.some(i => i.name?.toLowerCase().includes(normalizedInsurance))) &&
       (spanish === '' ||
         (spanish === 'no' && (!provider.spanish_speakers || provider.spanish_speakers.toLowerCase() === 'no')) ||
-        (spanish === 'yes' && (
-          provider.spanish_speakers?.toLowerCase() === 'yes' ||
-          provider.spanish_speakers === null ||
-          provider.spanish_speakers.toLowerCase() === 'limited'
-        )) 
-      ) &&
-      serviceFilter(provider)
+        (spanish === 'yes' && (provider.spanish_speakers?.toLowerCase() === 'yes' || provider.spanish_speakers === null || provider.spanish_speakers.toLowerCase() === 'limited'))) &&
+      serviceFilter(provider) &&
+      waitlistFilter(provider)
     );
-  
+
     setFilteredProviders(filtered);
     setIsFiltered(true);
     setCurrentPage(1);
   }, [allProviders]);
-  
+
   useEffect(() => {
-    handleSearch({ query: '', county: '', insurance: '', spanish: '', service: '' });
+    handleSearch({ query: '', county: '', insurance: '', spanish: '', service: '', waitlist: '' });
   }, [handleSearch]);
 
   const handleProviderCardClick = (provider: ProviderAttributes) => {
@@ -124,6 +120,7 @@ const ProvidersPage: React.FC = () => {
     setSelectedInsurance('');
     setSelectedSpanish('');
     setSelectedService('');
+    setSelectedWaitList('');
     setIsFiltered(false);
     setMapAddress('Utah');
     setCurrentPage(1);
@@ -145,15 +142,19 @@ const ProvidersPage: React.FC = () => {
     setSelectedService(service);
   };
 
+  const handleWaitListChange = (waitlist: string) => {
+    setSelectedWaitList(waitlist);
+  };
+
   const handleResults = (results: MockProviders) => {
-    setFilteredProviders(results.data.map(p => ({
+    const mappedResults = results.data.map(p => ({
       id: p.attributes.id,
       name: p.attributes.name,
       locations: p.attributes.locations,
       insurance: p.attributes.insurance,
       counties_served: p.attributes.counties_served,
-      username: p.attributes.username,
       password: p.attributes.password,
+      username: p.attributes.username,
       website: p.attributes.website,
       email: p.attributes.email,
       cost: p.attributes.cost,
@@ -165,7 +166,17 @@ const ProvidersPage: React.FC = () => {
       at_home_services: p.attributes.at_home_services,
       in_clinic_services: p.attributes.in_clinic_services,
       logo: p.attributes.logo
-    })));
+    }));
+
+    const filteredResults = mappedResults.filter(provider =>
+      (!selectedService || (selectedService === 'telehealth' && provider.telehealth_services?.toLowerCase() === 'yes') ||
+      (selectedService === 'at_home' && provider.at_home_services?.toLowerCase() === 'yes') ||
+      (selectedService === 'in_clinic' && provider.in_clinic_services?.toLowerCase() === 'yes')) &&
+      (!selectedWaitList || (selectedWaitList === '6 Months or Less' && (provider.waitlist ? parseInt(provider.waitlist, 10) <= 6 : false)) ||
+      (selectedWaitList === 'no' && provider.waitlist?.toLowerCase() === 'no')) 
+    );
+
+    setFilteredProviders(filteredResults);
     setCurrentPage(1);
   };
 
@@ -239,7 +250,6 @@ const ProvidersPage: React.FC = () => {
         </select>
       );
     }
-
     return (
       <button
         className={`view-on-map-button ${!isAddressAvailable ? 'disabled' : ''}`}
@@ -274,16 +284,17 @@ const ProvidersPage: React.FC = () => {
             : `Showing ${allProviders.length} Providers`}
         </h2>
       </section>
-            <SearchBar
-              onResults={handleResults}
-              onSearch={handleSearch}
-              onCountyChange={handleCountyChange}
-              onInsuranceChange={handleInsuranceChange}
-              insuranceOptions={uniqueInsuranceOptions}
-              onSpanishChange={handleSpanishChange}
-              onServiceChange={handleServiceChange}
-              onReset={handleResetSearch}
-            />
+      <SearchBar
+        onResults={handleResults}
+        onSearch={handleSearch}
+        onCountyChange={handleCountyChange}
+        onInsuranceChange={handleInsuranceChange}
+        insuranceOptions={uniqueInsuranceOptions}
+        onSpanishChange={handleSpanishChange}
+        onServiceChange={handleServiceChange}
+        onWaitListChange={handleWaitListChange}
+        onReset={handleResetSearch}
+      />
 
       <section className="searched-provider-map-locations-list-section">
         <div className="provider-cards-grid">

@@ -48,7 +48,7 @@ const InsuranceModal = ({
                         </div>
                     ))}
                 </div>
-                <button onClick={onClose} className='insuranceModalButton'>Close</button>
+                <button onClick={onClose} className='insurance'>Close</button>
             </div>
         </>
     );

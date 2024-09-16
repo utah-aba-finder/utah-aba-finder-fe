@@ -1,5 +1,5 @@
 export interface Insurance {
-    name: string[] | null;
+    name: string | null;
 }
 
 export interface Location {
@@ -23,8 +23,8 @@ export interface ProviderAttributes {
     locations: Location[];
     insurance: Insurance[];
     counties_served: CountiesServed[];
-    username: string;
     password: string;
+    username: string;
     website: string | null;
     email: string | null;
     cost: string | null;

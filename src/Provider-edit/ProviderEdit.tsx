@@ -2,45 +2,46 @@ import React, { useState } from 'react';
 import "./ProviderEdit.css";
 import InsuranceModal from './InsuranceModal';
 import CountiesModal from './CountiesModal';
+import { ProviderAttributes } from '@/Utility/Types';
 interface ProviderEditProps {
     loggedInProvider: ProviderAttributes;
-  }
-  export interface MockProviderData {
-    id: number;
-    type: string;
-    attributes: ProviderAttributes;
-}
+//   }
+//   export interface MockProviderData {
+//     id: number;
+//     type: string;
+//     attributes: ProviderAttributes;
+// }
 
-export interface MockProviders {
-    data: MockProviderData[];
-}
-  interface ProviderAttributes {
-    id: number;
-    name: string | null;
-    locations: Location[];
-    insurance: Insurance[];
-    counties_served: [];
-    username: string;
-    password: string;
-    website: string | null;
-    email: string | null;
-    cost: string | null;
-    min_age: number | null;
-    max_age: number | null;
-    waitlist: string | null;
-    telehealth_services: string | null;
-    spanish_speakers: string | null;
-    at_home_services: string | null;
-    in_clinic_services: string | null;
-    logo: string | null;
-  }
-  interface Insurance {
-    name: string;
+// export interface MockProviders {
+//     data: MockProviderData[];
+// }
+//   interface ProviderAttributes {
+//     id: number;
+//     name: string | null;
+//     locations: Location[];
+//     insurance: Insurance[];
+//     counties_served: [];
+//     username: string;
+//     password: string;
+//     website: string | null;
+//     email: string | null;
+//     cost: string | null;
+//     min_age: number | null;
+//     max_age: number | null;
+//     waitlist: string | null;
+//     telehealth_services: string | null;
+//     spanish_speakers: string | null;
+//     at_home_services: string | null;
+//     in_clinic_services: string | null;
+//     logo: string | null;
+//   }
+//   interface Insurance {
+//     name: string;
   }
 const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider }) => {
     const [isInsuranceModalOpen, setIsInsuranceModalOpen] = useState(false);
     const [isCountiesModalOpen, setIsCountiesModalOpen] = useState(false);
-    const [selectedInsurance, setSelectedInsurance] = useState<string[]>(loggedInProvider.insurance.map(insur => insur.name));
+    const [selectedInsurance, setSelectedInsurance] = useState<string[]>([]);
     const [selectedCounties, setSelectedCounties] = useState<string[]>([]);
 
     const toggleInsuranceModal = () => {

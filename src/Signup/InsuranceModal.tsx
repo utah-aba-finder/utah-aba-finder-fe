@@ -25,36 +25,36 @@ export const InsuranceModal: React.FC<InsuranceModalProps> = ({ isOpen, onClose,
         }));
     };
 
-    useEffect(() => {
-        const getProviders = async () => {
-          try {
-            const providersList: MockProviders = await fetchProviders();
-            const uniqueInsurances = new Set<string>();
+    // useEffect(() => {
+    //     const getProviders = async () => {
+    //       try {
+    //         const providersList: MockProviders = await fetchProviders();
+    //         const uniqueInsurances = new Set<string>();
             
-            // Map over providers, add unique insurances to the Set
-            providersList.data.forEach(provider => {
-                provider.attributes.insurance?.forEach(insurance => {
-                    uniqueInsurances.add(insurance.name || '');
-                });
-            });
+    //         // Map over providers, add unique insurances to the Set
+    //         providersList.data.forEach(provider => {
+    //             provider.attributes.insurance?.forEach(insurance => {
+    //                 uniqueInsurances.add(insurance.name? );
+    //             });
+    //         });
 
-            // Convert the Set back to an array of Insurance objects
-            const mappedProviders = Array.from(uniqueInsurances).map(name => ({ name }));
+    //         // Convert the Set back to an array of Insurance objects
+    //         const mappedProviders = Array.from(uniqueInsurances).map(name => ({ name }));
 
-            // Sort the insurances alphabetically
-            const sortedInsurances = mappedProviders.sort((a, b) => {
-                const nameA = a.name.toLowerCase();
-                const nameB = b.name.toLowerCase();
-                return nameA.localeCompare(nameB);
-            });
-            setAllInsurances(sortedInsurances );
-          } catch (error) {
-            console.error('Error loading providers:', error);
-          }
-        };
+    //         // Sort the insurances alphabetically
+    //         const sortedInsurances = mappedProviders.sort((a, b) => {
+    //             const nameA = a.name.toLowerCase();
+    //             const nameB = b.name.toLowerCase();
+    //             return nameA.localeCompare(nameB);
+    //         });
+    //         setAllInsurances(sortedInsurances );
+    //       } catch (error) {
+    //         console.error('Error loading providers:', error);
+    //       }
+    //     };
     
-        getProviders();
-      }, []);
+    //     getProviders();
+    //   }, []);
 
       const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault(); 
