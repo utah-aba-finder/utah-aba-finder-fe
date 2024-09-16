@@ -281,6 +281,7 @@ const ProvidersPage: React.FC = () => {
             : `Showing ${allProviders.length} Providers`}
         </h2>
       </section>
+      
       <SearchBar
         onResults={handleResults}
         onSearch={handleSearch}

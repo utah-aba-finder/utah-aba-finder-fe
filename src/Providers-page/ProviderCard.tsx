@@ -23,10 +23,10 @@ const ProviderCard: React.FC<ProviderCardProps> = ({ provider, onViewDetails, re
         </div>
         <div className="searched-provider-card-info">
           <p>
-            <strong>Phone:</strong> {provider.locations[0]?.phone || 'N/A'}
+            <strong>Phone:</strong> {provider.locations[0]?.phone || 'Phone number is not available.'}
           </p>
           <p>
-            <strong>Email:</strong> {provider.email || 'N/A'}
+            <strong>Email:</strong> {provider.email || 'Email is not avaialble.'}
           </p>
 
           <div className="provider-card-buttons">
