@@ -43,7 +43,7 @@
 }
 
 .modal-provider-logo {
-  width: 60%;
+  width: 25%;
   height: auto;
   margin-bottom: 1rem;
 }
@@ -77,6 +77,10 @@
   margin: 0.3rem 0;
   font-size: 1rem;
   color: #707070;
+}
+
+.contact-info.smaller-font{
+  font-size: 0.85rem; 
 }
 
 .details {
@@ -126,13 +130,16 @@
   }
 
   .company-info h2 {
-    font-size: 1.4rem;
+    font-size: 1.3rem;
+  }
+  .contact-info.smaller-font {
+    font-size: 0.7rem; 
   }
 
   .company-info h3,
   .contact-info p,
   .details p {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
 
   }
 }
