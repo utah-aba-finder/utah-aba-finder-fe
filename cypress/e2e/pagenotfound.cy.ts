@@ -2,7 +2,7 @@ describe('page not found test', () => {
   beforeEach(() => {
     cy.visit('http://localhost:3000/no')
   })
-  it.only("should show a error message or image if the page doesn't exist", () => {
+  it("should show a error message or image if the page doesn't exist", () => {
     cy.get('.pageNotFoundWrapper').should('exist')
     cy.get('canvas').should('exist')
   })
