@@ -154,7 +154,11 @@
     margin-right: 2px;
 }
 
+<<<<<<< HEAD
 .provider-waitlist-select{
+=======
+.provider-waitlist-select {
+>>>>>>> 4fe5d0604359cd4a2d0fffb762ce84de991a4e8a
     width: 175px;
     box-sizing: border-box;
     appearance: none;
@@ -200,7 +204,11 @@
     width: 100%;
 }
 
+<<<<<<< HEAD
 .search-bar-buttons{
+=======
+.search-bar-buttons {
+>>>>>>> 4fe5d0604359cd4a2d0fffb762ce84de991a4e8a
     display: flex;
 }
 
@@ -213,7 +221,11 @@
     border-radius: 4px;
     cursor: pointer;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+<<<<<<< HEAD
     margin-right: .5rem;
+=======
+    margin-right: rem;
+>>>>>>> 4fe5d0604359cd4a2d0fffb762ce84de991a4e8a
 }
 
 .provider-search-button:hover {
@@ -224,6 +236,24 @@
     border: 2px solid red;
 }
 
+<<<<<<< HEAD
+=======
+.search-bar-buttons {
+    display: flex;
+    flex-grow: 1;
+    justify-content: space-between;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+.provider-search-button,
+.provider-reset-button {
+    flex-grow: 1;
+    text-align: center;
+    padding: 0.5rem 1rem;
+    max-width: 200px;
+}
+>>>>>>> 4fe5d0604359cd4a2d0fffb762ce84de991a4e8a
 @media (max-width: 1262px) {
     .provider-map-searchbar {
         flex-direction: column;
@@ -238,6 +268,8 @@
     .provider-waitlist-select {
         width: 100%;
     }
+
+    
 
     .provider-county-dropdown::after {
         content: "\25BC";
@@ -282,6 +314,10 @@
         pointer-events: none;
         font-size: 1rem;
     }
+<<<<<<< HEAD
+=======
+
+>>>>>>> 4fe5d0604359cd4a2d0fffb762ce84de991a4e8a
     .provider-waitlist-dropdown::after {
         content: "\25BC";
         position: absolute;
@@ -293,9 +329,12 @@
         font-size: 1rem;
     }
 
+<<<<<<< HEAD
     .search-bar-buttons {
         
     }
+=======
+>>>>>>> 4fe5d0604359cd4a2d0fffb762ce84de991a4e8a
 }
 
 @media (min-width: 355px) {
