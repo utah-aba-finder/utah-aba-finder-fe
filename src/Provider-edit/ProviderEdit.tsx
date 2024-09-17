@@ -47,9 +47,9 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider }) => {
     const toggleInsuranceModal = () => {
         setIsInsuranceModalOpen(!isInsuranceModalOpen);
     };
-    const handleInsuranceChange = (insurance: string[]) => {
-        setSelectedInsurance(insurance);
-    };
+    // const handleInsuranceChange = (insurance: string[]) => {
+    //     setSelectedInsurance(insurance);
+    // };
 
     const toggleCountiesModal = () => {
         setIsCountiesModalOpen(!isCountiesModalOpen);
@@ -69,6 +69,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider }) => {
 
     return (
         <div>
+            {/* {loggedInProvider.attributes.map(provider => )} */}
             <h1>Edit Your Information</h1>
             <div className='provider-edit-form'>
                 <select id="dropdown-menu" name="Select location">
