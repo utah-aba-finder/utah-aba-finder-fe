@@ -52,26 +52,27 @@ export const LoginPage: React.FC = () => {
         const responseText = await response.text();
         console.log('Response Text:', responseText);
         console.log('Response Status:', response.status);
+        let data;
+        try {
+            data = JSON.parse(responseText);
+        } catch (parseError) {
+            console.log('Response is not JSON:', responseText);
+            data = { message: responseText };
+        }
 
         if (response.ok) {
-            try {
-                const data = JSON.parse(responseText);
-                if (data.token) {
-                    setIsLoggedIn(true);
-                    setCurrentProvider(data.provider);
-                    console.log('Login successful', data.provider);
-                    setToken(data.token); // Store the token
-                    navigate('/providerEdit');
-                } else {
-                    toast.error("Invalid email or password. Please try again.");
-                }
-            } catch (parseError) {
-                console.error('Error parsing response:', parseError);
-                toast.error(`Unexpected response format. Please try again later.`);
-            }
+            // if (data.token) {
+                setIsLoggedIn(true);
+                setCurrentProvider(data.data);
+                // setToken(data.token);
+                navigate('/providerEdit');
+            // } else {
+            //     toast.error("Login successful, but no token received.");
+            // }
         } else {
-            setError(`Login failed. Status: ${response.status}, Message: ${responseText}`);
-            toast.error(`Login failed. Status: ${response.status}, Message: ${responseText}`);
+            const errorMessage = data.Error || data.message || `Login failed. Status: ${response.status}`;
+            setError(errorMessage);
+            toast.error(errorMessage);
         }
     } catch (err) {
         console.error('Login error:', err);
@@ -84,8 +85,10 @@ export const LoginPage: React.FC = () => {
         }
 
         return (
+        
             <div className='loginWrapper'>
                 <ToastContainer />
+            {!isLoggedIn ? 
                 <div className='loginContainer'>
                     <h1 className='loginImageText'>Provider Login</h1>
                     <form  className='loginForm' onSubmit={handleLogin}>
@@ -110,7 +113,8 @@ export const LoginPage: React.FC = () => {
                             <button type='submit' id='login' className='loginButton'>Login</button>
                         </div>
                     </form>
-                </div>
+                </div> : (currentProvider && <ProviderEdit loggedInProvider={currentProvider} />)} 
+                    
             </div>
         )
 }
