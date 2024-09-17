@@ -26,7 +26,7 @@ const ProvidersPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
 
   const mapSectionRef = useRef<HTMLDivElement>(null);
-  const providersPerPage = 10;
+  const providersPerPage = 8;
 
   useEffect(() => {
     const getProviders = async () => {

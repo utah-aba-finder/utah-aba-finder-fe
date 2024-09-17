@@ -73,7 +73,7 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ provider, onClose }) => {
             <p><strong>Physical address is not available for this provider</strong></p>
           )}
 
-          <p><strong>Website:</strong> <a href={provider.website ?? undefined} target="_blank" rel="noopener noreferrer">{provider.website ?? 'N/A'}</a></p>
+          <p className="website-text"><strong>Website:</strong> <a href={provider.website ?? undefined} target="_blank" rel="noopener noreferrer">{provider.website ?? 'N/A'}</a></p>
           <p className="email-text"><strong>Email:</strong> <a href={`mailto:${provider.email ?? ''}`} target="_blank" rel="noopener noreferrer">{provider.email ?? 'Does not have an email'}</a></p>
         </div>
 
