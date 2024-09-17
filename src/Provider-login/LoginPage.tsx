@@ -19,8 +19,7 @@ export const LoginPage: React.FC = () => {
         const [error, setError] = useState('');
         const [isLoading, setIsLoading] = useState(false)
         const navigate = useNavigate();
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const [isLoggedIn, setIsLoggedIn] = useState(false);
         const [currentProvider, setCurrentProvider] = useState<ProviderAttributes | undefined>();
         const { setToken } = useAuth();
