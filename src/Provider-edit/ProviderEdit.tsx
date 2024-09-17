@@ -4,6 +4,8 @@ import InsuranceModal from './InsuranceModal';
 import CountiesModal from './CountiesModal';
 import { ProviderAttributes } from '@/Utility/Types';
 import gearImage from '../Assets/Gear@1x-0.5s-200px-200px.svg';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../Provider-login/AuthProvider';
 
 interface ProviderEditProps {
     loggedInProvider: ProviderAttributes | null;
@@ -13,6 +15,8 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider }) => {
     const [isCountiesModalOpen, setIsCountiesModalOpen] = useState(false);
     const [selectedInsurance, setSelectedInsurance] = useState<string[]>([]);
     const [selectedCounties, setSelectedCounties] = useState<string[]>([]);
+    const navigate = useNavigate();
+    const { setToken } = useAuth();
     const [formData, setFormData] = useState({
         logo: '',
         name: '',
@@ -27,6 +31,12 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider }) => {
         waitlistTime: '',
         waitlistFrequency: '',
     });
+
+    const handleLogout = () => {
+        setToken(null)
+        sessionStorage.removeItem('authToken')
+        navigate('/login')
+    }
 
     useEffect(() => {
         if (loggedInProvider) {
@@ -86,6 +96,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider }) => {
 
     return (
         <div>
+            <button className='logoutButton' onClick={handleLogout}>Logout</button>
             <h1>Edit Your Information</h1>
             <div className='provider-edit-form'>
                 <select id="dropdown-menu" name="Select location">

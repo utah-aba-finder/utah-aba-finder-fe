@@ -11,6 +11,8 @@ import { toast } from 'react-toastify';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import gearImage from '../Assets/Gear@1x-0.5s-200px-200px.svg';
+import { jwtDecode } from 'jwt-decode';
+
 
 
 export const LoginPage: React.FC = () => {
@@ -37,9 +39,10 @@ export const LoginPage: React.FC = () => {
         const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
             e.preventDefault();
             setError('');
+            setIsLoading(true)
 
             try {
-                const response = await fetch('https://c9d8bfc6-16f1-40be-9dff-f69da7621219.mock.pstmn.io/login', {
+                const response = await fetch('https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/login', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -52,36 +55,29 @@ export const LoginPage: React.FC = () => {
                 }),
         });
         
-        const responseText = await response.text();
-        console.log('Response Text:', responseText);
-        console.log('Response Status:', response.status);
-        let data;
-        try {
-            data = JSON.parse(responseText);
-        } catch (parseError) {
-            console.log('Response is not JSON:', responseText);
-            data = { message: responseText };
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || errorData.message || 'Login failed');
         }
 
-        if (response.ok) {
-            // if (data.token) {
-            setIsLoading(true)
-                setIsLoggedIn(true);
-                setCurrentProvider(data.data);
-                // setToken(data.token);
-                navigate('/providerEdit');
-            // } else {
-            //     toast.error("Login successful, but no token received.");
-            // }
-        } else {
-            const errorMessage = data.Error || data.message || `Login failed. Status: ${response.status}`;
-            setError(errorMessage);
-            toast.error(errorMessage);
-            setIsLoading(false)
+        const authHeader = response.headers.get('Authorization');
+        if (!authHeader) {
+            throw new Error('No Authorization header found in response');
         }
+
+        const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : authHeader;
+        sessionStorage.setItem('authToken', token);
+        setToken(token);
+
+        const data = await response.json();
+        setCurrentProvider(data.data);
+        navigate('/providerEdit'); 
     } catch (err) {
         console.error('Login error:', err);
-        toast.error(`An error occurred. Please try again. Details: ${err}`);
+        setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+        toast.error(err instanceof Error ? err.message : 'An unexpected error occurred');
+    } finally {
+        setIsLoading(false);
     }
 }
 
