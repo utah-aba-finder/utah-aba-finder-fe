@@ -1,31 +1,39 @@
-import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useContext, useState, useCallback } from 'react';
 
 interface AuthContextType {
   token: string | null;
   setToken: (token: string | null) => void;
+  isAuthenticated: boolean;
   loggedInProvider: any;
 }
 
-export const AuthContext = createContext<AuthContextType>({
-    token: null,
-    setToken: () => {},
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [token, setTokenState] = useState<string | null>(sessionStorage.getItem('authToken'));
+
+  const setToken = useCallback((newToken: string | null) => {
+    setTokenState(newToken);
+    if (newToken) {
+      sessionStorage.setItem('authToken', newToken);
+    } else {
+      sessionStorage.removeItem('authToken');
+    }
+  }, []);
+
+  const contextValue: AuthContextType = {
     loggedInProvider: null,
-  });
+    token,
+    setToken,
+    isAuthenticated: !!token,
+  };
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }>  = ({ children }) => {
-  const [token, setToken] = useState<string | null>(null);
-  const [loggedInProvider, setLoggedInProvider] = useState<any>(null);
-
-  return (
-    <AuthContext.Provider value={{ token, setToken, loggedInProvider }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) {
+  if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;

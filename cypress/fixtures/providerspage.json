@@ -14,10 +14,32 @@
                         "state": "UT",
                         "zip": "84403",
                         "phone": "1-866-569-7395"
+<<<<<<< HEAD
+<<<<<<< HEAD
+                    },
+                    {
+                        "name": "Farmington",
+                        "address_1": "1438 N Hwy 89",
+                        "address_2": "Suite 130",
+                        "city": "Farmington",
+                        "state": "UT",
+                        "zip": "84025",
+                        "phone": null
+                    }
+                ],
+                "website": "https://catalystbehavior.com/",
+                "email": null,
+=======
+=======
+>>>>>>> 6bc7399151c507ac204731cf8e82592cc1ea3022
                     }
                 ],
                 "website": "https://catalystbehavior.com/",
                 "email": "austismspecialist@gmail.com",
+<<<<<<< HEAD
+>>>>>>> 4fe5d0604359cd4a2d0fffb762ce84de991a4e8a
+=======
+>>>>>>> 6bc7399151c507ac204731cf8e82592cc1ea3022
                 "cost": "Discount offered for prepaying services\r\n RBT $80, $64 with prepay discount. BCaBA/student\r\n $100, $80 with prepay discount BCBA $150, $120\r\n with prepay\r\n discount.",
                 "insurance": [
                     {
@@ -61,11 +83,25 @@
                 "locations": [
                     {
                         "name": "https://www.abtaba.com/locations/aba-therapy-in-utah",
+<<<<<<< HEAD
+<<<<<<< HEAD
+                        "address_1": null,
+                        "address_2": null,
+                        "city": null,
+                        "state": null,
+                        "zip": null,
+=======
+=======
+>>>>>>> 6bc7399151c507ac204731cf8e82592cc1ea3022
                         "address_1": "1234 West Road Drive",
                         "address_2": null,
                         "city": "Mockville",
                         "state": "Mocka",
                         "zip": "32465",
+<<<<<<< HEAD
+>>>>>>> 4fe5d0604359cd4a2d0fffb762ce84de991a4e8a
+=======
+>>>>>>> 6bc7399151c507ac204731cf8e82592cc1ea3022
                         "phone": "(801) 630-2040"
                     }
                 ],

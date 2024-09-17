@@ -1,5 +1,5 @@
 import './App.css';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route} from 'react-router-dom';
 import Homepage from '../Homepage/Homepage';
 import InformationPage from '../Information-page/InformationPage';
 import { LoginPage } from '../Provider-login/LoginPage';
@@ -14,6 +14,12 @@ import { Signup } from '../Signup/Signup';
 import AboutUs from '../AboutUs/AboutUs';
 import ProviderEdit from '../Provider-edit/ProviderEdit';
 import { AuthProvider, useAuth } from '../Provider-login/AuthProvider';
+import { useEffect } from 'react';
+import ProtectedRoute from '../Provider-login/ProtectedRoute';
+
+
+
+
 function App() {
   return (
     <div className="App">
@@ -31,7 +37,14 @@ function App() {
             <Route path='/contact' element={<ContactUs />} />
             <Route path='/signup' element={<Signup />} />
             <Route path='/about' element={<AboutUs />} />
-            <Route path='/providerEdit' element={<ProviderEditWrapper />} />
+            <Route
+                path="/providerEdit"
+                element={
+                  <ProtectedRoute>
+                    <ProviderEditWrapper />
+                  </ProtectedRoute>
+                }
+              />
             <Route path='*' element={<PageNotFound />} />
           </Routes>
         </AuthProvider>

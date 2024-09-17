@@ -173,8 +173,9 @@ const ProvidersPage: React.FC = () => {
       (selectedService === 'at_home' && provider.at_home_services?.toLowerCase() === 'yes') ||
       (selectedService === 'in_clinic' && provider.in_clinic_services?.toLowerCase() === 'yes')) &&
       (!selectedWaitList || (selectedWaitList === '6 Months or Less' && (provider.waitlist ? parseInt(provider.waitlist, 10) <= 6 : false)) ||
-      (selectedWaitList === 'no' && provider.waitlist?.toLowerCase() === 'no'))
+      (selectedWaitList === 'no' && provider.waitlist?.toLowerCase() === 'no')) 
     );
+    
 
     setFilteredProviders(filteredResults);
     setCurrentPage(1);
@@ -284,7 +285,7 @@ const ProvidersPage: React.FC = () => {
             : `Showing ${allProviders.length} Providers`}
         </h2>
       </section>
-
+      
       <SearchBar
         onResults={handleResults}
         onSearch={handleSearch}
