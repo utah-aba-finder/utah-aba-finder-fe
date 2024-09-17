@@ -48,7 +48,7 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ provider, onClose }) => {
     <div className="modal-overlay">
       <div className="modal-content">
         <button className="modal-close" onClick={onClose}>X</button>
-        <img src={provider.logo ?? undefined} alt={provider.name ?? undefined} className="modal-provider-logo" />
+        <img src={provider.logo ?? undefined} alt={provider.name ?? undefined} className="provider-page-modal-provider-logo" />
 
         <div className="company-info">
           <h2>{provider.name}</h2>
@@ -73,7 +73,7 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ provider, onClose }) => {
             <p><strong>Physical address is not available for this provider</strong></p>
           )}
 
-          <p><strong>Website:</strong> <a href={provider.website ?? undefined} target="_blank" rel="noopener noreferrer">{provider.website ?? 'N/A'}</a></p>
+          <p className="website-text"><strong>Website:</strong> <a href={provider.website ?? undefined} target="_blank" rel="noopener noreferrer">{provider.website ?? 'N/A'}</a></p>
           <p className="email-text"><strong>Email:</strong> <a href={`mailto:${provider.email ?? ''}`} target="_blank" rel="noopener noreferrer">{provider.email ?? 'Does not have an email'}</a></p>
         </div>
 
