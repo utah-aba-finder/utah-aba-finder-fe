@@ -5,39 +5,39 @@ import CountiesModal from './CountiesModal';
 import { ProviderAttributes } from '@/Utility/Types';
 interface ProviderEditProps {
     loggedInProvider: ProviderAttributes;
-//   }
-//   export interface MockProviderData {
-//     id: number;
-//     type: string;
-//     attributes: ProviderAttributes;
-// }
+    //   }
+    //   export interface MockProviderData {
+    //     id: number;
+    //     type: string;
+    //     attributes: ProviderAttributes;
+    // }
 
-// export interface MockProviders {
-//     data: MockProviderData[];
-// }
-//   interface ProviderAttributes {
-//     id: number;
-//     name: string | null;
-//     locations: Location[];
-//     insurance: Insurance[];
-//     counties_served: [];
-//     username: string;
-//     password: string;
-//     website: string | null;
-//     email: string | null;
-//     cost: string | null;
-//     min_age: number | null;
-//     max_age: number | null;
-//     waitlist: string | null;
-//     telehealth_services: string | null;
-//     spanish_speakers: string | null;
-//     at_home_services: string | null;
-//     in_clinic_services: string | null;
-//     logo: string | null;
-//   }
-//   interface Insurance {
-//     name: string;
-  }
+    // export interface MockProviders {
+    //     data: MockProviderData[];
+    // }
+    //   interface ProviderAttributes {
+    //     id: number;
+    //     name: string | null;
+    //     locations: Location[];
+    //     insurance: Insurance[];
+    //     counties_served: [];
+    //     username: string;
+    //     password: string;
+    //     website: string | null;
+    //     email: string | null;
+    //     cost: string | null;
+    //     min_age: number | null;
+    //     max_age: number | null;
+    //     waitlist: string | null;
+    //     telehealth_services: string | null;
+    //     spanish_speakers: string | null;
+    //     at_home_services: string | null;
+    //     in_clinic_services: string | null;
+    //     logo: string | null;
+    //   }
+    //   interface Insurance {
+    //     name: string;
+}
 const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider }) => {
     const [isInsuranceModalOpen, setIsInsuranceModalOpen] = useState(false);
     const [isCountiesModalOpen, setIsCountiesModalOpen] = useState(false);
@@ -53,17 +53,17 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider }) => {
 
     const toggleCountiesModal = () => {
         setIsCountiesModalOpen(!isCountiesModalOpen);
-        
+
         // Update the provider's counties_served data
         const updatedProvider = {
             ...loggedInProvider,
             counties_served: selectedCounties.map(county => ({ county }))
         };
-        
+
         // Here you would typically make an API call to update the provider data
         // For example:
         // updateProviderData(updatedProvider);
-        
+
         console.log('Updated provider data:', updatedProvider);
     };
 
