@@ -9,6 +9,7 @@ import { useAuth } from '../Provider-login/AuthProvider';
 
 interface ProviderEditProps {
     loggedInProvider: ProviderAttributes | null;
+
 }
 const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider }) => {
     const [isInsuranceModalOpen, setIsInsuranceModalOpen] = useState(false);
@@ -75,17 +76,17 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider }) => {
 
     const toggleCountiesModal = () => {
         setIsCountiesModalOpen(!isCountiesModalOpen);
-        
+
         // Update the provider's counties_served data
         const updatedProvider = {
             ...loggedInProvider,
             counties_served: selectedCounties.map(county => ({ county }))
         };
-        
+
         // Here you would typically make an API call to update the provider data
         // For example:
         // updateProviderData(updatedProvider);
-        
+
         console.log('Updated provider data:', updatedProvider);
     };
     if (!loggedInProvider) {
