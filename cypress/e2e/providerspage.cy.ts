@@ -4,13 +4,11 @@ describe('Providers Page', () => {
     cy.visit('http://localhost:3000/providers');
   })
 
-<<<<<<< HEAD
-=======
   it('should load Google Maps with the correct default address of the state of Utah', () => {
     cy.wait('@googleMapsEmbed').its('request.url').should('include', 'q=Utah');
   });
 
->>>>>>> 4fe5d0604359cd4a2d0fffb762ce84de991a4e8a
+
   it('displays the Search Bar and its placeholders', () => {
     cy.get('.provider-map-searchbar').should('exist')
 
@@ -43,34 +41,32 @@ describe('Providers Page', () => {
       .should('have.text', 'Reset');
   });
 
-<<<<<<< HEAD
-  it('displays the first Provider card with correct details', () => {
-=======
-  it('displays the first and last Provider card with correct details', () => {
->>>>>>> 4fe5d0604359cd4a2d0fffb762ce84de991a4e8a
+
+
+ it('displays the first and last Provider card with correct details', () => {
+
     cy.get('.searched-provider-card').first().within(() => {
       cy.get('h3').should('contain.text', 'Catalyst Behavior Solutions');
       cy.get('.searched-provider-card-info')
         .should('contain.text', 'Phone: 1-866-569-7395');
-<<<<<<< HEAD
-=======
+
       cy.get('.searched-provider-card-info')
         .should('contain.text', 'Email: austismspecialist@gmail.com');
->>>>>>> 4fe5d0604359cd4a2d0fffb762ce84de991a4e8a
+
+      cy.get('.searched-provider-card-info')
+        .should('contain.text', 'Email: austismspecialist@gmail.com');
+
       cy.get('h4')
         .should('contain.text', '6033 Fashion Point Dr');
       cy.get('button.view-details-button')
         .should('contain.text', 'View Details');
-<<<<<<< HEAD
+
       cy.get('select.view-on-map-dropdown')
         .should('contain.text', 'Select Location to View on Map');
     });
   });
 })
-=======
-      cy.get('button.view-on-map-button')
-        .should('contain.text', 'View on Map');
-    })
+     
 
     cy.get('.searched-provider-card').last().within(() => {
       cy.get('h3').should('contain.text', 'ABS Kids');
@@ -95,7 +91,6 @@ describe('Providers Page', () => {
 
       cy.get('select.view-on-map-dropdown').select(3);
     });
-  });
 
   it('should load Google Maps with the correct address after selecting Davis County Office', () => {
     cy.get('.searched-provider-card').last().within(() => {
@@ -259,6 +254,4 @@ describe('Providers Page', () => {
 
     cy.get('.provider-title-section')
       .should('contain.text', 'Showing 8 Providers');
-  })
-});
->>>>>>> 4fe5d0604359cd4a2d0fffb762ce84de991a4e8a
+  });

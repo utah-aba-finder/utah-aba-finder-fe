@@ -43,10 +43,6 @@ const SearchBar: React.FC<SearchBarProps> = ({
       waitlist: selectedWaitList,
     };
 
-<<<<<<< HEAD
-    // If waitlist is "6 Months or Less", modify searchParams to include waitlists of 6 months or less
-=======
->>>>>>> 4fe5d0604359cd4a2d0fffb762ce84de991a4e8a
     if (selectedWaitList === '6 Months or Less') {
       searchParams.waitlist = '6 Months or Less';
     }

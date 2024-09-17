@@ -278,15 +278,11 @@
 
 }
 
-<<<<<<< HEAD
 @media (max-width: 1280px) {
 
 }
 
-@media screen and (min-width: 1262px) {
-=======
 @media (min-width: 1262px) {
->>>>>>> 4fe5d0604359cd4a2d0fffb762ce84de991a4e8a
     .provider-cards-grid {
         grid-template-columns: repeat(2, minmax(600px, 1fr));
         justify-content: space-between;

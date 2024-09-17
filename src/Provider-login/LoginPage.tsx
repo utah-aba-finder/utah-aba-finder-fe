@@ -10,12 +10,15 @@ import { useAuth } from './AuthProvider';
 import { toast } from 'react-toastify';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import gearImage from '../Assets/Gear@1x-0.5s-200px-200px.svg';
+
 
 export const LoginPage: React.FC = () => {
         const [showPassword, setShowPassword] = useState(false);  
         const [username, setUsername] = useState('');
         const [password, setPassword] = useState('');
         const [error, setError] = useState('');
+        const [isLoading, setIsLoading] = useState(false)
         const navigate = useNavigate();
 
         const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -62,6 +65,7 @@ export const LoginPage: React.FC = () => {
 
         if (response.ok) {
             // if (data.token) {
+            setIsLoading(true)
                 setIsLoggedIn(true);
                 setCurrentProvider(data.data);
                 // setToken(data.token);
@@ -73,6 +77,7 @@ export const LoginPage: React.FC = () => {
             const errorMessage = data.Error || data.message || `Login failed. Status: ${response.status}`;
             setError(errorMessage);
             toast.error(errorMessage);
+            setIsLoading(false)
         }
     } catch (err) {
         console.error('Login error:', err);
@@ -82,6 +87,11 @@ export const LoginPage: React.FC = () => {
 
         const handleShowPassword = () => {
             setShowPassword(!showPassword);
+        }
+        if(isLoading){
+            <div className="loading-container">
+                <img src={gearImage} alt="Loading..." className="loading-gear" />
+            </div>
         }
 
         return (

@@ -148,10 +148,7 @@ const ProvidersPage: React.FC = () => {
 
   const handleResults = (results: MockProviders) => {
     const mappedResults = results.data.map(p => ({
-<<<<<<< HEAD
       id: p.attributes.id,
-=======
->>>>>>> 4fe5d0604359cd4a2d0fffb762ce84de991a4e8a
       name: p.attributes.name,
       locations: p.attributes.locations,
       insurance: p.attributes.insurance,
@@ -176,12 +173,9 @@ const ProvidersPage: React.FC = () => {
       (selectedService === 'at_home' && provider.at_home_services?.toLowerCase() === 'yes') ||
       (selectedService === 'in_clinic' && provider.in_clinic_services?.toLowerCase() === 'yes')) &&
       (!selectedWaitList || (selectedWaitList === '6 Months or Less' && (provider.waitlist ? parseInt(provider.waitlist, 10) <= 6 : false)) ||
-<<<<<<< HEAD
       (selectedWaitList === 'no' && provider.waitlist?.toLowerCase() === 'no')) 
-=======
-      (selectedWaitList === 'no' && provider.waitlist?.toLowerCase() === 'no'))
->>>>>>> 4fe5d0604359cd4a2d0fffb762ce84de991a4e8a
     );
+    
 
     setFilteredProviders(filteredResults);
     setCurrentPage(1);
@@ -291,10 +285,7 @@ const ProvidersPage: React.FC = () => {
             : `Showing ${allProviders.length} Providers`}
         </h2>
       </section>
-<<<<<<< HEAD
-=======
       
->>>>>>> 4fe5d0604359cd4a2d0fffb762ce84de991a4e8a
       <SearchBar
         onResults={handleResults}
         onSearch={handleSearch}
