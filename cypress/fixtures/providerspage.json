@@ -14,19 +14,10 @@
                         "state": "UT",
                         "zip": "84403",
                         "phone": "1-866-569-7395"
-                    },
-                    {
-                        "name": "Farmington",
-                        "address_1": "1438 N Hwy 89",
-                        "address_2": "Suite 130",
-                        "city": "Farmington",
-                        "state": "UT",
-                        "zip": "84025",
-                        "phone": null
                     }
                 ],
                 "website": "https://catalystbehavior.com/",
-                "email": null,
+                "email": "austismspecialist@gmail.com",
                 "cost": "Discount offered for prepaying services\r\n RBT $80, $64 with prepay discount. BCaBA/student\r\n $100, $80 with prepay discount BCBA $150, $120\r\n with prepay\r\n discount.",
                 "insurance": [
                     {
@@ -70,11 +61,11 @@
                 "locations": [
                     {
                         "name": "https://www.abtaba.com/locations/aba-therapy-in-utah",
-                        "address_1": null,
+                        "address_1": "1234 West Road Drive",
                         "address_2": null,
-                        "city": null,
-                        "state": null,
-                        "zip": null,
+                        "city": "Mockville",
+                        "state": "Mocka",
+                        "zip": "32465",
                         "phone": "(801) 630-2040"
                     }
                 ],

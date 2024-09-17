@@ -41,6 +41,9 @@ interface ProviderModalProps {
 const ProviderModal: React.FC<ProviderModalProps> = ({ provider, onClose }) => {
   if (!provider) return null;
 
+  const hasMultipleLocations = provider.locations.length > 1;
+
+
   return (
     <div className="modal-overlay">
       <div className="modal-content">
@@ -52,7 +55,10 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ provider, onClose }) => {
 
           {provider.locations.length > 0 ? (
             provider.locations.slice(0, 4).map((location, index) => (
-              <p key={index}>
+              <p
+                key={index}
+                className={`contact-info ${hasMultipleLocations ? 'smaller-font' : ''}`}
+              >
                 <strong>Location {index + 1}:</strong>
                 {location.name && <span> {location.name}, </span>}
                 {location.address_1 && <span>{location.address_1}, </span>}
@@ -68,7 +74,7 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ provider, onClose }) => {
           )}
 
           <p><strong>Website:</strong> <a href={provider.website ?? undefined} target="_blank" rel="noopener noreferrer">{provider.website ?? 'N/A'}</a></p>
-          <p className='email-text'><strong>Email:</strong> <a href={`mailto:${provider.email ?? ''}`} target="_blank" rel="noopener noreferrer">{provider.email ?? 'Does not have an email'}</a></p>
+          <p className="email-text"><strong>Email:</strong> <a href={`mailto:${provider.email ?? ''}`} target="_blank" rel="noopener noreferrer">{provider.email ?? 'Does not have an email'}</a></p>
         </div>
 
         <div className="details">
