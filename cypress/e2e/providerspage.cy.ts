@@ -4,6 +4,10 @@ describe('Providers Page', () => {
     cy.visit('http://localhost:3000/providers');
   })
 
+  it('should load the page with the correct image banner and text', () => {
+    cy.get()
+  })
+
 
   it('should load Google Maps with the correct default address of the state of Utah', () => {
     cy.wait('@googleMapsEmbed').its('request.url').should('include', 'q=Utah');
