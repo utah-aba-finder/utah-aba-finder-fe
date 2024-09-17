@@ -4,6 +4,7 @@ describe('Providers Page', () => {
     cy.visit('http://localhost:3000/providers');
   })
 
+
   it('should load Google Maps with the correct default address of the state of Utah', () => {
     cy.wait('@googleMapsEmbed').its('request.url').should('include', 'q=Utah');
   });
@@ -40,7 +41,8 @@ describe('Providers Page', () => {
       .should('have.text', 'Reset');
   });
 
-  it('displays the first and last Provider card with correct details', () => {
+
+ it('displays the first and last Provider card with correct details', () => {
     cy.get('.searched-provider-card').first().within(() => {
       cy.get('h3').should('contain.text', 'Catalyst Behavior Solutions');
       cy.get('.searched-provider-card-info')
@@ -244,3 +246,4 @@ describe('Providers Page', () => {
       .should('contain.text', 'Showing 8 Providers');
   })
 });
+

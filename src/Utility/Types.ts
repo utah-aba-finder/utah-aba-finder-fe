@@ -18,10 +18,13 @@ export interface CountiesServed {
 
 
 export interface ProviderAttributes {
+    id: number;
     name: string | null;
     locations: Location[];
     insurance: Insurance[];
     counties_served: CountiesServed[];
+    password: string;
+    username: string;
     website: string | null;
     email: string | null;
     cost: string | null;
