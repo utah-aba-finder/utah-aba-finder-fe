@@ -26,7 +26,7 @@ const ProvidersPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
 
   const mapSectionRef = useRef<HTMLDivElement>(null);
-  const providersPerPage = 8;
+  const providersPerPage = 10;
 
   useEffect(() => {
     const getProviders = async () => {
@@ -281,7 +281,7 @@ const ProvidersPage: React.FC = () => {
             : `Showing ${allProviders.length} Providers`}
         </h2>
       </section>
-      
+
       <SearchBar
         onResults={handleResults}
         onSearch={handleSearch}
