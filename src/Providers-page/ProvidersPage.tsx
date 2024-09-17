@@ -37,7 +37,7 @@ const ProvidersPage: React.FC = () => {
         setFilteredProviders(mappedProviders);
 
         const uniqueInsurances = Array.from(new Set(
-          mappedProviders.flatMap(provider => provider.insurance.map(ins => ins.name || '')).sort()
+          mappedProviders.flatMap(provider => provider.insurance.map(ins => ins.name || '')).sort() as string[]
         ));
         setUniqueInsuranceOptions(uniqueInsurances);
         setMapAddress('Utah');
@@ -148,10 +148,13 @@ const ProvidersPage: React.FC = () => {
 
   const handleResults = (results: MockProviders) => {
     const mappedResults = results.data.map(p => ({
+      id: p.attributes.id,
       name: p.attributes.name,
       locations: p.attributes.locations,
       insurance: p.attributes.insurance,
       counties_served: p.attributes.counties_served,
+      password: p.attributes.password,
+      username: p.attributes.username,
       website: p.attributes.website,
       email: p.attributes.email,
       cost: p.attributes.cost,
