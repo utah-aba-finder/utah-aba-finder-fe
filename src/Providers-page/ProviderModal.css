@@ -10,7 +10,6 @@
   justify-content: center;
   z-index: 1000;
 }
-
 .modal-content {
   background-color: #fff;
   border-radius: 16px;
@@ -25,7 +24,6 @@
   align-items: center;
   animation: fadeIn 0.4s ease-in-out;
 }
-
 .modal-close {
   position: absolute;
   top: 1rem;
@@ -37,52 +35,43 @@
   cursor: pointer;
   transition: color 0.3s ease;
 }
-
 .modal-close:hover {
-  color: #e74c3c;
+  color: #E74C3C;
 }
-
-.modal-provider-logo {
-  width: 25%;
+.provider-page-modal-provider-logo {
+  width: 20%;
   height: auto;
+  border-radius: 14px;
   margin-bottom: 1rem;
 }
-
 .location-info {
   max-width: 100%;
 }
-
 .company-info {
   text-align: center;
 }
-
 .company-info h2 {
   font-size: 1.8rem;
   margin: 0.5rem 0;
   color: #333;
 }
-
 .company-info h3 {
   font-size: 1rem;
   margin: 0.5rem 0;
   color: #777;
 }
-
 .contact-info {
   text-align: center;
   margin-bottom: 1.5rem;
 }
-
 .contact-info p {
   margin: 0.3rem 0;
   font-size: 1rem;
   color: #707070;
 }
-
 .contact-info.smaller-font{
-  font-size: 0.85rem; 
+  font-size: 0.85rem;
 }
-
 .details {
   width: 100%;
   max-width: 600px;
@@ -92,54 +81,43 @@
   box-shadow: 1px 3px rgba(0, 0, 0, 0.1);
   text-align: left;
 }
-
 .details p {
   font-size: 1rem;
   margin: 0.5rem 0;
   color: #555;
 }
-
 .details strong {
   color: #333;
 }
-
 @keyframes fadeIn {
   from {
     opacity: 0;
     transform: scale(0.9);
   }
-
   to {
     opacity: 1;
     transform: scale(1);
   }
 }
-
-
 @media (max-width: 540px) {
   .modal-content {
     padding: 1rem;
   }
-
-  .modal-provider-logo {
+  .provider-page-modal-provider-logo {
     width: 100px;
   }
-
   .company-info {
     max-width: 100%;
   }
-
   .company-info h2 {
     font-size: 1.3rem;
   }
   .contact-info.smaller-font {
-    font-size: 0.7rem; 
+    font-size: 0.7rem;
   }
-
   .company-info h3,
   .contact-info p,
   .details p {
     font-size: 0.75rem;
-
   }
 }
