@@ -24,6 +24,7 @@ const ProvidersPage: React.FC = () => {
   const [mapAddress, setMapAddress] = useState<string>('Utah');
   const [isFiltered, setIsFiltered] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
+  const [showError, setShowError] = useState('');
 
   const mapSectionRef = useRef<HTMLDivElement>(null);
   const providersPerPage = 8;
@@ -41,8 +42,14 @@ const ProvidersPage: React.FC = () => {
         ));
         setUniqueInsuranceOptions(uniqueInsurances);
         setMapAddress('Utah');
+        if (mappedProviders.length === 0) {
+          setShowError('We are currently experiencing issues displaying ABA Providers. Please try again later.');
+        } else {
+          setShowError('');
+        }
       } catch (error) {
         console.error('Error loading providers:', error);
+        setShowError('We are currently experiencing issues displaying ABA Providers. Please try again later.');
       }
     };
 
@@ -285,7 +292,6 @@ const ProvidersPage: React.FC = () => {
             : `Showing ${allProviders.length} Providers`}
         </h2>
       </section>
-      
       <SearchBar
         onResults={handleResults}
         onSearch={handleSearch}
@@ -299,6 +305,8 @@ const ProvidersPage: React.FC = () => {
       />
 
       <section className="searched-provider-map-locations-list-section">
+      {showError && <div className='error-message'>{showError}</div>}
+
         <div className="provider-cards-grid">
           {paginatedProviders.map((provider, index) => (
             <ProviderCard
