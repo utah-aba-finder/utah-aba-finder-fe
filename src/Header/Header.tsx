@@ -20,14 +20,11 @@ const Header: React.FC = () => {
 
     return (
         <header className='Header'>
-            <Link to="/" aria-label="Homepage">
+            <Link to="/" aria-label="Homepage" className="main-logo-link">
                 <img
                     src={Logo}
                     alt="main-logo"
                     className="main-logo"
-                    tabIndex={0}
-                    role="button"
-                    onKeyDown={handleKeyDown}
                 />
             </Link>
             <img
