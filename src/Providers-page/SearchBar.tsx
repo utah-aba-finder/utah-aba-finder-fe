@@ -123,11 +123,13 @@ const SearchBar: React.FC<SearchBarProps> = ({
               }}
             >
               <option value="">All Insurances</option>
-              {insuranceOptions.map((insurance, index) => (
-                <option key={index} value={insurance}>
-                  {insurance}
-                </option>
-              ))}
+              {insuranceOptions
+                .filter(insurance => insurance !== 'Contact us') 
+                .map((insurance, index) => (
+                  <option key={index} value={insurance}>
+                    {insurance}
+                  </option>
+                ))}
             </select>
           </div>
 
