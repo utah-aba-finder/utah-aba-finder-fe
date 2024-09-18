@@ -1,17 +1,14 @@
 import React, {useState, useEffect} from 'react'
 import './LoginPage.css'
 import { User, Lock, Eye, EyeOff } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
-import { ProviderAttributes, Location } from '../Utility/Types';
+import { useNavigate } from 'react-router-dom';
+import { ProviderAttributes } from '../Utility/Types';
 import  ProviderEdit  from '../Provider-edit/ProviderEdit'
-import { Insurance } from '../Utility/Types';
-import { MockProviderData, MockProviders } from '../Utility/Types';
 import { useAuth } from './AuthProvider';
 import { toast } from 'react-toastify';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import gearImage from '../Assets/Gear@1x-0.5s-200px-200px.svg';
-import { jwtDecode } from 'jwt-decode';
 
 
 
@@ -22,10 +19,11 @@ export const LoginPage: React.FC = () => {
         const [error, setError] = useState('');
         const [isLoading, setIsLoading] = useState(false)
         const navigate = useNavigate();
-
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const [isLoggedIn, setIsLoggedIn] = useState(false);
         const [currentProvider, setCurrentProvider] = useState<ProviderAttributes | undefined>();
         const { setToken } = useAuth();
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const [showError, setShowError] = useState(false);
 
         useEffect(() => {
