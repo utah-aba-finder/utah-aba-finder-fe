@@ -20,6 +20,7 @@
     border-radius: 5px;
 }
 
+.select-counties-button,
 .select-insurance-button {
     width: 31.5%;
     padding: 10px;
@@ -27,6 +28,13 @@
     border-radius: 5px;
 }
 
+.select-counties-button:hover,
+.select-insurance-button:hover {
+    background-color: rgb(255, 64, 0);
+    color: white;
+}
+
+.waitList-section,
 .waitList-section,
 .clinic-section,
 .spanish-speaking-section {
