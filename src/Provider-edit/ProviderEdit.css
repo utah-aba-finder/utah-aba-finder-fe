@@ -6,11 +6,13 @@
     gap: 10px;
 }
 
+
 #dropdown-menu {
     width: 31.5%;
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 5px;
+
 }
 
 .provider-edit-form input {
@@ -19,6 +21,7 @@
     border: 1px solid #ccc;
     border-radius: 5px;
 }
+
 
 .select-counties-button,
 .select-insurance-button {
@@ -145,7 +148,10 @@
 
     #dropdown-menu {
         width: 85%;
+
     }
+
+
 
     .provider-edit-form input {
         width: 80%;
@@ -179,8 +185,9 @@
     .waitList-section,
     .clinic-section,
     .spanish-speaking-section {
-        width: 70%;
+        width: 80%;
     }
+
 
     #time-service,
     #frequency-service,
@@ -189,5 +196,4 @@
         width: 100%;
         height: 2rem;
     }
-
 }
