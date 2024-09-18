@@ -4,7 +4,7 @@ import InsuranceModal from './InsuranceModal';
 import CountiesModal from './CountiesModal';
 import { Insurance, ProviderAttributes, CountiesServed } from '@/Utility/Types';
 import gearImage from '../Assets/Gear@1x-0.5s-200px-200px.svg';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../Provider-login/AuthProvider';
 
 
@@ -159,7 +159,14 @@ const ProviderEdit: React.FC<ProviderEditProps> = () => {
 
     return (
         <div>
-            <button className='logoutButton' onClick={handleLogout}>Logout</button>
+            <div className='user-info-section'>
+                <h1>Hello, {loggedInProvider.name}</h1>
+                <p>Last edited: time/date</p>
+                <button className='logoutButton' onClick={handleLogout}>Logout</button>
+                <p>For any questions to the admin, please use the contact page.</p>
+                <Link to="/contact" className='contact-link'>Click here to go to the contact page</Link>
+            </div>
+
             <h1>Edit Your Information</h1>
             <div className='provider-edit-form'>
                 <select
@@ -229,7 +236,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = () => {
                         />
                     </>
                 )}
-                
+
                 <input
                     type="text"
                     name="logo"
