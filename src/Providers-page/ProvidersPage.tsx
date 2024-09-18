@@ -7,6 +7,8 @@ import GoogleMap from './GoogleMap';
 import ProviderCard from './ProviderCard';
 import { fetchProviders } from '../Utility/ApiCall';
 import { MockProviders, ProviderAttributes } from '../Utility/Types';
+import gearImage from '../Assets/Gear@1x-0.5s-200px-200px.svg';
+
 
 const ProvidersPage: React.FC = () => {
   const [selectedProvider, setSelectedProvider] = useState<ProviderAttributes | null>(null);
@@ -24,6 +26,10 @@ const ProvidersPage: React.FC = () => {
   const [mapAddress, setMapAddress] = useState<string>('Utah');
   const [isFiltered, setIsFiltered] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
+  const [showError, setShowError] = useState('');
+  const [isLoading, setIsLoading] = useState(false)
+  const errorTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
 
   const mapSectionRef = useRef<HTMLDivElement>(null);
   const providersPerPage = 8;
@@ -31,6 +37,10 @@ const ProvidersPage: React.FC = () => {
   useEffect(() => {
     const getProviders = async () => {
       try {
+        setShowError('');
+        if (errorTimeoutRef.current) {
+          clearTimeout(errorTimeoutRef.current);
+        }
         const providersList: MockProviders = await fetchProviders();
         const mappedProviders = providersList.data.map(provider => provider.attributes);
         setAllProviders(mappedProviders);
@@ -41,12 +51,27 @@ const ProvidersPage: React.FC = () => {
         ));
         setUniqueInsuranceOptions(uniqueInsurances);
         setMapAddress('Utah');
+        setIsLoading(false)
+        if (mappedProviders.length === 0) {
+          errorTimeoutRef.current = setTimeout(() => {
+            setShowError('We are currently experiencing issues displaying ABA Providers. Please try again later.');
+          }, 5000); // Wait 5 seconds before showing the error
+        }
       } catch (error) {
         console.error('Error loading providers:', error);
+        setIsLoading(false);
+        errorTimeoutRef.current = setTimeout(() => {
+          setShowError('We are currently experiencing issues displaying ABA Providers. Please try again later.');
+        }, 5000); // Wait 5 seconds before showing the error
       }
     };
 
     getProviders();
+    return () => {
+      if (errorTimeoutRef.current) {
+        clearTimeout(errorTimeoutRef.current);
+      }
+    };
   }, []);
 
   const handleSearch = useCallback(({ query, county, insurance, spanish, service, waitlist }: { query: string; county: string; insurance: string; spanish: string; service: string; waitlist: string }) => {
@@ -285,7 +310,6 @@ const ProvidersPage: React.FC = () => {
             : `Showing ${allProviders.length} Providers`}
         </h2>
       </section>
-      
       <SearchBar
         onResults={handleResults}
         onSearch={handleSearch}
@@ -299,6 +323,14 @@ const ProvidersPage: React.FC = () => {
       />
 
       <section className="searched-provider-map-locations-list-section">
+      {isLoading && (
+          <div className="loading-container">
+            <img src={gearImage} alt="Loading..." className="loading-gear"/>
+            <p>Loading providers...</p>
+          </div>
+        )}
+        {!isLoading && showError && <div className='error-message'>{showError}</div>}
+        {!isLoading && !showError && (
         <div className="provider-cards-grid">
           {paginatedProviders.map((provider, index) => (
             <ProviderCard
@@ -309,6 +341,7 @@ const ProvidersPage: React.FC = () => {
             />
           ))}
         </div>
+        )}
       </section>
 
       <div className="pagination-controls">
