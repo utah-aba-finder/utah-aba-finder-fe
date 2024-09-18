@@ -1,4 +1,5 @@
 export interface Insurance {
+    id: number | null,
     name: string | null;
 }
 
