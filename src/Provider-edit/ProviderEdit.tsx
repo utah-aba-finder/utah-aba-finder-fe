@@ -2,24 +2,23 @@ import React, { useState, useEffect } from 'react';
 import "./ProviderEdit.css";
 import InsuranceModal from './InsuranceModal';
 import CountiesModal from './CountiesModal';
-import { ProviderAttributes } from '@/Utility/Types';
+import { Insurance, ProviderAttributes, CountiesServed } from '@/Utility/Types';
 import gearImage from '../Assets/Gear@1x-0.5s-200px-200px.svg';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../Provider-login/AuthProvider';
 
+
 const mockLoggedInProvider: ProviderAttributes = {
     id: 1,
     name: "Mock Provider",
-    logo: "https://website.com",
+    logo: "https://logo.com",
     spanish_speakers: "yes",
     in_clinic_services: "clinic",
     at_home_services: "no",
     telehealth_services: "yes",
-    insurance: [],
-    counties_served: [],
     password: "password",
     username: "test",
-    website: "https://website.com",
+    website: "https://ourwebsite.com",
     email: "test@test.com",
     cost: "100",
     min_age: 1,
@@ -45,8 +44,19 @@ const mockLoggedInProvider: ProviderAttributes = {
             zip: "73301",
             phone: "987-654-3210"
         }
+    ],
+    insurance: [
+        { id: 1, name: "Contact us" },
+        { id: 2, name: "Administrator Benefits" },
+        { id: 3, name: "Aetna" },
+    ],
+    counties_served: [
+        {
+            county: "Salt Lake, Utah, Davis"
+        }
     ]
 };
+
 
 interface ProviderEditProps {
     loggedInProvider?: ProviderAttributes | null;
@@ -57,8 +67,8 @@ const ProviderEdit: React.FC<ProviderEditProps> = () => {
 
     const [isInsuranceModalOpen, setIsInsuranceModalOpen] = useState(false);
     const [isCountiesModalOpen, setIsCountiesModalOpen] = useState(false);
-    const [selectedInsurance, setSelectedInsurance] = useState<string[]>([]);
-    const [selectedCounties, setSelectedCounties] = useState<string[]>([]);
+    const [selectedInsurance, setSelectedInsurance] = useState<Insurance[]>([]);
+    const [selectedCounties, setSelectedCounties] = useState<CountiesServed[]>([]);
     const [selectedLocation, setSelectedLocation] = useState<number | null>(null);
     const navigate = useNavigate();
     const { setToken } = useAuth();
@@ -66,6 +76,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = () => {
     const [formData, setFormData] = useState({
         logo: '',
         name: '',
+        website: '',
         location: '',
         address: '',
         city: '',
@@ -76,6 +87,10 @@ const ProviderEdit: React.FC<ProviderEditProps> = () => {
         serviceType: '',
         waitlistTime: '',
         waitlistFrequency: '',
+        in_clinic_services: '',
+        at_home_services: '',
+        min_age: 0,
+        max_age: 0,
     });
 
     const handleLogout = () => {
@@ -89,6 +104,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = () => {
             setFormData({
                 logo: loggedInProvider.logo ?? '',
                 name: loggedInProvider.name ?? '',
+                website: loggedInProvider.website ?? '',
                 location: loggedInProvider.locations[0].name ?? '',
                 address: loggedInProvider.locations[0].address_1 ?? '',
                 city: loggedInProvider.locations[0].city ?? '',
@@ -99,6 +115,10 @@ const ProviderEdit: React.FC<ProviderEditProps> = () => {
                 serviceType: loggedInProvider.in_clinic_services ?? '',
                 waitlistTime: '',
                 waitlistFrequency: '',
+                in_clinic_services: '',
+                at_home_services: '',
+                min_age: loggedInProvider.min_age ?? 0,
+                max_age: loggedInProvider.max_age ?? 0,
             });
         }
     }, [loggedInProvider]);
@@ -209,6 +229,14 @@ const ProviderEdit: React.FC<ProviderEditProps> = () => {
                         />
                     </>
                 )}
+                
+                <input
+                    type="text"
+                    name="logo"
+                    value={formData.website}
+                    onChange={handleInputChange}
+                    placeholder="Link to the provider's site"
+                />
 
                 <input
                     type="text"
@@ -227,6 +255,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = () => {
                         onClose={toggleInsuranceModal}
                         selectedInsurance={selectedInsurance}
                         setSelectedInsurance={setSelectedInsurance}
+                        providerInsurance={loggedInProvider.insurance}
                     />
                 )}
 
@@ -239,6 +268,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = () => {
                         onClose={toggleCountiesModal}
                         selectedCounties={selectedCounties}
                         setSelectedCounties={setSelectedCounties}
+                        providerCounties={loggedInProvider.counties_served}
                     />
                 )}
 

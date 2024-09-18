@@ -17,10 +17,12 @@
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    max-width: 600px;
-    width: 90%;
+    width: 90%; 
+    max-width: 1200px; 
+    height: 80%;
     z-index: 1010;
     margin: 0 auto;
+    overflow-y: auto; 
 }
 
 .modal h2 {
@@ -30,8 +32,7 @@
 
 .modal-insurance-container {
     display: grid;
-    grid-template-rows: repeat(7, 1fr);
-    grid-auto-flow: column;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* Change this line */
     gap: 20px;
     padding: 20px;
     justify-content: center;
