@@ -68,6 +68,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
           <input
             className="provider-text-select"
+            id="provider-text-select"
             type="text"
             placeholder="Search for a provider..."
             value={searchQuery}
@@ -79,6 +80,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
               className={`provider-county-select`}
               value={selectedCounty}
               onChange={(e) => setSelectedCounty(e.target.value)}
+              aria-label="Select County"
             >
               <option value="">All Counties</option>
               <option value="Beaver">Beaver County</option>
@@ -116,15 +118,17 @@ const SearchBar: React.FC<SearchBarProps> = ({
           <div className="provider-insurance-dropdown">
             <select
               className="provider-insurance-select"
+              id="provider-insurance-select"
               value={selectedInsurance}
               onChange={(e) => {
                 setSelectedInsurance(e.target.value);
                 onInsuranceChange(e.target.value);
               }}
+              aria-label="Select Insurance"
             >
               <option value="">All Insurances</option>
               {insuranceOptions
-                .filter(insurance => insurance !== 'Contact us') 
+                .filter(insurance => insurance !== 'Contact us')
                 .map((insurance, index) => (
                   <option key={index} value={insurance}>
                     {insurance}
@@ -136,8 +140,10 @@ const SearchBar: React.FC<SearchBarProps> = ({
           <div className="provider-spanish-dropdown">
             <select
               className="provider-spanish-select"
+              id="provider-spanish-select"
               value={selectedSpanish}
               onChange={(e) => setSelectedSpanish(e.target.value)}
+              aria-label="Spanish Language Option"
             >
               <option value="">Spanish?</option>
               <option value="yes">Yes</option>
@@ -147,8 +153,10 @@ const SearchBar: React.FC<SearchBarProps> = ({
           <div className="provider-service-dropdown">
             <select
               className="provider-service-select"
+              id="provider-service-select"
               value={selectedService}
               onChange={(e) => setSelectedService(e.target.value)}
+              aria-label="Select Service Type"
             >
               <option value="">All Services</option>
               <option value="telehealth">Telehealth Services</option>
@@ -160,8 +168,10 @@ const SearchBar: React.FC<SearchBarProps> = ({
           <div className="provider-waitlist-dropdown">
             <select
               className="provider-waitlist-select"
+              id="provider-waitlist-select"
               value={selectedWaitList}
               onChange={(e) => setSelectedWaitList(e.target.value)}
+              aria-label="Select Waitlist Status"
             >
               <option value="">All Waitlist Status</option>
               <option value="No">No Waitlist</option>

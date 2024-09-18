@@ -232,6 +232,8 @@ const ProvidersPage: React.FC = () => {
       return (
         <select
           className={`view-on-map-dropdown ${!isAddressAvailable ? 'disabled' : ''}`}
+          id='view-on-map-dropdown'
+          aria-label="View On Map Dropdown"
           onChange={(e) => {
             const index = e.target.value;
             const location = provider.locations[parseInt(index)];
