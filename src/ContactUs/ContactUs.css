@@ -54,10 +54,19 @@
     width: 10%;
     border-radius: 0.5rem;
     border: none;
-    background-color: rgb(255, 140, 0);
+    background-color: rgb(251, 145, 15);
     color: white;
-    font-size: 1rem;
-    font-weight: 600;
+    font-size: 1.15rem;
+    font-weight: 800;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 1);
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s, transform 0.3s;
+}
+
+.contact-page-button:hover {
+    background-color: rgb(219, 166, 105);
+    transform: translateY(-2px);
 }
 
 .contact-input-message,

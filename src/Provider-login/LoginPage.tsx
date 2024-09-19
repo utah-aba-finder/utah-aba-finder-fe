@@ -107,7 +107,11 @@ export const LoginPage: React.FC = () => {
                             <input type={showPassword ? 'text' : 'password'} placeholder='Password' id='password' name='password' value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required />
-                            <button className='eyeButton' type='button' onClick={handleShowPassword}>
+                            <button 
+                            className='eyeButton' 
+                            aria-label='eyeButton'
+                            type='button' 
+                            onClick={handleShowPassword}>
                                 {showPassword ? <EyeOff className='eye'/> : <Eye className='eye'/>}
                             </button>
                         </div>
