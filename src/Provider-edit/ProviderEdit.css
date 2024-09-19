@@ -4,6 +4,13 @@
     align-items: center;
     justify-content: center;
     gap: 10px;
+    text-align: start;
+}
+
+.provider-edit-form label {
+    text-align: start;
+    width: 31%;
+    align-self: center;
 }
 
 .provider-edit-container {
