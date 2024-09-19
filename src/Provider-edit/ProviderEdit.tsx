@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import "./ProviderEdit.css";
 import InsuranceModal from './InsuranceModal';
 import CountiesModal from './CountiesModal';
@@ -8,68 +8,69 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../Provider-login/AuthProvider';
 
 
-const mockLoggedInProvider: ProviderAttributes = {
-    id: 1,
-    name: "Mock Provider",
-    logo: "https://logo.com",
-    spanish_speakers: "yes",
-    in_clinic_services: "clinic",
-    at_home_services: "no",
-    telehealth_services: "yes",
-    password: "password",
-    username: "test",
-    website: "https://ourwebsite.com",
-    email: "test@test.com",
-    cost: "100",
-    min_age: 1,
-    max_age: 100,
-    waitlist: "No waitlist",
+// const mockLoggedInProvider: ProviderAttributes = {
+//     id: 1,
+//     name: "Mock Provider",
+//     logo: "https://logo.com",
+//     spanish_speakers: "yes",
+//     in_clinic_services: "clinic",
+//     at_home_services: "no",
+//     telehealth_services: "yes",
+//     password: "password",
+//     username: "test",
+//     website: "https://ourwebsite.com",
+//     email: "test@test.com",
+//     cost: "100",
+//     min_age: 1,
+//     max_age: 100,
+//     waitlist: "No waitlist",
 
-    locations: [
-        {
-            name: "Location example Turing clinic",
-            address_1: "123 Street",
-            address_2: "Apt 1",
-            city: "Dallas",
-            state: "TX",
-            zip: "75251",
-            phone: "123-456-7890"
-        },
-        {
-            name: "Location example Turing clinic2",
-            address_1: "456 Street",
-            address_2: "Apt 2",
-            city: "Austin",
-            state: "TX",
-            zip: "73301",
-            phone: "987-654-3210"
-        }
-    ],
-    insurance: [
-        { id: 1, name: "Contact us" },
-        { id: 2, name: "Administrator Benefits" },
-        { id: 3, name: "Aetna" },
-    ],
-    counties_served: [
-        {
-            county: "Salt Lake, Utah, Davis"
-        }
-    ]
-};
+//     locations: [
+//         {
+//             name: "Location example Turing clinic",
+//             address_1: "123 Street",
+//             address_2: "Apt 1",
+//             city: "Dallas",
+//             state: "TX",
+//             zip: "75251",
+//             phone: "123-456-7890"
+//         },
+//         {
+//             name: "Location example Turing clinic2",
+//             address_1: "456 Street",
+//             address_2: "Apt 2",
+//             city: "Austin",
+//             state: "TX",
+//             zip: "73301",
+//             phone: "987-654-3210"
+//         }
+//     ],
+//     insurance: [
+//         { id: 1, name: "Contact us" },
+//         { id: 2, name: "Administrator Benefits" },
+//         { id: 3, name: "Aetna" },
+//     ],
+//     counties_served: [
+//         {
+//             county: "Salt Lake, Utah, Davis"
+//         }
+//     ]
+// };
 
 
 interface ProviderEditProps {
-    loggedInProvider?: ProviderAttributes | null;
+    loggedInProvider: ProviderAttributes | null;
 }
 
-const ProviderEdit: React.FC<ProviderEditProps> = () => {
-    const loggedInProvider = mockLoggedInProvider;
-
+const ProviderEdit: React.FC<ProviderEditProps> = ({loggedInProvider}) => {
     const [isInsuranceModalOpen, setIsInsuranceModalOpen] = useState(false);
     const [isCountiesModalOpen, setIsCountiesModalOpen] = useState(false);
     const [selectedInsurance, setSelectedInsurance] = useState<Insurance[]>([]);
     const [selectedCounties, setSelectedCounties] = useState<CountiesServed[]>([]);
+    const [isLoading, setIsLoading] = useState(false)
     const [selectedLocation, setSelectedLocation] = useState<number | null>(null);
+    const errorTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const [showError, setShowError] = useState('')
     const navigate = useNavigate();
     const { setToken } = useAuth();
 
@@ -101,26 +102,51 @@ const ProviderEdit: React.FC<ProviderEditProps> = () => {
 
     useEffect(() => {
         if (loggedInProvider && loggedInProvider.locations?.[0]) {
-            setFormData({
-                logo: loggedInProvider.logo ?? '',
-                name: loggedInProvider.name ?? '',
-                website: loggedInProvider.website ?? '',
-                location: loggedInProvider.locations[0].name ?? '',
-                address: loggedInProvider.locations[0].address_1 ?? '',
-                city: loggedInProvider.locations[0].city ?? '',
-                state: loggedInProvider.locations[0].state ?? '',
-                zipCode: loggedInProvider.locations[0].zip ?? '',
-                phone: loggedInProvider.locations[0].phone ?? '',
-                spanishSpeakers: loggedInProvider.spanish_speakers ?? '',
-                serviceType: loggedInProvider.in_clinic_services ?? '',
-                waitlistTime: '',
-                waitlistFrequency: '',
-                in_clinic_services: '',
-                at_home_services: '',
-                min_age: loggedInProvider.min_age ?? 0,
-                max_age: loggedInProvider.max_age ?? 0,
-            });
+            setIsLoading(true);
+            if (errorTimeoutRef.current) {
+                clearTimeout(errorTimeoutRef.current);
+            }
+            setShowError('');
+            
+            try {
+                setFormData({
+                    logo: loggedInProvider.logo ?? '',
+                    name: loggedInProvider.name ?? '',
+                    website: loggedInProvider.website ?? '',
+                    location: loggedInProvider.locations[0].name ?? '',
+                    address: loggedInProvider.locations[0].address_1 ?? '',
+                    city: loggedInProvider.locations[0].city ?? '',
+                    state: loggedInProvider.locations[0].state ?? '',
+                    zipCode: loggedInProvider.locations[0].zip ?? '',
+                    phone: loggedInProvider.locations[0].phone ?? '',
+                    spanishSpeakers: loggedInProvider.spanish_speakers ?? '',
+                    serviceType: loggedInProvider.in_clinic_services ?? '',
+                    waitlistTime: loggedInProvider.waitlist ?? '',
+                    waitlistFrequency: '',
+                    in_clinic_services: loggedInProvider.in_clinic_services ?? '',
+                    at_home_services: loggedInProvider.at_home_services ?? '',
+                    min_age: loggedInProvider.min_age ?? 0,
+                    max_age: loggedInProvider.max_age ?? 0,
+                });
+                setSelectedInsurance(loggedInProvider.insurance ?? []);
+                setSelectedCounties(loggedInProvider.counties_served ?? []);
+            } catch (error) {
+                console.error('Error setting form data:', error);
+                setShowError('An error occurred while loading your data. Please try again.');
+            } finally {
+                setIsLoading(false);
+            }
+        } else {
+            errorTimeoutRef.current = setTimeout(() => {
+                setShowError('We are currently experiencing issues displaying your data. Please try again later. If the issue persists, please contact us.');
+            }, 5000);
         }
+    
+        return () => {
+            if (errorTimeoutRef.current) {
+                clearTimeout(errorTimeoutRef.current);
+            }
+        };
     }, [loggedInProvider]);
 
     const handleLocationChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -156,6 +182,12 @@ const ProviderEdit: React.FC<ProviderEditProps> = () => {
     const toggleCountiesModal = () => {
         setIsCountiesModalOpen(!isCountiesModalOpen);
     };
+    if (isLoading) {
+        return <div className="loading-container">
+            <img src={gearImage} alt="Loading..." className="loading-gear"/>
+            <p>Loading provider data...</p>
+        </div>;
+    }
 
     return (
         <div>
@@ -168,7 +200,9 @@ const ProviderEdit: React.FC<ProviderEditProps> = () => {
             </div>
 
             <h1>Edit Your Information</h1>
-            <div className='provider-edit-form'>
+            {showError ? <div className='error-message'>{showError}</div> : 
+            loggedInProvider ? (
+                <div className='provider-edit-form'>
                 <select
                     id="dropdown-menu"
                     name="Select location"
@@ -176,7 +210,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = () => {
                     value={selectedLocation !== null ? selectedLocation : ''}
                 >
                     <option value="">Select location</option>
-                    {loggedInProvider.locations?.map((location, index) => (
+                    {loggedInProvider?.locations?.map((location, index) => (
                         <option key={index} value={index}>
                             {location.name}
                         </option>
@@ -262,7 +296,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = () => {
                         onClose={toggleInsuranceModal}
                         selectedInsurance={selectedInsurance}
                         setSelectedInsurance={setSelectedInsurance}
-                        providerInsurance={loggedInProvider.insurance}
+                        providerInsurance={loggedInProvider?.insurance ?? []}
                     />
                 )}
 
@@ -275,7 +309,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = () => {
                         onClose={toggleCountiesModal}
                         selectedCounties={selectedCounties}
                         setSelectedCounties={setSelectedCounties}
-                        providerCounties={loggedInProvider.counties_served}
+                        providerCounties={loggedInProvider?.counties_served ?? []}
                     />
                 )}
 
@@ -333,6 +367,12 @@ const ProviderEdit: React.FC<ProviderEditProps> = () => {
                     <button className='save-button'>Save</button>
                 </div>
             </div>
+            ) : (
+                <div>
+                <img src={gearImage}/>
+                <p>Loading provider data...</p>
+                </div>
+                )}
         </div>
     );
 };

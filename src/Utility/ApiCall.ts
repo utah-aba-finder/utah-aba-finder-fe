@@ -12,3 +12,21 @@ export const fetchProviders = async (): Promise<MockProviders> => {
     throw new Error('Unable to fetch providers data');
   }
 };
+
+export const fetchSingleProvider = async (providerId: number) => {
+  console.log("Fetching provider with ID:", providerId);
+  try {
+    const response = await fetch(`https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/providers/${providerId}`);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log("Fetched provider data:", data);
+    return data.data;
+  } catch (error) {
+    console.error('Error fetching single provider:', error);
+    throw error;
+  }
+}
