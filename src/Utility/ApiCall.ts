@@ -24,7 +24,7 @@ export const fetchSingleProvider = async (providerId: number) => {
 
     const data = await response.json();
     console.log("Fetched provider data:", data);
-    return data.data;
+    return data.data[0];
   } catch (error) {
     console.error('Error fetching single provider:', error);
     throw error;
