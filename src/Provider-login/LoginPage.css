@@ -2,9 +2,12 @@
     background-image: url('../Assets/behaviorPlan.jpg');
     background-size: cover;
     background-position: center;
-    height: 100vh;
     display: flex;
-    width: 100%;
+    flex-direction: column;
+    width: auto;
+    height: 100%;
+    justify-content: center;
+    align-items: center;
 }
 
 .loginImage {
@@ -31,7 +34,7 @@
     align-items: center;
     align-content: center;
     margin: 5px;
-    height: 100%;
+    height: 40rem;
     width: 100%;
 }
 
@@ -71,16 +74,19 @@
     color: rgb(251, 99, 57);
 
 }
+
 .loginButton:disabled {
     background-color: #cccccc;
     color: #666666;
     /* cursor: not-allowed; */
 }
+
 .loginButton:disabled:hover {
     content: 'feature not yet available';
     background-color: #cccccc;
     color: #666666;
 }
+
 .loginButton:disabled:hover::after {
     content: 'feature not yet available';
     position: absolute;
@@ -94,11 +100,13 @@
     font-size: 14px;
     white-space: nowrap;
 }
+
 .userIcon,
 .lockIcon,
 .mailIcon {
     left: 1.2rem;
 }
+
 .eyeButton {
     position: absolute;
     right: 1%;

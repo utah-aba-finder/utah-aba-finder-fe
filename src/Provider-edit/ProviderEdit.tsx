@@ -36,11 +36,11 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
         spanishSpeakers: '',
         serviceType: '',
         waitlistTime: '',
-        waitlistFrequency: '',
         in_clinic_services: '',
         at_home_services: '',
         min_age: 0,
         max_age: 0,
+        telehealth: ''
     });
 
     const handleLogout = () => {
@@ -50,7 +50,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
         sessionStorage.removeItem('authToken');
         localStorage.removeItem('authToken')
         navigate('/login');
-        
+
     };
 
     useEffect(() => {
@@ -69,7 +69,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
                 spanishSpeakers: loggedInProvider.attributes.spanish_speakers ?? '',
                 serviceType: loggedInProvider.attributes.in_clinic_services ?? '',
                 waitlistTime: loggedInProvider.attributes.waitlist ?? '',
-                waitlistFrequency: '',
+                telehealth: loggedInProvider.attributes.telehealth_services ?? '',
                 in_clinic_services: loggedInProvider.attributes.in_clinic_services ?? '',
                 at_home_services: loggedInProvider.attributes.at_home_services ?? '',
                 min_age: loggedInProvider.attributes.min_age ?? 0,
@@ -158,6 +158,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
 
                     {selectedLocation !== null && (
                         <>
+                        <label className='editLabels' htmlFor='name' aria-label='provider name'>Provider Name: </label>
                             <input
                                 type="text"
                                 name="name"
@@ -165,6 +166,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
                                 onChange={handleInputChange}
                                 placeholder="Provider/clinic name"
                             />
+                            <label className='editLabels' htmlFor='location' aria-label='location name'>Location Name: </label>
                             <input
                                 type="text"
                                 name="location"
@@ -172,6 +174,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
                                 onChange={handleInputChange}
                                 placeholder="Location name"
                             />
+                            <label className='editLabels' htmlFor='address' aria-label='location address'>Location Address: </label>
                             <input
                                 type="text"
                                 name="address"
@@ -179,6 +182,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
                                 onChange={handleInputChange}
                                 placeholder="Street address"
                             />
+                            <label className='editLabels' htmlFor='city' aria-label='location city'>Location City: </label>
                             <input
                                 type="text"
                                 name="city"
@@ -186,6 +190,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
                                 onChange={handleInputChange}
                                 placeholder="City"
                             />
+                            <label className='editLabels' htmlFor='state' aria-label='location state'>Location State: </label>
                             <input
                                 type="text"
                                 name="state"
@@ -193,13 +198,15 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
                                 onChange={handleInputChange}
                                 placeholder="State"
                             />
+                            <label className='editLabels' htmlFor='zipCode' aria-label='location zipcode'>Location Zipcode: </label>
                             <input
                                 type="text"
                                 name="zipCode"
                                 value={formData.zipCode}
                                 onChange={handleInputChange}
                                 placeholder="Zip code"
-                            />
+                            />                          
+                             <label className='editLabels' htmlFor='phone' aria-label='location phone'>Location Phone: </label>
                             <input
                                 type="text"
                                 name="phone"
@@ -209,7 +216,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
                             />
                         </>
                     )}
-
+                    <label className='editLabels' htmlFor='website' aria-label='webiste link'>Website: </label>
                     <input
                         type="text"
                         name="website"
@@ -217,7 +224,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
                         onChange={handleInputChange}
                         placeholder="Link to the provider's site"
                     />
-
+                    <label className='editLabels' htmlFor='logo' aria-label='provider logo'>Link to Provider Logo: </label>
                     <input
                         type="text"
                         name="logo"
@@ -225,6 +232,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
                         onChange={handleInputChange}
                         placeholder="Link to the provider's logo"
                     />
+                    <label className='editLabels' htmlFor='spanish' aria-label='spanish speaker availability'>Spanish Speakers: </label>
                     <input
                         type="text"
                         name="spanish"
@@ -232,6 +240,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
                         onChange={handleInputChange}
                         placeholder="Spanish speakers?"
                     />
+                    <label className='editLabels' htmlFor='min_age' aria-label='minimum age served'>Minimum Age Served: </label>
                     <input
                         type="number"
                         name="min_age"
@@ -239,6 +248,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
                         onChange={handleInputChange}
                         placeholder="Min age served"
                     />
+                    <label className='editLabels' htmlFor='max_age' aria-label='maximum age served'>Maximum Age Served: </label>
                     <input
                         type="number"
                         name="max_age"
@@ -246,7 +256,38 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
                         onChange={handleInputChange}
                         placeholder="Max age served"
                     />
-
+                    <label className='editLabels' htmlFor='waitlist' aria-label='waitlist'>Waitlist Information: </label>
+                    <input
+                        type="text"
+                        name="waitlist"
+                        value={formData.waitlistTime}
+                        onChange={handleInputChange}
+                        placeholder="Waitlist? possible timeframe?"
+                    />
+                    <label className='editLabels' htmlFor='clinicServices' aria-label='in clinic service'>In-clinic services: </label>
+                    <input
+                        type="text"
+                        name="clinicServices"
+                        value={formData.in_clinic_services}
+                        onChange={handleInputChange}
+                        placeholder="In clinic services? Yes, no?"
+                    />
+                    <label className='editLabels' htmlFor='homeServices' aria-label='at home services'>Home Services: </label>
+                    <input
+                        type="text"
+                        name="homeServices"
+                        value={formData.at_home_services}
+                        onChange={handleInputChange}
+                        placeholder="Home services? Yes, no?"
+                    />
+                    <label className='editLabels' htmlFor='telehealthServices' aria-label='at home services'>Telehealth Services: </label>
+                    <input
+                        type="text"
+                        name="telehealthServices"
+                        value={formData.telehealth}
+                        onChange={handleInputChange}
+                        placeholder="Telehealth services? Yes, no?"
+                    />
                     <button onClick={toggleInsuranceModal} className='select-insurance-button'>
                         Select Insurance Coverage
                     </button>
