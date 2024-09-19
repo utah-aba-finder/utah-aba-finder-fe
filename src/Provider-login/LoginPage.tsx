@@ -140,7 +140,7 @@ export const LoginPage: React.FC = () => {
                     </form>
                 </div>
             ) : (
-                currentProvider && <ProviderEdit loggedInProvider={currentProvider} clearProviderData={clearProviderData}/>
+                currentProvider && <ProviderEdit loggedInProvider={currentProvider} clearProviderData={clearProviderData} />
             )}
         </div>
     );
