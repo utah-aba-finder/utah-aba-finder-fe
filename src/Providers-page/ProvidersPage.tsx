@@ -195,12 +195,12 @@ const ProvidersPage: React.FC = () => {
 
     const filteredResults = mappedResults.filter(provider =>
       (!selectedService || (selectedService === 'telehealth' && provider.telehealth_services?.toLowerCase() === 'yes') ||
-      (selectedService === 'at_home' && provider.at_home_services?.toLowerCase() === 'yes') ||
-      (selectedService === 'in_clinic' && provider.in_clinic_services?.toLowerCase() === 'yes')) &&
+        (selectedService === 'at_home' && provider.at_home_services?.toLowerCase() === 'yes') ||
+        (selectedService === 'in_clinic' && provider.in_clinic_services?.toLowerCase() === 'yes')) &&
       (!selectedWaitList || (selectedWaitList === '6 Months or Less' && (provider.waitlist ? parseInt(provider.waitlist, 10) <= 6 : false)) ||
-      (selectedWaitList === 'no' && provider.waitlist?.toLowerCase() === 'no')) 
+        (selectedWaitList === 'no' && provider.waitlist?.toLowerCase() === 'no'))
     );
-    
+
 
     setFilteredProviders(filteredResults);
     setCurrentPage(1);
@@ -256,26 +256,28 @@ const ProvidersPage: React.FC = () => {
 
     if (provider.locations.length > 1) {
       return (
-        <select
-          className={`view-on-map-dropdown ${!isAddressAvailable ? 'disabled' : ''}`}
-          id='view-on-map-dropdown'
-          aria-label="View On Map Dropdown"
-          onChange={(e) => {
-            const index = e.target.value;
-            const location = provider.locations[parseInt(index)];
-            const fullAddress = `${location.address_1 || ''} ${location.address_2 || ''}, ${location.city || ''}, ${location.state || ''} ${location.zip || ''}`.trim();
-            handleViewOnMapClick(fullAddress);
-          }}
-          defaultValue=""
-          disabled={!isAddressAvailable}
-        >
-          <option value="" disabled>Select Location to View on Map</option>
-          {provider.locations.map((location, index) => (
-            <option key={index} value={index}>
-              {location.name} - {location.address_1 || ''}, {location.city}, {location.state} {location.zip}
-            </option>
-          ))}
-        </select>
+        <div className="view-on-map-dropdown-container">
+          <select
+            className={`view-on-map-dropdown ${!isAddressAvailable ? 'disabled' : ''}`}
+            id='view-on-map-dropdown'
+            aria-label="View On Map Dropdown"
+            onChange={(e) => {
+              const index = e.target.value;
+              const location = provider.locations[parseInt(index)];
+              const fullAddress = `${location.address_1 || ''} ${location.address_2 || ''}, ${location.city || ''}, ${location.state || ''} ${location.zip || ''}`.trim();
+              handleViewOnMapClick(fullAddress);
+            }}
+            defaultValue=""
+            disabled={!isAddressAvailable}
+          >
+            <option value="" disabled>Select Location to View on Map</option>
+            {provider.locations.map((location, index) => (
+              <option key={index} value={index}>
+                {location.name} - {location.address_1 || ''}, {location.city}, {location.state} {location.zip}
+              </option>
+            ))}
+          </select>
+        </div>
       );
     }
     return (
@@ -325,24 +327,24 @@ const ProvidersPage: React.FC = () => {
       />
 
       <section className="searched-provider-map-locations-list-section">
-      {isLoading && (
+        {isLoading && (
           <div className="loading-container">
-            <img src={gearImage} alt="Loading..." className="loading-gear"/>
+            <img src={gearImage} alt="Loading..." className="loading-gear" />
             <p>Loading providers...</p>
           </div>
         )}
         {!isLoading && showError && <div className='error-message'>{showError}</div>}
         {!isLoading && !showError && (
-        <div className="provider-cards-grid">
-          {paginatedProviders.map((provider, index) => (
-            <ProviderCard
-              key={index}
-              provider={provider}
-              onViewDetails={handleProviderCardClick}
-              renderViewOnMapButton={renderViewOnMapButton}
-            />
-          ))}
-        </div>
+          <div className="provider-cards-grid">
+            {paginatedProviders.map((provider, index) => (
+              <ProviderCard
+                key={index}
+                provider={provider}
+                onViewDetails={handleProviderCardClick}
+                renderViewOnMapButton={renderViewOnMapButton}
+              />
+            ))}
+          </div>
         )}
       </section>
 
