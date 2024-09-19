@@ -190,7 +190,7 @@
     cursor: pointer;
     transition: background-color 0.3s, transform 0.3s;
     appearance: none;
-    max-width: 200px;
+    max-width: 250px;
     justify-content: center;
     /* Set a maximum width */
     text-overflow: ellipsis;
@@ -205,7 +205,7 @@
 .view-on-map-dropdown-container {
     position: relative;
     /* Ensure dropdown's position is relative */
-    width: 100%;
+    width: 90%;
     text-align: center;
     border: none;
     border-radius: 0.25rem;
@@ -228,7 +228,7 @@
     content: "\25BC";
     /* Unicode for downward arrow */
     position: absolute;
-    right: 1rem;
+    right: .4rem;
     /* Adjust to control how far to the right */
     top: 50%;
     transform: translateY(-50%);
@@ -275,6 +275,14 @@
     color: #555555;
 }
 
+.view-on-map-dropdown-container:hover .view-on-map-dropdown {
+    color: #555555; /* Change text color when hovering anywhere in the container */
+}
+
+.view-on-map-dropdown-container:hover::after {
+    color: #555555; /* Change arrow color on hover */
+}
+
 .view-on-map-dropdown:hover {
     color: #555555;
 }
@@ -319,9 +327,6 @@
 
 }
 
-.view-on-map-dropdown.disabled {
-    pointer-events: none;
-}
 
 
 @media (min-width: 1262px) {
@@ -342,9 +347,7 @@
         width: auto;
     }
 
-    .view-on-map-dropdown {
-        width: auto;
-    }
+   
 
 }
 
@@ -384,20 +387,22 @@
         max-height: 18.5rem;
     }
 
-    .view-on-map-dropdown-container select option {
-        display: none;
-    }
-
-    .view-on-map-dropdown-container select option:first-child {
-        display: block;
-    }
-
-    .view-on-map-dropdown-container select option::after {
-        content: 'Select Location to View on Map';
+    .view-on-map-dropdown {
+        max-width: 200px; /* Increase the max width for mobile */
+        width: 90%;
+        text-overflow: hidden;
+         /* Make the dropdown take up the full width of its container */
     }
 
 
+    .view-on-map-dropdown-container {
+        max-width: 144px;
+         /* Make the container match the dropdown width */
+    }
 
+    
+
+    
 
     .map {
         padding-left: .15rem;
@@ -450,8 +455,8 @@
     }
 
 
-    .view-on-map-dropdown-container {
-        width: 120%;
+    .view-on-map-dropdown {
+        width: auto;
     }
 
     .provider-card-buttons {
