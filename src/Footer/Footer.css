@@ -5,6 +5,7 @@
     width: 100%;
     background-color: rgb(255, 255, 255);
     font-size: 0.8rem;
+    margin-top: auto;
 }
 
 @media (max-width:540px) {
@@ -12,5 +13,6 @@
         font-size: 0.4rem;
         padding-top: 2rem;
         padding-bottom: 2rem;
+        margin-top: auto;
     }
 }
