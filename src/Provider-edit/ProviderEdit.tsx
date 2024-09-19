@@ -9,7 +9,7 @@ import { useAuth } from '../Provider-login/AuthProvider';
 
 interface ProviderEditProps {
     loggedInProvider: MockProviderData | null;
-    clearProviderData: () => void; 
+    clearProviderData: () => void;
 }
 
 const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProviderData }) => {
@@ -22,6 +22,12 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
     const [showError, setShowError] = useState('');
     const navigate = useNavigate();
     const { setToken } = useAuth();
+    const [isSaving, setIsSaving] = useState(false);
+
+    const handleSave = () => {
+        setIsSaving(true);
+    }
+
 
     const [formData, setFormData] = useState({
         logo: '',
@@ -83,6 +89,43 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
             setShowError('Failed to load provider data. Please try again later.');
         }
     }, [loggedInProvider]);
+
+
+    useEffect(() => {
+        if (isSaving) {
+            const updateProviderData = async () => {
+                try {
+                    const response = await fetch(`https://your-api-url.com/providers/${loggedInProvider?.id}`, {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`
+                        },
+                        body: JSON.stringify({
+                            provider: formData
+                        })
+                    });
+
+                    const responseData = await response.json();
+
+                    if (!response.ok) {
+                        console.log('error data:', responseData);
+                        throw new Error('Failed to update provider data');
+                    }
+                    console.log('response data:', responseData);
+
+                    setShowError('');
+                } catch (error) {
+                    console.log('failed to update provider data:', error);
+                    setShowError('Failed to save provider data. Please try again later.');
+                } finally {
+                    setIsSaving(false);
+                }
+            };
+
+            updateProviderData();
+        }
+    }, [isSaving, formData, loggedInProvider?.id]);
 
     const handleLocationChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const locationIndex = parseInt(e.target.value);
@@ -158,7 +201,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
 
                     {selectedLocation !== null && (
                         <>
-                        <label className='editLabels' htmlFor='name' aria-label='provider name'>Provider Name: </label>
+                            <label className='editLabels' htmlFor='name' aria-label='provider name'>Provider Name: </label>
                             <input
                                 type="text"
                                 name="name"
@@ -205,8 +248,8 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
                                 value={formData.zipCode}
                                 onChange={handleInputChange}
                                 placeholder="Zip code"
-                            />                          
-                             <label className='editLabels' htmlFor='phone' aria-label='location phone'>Location Phone: </label>
+                            />
+                            <label className='editLabels' htmlFor='phone' aria-label='location phone'>Location Phone: </label>
                             <input
                                 type="text"
                                 name="phone"
@@ -315,10 +358,11 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
                     )}
                     <div className='buttons-section'>
                         <button className='cancel-button'>Cancel</button>
-                        <button className='save-button'>Save</button>
+                        <button className='save-button' onClick={handleSave}>Save</button>
                     </div>
                 </div>
-                )}
+
+            )}
         </div>
     );
 };
