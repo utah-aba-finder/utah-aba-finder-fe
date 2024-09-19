@@ -4,10 +4,15 @@
 ## Abstract
 A website designed to help parents locate autism treatment providers in Utah. Users can search for and filter providers by county, insurance, and availability of Spanish-speaking services, using a Google Maps embedded API. The site will also feature autism screening tools, such as the M-CHAT and the CAST, along with educational resources about autism. Users can contact the admin via email using EmailJS, and providers will have the ability to log in and edit their information as needed.
 
+For Part 2 of the project, providers can log in using their assigned provider ID to view and manage their information. The functionality to allow providers to edit and update their details is currently in development. We successfully implemented Cypress for end-to-end testing, ensuring that our project functions correctly and meets its intended goals. We also prioritized accessibility by using Lighthouse to test and optimize each page, ensuring a positive user experience for all visitors.
+
 [Check out the deployed website HERE](https://utahabalocator.com/)
 
-## Preview
+## Preview of the website
 ![preview](https://github.com/user-attachments/assets/691968bb-1a09-48d5-b178-0a8427d6326e)
+
+## Preview of the login/edit page
+![part2](https://github.com/user-attachments/assets/be15274a-08a6-4221-bd2b-69e2bd1340ff)
 
 
 ## Screenshots
@@ -35,6 +40,18 @@ A website designed to help parents locate autism treatment providers in Utah. Us
 ![Screenshot 2024-09-04 at 4 43 52 PM](https://github.com/user-attachments/assets/82b05a46-1a7c-4866-a5ca-2b091967f385)
 ![Screenshot 2024-09-04 at 4 44 06 PM](https://github.com/user-attachments/assets/20c13b14-e6f2-4c8e-b227-3b38a50bcb86)
 
+## Login / Edit Page
+![Screenshot 2024-09-19 at 3 35 38 PM](https://github.com/user-attachments/assets/305a8c03-b7a8-4953-ac0f-6a60457b9164)
+![Screenshot 2024-09-19 at 3 32 44 PM](https://github.com/user-attachments/assets/917a72f1-e036-441f-b2f9-df97071bec5a)
+
+## Accessibility using lighthouse
+![Screenshot 2024-09-19 at 3 47 29 PM](https://github.com/user-attachments/assets/afc70a5b-0f0f-4cf2-9a01-6b8b36a4029e)
+![Screenshot 2024-09-19 at 3 47 01 PM](https://github.com/user-attachments/assets/9a9dad19-1115-4e95-8651-eea41b79e7a1)
+![Screenshot 2024-09-19 at 3 46 30 PM](https://github.com/user-attachments/assets/f24cfaf8-2ba4-43d7-a520-8c15250094ad)
+
+## End to End testing with Cypress
+![screenshot_2024-09-19_at_5 19 42___pm](https://github.com/user-attachments/assets/a2a0720c-6eee-4c07-b2ed-28863cf7c435)
+![screenshot_2024-09-19_at_5 20 57___pm](https://github.com/user-attachments/assets/068a4d19-972c-4091-9d53-6215dfaf053b)
 
 ### Mobile View of the Website
 ![Screenshot 2024-09-04 at 4 56 11 PM](https://github.com/user-attachments/assets/cc26d8fc-5e65-40eb-b55e-875c2fa26ea4)
@@ -64,6 +81,7 @@ Used Figma for pre-planning. [here](https://www.figma.com/design/WvGbb3HtesLKsSk
   
 ## Challenges
   * Learning and integrating TypeScript with React was a significant challenge.
+  * Implementing the login and edit features, while managing backend authorization, was very challenging.
   
 ## Wins
   * We were able to sccuessfully integrate Typescript into the project
