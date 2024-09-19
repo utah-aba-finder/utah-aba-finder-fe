@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import "./ProviderEdit.css";
 import InsuranceModal from './InsuranceModal';
 import CountiesModal from './CountiesModal';
-import { Insurance, ProviderAttributes, CountiesServed, MockProviderData } from '@/Utility/Types';
+import { Insurance, CountiesServed, MockProviderData } from '@/Utility/Types';
 import gearImage from '../Assets/Gear@1x-0.5s-200px-200px.svg';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../Provider-login/AuthProvider';
@@ -46,10 +46,10 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider }) => {
         setToken(null);
         sessionStorage.removeItem('authToken');
         navigate('/login');
+
     };
 
     useEffect(() => {
-        console.log('CURRENT PROVIDER DATA:', loggedInProvider?.attributes)
         if (loggedInProvider) {
             setShowError('');
             setFormData({
@@ -78,11 +78,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider }) => {
             setIsLoading(false);
             setShowError('Failed to load provider data. Please try again later.');
         }
-        console.log('this is the logged in provider line 80', loggedInProvider)
-
     }, [loggedInProvider]);
-
-    console.log('this is the logged in provider', loggedInProvider)
 
     const handleLocationChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const locationIndex = parseInt(e.target.value);
@@ -128,7 +124,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider }) => {
     }
 
     return (
-        <div>
+        <div className='provider-edit-container'>
             <div className='user-info-section'>
                 <h1>Hello, {loggedInProvider?.attributes.name}</h1>
                 <p>Last edited: </p>
@@ -251,6 +247,10 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider }) => {
                             providerCounties={loggedInProvider?.attributes.counties_served ?? []}
                         />
                     )}
+                    <div className='buttons-section'>
+                        <button className='cancel-button'>Cancel</button>
+                        <button className='save-button'>Save</button>
+                    </div>
                 </div>
             )}
         </div>

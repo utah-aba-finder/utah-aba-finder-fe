@@ -5,12 +5,14 @@ interface AuthContextType {
   setToken: (token: string | null) => void;
   isAuthenticated: boolean;
   loggedInProvider: any;
+  setLoggedInProvider: (provider: any) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [token, setTokenState] = useState<string | null>(sessionStorage.getItem('authToken'));
+  const [loggedInProvider, setLoggedInProvider] = useState<any>(null);
 
   const setToken = useCallback((newToken: string | null) => {
     setTokenState(newToken);
@@ -22,10 +24,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const contextValue: AuthContextType = {
-    loggedInProvider: null,
     token,
     setToken,
     isAuthenticated: !!token,
+    loggedInProvider,
+    setLoggedInProvider,
   };
 
   return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>;
