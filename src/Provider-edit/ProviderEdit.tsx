@@ -9,9 +9,10 @@ import { useAuth } from '../Provider-login/AuthProvider';
 
 interface ProviderEditProps {
     loggedInProvider: MockProviderData | null;
+    clearProviderData: () => void; 
 }
 
-const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider }) => {
+const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProviderData }) => {
     const [isInsuranceModalOpen, setIsInsuranceModalOpen] = useState(false);
     const [isCountiesModalOpen, setIsCountiesModalOpen] = useState(false);
     const [selectedInsurance, setSelectedInsurance] = useState<Insurance[]>([]);
@@ -43,10 +44,13 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider }) => {
     });
 
     const handleLogout = () => {
+        console.log('TOKEN STATUS', setToken(null))
         setToken(null);
+        clearProviderData();
         sessionStorage.removeItem('authToken');
+        localStorage.removeItem('authToken')
         navigate('/login');
-
+        
     };
 
     useEffect(() => {
@@ -126,7 +130,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider }) => {
     return (
         <div className='provider-edit-container'>
             <div className='user-info-section'>
-                <h1>Hello, {loggedInProvider?.attributes.name}</h1>
+                <h1>Welcome, {loggedInProvider?.attributes.name}</h1>
                 <p>Last edited: </p>
                 <button className='logoutButton' onClick={handleLogout}>Logout</button>
                 <p>For any questions to the admin, please use the contact page.</p>
@@ -221,6 +225,27 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider }) => {
                         onChange={handleInputChange}
                         placeholder="Link to the provider's logo"
                     />
+                    <input
+                        type="text"
+                        name="spanish"
+                        value={formData.spanishSpeakers}
+                        onChange={handleInputChange}
+                        placeholder="Spanish speakers?"
+                    />
+                    <input
+                        type="number"
+                        name="min_age"
+                        value={formData.min_age}
+                        onChange={handleInputChange}
+                        placeholder="Min age served"
+                    />
+                    <input
+                        type="number"
+                        name="max_age"
+                        value={formData.max_age}
+                        onChange={handleInputChange}
+                        placeholder="Max age served"
+                    />
 
                     <button onClick={toggleInsuranceModal} className='select-insurance-button'>
                         Select Insurance Coverage
@@ -252,7 +277,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider }) => {
                         <button className='save-button'>Save</button>
                     </div>
                 </div>
-            )}
+                )}
         </div>
     );
 };
