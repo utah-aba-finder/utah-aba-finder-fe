@@ -14,13 +14,19 @@ import { Signup } from '../Signup/Signup';
 import AboutUs from '../AboutUs/AboutUs';
 import ProviderEdit from '../Provider-edit/ProviderEdit';
 import { AuthProvider, useAuth } from '../Provider-login/AuthProvider';
-import { useEffect } from 'react';
+import { useState } from 'react';
 import ProtectedRoute from '../Provider-login/ProtectedRoute';
+import { MockProviderData } from '../Utility/Types';
 
 
 
 
 function App() {
+  const [loggedInProvider, setLoggedInProvider] = useState<MockProviderData | null>(null);
+
+  const clearProviderData = () => {
+    setLoggedInProvider(null);
+};
   return (
     <div className="App">
       <Header />
@@ -41,7 +47,7 @@ function App() {
                 path="/providerEdit"
                 element={
                   <ProtectedRoute>
-                    <ProviderEditWrapper />
+                    <ProviderEditWrapper clearProviderData={clearProviderData}/>
                   </ProtectedRoute>
                 }
               />
@@ -53,9 +59,9 @@ function App() {
     </div>
   );
 }
-function ProviderEditWrapper() {
+function ProviderEditWrapper({ clearProviderData }: { clearProviderData: () => void }) {
   const { loggedInProvider } = useAuth();
-  return <ProviderEdit loggedInProvider={loggedInProvider} />;
+  return <ProviderEdit loggedInProvider={loggedInProvider} clearProviderData={clearProviderData}/>;
 }
 
 export default App;

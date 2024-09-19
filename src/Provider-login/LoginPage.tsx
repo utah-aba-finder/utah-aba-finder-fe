@@ -68,6 +68,8 @@ export const LoginPage: React.FC = () => {
             const providerDetails = await fetchSingleProvider(providerId);
             setCurrentProvider(providerDetails);
             setIsLoggedIn(true);
+            setUsername('')
+            setPassword('')
         } catch (err) {
             console.error('Login error:', err);
             setError(err instanceof Error ? err.message : 'An unexpected error occurred');
@@ -91,7 +93,10 @@ export const LoginPage: React.FC = () => {
     }
 
     console.log('currentProvider from login page', currentProvider)
-
+    const clearProviderData = () => {
+        setIsLoggedIn(false);
+        setCurrentProvider(undefined);
+    };
     return (
         <div className='loginWrapper'>
             <ToastContainer />
@@ -135,7 +140,7 @@ export const LoginPage: React.FC = () => {
                     </form>
                 </div>
             ) : (
-                currentProvider && <ProviderEdit loggedInProvider={currentProvider} />
+                currentProvider && <ProviderEdit loggedInProvider={currentProvider} clearProviderData={clearProviderData}/>
             )}
         </div>
     );
