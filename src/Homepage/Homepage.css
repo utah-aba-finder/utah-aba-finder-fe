@@ -147,7 +147,7 @@
     white-space: nowrap;
     font-weight: 700;
     font-size: 1.1rem;
-    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8); 
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
 }
 
 @keyframes moveLeft {
@@ -171,18 +171,16 @@
         height: 4.5rem;
         margin-top: 0;
         padding: 0;
+        padding-bottom: 1rem;
     }
 
     .county-section-title {
         font-size: 0.7rem;
     }
 
-    .county-section-list-wrapper {
-        overflow: hidden;
-    }
 
     .county-section-list p {
-        font-size: 0.9rem;
+        font-size: 0.8rem;
         text-align: center;
         margin: 0;
     }
@@ -225,7 +223,7 @@
     background-color: rgb(10, 150, 94);
     cursor: pointer;
     text-decoration: none;
-    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5); 
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
     transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
 }
 
@@ -393,7 +391,7 @@
     font-weight: 500;
     cursor: pointer;
     text-decoration: none;
-    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5); 
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
     transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
 }
 
