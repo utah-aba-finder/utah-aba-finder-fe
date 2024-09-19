@@ -195,7 +195,7 @@
     }
 }
 
-@media (min-height: 393px) and (max-width: 852px) and (orientation: landscape) {
+@media (min-height: 393px) and (max-width: 1066px) and (orientation: landscape) {
 
     .loginImageText {
         bottom: 72%;
