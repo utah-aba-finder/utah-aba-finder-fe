@@ -192,19 +192,13 @@
     appearance: none;
     max-width: 250px;
     justify-content: center;
-    /* Set a maximum width */
     text-overflow: ellipsis;
-    /* Ensures text doesn't overflow */
     white-space: nowrap;
-    /* Keeps text on a single line */
     overflow: hidden;
-    /* Hide overflow */
-
 }
 
 .view-on-map-dropdown-container {
     position: relative;
-    /* Ensure dropdown's position is relative */
     width: 90%;
     text-align: center;
     border: none;
@@ -226,17 +220,13 @@
 
 .view-on-map-dropdown-container::after {
     content: "\25BC";
-    /* Unicode for downward arrow */
     position: absolute;
     right: .4rem;
-    /* Adjust to control how far to the right */
     top: 50%;
     transform: translateY(-50%);
-    /* Vertically center the arrow */
     color: #ffffff;
     pointer-events: none;
     font-size: .8rem;
-    /* Adjust arrow size */
 }
 
 
@@ -276,11 +266,11 @@
 }
 
 .view-on-map-dropdown-container:hover .view-on-map-dropdown {
-    color: #555555; /* Change text color when hovering anywhere in the container */
+    color: #555555; 
 }
 
 .view-on-map-dropdown-container:hover::after {
-    color: #555555; /* Change arrow color on hover */
+    color: #555555; 
 }
 
 .view-on-map-dropdown:hover {
@@ -327,8 +317,6 @@
 
 }
 
-
-
 @media (min-width: 1262px) {
     .provider-cards-grid {
         grid-template-columns: repeat(2, minmax(600px, 1fr));
@@ -346,9 +334,6 @@
     .searched-provider-card {
         width: auto;
     }
-
-   
-
 }
 
 @media (max-width: 767px) {
@@ -388,21 +373,14 @@
     }
 
     .view-on-map-dropdown {
-        max-width: 200px; /* Increase the max width for mobile */
+        max-width: 200px; 
         width: 90%;
         text-overflow: hidden;
-         /* Make the dropdown take up the full width of its container */
     }
-
 
     .view-on-map-dropdown-container {
         max-width: 144px;
-         /* Make the container match the dropdown width */
     }
-
-    
-
-    
 
     .map {
         padding-left: .15rem;
