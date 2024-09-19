@@ -58,11 +58,9 @@
 
 .provider-cards-grid {
     display: grid;
-    grid-template-columns: repeat(1, 1fr);
     gap: 1.6rem;
     max-width: 1250px;
     margin: 0 auto;
-    justify-items: center;
 }
 
 
@@ -124,15 +122,26 @@
     overflow: hidden;
     border-radius: 0.5em;
     background: rgb(208, 208, 208);
-    padding: .6rem;
     box-shadow: 0 1.5em 2.5em -0.5em rgba(0, 0, 0, 0.1);
     transition: transform 0.45s ease, background 0.45s ease;
     padding: 1.2rem;
     gap: 1em;
-    max-width: 600px;
-    max-height: 300px;
-    
+    box-sizing: border-box;
+    position: relative;
 }
+
+.searched-provider-card::before {
+    content: '';
+    position: absolute;
+    top: 5px;
+    bottom: 5px;
+    left: 5px;
+    right: 5px;
+    border: 1.5px solid white;
+    pointer-events: none;
+    border-radius: 0.5em;
+}
+
 
 .provider-logo {
     border-radius: 1em;
@@ -141,7 +150,6 @@
     justify-content: center;
     align-content: center;
     align-items: center;
-    margin-left: 5px;
 }
 
 .provider-card-buttons {
@@ -153,11 +161,12 @@
     padding-bottom: 0.2rem;
 }
 
+
 .searched-provider-card.multiple-locations .provider-card-buttons {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    width: 80%;
+
 }
 
 .view-details-button,
@@ -176,7 +185,21 @@
 }
 
 .view-on-map-dropdown {
-    width: 115%;
+    color: #ffffff;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.3s;
+    appearance: none;
+    max-width: 250px;
+    justify-content: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.view-on-map-dropdown-container {
+    position: relative;
+    width: 90%;
     text-align: center;
     border: none;
     border-radius: 0.25rem;
@@ -185,10 +208,27 @@
     font-size: 1rem;
     cursor: pointer;
     padding: 0.5rem;
+    overflow: hidden;
     box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
     transition: background-color 0.3s, transform 0.3s;
     margin-bottom: 0.5rem;
+    appearance: none;
+    max-width: 100%;
+    /* Limits the width to its container */
+    display: inline-block;
 }
+
+.view-on-map-dropdown-container::after {
+    content: "\25BC";
+    position: absolute;
+    right: .4rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #ffffff;
+    pointer-events: none;
+    font-size: .8rem;
+}
+
 
 .searched-provider-card:hover {
     background: #c4b56b;
@@ -216,12 +256,24 @@
 
 .view-details-button:hover,
 .view-on-map-button:hover,
-.view-on-map-dropdown:hover {
+.view-on-map-dropdown-container:hover {
     transform: translateY(-5px);
     box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
     cursor: pointer;
     transition: background-color 0.3s, transform 0.3s;
     background-color: #ffffff;
+    color: #555555;
+}
+
+.view-on-map-dropdown-container:hover .view-on-map-dropdown {
+    color: #555555; 
+}
+
+.view-on-map-dropdown-container:hover::after {
+    color: #555555; 
+}
+
+.view-on-map-dropdown:hover {
     color: #555555;
 }
 
@@ -250,21 +302,6 @@
     transform: translateY(-5px);
 }
 
-.view-on-map-dropdown {
-    border: none;
-    border-radius: 0.25rem;
-    background-color: #555555;
-    color: #ffffff;
-    font-size: 1rem;
-    cursor: pointer;
-    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
-    transition: background-color 0.3s, transform 0.3s;
-}
-
-.view-on-map-dropdown option {
-    background-color: white;
-    color: black;
-}
 
 .view-on-map-button.disabled,
 .view-on-map-dropdown.disabled {
@@ -280,23 +317,26 @@
 
 }
 
-.view-on-map-dropdown.disabled {
-    pointer-events: none;
-
-}
-
-@media (max-width: 1280px) {
-
-}
-
 @media (min-width: 1262px) {
     .provider-cards-grid {
         grid-template-columns: repeat(2, minmax(600px, 1fr));
-        justify-content: space-between;
+        justify-content: center;
     }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1261px) {
+    .provider-cards-grid {
+        justify-content: center;
+        margin-left: .5rem;
+        margin-right: .5rem;
+    }
+
+    .searched-provider-card {
+        width: auto;
+    }
+}
+
+@media (max-width: 767px) {
     .providers-banner-title {
         font-size: 2rem;
     }
@@ -311,11 +351,6 @@
         margin-left: 2px;
     }
 
-    .searched-provider-card {
-        margin-left: 1em;
-        margin-right: 1em;
-        
-    }
 
     .searched-provider-card h3 {
         font-size: 1.3em;
@@ -338,7 +373,13 @@
     }
 
     .view-on-map-dropdown {
-        width: 94%;
+        max-width: 200px; 
+        width: 90%;
+        text-overflow: hidden;
+    }
+
+    .view-on-map-dropdown-container {
+        max-width: 144px;
     }
 
     .map {
@@ -378,7 +419,6 @@
     .pagination-button {
         font-size: .9em;
         font-weight: 600;
-
     }
 }
 
@@ -390,6 +430,11 @@
 
     .title-and-info {
         align-items: center;
+    }
+
+
+    .view-on-map-dropdown {
+        width: auto;
     }
 
     .provider-card-buttons {
