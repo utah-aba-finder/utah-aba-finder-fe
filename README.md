@@ -50,6 +50,8 @@ For Part 2 of the project, providers can log in using their assigned provider ID
 ![Screenshot 2024-09-19 at 3 46 30 PM](https://github.com/user-attachments/assets/f24cfaf8-2ba4-43d7-a520-8c15250094ad)
 
 ## End to End testing with Cypress
+![screenshot_2024-09-19_at_5 19 42___pm](https://github.com/user-attachments/assets/a2a0720c-6eee-4c07-b2ed-28863cf7c435)
+![screenshot_2024-09-19_at_5 20 57___pm](https://github.com/user-attachments/assets/068a4d19-972c-4091-9d53-6215dfaf053b)
 
 ### Mobile View of the Website
 ![Screenshot 2024-09-04 at 4 56 11 PM](https://github.com/user-attachments/assets/cc26d8fc-5e65-40eb-b55e-875c2fa26ea4)
