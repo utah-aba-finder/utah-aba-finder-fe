@@ -1,0 +1,42 @@
+{
+    "data": [
+        {
+            "id": 1,
+            "type": "provider",
+            "attributes": {
+                "name": "A BridgeCare ABA",
+                "locations": [
+                    {
+                        "name": "https://www.bridgecareaba.com/locations/aba-therapy-in-utah",
+                        "address_1": null,
+                        "address_2": null,
+                        "city": null,
+                        "state": null,
+                        "zip": null,
+                        "phone": "801-435-8088"
+                    }
+                ],
+                "website": "https://www.bridgecareaba.com/locations/utah",
+                "email": "info@bridgecareaba.com",
+                "cost": "N/A",
+                "insurance": [
+                    {
+                        "name": "Contact us"
+                    }
+                ],
+                "counties_served": [
+                    {
+                        "county": "Salt Lake, Utah, Davis, Weber"
+                    }
+                ],
+                "min_age": 2.0,
+                "max_age": 16.0,
+                "waitlist": "No",
+                "telehealth_services": "Yes",
+                "spanish_speakers": "Yes",
+                "at_home_services": null,
+                "in_clinic_services": null
+            }
+        }
+    ]
+}

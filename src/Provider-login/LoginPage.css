@@ -102,12 +102,10 @@
 .eyeButton {
     position: absolute;
     right: 1%;
-    top: 2;
     background-color: transparent;
     border: none;
-    width: fit-content;
+    width: auto;
     cursor: pointer;
-    padding: 0;
 }
 
 .eye {

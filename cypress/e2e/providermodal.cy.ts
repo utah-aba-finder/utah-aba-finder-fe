@@ -1,6 +1,6 @@
 describe('Providers Page', () => {
   beforeEach(() => {
-    cy.setUpProvidersIntercepts();
+    // cy.setUpProvidersIntercepts();
     cy.visit('http://localhost:3000/providers');
   })
   it('displays the first Providers details and be able to click on View Details to bring up the Providers Modal', () => {
