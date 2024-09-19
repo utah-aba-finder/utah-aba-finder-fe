@@ -9,6 +9,7 @@ import { toast } from 'react-toastify';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import gearImage from '../Assets/Gear@1x-0.5s-200px-200px.svg';
+import { fetchSingleProvider } from '../Utility/ApiCall';
 
 
 
@@ -68,7 +69,10 @@ export const LoginPage: React.FC = () => {
         setToken(token);
 
         const data = await response.json();
-        setCurrentProvider(data.data);
+        const providerId = data.data.id || data.id || data.provider_id;
+        console.log('Provider ID:', providerId)
+        const providerDetails = await fetchSingleProvider(providerId)
+        setCurrentProvider(providerDetails);
         navigate('/providerEdit'); 
     } catch (err) {
         console.error('Login error:', err);
