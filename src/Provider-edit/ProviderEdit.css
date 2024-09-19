@@ -19,6 +19,10 @@
     border-radius: 5px;
 }
 
+.editLabels {
+    color: rgb(255, 64, 0)
+}
+
 .provider-edit-form input {
     width: 30%;
     padding: 10px;
