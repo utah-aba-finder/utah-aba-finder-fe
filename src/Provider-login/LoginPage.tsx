@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import './LoginPage.css'
 import { User, Lock, Eye, EyeOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { ProviderAttributes } from '../Utility/Types';
+import { MockProviderData, ProviderAttributes } from '../Utility/Types';
 import ProviderEdit from '../Provider-edit/ProviderEdit'
 import { useAuth } from './AuthProvider';
 import { toast } from 'react-toastify';
@@ -18,7 +18,7 @@ export const LoginPage: React.FC = () => {
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false)
     const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [currentProvider, setCurrentProvider] = useState<ProviderAttributes | undefined>();
+    const [currentProvider, setCurrentProvider] = useState<MockProviderData | undefined>();
     const { setToken } = useAuth();
     const navigate = useNavigate();
 
@@ -63,10 +63,13 @@ export const LoginPage: React.FC = () => {
             setToken(token);
 
             const data = await response.json();
-            const providerId = data.data.id || data.id || data.provider_id;
+            console.log('LINE 66:', data)
+            const providerId = data.data.id;
             const providerDetails = await fetchSingleProvider(providerId);
             setCurrentProvider(providerDetails);
             setIsLoggedIn(true);
+            setUsername('')
+            setPassword('')
         } catch (err) {
             console.error('Login error:', err);
             setError(err instanceof Error ? err.message : 'An unexpected error occurred');
@@ -90,7 +93,10 @@ export const LoginPage: React.FC = () => {
     }
 
     console.log('currentProvider from login page', currentProvider)
-
+    const clearProviderData = () => {
+        setIsLoggedIn(false);
+        setCurrentProvider(undefined);
+    };
     return (
         <div className='loginWrapper'>
             <ToastContainer />
@@ -134,7 +140,7 @@ export const LoginPage: React.FC = () => {
                     </form>
                 </div>
             ) : (
-                currentProvider && <ProviderEdit loggedInProvider={currentProvider} />
+                currentProvider && <ProviderEdit loggedInProvider={currentProvider} clearProviderData={clearProviderData}/>
             )}
         </div>
     );

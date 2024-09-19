@@ -1,17 +1,18 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import "./ProviderEdit.css";
 import InsuranceModal from './InsuranceModal';
 import CountiesModal from './CountiesModal';
-import { Insurance, ProviderAttributes, CountiesServed } from '@/Utility/Types';
+import { Insurance, CountiesServed, MockProviderData } from '@/Utility/Types';
 import gearImage from '../Assets/Gear@1x-0.5s-200px-200px.svg';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../Provider-login/AuthProvider';
 
 interface ProviderEditProps {
-    loggedInProvider: ProviderAttributes | null;
+    loggedInProvider: MockProviderData | null;
+    clearProviderData: () => void; 
 }
 
-const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider }) => {
+const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProviderData }) => {
     const [isInsuranceModalOpen, setIsInsuranceModalOpen] = useState(false);
     const [isCountiesModalOpen, setIsCountiesModalOpen] = useState(false);
     const [selectedInsurance, setSelectedInsurance] = useState<Insurance[]>([]);
@@ -43,35 +44,39 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider }) => {
     });
 
     const handleLogout = () => {
+        console.log('TOKEN STATUS', setToken(null))
         setToken(null);
+        clearProviderData();
         sessionStorage.removeItem('authToken');
+        localStorage.removeItem('authToken')
         navigate('/login');
+        
     };
 
     useEffect(() => {
-        if (loggedInProvider && loggedInProvider.locations?.length) {
+        if (loggedInProvider) {
             setShowError('');
             setFormData({
-                logo: loggedInProvider.logo ?? '',
-                name: loggedInProvider.name ?? '',
-                website: loggedInProvider.website ?? '',
-                location: loggedInProvider.locations[0].name ?? '',
-                address: loggedInProvider.locations[0].address_1 ?? '',
-                city: loggedInProvider.locations[0].city ?? '',
-                state: loggedInProvider.locations[0].state ?? '',
-                zipCode: loggedInProvider.locations[0].zip ?? '',
-                phone: loggedInProvider.locations[0].phone ?? '',
-                spanishSpeakers: loggedInProvider.spanish_speakers ?? '',
-                serviceType: loggedInProvider.in_clinic_services ?? '',
-                waitlistTime: loggedInProvider.waitlist ?? '',
+                logo: loggedInProvider.attributes.logo ?? '',
+                name: loggedInProvider.attributes.name ?? '',
+                website: loggedInProvider.attributes.website ?? '',
+                location: loggedInProvider.attributes.locations[0].name ?? '',
+                address: loggedInProvider.attributes.locations[0].address_1 ?? '',
+                city: loggedInProvider.attributes.locations[0].city ?? '',
+                state: loggedInProvider.attributes.locations[0].state ?? '',
+                zipCode: loggedInProvider.attributes.locations[0].zip ?? '',
+                phone: loggedInProvider.attributes.locations[0].phone ?? '',
+                spanishSpeakers: loggedInProvider.attributes.spanish_speakers ?? '',
+                serviceType: loggedInProvider.attributes.in_clinic_services ?? '',
+                waitlistTime: loggedInProvider.attributes.waitlist ?? '',
                 waitlistFrequency: '',
-                in_clinic_services: loggedInProvider.in_clinic_services ?? '',
-                at_home_services: loggedInProvider.at_home_services ?? '',
-                min_age: loggedInProvider.min_age ?? 0,
-                max_age: loggedInProvider.max_age ?? 0,
+                in_clinic_services: loggedInProvider.attributes.in_clinic_services ?? '',
+                at_home_services: loggedInProvider.attributes.at_home_services ?? '',
+                min_age: loggedInProvider.attributes.min_age ?? 0,
+                max_age: loggedInProvider.attributes.max_age ?? 0,
             });
-            setSelectedInsurance(loggedInProvider.insurance ?? []);
-            setSelectedCounties(loggedInProvider.counties_served ?? []);
+            setSelectedInsurance(loggedInProvider.attributes.insurance ?? []);
+            setSelectedCounties(loggedInProvider.attributes.counties_served ?? []);
             setIsLoading(false);
         } else {
             setIsLoading(false);
@@ -79,14 +84,12 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider }) => {
         }
     }, [loggedInProvider]);
 
-    console.log('this is the logged in provider', loggedInProvider)
-
     const handleLocationChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const locationIndex = parseInt(e.target.value);
         setSelectedLocation(locationIndex);
 
-        if (loggedInProvider && loggedInProvider.locations[locationIndex]) {
-            const selectedLoc = loggedInProvider.locations[locationIndex];
+        if (loggedInProvider && loggedInProvider.attributes.locations[locationIndex]) {
+            const selectedLoc = loggedInProvider.attributes.locations[locationIndex];
             setFormData(prevFormData => ({
                 ...prevFormData,
                 location: selectedLoc.name ?? '',
@@ -125,9 +128,9 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider }) => {
     }
 
     return (
-        <div>
+        <div className='provider-edit-container'>
             <div className='user-info-section'>
-                <h1>Hello, {loggedInProvider?.name}</h1>
+                <h1>Welcome, {loggedInProvider?.attributes.name}</h1>
                 <p>Last edited: </p>
                 <button className='logoutButton' onClick={handleLogout}>Logout</button>
                 <p>For any questions to the admin, please use the contact page.</p>
@@ -146,7 +149,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider }) => {
                         value={selectedLocation !== null ? selectedLocation : ''}
                     >
                         <option value="">Select location</option>
-                        {loggedInProvider?.locations?.map((location, index) => (
+                        {loggedInProvider?.attributes.locations?.map((location, index) => (
                             <option key={index} value={index}>
                                 {location.name}
                             </option>
@@ -222,6 +225,27 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider }) => {
                         onChange={handleInputChange}
                         placeholder="Link to the provider's logo"
                     />
+                    <input
+                        type="text"
+                        name="spanish"
+                        value={formData.spanishSpeakers}
+                        onChange={handleInputChange}
+                        placeholder="Spanish speakers?"
+                    />
+                    <input
+                        type="number"
+                        name="min_age"
+                        value={formData.min_age}
+                        onChange={handleInputChange}
+                        placeholder="Min age served"
+                    />
+                    <input
+                        type="number"
+                        name="max_age"
+                        value={formData.max_age}
+                        onChange={handleInputChange}
+                        placeholder="Max age served"
+                    />
 
                     <button onClick={toggleInsuranceModal} className='select-insurance-button'>
                         Select Insurance Coverage
@@ -232,7 +256,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider }) => {
                             onClose={toggleInsuranceModal}
                             selectedInsurance={selectedInsurance}
                             setSelectedInsurance={setSelectedInsurance}
-                            providerInsurance={loggedInProvider?.insurance ?? []}
+                            providerInsurance={loggedInProvider?.attributes.insurance ?? []}
                         />
                     )}
 
@@ -245,11 +269,15 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider }) => {
                             onClose={toggleCountiesModal}
                             selectedCounties={selectedCounties}
                             setSelectedCounties={setSelectedCounties}
-                            providerCounties={loggedInProvider?.counties_served ?? []}
+                            providerCounties={loggedInProvider?.attributes.counties_served ?? []}
                         />
                     )}
+                    <div className='buttons-section'>
+                        <button className='cancel-button'>Cancel</button>
+                        <button className='save-button'>Save</button>
+                    </div>
                 </div>
-            )}
+                )}
         </div>
     );
 };
