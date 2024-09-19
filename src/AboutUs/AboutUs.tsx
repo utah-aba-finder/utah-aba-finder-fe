@@ -26,29 +26,29 @@ const AboutUs: React.FC = () => {
             </div>
 
             <div className="about-us-content">
-                <h2>About Utah ABA Locator</h2>
+                <h1>About Utah ABA Locator</h1>
                 <p>Utah ABA Locator is an innovative application designed to connect parents with Applied Behavior Analysis (ABA) providers tailored to their unique needs and goals. Our team of passionate full-stack developers created this platform with a deep understanding of the challenges faced by families seeking ABA services in Utah.</p>
 
-                <h2>Our Story</h2>
+                <h1>Our Story</h1>
                 <p>One of our team members, a parent of Autistic children, experienced firsthand the frustration of navigating complex healthcare systems to find suitable ABA providers. This personal journey sparked our mission to simplify the process for families across Utah.</p>
 
-                <h2>Our Purpose</h2>
+                <h1>Our Purpose</h1>
                 <p>We aim to empower parents by providing a comprehensive directory of ABA providers, searchable through various criteria. Our platform allows users to connect directly with providers via contact information or website links, bypassing the often time-consuming process of relying solely on insurance recommendations.</p>
 
-                <h2>Why Choose Utah ABA Locator?</h2>
+                <h1>Why Choose Utah ABA Locator?</h1>
                 <p>While Google searches can be helpful, they may not always yield the most relevant local results. Our application is specifically designed to streamline your search for ABA services in Utah, saving you valuable time and effort.</p>
 
-                <h2>Important Note</h2>
+                <h1>Important Note</h1>
                 <p>We are not medical professionals. While we strive to provide accurate information, please consult qualified healthcare experts for personalized advice. If you encounter any inaccuracies or misleading content, we appreciate your feedback and will promptly address any issues.</p>
 
-                <h2>Get in Touch</h2>
+                <h1>Get in Touch</h1>
                 <p>Have questions or concerns? We'd love to hear from you! <Link to="/contact" className="about-us-link">Click here</Link> to contact us directly.</p>
             </div>
 
             <div className="about-us-portfolio">
 
                 <div className="front-end-container card">
-                    <h1 className="front-end-title">Front End</h1>
+                    <h2 className="front-end-title">Front End</h2>
 
                     <div className="profile-card">
                         <img src={jordanPic} alt="jordan" className="profile-icon" />
@@ -102,7 +102,7 @@ const AboutUs: React.FC = () => {
                 <div className="divider"></div>
 
                 <div className="back-end-container card">
-                    <h1 className="back-end-title">Back End</h1>
+                    <h2 className="back-end-title">Back End</h2>
 
                     <div className="profile-card">
                         <img src={smileIcon} alt="Smile" className="profile-icon" />

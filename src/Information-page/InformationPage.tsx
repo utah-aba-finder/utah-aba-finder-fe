@@ -26,19 +26,19 @@ class InformationPage extends Component<Props, State> {
                     </section>
                     <section className='info-content-section3'>
                         <h2 className='info-content-title'>Treatments for ASD can include:</h2>
-                        <ul>
+                        <ul className='spaced-list'>
                             <li><strong>Early intervention:</strong> Research suggests that early intervention, especially during preschool years, can have a significant positive impact on symptoms and later skills.</li>
-                            <br />
+                          
                             <li><strong>Behavioral therapies:</strong> These include applied behavior analysis (ABA), behavioral management therapy, and cognitive behavior therapy.</li>
-                            <br />
+                            
                             <li><strong>Educational therapies:</strong> These can include school-based therapies and special symbols that help children learn to communicate.</li>
-                            <br />
+                            
                             <li><strong>Occupational therapy:</strong> This can help children learn life skills like dressing themselves, feeding, bathing, and relating to others.</li>
-                            <br />
+                           
                             <li><strong>Sensory integration therapy:</strong> This can help children learn to cope with sensory information that might upset them, like bright lights, certain sounds, or being touched.</li>
-                            <br />
+                            
                             <li><strong>Other therapies:</strong> These can include physical therapy, speech-language therapy, joint attention therapy, and nutritional therapy.</li>
-                            <br />
+                            
                             <li><strong>Medications:</strong> Some symptoms may be helped by medications.</li>
                         </ul>
                     </section>
