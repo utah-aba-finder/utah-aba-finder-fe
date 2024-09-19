@@ -14,19 +14,32 @@ export const fetchProviders = async (): Promise<MockProviders> => {
 };
 
 export const fetchSingleProvider = async (providerId: number) => {
-  console.log("Fetching provider with ID:", providerId);
   try {
     const response = await fetch(`https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/providers/${providerId}`);
-
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
     const data = await response.json();
-    console.log("Fetched provider data:", data);
     return data.data[0];
   } catch (error) {
     console.error('Error fetching single provider:', error);
     throw error;
   }
 }
+
+// export const updateProviderData = async (providerId: number) => {
+//   try {
+//     const response = await axios.patch(`${API_URL}/${providerId}`, updatedData, {
+//       headers: {
+//         'Content-Type': 'application/json'
+//       }
+//     });
+    
+//     if (response.status === 200) {
+//       return response.data;
+//     } else {
+//       throw new Error('Failed to update provider data');
+//     }
+//   }
+// }
