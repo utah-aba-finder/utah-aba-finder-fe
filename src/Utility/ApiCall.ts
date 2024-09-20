@@ -15,12 +15,12 @@ export const fetchProviders = async (): Promise<MockProviders> => {
 
 export const fetchSingleProvider = async (providerId: number) => {
   console.log("Fetching provider with ID:", providerId);
-  const token = sessionStorage.getItem('authToken'); // Retrieve the token
+  const token = sessionStorage.getItem('authToken'); 
 
   try {
     const response = await fetch(`https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/providers/${providerId}`, {
       headers: {
-        'Authorization': `Bearer ${token}`  // Include the Authorization header
+        'Authorization': `Bearer ${token}` 
       }
     });
 

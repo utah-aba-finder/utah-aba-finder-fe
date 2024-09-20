@@ -53,7 +53,6 @@ export const LoginPage: React.FC = () => {
                 throw new Error(errorData.error || errorData.message || 'Login failed');
             }
     
-            // Check for the Authorization header
             const authHeader = response.headers.get('Authorization');
             if (!authHeader) {
                 throw new Error('No Authorization header found in response');
@@ -63,7 +62,6 @@ export const LoginPage: React.FC = () => {
             sessionStorage.setItem('authToken', token);
             setToken(token);
     
-            // Parse the response body
             const data = await response.json();
             console.log('LINE 66:', data);
     

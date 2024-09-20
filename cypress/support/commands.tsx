@@ -25,7 +25,7 @@ Cypress.Commands.add('setUpIntercepts', (providerId) => {
     req.reply({
       statusCode: 200,
       headers: {
-        'Authorization': 'Bearer mock-auth-token', // Make sure this line is present
+        'Authorization': 'Bearer mock-auth-token',
       },
       body: {
         status: {
@@ -43,10 +43,6 @@ Cypress.Commands.add('setUpIntercepts', (providerId) => {
     });
   }).as('postLogin');
   
-  
-  
-  
-
   cy.intercept('GET', `https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/providers/${providerId}`, (req) => {
     const token = window.sessionStorage.getItem('authToken');
     if (req.headers.authorization === `Bearer ${token}`) {
@@ -56,12 +52,9 @@ Cypress.Commands.add('setUpIntercepts', (providerId) => {
       });
     } else {
       req.reply({
-        statusCode: 401,  // Unauthorized if token is missing or incorrect
+        statusCode: 401, 
         body: { error: 'Unauthorized' }
       });
     }
   }).as('fetchSingleProvider');
-  
-  
-
 });
