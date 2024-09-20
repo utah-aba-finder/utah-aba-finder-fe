@@ -1,17 +1,24 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import './CountiesModal.css';
-import { CountiesServed } from '@/Utility/Types';
+import { CountiesServed } from '../Utility/Types';
 
-
-
-const CountiesModal: React.FC<{
+interface CountiesModalProps {
     isOpen: boolean;
     onClose: () => void;
     selectedCounties: CountiesServed[];
-    setSelectedCounties: React.Dispatch<React.SetStateAction<CountiesServed[]>>;
+    onCountiesChange: (counties: CountiesServed[]) => void;
     providerCounties: CountiesServed[];
-}> = ({ isOpen, onClose, selectedCounties, setSelectedCounties, providerCounties }) => {
-    const [checkedCounties, setCheckedCounties] =  useState<string[]>([])    
+}
+
+const CountiesModal: React.FC<CountiesModalProps> = ({
+    isOpen,
+    onClose,
+    selectedCounties,
+    onCountiesChange,
+    providerCounties
+}) => {
+    const [localCheckedCounties, setLocalCheckedCounties] = useState<string[]>([]);
+
     const countiesOptions = [
         'Beaver', 'Box Elder', 'Cache', 'Carbon', 'Daggett',
         'Davis', 'Duchesne', 'Emery', 'Garfield', 'Grand',
@@ -21,65 +28,62 @@ const CountiesModal: React.FC<{
         'Wasatch', 'Washington', 'Wayne', 'Weber'
     ];
 
-    const parsedProviderCounties = React.useMemo(() => {
-        if (!providerCounties || !providerCounties.length) return [];
-        
-        return providerCounties[0].county?.split(',').map(county => county.trim()) || [];
-      }, [providerCounties]);
-    
-      const handleSelect = useCallback((value: string) => {
-        setCheckedCounties(prev =>
-          prev.includes(value)
-            ? prev.filter(item => item !== value)
-            : [...prev, value]
+    useEffect(() => {
+        setLocalCheckedCounties(selectedCounties.map(c => c.county).filter((county): county is string => county !== null));
+    }, [selectedCounties, isOpen]);
+
+    const handleSelect = useCallback((value: string) => {
+        setLocalCheckedCounties(prev => 
+            prev.includes(value) ? prev.filter(item => item !== value) : [...prev, value]
         );
-      }, []);
-    
-      const isCountyChecked = useCallback(
-        (value: string) =>
-          checkedCounties.includes(value) ||
-          parsedProviderCounties.includes(value),
-        [checkedCounties, parsedProviderCounties]
-      );
-    
-      const handleSubmit = () => {
-        const selectedCounties = countiesOptions
-          .filter(option => checkedCounties.includes(option))
-          .map(option => ({ county: option }));
-    
-        setSelectedCounties(selectedCounties);
+    }, []);
+
+     const isCountyChecked = useCallback(
+        (value: string) => localCheckedCounties.includes(value),
+        [localCheckedCounties]
+    );
+
+    const handleSubmit = () => {
+        onCountiesChange(localCheckedCounties.map(county => ({ county })));
         onClose();
-      };
-    
-      if (!isOpen) return null;
-    
-      return (
-        <>
-          <div className="modal-backdrop" onClick={onClose}></div>
-          <div className="modal">
-            <h2>Select Counties</h2>
-            <div className="counties-options">
-              {countiesOptions.map(option => (
-                <div key={option} className="county-option">
-                  <input
-                    type="checkbox"
-                    checked={isCountyChecked(option)}
-                    onChange={() => handleSelect(option)}
-                    id={`county-${option}`}
-                  />
-                  <label htmlFor={`county-${option}`}>{option}</label>
-                </div>
-              ))}
-            </div>
-            <button className="counties-options-button" onClick={handleSubmit}>
-              Save
-            </button>
-            <button className="counties-options-button" onClick={onClose}>
-              Cancel
-            </button>
-          </div>
-        </>
-      );
     };
+
+    const handleCancel = () => {
+        setLocalCheckedCounties(selectedCounties.map(c => c.county).filter((county): county is string => county !== null));
+        onClose();
+    };
+
+    if (!isOpen) return null;
+
+    return (
+        <>
+            <div className="modal-backdrop" onClick={onClose}></div>
+            <div className="modal">
+                <h2>Select Counties</h2>
+                <div className="counties-options">
+                    {countiesOptions.map(option => (
+                        <div key={option} className="county-option">
+                            <input
+                                type="checkbox"
+                                checked={isCountyChecked(option)}
+                                onChange={() => handleSelect(option)}
+                                id={`county-${option}`}
+                            />
+                            <label htmlFor={`county-${option}`}>{option}</label>
+                        </div>
+                    ))}
+                </div>
+                <div className='countyModalButtonSection'>
+                <button className="counties-options-button" onClick={handleCancel}>
+                        Cancel
+                    </button>
+                    <button className="counties-options-button" onClick={handleSubmit}>
+                        Save
+                    </button>
+                </div>
+            </div>
+        </>
+    );
+};
 
 export default CountiesModal;

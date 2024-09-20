@@ -1,20 +1,24 @@
-import React from 'react';
+import { useEffect, useCallback, useState } from 'react';
 import "./InsuranceModal.css";
 import { Insurance } from '@/Utility/Types';
 
-const InsuranceModal = ({
-    isOpen,
-    onClose,
-    selectedInsurance,
-    setSelectedInsurance,
-    providerInsurance,
-}: {
+interface InsuranceModalProps {
     isOpen: boolean;
     onClose: () => void;
-    selectedInsurance: Insurance[];
-    setSelectedInsurance: React.Dispatch<React.SetStateAction<Insurance[]>>;
-    providerInsurance: Insurance[];
+    selectedInsurances: Insurance[];
+    onInsurancesChange: (insurances: Insurance[]) => void;
+    providerInsurances: Insurance[];
+}
+
+const InsuranceModal: React.FC<InsuranceModalProps> = ({
+    isOpen,
+    onClose,
+    selectedInsurances,
+    onInsurancesChange,
+    providerInsurances
 }) => {
+    const [localSelectedInsurances, setLocalSelectedInsurances] = useState<Insurance[]>([]);
+
     const insuranceOptions = [
         { id: 1, name: "Contact us" },
         { id: 2, name: "Administrator Benefits" },
@@ -50,16 +54,31 @@ const InsuranceModal = ({
         { id: 32, name: "Utah Services for People with Disabilities (DSPD)" },
         { id: 33, name: "Wise Imagine" }
       ];
-      
+      useEffect(() => {
+        setLocalSelectedInsurances(selectedInsurances);
+    }, [selectedInsurances, isOpen]);
 
-    const handleSelect = (option: Insurance) => {
-        setSelectedInsurance(prev =>
-            prev.some(item => item.id === option.id)
-                ? prev.filter(item => item.id !== option.id)
-                : [...prev, option]
-        );
+    const handleSelect = useCallback((insurance: Omit<Insurance, 'accepted'>) => {
+        setLocalSelectedInsurances(prev => {
+            const exists = prev.some(i => i.id === insurance.id);
+            if (exists) {
+                return prev.filter(i => i.id !== insurance.id);
+            } else {
+                return [...prev, { ...insurance, accepted: true }];
+            }
+        });
+    }, []);
+    
+    
+    const isInsuranceSelected = useCallback(
+        (id: number) => localSelectedInsurances.some(i => i.id === id),
+        [localSelectedInsurances]
+    );
+
+    const handleSubmit = () => {
+        onInsurancesChange(localSelectedInsurances);
+        onClose();
     };
-
     if (!isOpen) return null;
 
     return (
@@ -72,8 +91,7 @@ const InsuranceModal = ({
                         <div key={option.id} className='modal-insurance'>
                             <input
                                 type="checkbox"
-                                checked={selectedInsurance.some(item => item.id === option.id) || 
-                                        providerInsurance.some(item => item.id === option.id)}
+                                checked={isInsuranceSelected(option.id)}
                                 onChange={() => handleSelect(option)}
                                 />
                             {option.name}
@@ -81,6 +99,7 @@ const InsuranceModal = ({
                     ))}
                 </div>
                 <button onClick={onClose} className='insurance'>Close</button>
+                <button onClick={handleSubmit} className='insurance'>Save</button>
             </div>
         </>
     );

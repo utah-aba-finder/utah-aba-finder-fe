@@ -50,7 +50,8 @@ export const LoginPage: React.FC = () => {
     
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.error || errorData.message || 'Login failed');
+                throw new Error(errorData.error || errorData.message || 'Login failed') &&
+                toast.error(errorData.error || errorData.message || 'Login failed')
             }
     
             const authHeader = response.headers.get('Authorization');
@@ -65,7 +66,7 @@ export const LoginPage: React.FC = () => {
             const data = await response.json();
             console.log('LINE 66:', data);
     
-            const providerId = data.data.id;
+            const providerId = data.data.provider_id;
             if (providerId) {
                 const providerDetails = await fetchSingleProvider(providerId);
                 setCurrentProvider(providerDetails);
