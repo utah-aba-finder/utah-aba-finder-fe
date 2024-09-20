@@ -1,6 +1,7 @@
 export interface Insurance {
     id: number | null,
     name: string | null;
+    accepted: boolean | null;
 }
 
 export interface Location {

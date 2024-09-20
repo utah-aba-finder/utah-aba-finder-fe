@@ -50,7 +50,8 @@ export const LoginPage: React.FC = () => {
     
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.error || errorData.message || 'Login failed');
+                throw new Error(errorData.error || errorData.message || 'Login failed') &&
+                toast.error(errorData.error || errorData.message || 'Login failed')
             }
     
             const authHeader = response.headers.get('Authorization');
