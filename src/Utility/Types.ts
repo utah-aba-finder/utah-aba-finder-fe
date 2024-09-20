@@ -4,6 +4,7 @@ export interface Insurance {
 }
 
 export interface Location {
+    id: number | null;
     name: string | null;
     address_1: string | null;
     address_2: string | null;

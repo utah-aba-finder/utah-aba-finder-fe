@@ -40,6 +40,6 @@ export const fetchSingleProvider = async (providerId: number) => {
 //       return response.data;
 //     } else {
 //       throw new Error('Failed to update provider data');
-//     }
+//     } 
 //   }
 // }
