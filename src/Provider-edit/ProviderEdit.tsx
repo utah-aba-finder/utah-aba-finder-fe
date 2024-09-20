@@ -95,17 +95,54 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
         if (isSaving) {
             const updateProviderData = async () => {
                 try {
-                    const response = await fetch(`https://your-api-url.com/providers/${loggedInProvider?.id}`, {
+                    const response = await fetch(`https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/providers/${loggedInProvider?.id}`, {
                         method: 'PATCH',
                         headers: {
                             'Content-Type': 'application/json',
                             'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`
                         },
                         body: JSON.stringify({
-                            provider: formData
+                            data: [
+                                {
+                                    id: loggedInProvider?.id,
+                                    type: "provider",
+                                    attributes: {
+                                        name: formData.name,
+                                        locations: [
+                                            {
+                                                id: loggedInProvider?.attributes.locations[0].id,
+                                                name: formData.location,
+                                                address_1: formData.address,
+                                                address_2: null,
+                                                city: formData.city,
+                                                state: formData.state,
+                                                zip: formData.zipCode,
+                                                phone: formData.phone
+                                            }
+                                        ],
+                                        website: formData.website,
+                                        email: loggedInProvider?.attributes.email,
+                                        cost: loggedInProvider?.attributes.cost,
+                                        insurance: selectedInsurance,
+                                        counties_served: [
+                                            {county: selectedCounties}
+                                            ],
+                                        min_age: [
+                                            formData.min_age
+                                        ],
+                                        max_age: formData.max_age,
+                                        waitlist: formData.waitlistTime,
+                                        telehealth_services: formData.telehealth,
+                                        spanish_speakers: formData.spanishSpeakers,
+                                        at_home_services: formData.at_home_services,
+                                        in_clinic_services: formData.in_clinic_services,
+                                        logo: formData.logo
+                                    }
+                                }
+                            ]
                         })
                     });
-
+                
                     const responseData = await response.json();
 
                     if (!response.ok) {
@@ -125,7 +162,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
 
             updateProviderData();
         }
-    }, [isSaving, formData, loggedInProvider?.id]);
+    }, [isSaving, formData, loggedInProvider?.id, selectedInsurance, selectedCounties]);
 
     const handleLocationChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const locationIndex = parseInt(e.target.value);
