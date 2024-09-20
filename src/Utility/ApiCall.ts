@@ -35,3 +35,21 @@ export const fetchSingleProvider = async (providerId: number) => {
     throw error;
   }
 }
+
+
+// export const updateProviderData = async (providerId: number) => {
+//   try {
+//     const response = await axios.patch(`${API_URL}/${providerId}`, updatedData, {
+//       headers: {
+//         'Content-Type': 'application/json'
+//       }
+//     });
+    
+//     if (response.status === 200) {
+//       return response.data;
+//     } else {
+//       throw new Error('Failed to update provider data');
+//     } 
+//   }
+// }
+
