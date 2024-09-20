@@ -4,7 +4,6 @@
     align-items: center;
     justify-content: center;
     gap: 10px;
-    text-align: start;
 }
 
 .provider-edit-form label {
@@ -28,6 +27,15 @@
 
 .editLabels {
     color: rgb(255, 64, 0)
+}
+
+.location-section {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    justify-content: center;
+    text-align: start;
+    align-items: center;
 }
 
 .provider-edit-form input {
