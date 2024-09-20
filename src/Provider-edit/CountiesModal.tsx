@@ -17,7 +17,7 @@ const CountiesModal: React.FC<CountiesModalProps> = ({
     onCountiesChange,
     providerCounties
 }) => {
-    const [localCheckedCounties, setLocalCheckedCounties] = useState<string[]>([]);
+    const [localCheckedCounties, setLocalCheckedCounties] = useState<String[]>([]);
 
     const countiesOptions = [
         'Beaver', 'Box Elder', 'Cache', 'Carbon', 'Daggett',
@@ -29,27 +29,36 @@ const CountiesModal: React.FC<CountiesModalProps> = ({
     ];
 
     useEffect(() => {
-        setLocalCheckedCounties(selectedCounties.map(c => c.county).filter((county): county is string => county !== null));
+        if (selectedCounties.length > 0 && selectedCounties[0].county) {
+            setLocalCheckedCounties(selectedCounties[0].county.split(', '));
+        } else {
+            setLocalCheckedCounties([]);
+        }
     }, [selectedCounties, isOpen]);
 
-    const handleSelect = useCallback((value: string) => {
-        setLocalCheckedCounties(prev => 
-            prev.includes(value) ? prev.filter(item => item !== value) : [...prev, value]
-        );
-    }, []);
+    const handleSelect = (county: string) => {
+        setLocalCheckedCounties(prev => {
+            if (prev.includes(county)) {
+                return prev.filter(c => c !== county);
+            } else {
+                return [...prev, county];
+            }
+        });
+    };
 
-     const isCountyChecked = useCallback(
+    const isCountyChecked = useCallback(
         (value: string) => localCheckedCounties.includes(value),
         [localCheckedCounties]
     );
 
     const handleSubmit = () => {
-        onCountiesChange(localCheckedCounties.map(county => ({ county })));
+        const selectedCountiesString = localCheckedCounties.join(', ');
+        onCountiesChange([{ county: selectedCountiesString }]);
         onClose();
     };
 
     const handleCancel = () => {
-        setLocalCheckedCounties(selectedCounties.map(c => c.county).filter((county): county is string => county !== null));
+        setLocalCheckedCounties(selectedCounties[0]?.county?.split(', ') || []);
         onClose();
     };
 

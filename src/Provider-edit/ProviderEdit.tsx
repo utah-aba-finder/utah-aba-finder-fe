@@ -58,7 +58,6 @@ const [selectedInsurances, setSelectedInsurances] = useState<Insurance[]>([]);
     });
 
     const handleLogout = () => {
-        console.log('TOKEN STATUS', setToken(null))
         setToken(null);
         clearProviderData();
         sessionStorage.removeItem('authToken');
@@ -141,6 +140,10 @@ const [selectedInsurances, setSelectedInsurances] = useState<Insurance[]>([]);
     useEffect(() => {
         if (loggedInProvider) {
             updateLocalProviderData(loggedInProvider);
+            setSelectedInsurances(loggedInProvider.attributes.insurance.map(ins => ({
+                ...ins,
+                accepted: true 
+              })));
             setIsLoading(false);
         } else {
             setIsLoading(false);
@@ -162,7 +165,6 @@ const [selectedInsurances, setSelectedInsurances] = useState<Insurance[]>([]);
                         body: JSON.stringify({
                             data: [
                                 {
-                                    id: loggedInProvider?.id,
                                     type: "provider",
                                     attributes: {
                                         name: formData.name,
@@ -200,20 +202,18 @@ const [selectedInsurances, setSelectedInsurances] = useState<Insurance[]>([]);
                         })
                     });
                     const responseData = await response.json();
-
+                    console.log('Response status:', response.status);
+                    console.log('Response headers:', Object.fromEntries(response.headers));
+                    console.log('RESPONSE DATA FROM PATCH:', responseData)
                     if (!response.ok) {
-                        console.log('error data:', responseData);
                         throw new Error('Failed to update provider data') &&
                         toast.error('Failed to update data, if the issue persists contact the admin')
                     }
-                    console.log('response data:', responseData);
-                    // updateLocalProviderData(responseData.data[0]);
                     setSelectedInsurances(responseData.data[0].attributes.insurance || []);
                     setSelectedCounties(responseData.data[0].attributes.counties_served || []);
                     toast.success('Provider data updated successfully');
                     setShowError('');
                 } catch (error) {
-                    console.log('failed to update provider data:', error);
                     setShowError('Failed to save provider data. Please try again later.')
                     toast.error('Failed to save provider data. Please try again later.')
                 } finally {
@@ -223,10 +223,10 @@ const [selectedInsurances, setSelectedInsurances] = useState<Insurance[]>([]);
 
             updateProviderData();
         }
-    }, [isSaving, formData, loggedInProvider?.id, selectedInsurances, selectedCounties, updateLocalProviderData, locations]);
+    }, [isSaving, formData, loggedInProvider?.id, loggedInProvider?.attributes.email, loggedInProvider?.attributes.cost, selectedInsurances, selectedCounties, updateLocalProviderData, locations]);
     useEffect(() => {
-        console.log('Locations updated:', locations);
     }, [locations]);
+
     const handleLocationChange = (index: number, field: string, value: string) => {
         const updatedLocations = [...locations];
         updatedLocations[index] = { ...updatedLocations[index], [field]: value };
@@ -246,11 +246,15 @@ const [selectedInsurances, setSelectedInsurances] = useState<Insurance[]>([]);
 
     const handleInsurancesChange = (newInsurances: Insurance[]) => {
         setSelectedInsurances(newInsurances);
-    };
+        console.log('Updated insurances:', newInsurances); // Add this log
+      };
 
     const toggleInsuranceModal = () => {
         setIsInsuranceModalOpen(!isInsuranceModalOpen);
     };
+    useEffect(() => {
+        console.log('selectedInsurances updated:', selectedInsurances);
+      }, [selectedInsurances]);
 
     const toggleCountiesModal = () => {
         setIsCountiesModalOpen(!isCountiesModalOpen);
@@ -283,38 +287,52 @@ const [selectedInsurances, setSelectedInsurances] = useState<Insurance[]>([]);
                 <div className='provider-edit-form'>
                     {locations.map((location, index) => (
                     <div key={index} className="location-section">
+                        <div>
                         <h3>Location {index + 1}</h3>
+                        </div>
+                        <label htmlFor={`location-name-${index}`} className="editLabels">Location Name:</label>
                         <input
+                            id={`location-name-${index}`}
                             type="text"
                             value={location.name}
                             onChange={(e) => handleLocationChange(index, 'name', e.target.value)}
                             placeholder="Location name"
                         />
+                        <label htmlFor={`location-address-${index}`} className="editLabels">Street Address:</label>
                         <input
+                            id={`location-address-${index}`}
                             type="text"
                             value={location.address_1}
                             onChange={(e) => handleLocationChange(index, 'address_1', e.target.value)}
                             placeholder="Street address"
                         />
+                        <label htmlFor={`location-city-${index}`} className="editLabels">City:</label>
                         <input
+                            id={`location-city-${index}`}
                             type="text"
                             value={location.city}
                             onChange={(e) => handleLocationChange(index, 'city', e.target.value)}
                             placeholder="City"
                         />
+                        <label htmlFor={`location-state-${index}`} className="editLabels">State:</label>
                         <input
+                            id={`location-state-${index}`}
                             type="text"
                             value={location.state}
                             onChange={(e) => handleLocationChange(index, 'state', e.target.value)}
                             placeholder="State"
                         />
+                        <label htmlFor={`location-zip-${index}`} className="editLabels">Zip Code:</label>
                         <input
+                            id={`location-zip-${index}`}
                             type="text"
                             value={location.zip}
                             onChange={(e) => handleLocationChange(index, 'zip', e.target.value)}
                             placeholder="Zip code"
                         />
+                        <label htmlFor={`location-phone-${index}`} className="editLabels">Phone Number:</label>
                         <input
+                            id={`location-phone-${index}`}
                             type="text"
                             value={location.phone}
                             onChange={(e) => handleLocationChange(index, 'phone', e.target.value)}
@@ -361,7 +379,7 @@ const [selectedInsurances, setSelectedInsurances] = useState<Insurance[]>([]);
                         onClose={() => setIsInsuranceModalOpen(false)}
                         selectedInsurances={selectedInsurances}
                         onInsurancesChange={handleInsurancesChange}
-                        providerInsurances={loggedInProvider?.attributes.insurance ?? []}
+                        providerInsurances={selectedInsurances}
                     />
                     )}
 
