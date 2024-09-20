@@ -125,8 +125,8 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
                                         cost: loggedInProvider?.attributes.cost,
                                         insurance: selectedInsurance,
                                         counties_served: [
-                                            {county: selectedCounties}
-                                            ],
+                                            { county: selectedCounties }
+                                        ],
                                         min_age: [
                                             formData.min_age
                                         ],
@@ -142,7 +142,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
                             ]
                         })
                     });
-                
+
                     const responseData = await response.json();
 
                     if (!response.ok) {
@@ -150,6 +150,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
                         throw new Error('Failed to update provider data');
                     }
                     console.log('response data:', responseData);
+                    alert('Provider data updated successfully');
 
                     setShowError('');
                 } catch (error) {
