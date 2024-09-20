@@ -214,7 +214,6 @@
     margin-bottom: 0.5rem;
     appearance: none;
     max-width: 100%;
-    /* Limits the width to its container */
     display: inline-block;
 }
 

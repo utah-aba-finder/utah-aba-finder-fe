@@ -1,0 +1,84 @@
+{
+    "data": [
+        {
+            "id": 1,
+            "type": "provider",
+            "attributes": {
+                "name": "Affinity Autism Services",
+                "locations": [
+                    {
+                        "name": null,
+                        "address_1": "1970 W 7800 S",
+                        "address_2": null,
+                        "city": "West Jordan",
+                        "state": "UT",
+                        "zip": "84088",
+                        "phone": "(801) 506-6695"
+                    }
+                ],
+                "website": "www.affinityautism.com",
+                "email": "Affinity@affinitytreatment.com",
+                "cost": "Private pay rates available upon request",
+                "insurance": [
+                    {
+                        "name": "Meritain (Aetna)"
+                    },
+                    {
+                        "name": "Anthem (BCBS)"
+                    },
+                    {
+                        "name": "Regence (BCBS)"
+                    },
+                    {
+                        "name": "Cigna"
+                    },
+                    {
+                        "name": "Compsych"
+                    },
+                    {
+                        "name": "Deseret Mutual Benefit Administrators (DMBA)"
+                    },
+                    {
+                        "name": "EMI Health"
+                    },
+                    {
+                        "name": "Medicaid"
+                    },
+                    {
+                        "name": "MotivHealth"
+                    },
+                    {
+                        "name": "Select Health"
+                    },
+                    {
+                        "name": "UMR (UHC)"
+                    },
+                    {
+                        "name": "United HealthCare (UHC)"
+                    },
+                    {
+                        "name": "University of Utah Health Plans"
+                    },
+                    {
+                        "name": "Utah’s Children’s Health Insurance Program (CHIP)"
+                    },
+                    {
+                        "name": "Contact us"
+                    }
+                ],
+                "counties_served": [
+                    {
+                        "county": "Utah, Salt Lake, Iron, Davis, Weber"
+                    }
+                ],
+                "min_age": 1.5,
+                "max_age": 21.0,
+                "waitlist": "12 months",
+                "telehealth_services": "limited",
+                "spanish_speakers": "limited",
+                "at_home_services": "No",
+                "in_clinic_services": "Yes"
+            }
+        }
+    ]
+}

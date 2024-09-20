@@ -14,8 +14,16 @@ export const fetchProviders = async (): Promise<MockProviders> => {
 };
 
 export const fetchSingleProvider = async (providerId: number) => {
+  console.log("Fetching provider with ID:", providerId);
+  const token = sessionStorage.getItem('authToken'); 
+
   try {
-    const response = await fetch(`https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/providers/${providerId}`);
+    const response = await fetch(`https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/providers/${providerId}`, {
+      headers: {
+        'Authorization': `Bearer ${token}` 
+      }
+    });
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -27,6 +35,7 @@ export const fetchSingleProvider = async (providerId: number) => {
     throw error;
   }
 }
+
 
 // export const updateProviderData = async (providerId: number) => {
 //   try {
@@ -43,3 +52,4 @@ export const fetchSingleProvider = async (providerId: number) => {
 //     } 
 //   }
 // }
+

@@ -33,7 +33,7 @@ export const LoginPage: React.FC = () => {
         e.preventDefault();
         setError('');
         setIsLoading(true);
-
+    
         try {
             const response = await fetch('https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/login', {
                 method: 'POST',
@@ -47,29 +47,34 @@ export const LoginPage: React.FC = () => {
                     }
                 }),
             });
-
+    
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(errorData.error || errorData.message || 'Login failed');
             }
-
+    
             const authHeader = response.headers.get('Authorization');
             if (!authHeader) {
                 throw new Error('No Authorization header found in response');
             }
-
+    
             const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : authHeader;
             sessionStorage.setItem('authToken', token);
             setToken(token);
-
+    
             const data = await response.json();
-            console.log('LINE 66:', data)
-            const providerId = data.data.provider_id;
-            const providerDetails = await fetchSingleProvider(providerId);
-            setCurrentProvider(providerDetails);
-            setIsLoggedIn(true);
-            setUsername('')
-            setPassword('')
+            console.log('LINE 66:', data);
+    
+            const providerId = data.data.id;
+            if (providerId) {
+                const providerDetails = await fetchSingleProvider(providerId);
+                setCurrentProvider(providerDetails);
+                setIsLoggedIn(true);
+                setUsername('');
+                setPassword('');
+            } else {
+                throw new Error('Provider ID not found');
+            }
         } catch (err) {
             console.error('Login error:', err);
             setError(err instanceof Error ? err.message : 'An unexpected error occurred');
@@ -77,7 +82,8 @@ export const LoginPage: React.FC = () => {
         } finally {
             setIsLoading(false);
         }
-    }
+    };
+    
 
     const handleShowPassword = () => {
         setShowPassword(!showPassword);
