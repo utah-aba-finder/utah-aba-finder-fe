@@ -6,6 +6,8 @@ import { Insurance, CountiesServed, MockProviderData } from '@/Utility/Types';
 import gearImage from '../Assets/Gear@1x-0.5s-200px-200px.svg';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../Provider-login/AuthProvider';
+import { toast } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
 
 interface ProviderEditProps {
     loggedInProvider: MockProviderData | null;
@@ -150,7 +152,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
                         throw new Error('Failed to update provider data');
                     }
                     console.log('response data:', responseData);
-                    alert('Provider data updated successfully');
+                    toast.success('Provider data updated successfully');
 
                     setShowError('');
                 } catch (error) {
@@ -210,6 +212,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
 
     return (
         <div className='provider-edit-container'>
+            <ToastContainer />
             <div className='user-info-section'>
                 <h1>Welcome, {loggedInProvider?.attributes.name}</h1>
                 <p>Last edited: </p>
@@ -285,6 +288,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
                                 name="zipCode"
                                 value={formData.zipCode}
                                 onChange={handleInputChange}
+                                maxLength={5}
                                 placeholder="Zip code"
                             />
                             <label className='editLabels' htmlFor='phone' aria-label='location phone'>Location Phone: </label>

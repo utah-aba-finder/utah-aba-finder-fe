@@ -65,7 +65,7 @@ export const LoginPage: React.FC = () => {
             const data = await response.json();
             console.log('LINE 66:', data);
     
-            const providerId = data.data.id;
+            const providerId = data.data.provider_id;
             if (providerId) {
                 const providerDetails = await fetchSingleProvider(providerId);
                 setCurrentProvider(providerDetails);
