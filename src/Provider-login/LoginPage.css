@@ -201,72 +201,65 @@
     }
 }
 
-@media (min-height: 393px) and (max-width: 1066px) and (orientation: landscape) {
+@media (orientation: landscape) and (max-height: 600px) {
+    .loginWrapper {
+        height: auto;
+        min-height: 100vh;
+    }
+
+    .loginContainer {
+        flex-direction: column;
+        height: auto;
+        padding: 20px 0;
+    }
 
     .loginImageText {
-        bottom: 72%;
+        position: static;
+        margin-bottom: 20px;
+        font-size: 1.8rem;
     }
 
     .loginForm {
-        width: 70%;
-        margin-top: 5rem;
+        width: 90%;
+        max-width: 500px;
+        padding: 15px;
+        margin-top: 0;
+    }
+
+    .input {
+        height: 40px;
+        margin: 8px 0;
+    }
+
+    .input input {
+        font-size: 1.2rem;
+    }
+
+    .loginButton {
+        font-size: 1.2rem;
+        padding: 0.8rem;
+    }
+
+    .forgot-password {
+        font-size: 1.2rem;
     }
 }
 
-@media (min-height: 435px) and (max-width: 1040px) and (orientation: landscape) {
+@media (orientation: landscape) and (min-height: 601px) and (max-height: 800px) {
     .loginContainer {
-        height: 100%;
+        height: auto;
+        min-height: 100vh;
+        padding: 40px 0;
     }
 
     .loginImageText {
-        bottom: 70%;
+        bottom: auto;
+        top: 20px;
+        font-size: 2rem;
     }
 
     .loginForm {
-        width: 80%;
-        margin-top: 5rem;
-    }
-}
-
-@media (min-height: 435px) and (max-width: 786px) and (orientation: landscape) {
-    .loginContainer {
-        height: 100%;
-    }
-
-    .loginImageText {
-        bottom: 70%;
-    }
-
-    .loginForm {
-        width: 80%;
-        margin-top: 5rem;
-    }
-}
-
-@media (min-height: 820px) and (max-width: 1180px) and (orientation: landscape) {
-    .loginContainer {
-        height: 70%;
-    }
-
-    .loginImageText {
-        bottom: 80%;
-    }
-
-    .loginForm {
-        width: 80%;
-    }
-}
-
-@media (min-height: 1558px) and (max-width: 975px) {
-    .loginContainer {
-        height: 50%;
-    }
-
-    .loginImageText {
-        bottom: 80%;
-    }
-
-    .loginForm {
-        width: 80%;
+        width: 60%;
+        max-width: 600px;
     }
 }

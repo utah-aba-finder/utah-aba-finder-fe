@@ -98,8 +98,10 @@ const InsuranceModal: React.FC<InsuranceModalProps> = ({
                         </div>
                     ))}
                 </div>
-                <button onClick={onClose} className='insurance'>Close</button>
-                <button onClick={handleSubmit} className='insurance'>Save</button>
+                <div className='insuranceModalButtons'>
+                    <button onClick={onClose} className='insurance'>Close</button>
+                    <button onClick={handleSubmit} className='insurance'>Save</button>
+                </div>
             </div>
         </>
     );

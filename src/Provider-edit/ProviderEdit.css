@@ -225,5 +225,10 @@
     .provider-edit-container {
         width: 100%;
     }
+    .provider-edit-form label {
+        text-align: start;
+        width: 85%;
+        align-self: center;
+    }
 
 }

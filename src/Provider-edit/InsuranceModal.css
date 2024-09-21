@@ -32,7 +32,7 @@
 
 .modal-insurance-container {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* Change this line */
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); 
     gap: 20px;
     padding: 20px;
     justify-content: center;
@@ -48,8 +48,11 @@
 .modal-insurance input {
     margin-right: 10px;
 }
+.insuranceModalButtons {
+    display: flex;
+}
 
-.insuranceModalButton {
+.insurance {
     display: block;
     padding: 10px 20px;
     background-color: #ff6f00;
@@ -60,6 +63,84 @@
     margin: 0 auto;
 }
 
-.insuranceModalButton:hover {
+.insurance:hover {
     background-color: #ff4d00;
+}
+
+@media (max-width: 768px){
+    .modal {
+        justify-content: center;
+    }
+    .modal-insurance-container {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        text-wrap: nowrap;
+        font-size: 12px;
+    }
+    .modal-insurance input {
+        width: 5%;
+    }
+}
+
+@media (max-height: 600px) and (orientation: landscape) {
+    .modal {
+        top: 0;
+        transform: translate(-50%, 0);
+        height: 100vh;
+        max-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .modal h2 {
+        margin-bottom: 10px;
+    }
+
+    .modal-insurance-container {
+        flex-grow: 1;
+        overflow-y: auto;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 10px;
+        padding: 10px;
+    }
+
+    .modal-insurance {
+        font-size: 14px;
+    }
+
+    .insuranceModalButtons {
+        padding: 10px 0;
+    }
+}
+
+@media (max-height: 1000px) and (orientation: landscape) {
+    .modal {
+        top: 0;
+        transform: translate(-50%, 0);
+        height: 100vh;
+        max-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .modal h2 {
+        margin-bottom: 10px;
+    }
+
+    .modal-insurance-container {
+        flex-grow: 1;
+        overflow-y: auto;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 10px;
+        padding: 10px;
+    }
+
+    .modal-insurance {
+        font-size: 14px;
+    }
+
+    .insuranceModalButtons {
+        padding: 10px 0;
+    }
 }
