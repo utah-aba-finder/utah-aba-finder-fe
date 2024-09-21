@@ -98,12 +98,6 @@
         height: auto;
     }
 
-    .menu {
-        width: 1.5rem;
-        height: auto;
-        margin-right: 1rem;
-    }
-
     .menu-content {
        padding: .5rem;
        gap: 1rem;
@@ -116,15 +110,10 @@
 }
 
 @media(max-height: 820px)  and (orientation: landscape) {
-    .main-logo {
-        width: 10rem;
-        height: auto;
-    }
-
     .menu {
-        width: 1.5rem;
+        width: 3rem;
         height: auto;
-        margin-right: 1rem;
+        margin-right: 3rem;
     }
 
     .menu-content {
@@ -134,17 +123,12 @@
     }
 
     .menu-content a {
-        font-size: 1.1rem;
+        font-size: 1.5rem;
         padding: 0;
     }
 }
 
 @media (max-height: 1558px) and (max-width: 975px) {
-    .main-logo {
-        width: 10rem;
-        height: auto;
-    }
-
     .menu {
         width: 1.5rem;
         height: auto;
