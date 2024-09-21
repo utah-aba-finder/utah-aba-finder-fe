@@ -12,14 +12,10 @@ const Header: React.FC = () => {
         setMenuOpen(prevMenuOpen => !prevMenuOpen);
     };
 
-    const handleKeyDown = (event: React.KeyboardEvent<HTMLImageElement>) => {
-        if (event.key === 'Enter') {
-            toggleMenu();
-        }
-    };
 
     return (
-        <header className='Header'>
+        <header className={`Header ${menuOpen ? 'open' : ''}`}>
+            <div className='headerContainer'>
             <Link to="/" aria-label="Homepage" className="main-logo-link">
                 <img
                     src={Logo}
@@ -37,6 +33,8 @@ const Header: React.FC = () => {
                 aria-expanded={menuOpen}
                 aria-controls="menu-content"
             />
+
+            </div>
             <nav id="menu-content" className={`menu-content ${menuOpen ? 'open' : ''}`} tabIndex={0}>
                 <Link to="/" onClick={toggleMenu}>Home</Link>
                 <Link to="/providers" onClick={toggleMenu}>Find Providers</Link>
