@@ -69,28 +69,37 @@
 
 @media (max-width: 768px){
     .modal {
+        height: 90vh; /* Change from 80% to 90vh */
+        max-height: 90vh; /* Add this line */
+        overflow-y: scroll; /* Change from auto to scroll */
         justify-content: center;
+        /* padding: 0; */
     }
     .modal-insurance-container {
         display: flex;
-        flex-direction: column;
-        justify-content: center;
+        flex-wrap: wrap;
+        justify-content: space-evenly;
+        padding: 0;
         text-wrap: nowrap;
         font-size: 12px;
+        margin: 0;
+        gap: 25px;
     }
     .modal-insurance input {
-        width: 5%;
+        width: 15%;
+        margin: 5px; 
+        padding: 0;
     }
 }
 
 @media (max-height: 600px) and (orientation: landscape) {
     .modal {
-        top: 0;
         transform: translate(-50%, 0);
         height: 100vh;
         max-height: 100vh;
         display: flex;
         flex-direction: column;
+        overflow-y: scoll;
     }
 
     .modal h2 {

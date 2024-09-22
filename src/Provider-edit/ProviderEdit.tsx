@@ -43,6 +43,8 @@ const [selectedInsurances, setSelectedInsurances] = useState<Insurance[]>([]);
         website: '',
         location: '',
         address: '',
+        email: '',
+        cost: '',
         city: '',
         state: '',
         zipCode: '',
@@ -87,6 +89,8 @@ const [selectedInsurances, setSelectedInsurances] = useState<Insurance[]>([]);
                 website: loggedInProvider.attributes.website ?? '',
                 location: loggedInProvider.attributes.locations[0].name ?? '',
                 address: loggedInProvider.attributes.locations[0].address_1 ?? '',
+                email: loggedInProvider.attributes.email ?? '',
+                cost: loggedInProvider.attributes.cost ?? '',
                 city: loggedInProvider.attributes.locations[0].city ?? '',
                 state: loggedInProvider.attributes.locations[0].state ?? '',
                 zipCode: loggedInProvider.attributes.locations[0].zip ?? '',
@@ -122,6 +126,8 @@ const [selectedInsurances, setSelectedInsurances] = useState<Insurance[]>([]);
             location: updatedData.attributes.locations[0].name ?? '',
             address: updatedData.attributes.locations[0].address_1 ?? '',
             city: updatedData.attributes.locations[0].city ?? '',
+            email: updatedData.attributes.email ?? '',
+            cost: updatedData.attributes.cost ?? '',
             state: updatedData.attributes.locations[0].state ?? '',
             zipCode: updatedData.attributes.locations[0].zip ?? '',
             phone: updatedData.attributes.locations[0].phone ?? '',
@@ -178,8 +184,8 @@ const [selectedInsurances, setSelectedInsurances] = useState<Insurance[]>([]);
                                             phone: location.phone
                                         })),
                                         website: formData.website,
-                                        email: loggedInProvider?.attributes.email,
-                                        cost: loggedInProvider?.attributes.cost,
+                                        email: formData.email,
+                                        cost: formData.cost,
                                         insurance: selectedInsurances.map(ins => ({
                                             name: ins.name,
                                             id: ins.id,
@@ -343,14 +349,24 @@ const [selectedInsurances, setSelectedInsurances] = useState<Insurance[]>([]);
                 <button onClick={addNewLocation} className="add-location-button">
                     Add New Location
                 </button>
+            <label htmlFor='name' className='editLabels'>Provider Name:</label>
+            <input id='name' type='text' name='name' value={formData.name} onChange={handleInputChange} />
+            
+            <label htmlFor='email' className='editLabels'>Provider Email:</label>
+            <input id='email' type='text' name='email' value={formData.email} onChange={handleInputChange} />
+
+            <label htmlFor='cost' className='editLabels'>Provider Email:</label>
+            <input id='cost' type='text' name='cost' value={formData.cost} onChange={handleInputChange} />
+
+
             <label htmlFor='website' className='editLabels'>Website: </label>
             <input id='website' type="text" name="website" value={formData.website} onChange={handleInputChange} />
             
             <label htmlFor='logo' className='editLabels'>Link to Provider Logo: </label>
-            <input id='logo' type="text" name="logo" value={formData.logo} onChange={handleInputChange} />
+            <input id='logo' type="text" name="logo" value={formData.logo} onChange={handleInputChange} placeholder='url to logo here'/>
             
             <label htmlFor='spanishSpeakers' className='editLabels'>Spanish Speakers: </label>
-            <input id='spanishSpeakers' type="text" name="spanishSpeakers" value={formData.spanishSpeakers} onChange={handleInputChange} />
+            <input id='spanishSpeakers' type="text" name="spanishSpeakers" value={formData.spanishSpeakers} onChange={handleInputChange} placeholder='Yes, No, Limited?'/>
             
             <label htmlFor='min_age' className='editLabels'>Minimum Age Served: </label>
             <input id='min_age' type="number" name="min_age" value={formData.min_age} onChange={handleInputChange} />
@@ -359,16 +375,16 @@ const [selectedInsurances, setSelectedInsurances] = useState<Insurance[]>([]);
             <input id='max_age' type="number" name="max_age" value={formData.max_age} onChange={handleInputChange} />
             
             <label htmlFor='waitlist' className='editLabels'>Waitlist Information: </label>
-            <input id='waitlist' type="text" name="waitlistTime" value={formData.waitlistTime} onChange={handleInputChange} />
+            <input id='waitlist' type="text" name="waitlistTime" value={formData.waitlistTime} onChange={handleInputChange} placeholder='Yes, No? Timeline?'/>
             
             <label htmlFor='clinicServices' className='editLabels'>In-clinic services: </label>
-            <input id='clinicServices' type="text" name="in_clinic_services" value={formData.in_clinic_services} onChange={handleInputChange} />
+            <input id='clinicServices' type="text" name="in_clinic_services" value={formData.in_clinic_services} onChange={handleInputChange} placeholder='Yes, No?'/>
             
             <label htmlFor='at_home_services' className='editLabels'>Home Services: </label>
-            <input id='at_home_services' type="text" name="at_home_services" value={formData.at_home_services} onChange={handleInputChange} />
+            <input id='at_home_services' type="text" name="at_home_services" value={formData.at_home_services} onChange={handleInputChange} placeholder='Yes, No?'/>
             
             <label htmlFor='telehealth' className='editLabels'>Telehealth Services: </label>
-            <input id='telehealth' type="text" name="telehealth" value={formData.telehealth} onChange={handleInputChange} />
+            <input id='telehealth' type="text" name="telehealth" value={formData.telehealth} onChange={handleInputChange} placeholder='Yes, No?'/>
             
                     <button onClick={toggleInsuranceModal} className='select-insurance-button'>
                         Select Insurance Coverage
