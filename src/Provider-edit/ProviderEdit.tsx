@@ -9,6 +9,7 @@ import { useAuth } from '../Provider-login/AuthProvider';
 import { toast } from 'react-toastify';
 import { ToastContainer } from 'react-toastify';
 import { useCallback } from 'react';
+import { cloneDeep } from 'lodash';
 
 interface ProviderEditProps {
     loggedInProvider: MockProviderData | null;
@@ -29,12 +30,28 @@ const [selectedInsurances, setSelectedInsurances] = useState<Insurance[]>([]);
     const { setToken } = useAuth();
     const [isSaving, setIsSaving] = useState(false);
     const [providerData, setProviderData] = useState<MockProviderData | null>(null);
-    
+    const [originalFormData, setOriginalFormData] = useState<typeof formData | null>(null);
+    const [originalLocations, setOriginalLocations] = useState<typeof locations | null>(null);
+    const [originalInsurances, setOriginalInsurances] = useState<typeof selectedInsurances | null>(null);
+    const [originalCounties, setOriginalCounties] = useState<typeof selectedCounties | null>(null);
+
 
 
     const handleSave = () => {
         setIsSaving(true);
     }
+
+    const handleCancel = () => {
+        if (originalFormData && originalLocations && originalInsurances && originalCounties) {
+            setFormData(cloneDeep(originalFormData));
+            setLocations(cloneDeep(originalLocations));
+            setSelectedInsurances(cloneDeep(originalInsurances));
+            setSelectedCounties(cloneDeep(originalCounties));
+            toast.info('Changes reverted to last saved information.');
+        } else {
+            toast.error('Unable to revert changes. Original data not available.');
+        }
+    };
 
 
     const [formData, setFormData] = useState({
@@ -83,18 +100,18 @@ const [selectedInsurances, setSelectedInsurances] = useState<Insurance[]>([]);
     useEffect(() => {
         if (loggedInProvider) {
             setShowError('');
-            setFormData({
+            const initialFormData = {
                 logo: loggedInProvider.attributes.logo ?? '',
                 name: loggedInProvider.attributes.name ?? '',
                 website: loggedInProvider.attributes.website ?? '',
-                location: loggedInProvider.attributes.locations[0].name ?? '',
-                address: loggedInProvider.attributes.locations[0].address_1 ?? '',
+                location: loggedInProvider.attributes.locations[0]?.name ?? '',
+                address: loggedInProvider.attributes.locations[0]?.address_1 ?? '',
                 email: loggedInProvider.attributes.email ?? '',
                 cost: loggedInProvider.attributes.cost ?? '',
-                city: loggedInProvider.attributes.locations[0].city ?? '',
-                state: loggedInProvider.attributes.locations[0].state ?? '',
-                zipCode: loggedInProvider.attributes.locations[0].zip ?? '',
-                phone: loggedInProvider.attributes.locations[0].phone ?? '',
+                city: loggedInProvider.attributes.locations[0]?.city ?? '',
+                state: loggedInProvider.attributes.locations[0]?.state ?? '',
+                zipCode: loggedInProvider.attributes.locations[0]?.zip ?? '',
+                phone: loggedInProvider.attributes.locations[0]?.phone ?? '',
                 spanishSpeakers: loggedInProvider.attributes.spanish_speakers ?? '',
                 serviceType: loggedInProvider.attributes.in_clinic_services ?? '',
                 waitlistTime: loggedInProvider.attributes.waitlist ?? '',
@@ -103,13 +120,25 @@ const [selectedInsurances, setSelectedInsurances] = useState<Insurance[]>([]);
                 at_home_services: loggedInProvider.attributes.at_home_services ?? '',
                 min_age: loggedInProvider.attributes.min_age ?? 0,
                 max_age: loggedInProvider.attributes.max_age ?? 0,
-            });
-            setLocations(loggedInProvider.attributes.locations ?? []);
-            setSelectedInsurances(loggedInProvider.attributes.insurance.map(ins => ({
+            };
+            setFormData(initialFormData);
+            setOriginalFormData(cloneDeep(initialFormData));
+
+            const initialLocations = loggedInProvider.attributes.locations ?? [];
+            setLocations(initialLocations);
+            setOriginalLocations(cloneDeep(initialLocations));
+
+            const initialInsurances = loggedInProvider.attributes.insurance.map(ins => ({
                 ...ins,
                 accepted: true 
-            })));
-            setSelectedCounties(loggedInProvider.attributes.counties_served ?? []);
+            }));
+            setSelectedInsurances(initialInsurances);
+            setOriginalInsurances(cloneDeep(initialInsurances));
+
+            const initialCounties = loggedInProvider.attributes.counties_served ?? [];
+            setSelectedCounties(initialCounties);
+            setOriginalCounties(cloneDeep(initialCounties));
+
             setIsLoading(false);
         } else {
             setIsLoading(false);
@@ -412,7 +441,7 @@ const [selectedInsurances, setSelectedInsurances] = useState<Insurance[]>([]);
             />
                     )}
                     <div className='buttons-section'>
-                        <button className='cancel-button'>Cancel</button>
+                        <button className='cancel-button' onClick={handleCancel}>Cancel</button>
                         <button className='save-button' onClick={handleSave}>Save</button>
                     </div>
                 </div>
