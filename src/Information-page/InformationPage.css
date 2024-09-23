@@ -38,6 +38,11 @@
     padding: 0 5rem;
 }
 
+.info-content-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
 .info-content-section1 {
     background-color: pink;
     padding: 1rem 5rem;
