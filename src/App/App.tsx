@@ -1,5 +1,5 @@
 import './App.css';
-import { Routes, Route} from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import Homepage from '../Homepage/Homepage';
 import InformationPage from '../Information-page/InformationPage';
 import { LoginPage } from '../Provider-login/LoginPage';
@@ -17,7 +17,7 @@ import { AuthProvider, useAuth } from '../Provider-login/AuthProvider';
 import { useState } from 'react';
 import ProtectedRoute from '../Provider-login/ProtectedRoute';
 import { MockProviderData } from '../Utility/Types';
-
+import Resources from '../Resources/Resources';
 
 
 
@@ -26,13 +26,13 @@ function App() {
 
   const clearProviderData = () => {
     setLoggedInProvider(null);
-};
+  };
   return (
     <div className="App">
       <Header />
       <header className="App-header">
         <AuthProvider>
-            <Routes>
+          <Routes>
             <Route path='/' element={<Homepage />} />
             <Route path='/information' element={<InformationPage />} />
             <Route path='/providers' element={<ProvidersPage />} />
@@ -43,14 +43,15 @@ function App() {
             <Route path='/contact' element={<ContactUs />} />
             <Route path='/signup' element={<Signup />} />
             <Route path='/about' element={<AboutUs />} />
+            <Route path='/resources' element={<Resources />} />
             <Route
-                path="/providerEdit"
-                element={
-                  <ProtectedRoute>
-                    <ProviderEditWrapper clearProviderData={clearProviderData}/>
-                  </ProtectedRoute>
-                }
-              />
+              path="/providerEdit"
+              element={
+                <ProtectedRoute>
+                  <ProviderEditWrapper clearProviderData={clearProviderData} />
+                </ProtectedRoute>
+              }
+            />
             <Route path='*' element={<PageNotFound />} />
           </Routes>
         </AuthProvider>
@@ -61,7 +62,7 @@ function App() {
 }
 function ProviderEditWrapper({ clearProviderData }: { clearProviderData: () => void }) {
   const { loggedInProvider } = useAuth();
-  return <ProviderEdit loggedInProvider={loggedInProvider} clearProviderData={clearProviderData}/>;
+  return <ProviderEdit loggedInProvider={loggedInProvider} clearProviderData={clearProviderData} />;
 }
 
 export default App;
