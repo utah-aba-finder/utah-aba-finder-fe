@@ -336,6 +336,7 @@ const ProvidersPage: React.FC = () => {
         </h2>
       </section>
       <SearchBar
+        providers={allProviders}
         onResults={handleResults}
         onSearch={handleSearch}
         onCountyChange={handleCountyChange}
