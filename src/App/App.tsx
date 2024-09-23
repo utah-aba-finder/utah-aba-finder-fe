@@ -17,6 +17,7 @@ import { AuthProvider, useAuth } from '../Provider-login/AuthProvider';
 import { useState } from 'react';
 import ProtectedRoute from '../Provider-login/ProtectedRoute';
 import { MockProviderData } from '../Utility/Types';
+import { SuperAdmin } from '../SuperAdmin/SuperAdmin';
 import Resources from '../Resources/Resources';
 
 
@@ -44,6 +45,7 @@ function App() {
             <Route path='/signup' element={<Signup />} />
             <Route path='/about' element={<AboutUs />} />
             <Route path='/resources' element={<Resources />} />
+            <Route path='/superAdmin' element={<SuperAdmin providers={}/>} />
             <Route
               path="/providerEdit"
               element={

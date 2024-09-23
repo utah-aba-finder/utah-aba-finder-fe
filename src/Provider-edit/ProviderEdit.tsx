@@ -20,7 +20,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
     const [isInsuranceModalOpen, setIsInsuranceModalOpen] = useState(false);
     const [isCountiesModalOpen, setIsCountiesModalOpen] = useState(false);
     const [selectedCounties, setSelectedCounties] = useState<CountiesServed[]>([]);
-const [selectedInsurances, setSelectedInsurances] = useState<Insurance[]>([]);
+    const [selectedInsurances, setSelectedInsurances] = useState<Insurance[]>([]);
 
     const [isLoading, setIsLoading] = useState(true);
     const [locations, setLocations] = useState<any[]>([]);
