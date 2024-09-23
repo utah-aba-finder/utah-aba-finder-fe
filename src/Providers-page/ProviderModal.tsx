@@ -1,5 +1,6 @@
 import React from 'react';
 import './ProviderModal.css';
+import GoogleMap from './GoogleMap';
 
 interface Location {
   name?: string | null;
@@ -46,46 +47,64 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ provider, onClose }) => {
 
   return (
     <div className="modal-overlay">
-      <div className="modal-content">
-        <button className="modal-close" onClick={onClose}>X</button>
-        <img src={provider.logo ?? undefined} alt={provider.name ?? undefined} className="provider-page-modal-provider-logo" />
-
-        <div className="company-info">
-          <h2>{provider.name}</h2>
-
-          {provider.locations.length > 0 ? (
-            provider.locations.slice(0, 4).map((location, index) => (
-              <p
-                key={index}
-                className={`contact-info ${hasMultipleLocations ? 'smaller-font' : ''}`}
-              >
-                <strong>Location {index + 1}:</strong>
-                {location.name && <span> {location.name}, </span>}
-                {location.address_1 && <span>{location.address_1}, </span>}
-                {location.address_2 && <span>{location.address_2}, </span>}
-                {location.city && <span>{location.city}, </span>}
-                {location.state && <span>{location.state} </span>}
-                {location.zip && <span>{location.zip}</span>}
-                {location.phone && <span> - Phone: <a href={`tel:${location.phone}`}>{location.phone}</a></span>}
-              </p>
-            ))
-          ) : (
-            <p><strong>Physical address is not available for this provider</strong></p>
-          )}
-
-          <p className="website-text"><strong>Website:</strong> <a href={provider.website ?? undefined} target="_blank" rel="noopener noreferrer">{provider.website ?? 'N/A'}</a></p>
-          <p className="email-text"><strong>Email:</strong> <a href={`mailto:${provider.email ?? ''}`} target="_blank" rel="noopener noreferrer">{provider.email ?? 'Does not have an email'}</a></p>
+      <div className="modal-grid grid">
+        <div className="modal-grid-map">
+          <GoogleMap />
         </div>
 
-        <div className="details">
-          <p><strong>Counties Served:</strong> {provider.counties_served[0]?.county || 'Contact us'}</p>
-          <p><strong>Ages Served:</strong> {provider.min_age} - {provider.max_age} years</p>
-          <p><strong>Waitlist:</strong> {provider.waitlist || 'Contact us'}</p>
-          <p><strong>Telehealth Services:</strong> {provider.telehealth_services || 'Contact us'}</p>
-          <p><strong>At Home Services:</strong> {provider.at_home_services || 'Contact us'}</p>
-          <p><strong>In-Clinic Services:</strong> {provider.in_clinic_services || 'Contact us'}</p>
-          <p><strong>Spanish Speakers:</strong> {provider.spanish_speakers || 'Contact us'}</p>
-          <p><strong>Insurance:</strong> {provider.insurance.map(i => i.name).join(', ') || 'Contact us'}</p>
+        <div className="modal-grid-text">
+          <div className="modal-logo">
+            <img src={provider.logo ?? undefined} alt={provider.name ?? undefined} className="modal-img"/>
+          </div>
+          <div>
+            <div className="status-badge">status</div>
+            <h2 className="provider-name title">
+              {provider.name}
+            </h2>
+            <p className="provider-address-phone text">
+              {provider.locations.length > 0 ? (
+                provider.locations.slice(0, 4).map((location, index) => (
+                  <p
+                    key={index}
+                    className={`provider-address-phone ${hasMultipleLocations ? 'multiple-locations' : ''}`}
+                  >
+                    <p><strong>Location {index + 1}: </strong></p>
+                    <p><strong>Address: </strong>
+                      {location.name && <span> {location.name}, </span>}
+                      {location.address_1 && <span>{location.address_1}, </span>}
+                      {location.address_2 && <span>{location.address_2}, </span>}
+                      {location.city && <span>{location.city}, </span>}
+                      {location.state && <span>{location.state} </span>}
+                      {location.zip && <span>{location.zip}</span>}
+                    </p>
+                    <p> <strong> Phone: <a href={`tel:${location.phone}`}>{location.phone}</a></strong> </p>
+
+                  </p>
+                ))
+              ) : (
+                <p><strong>Physical address is not available for this provider</strong></p>
+              )}
+            </p>
+          </div>
+
+          <div className="modal-footer">
+            <div className="provider-details-section">
+
+              <div className="provider-details text">
+                <p className="website-text"><strong>Website:</strong> <a href={provider.website ?? undefined} target="_blank" rel="noopener noreferrer">{provider.website ?? 'N/A'}</a></p>
+                <p className="email-text"><strong>Email:</strong> <a href={`mailto:${provider.email ?? ''}`} target="_blank" rel="noopener noreferrer">{provider.email ?? 'Does not have an email'}</a></p>
+
+                <p><strong>Counties Served:</strong> {provider.counties_served[0]?.county || 'Contact us'}</p>
+                <p><strong>Ages Served:</strong> {provider.min_age} - {provider.max_age} years</p>
+                <p><strong>Waitlist:</strong> {provider.waitlist || 'Contact us'}</p>
+                <p><strong>Telehealth Services:</strong> {provider.telehealth_services || 'Contact us'}</p>
+                <p><strong>At Home Services:</strong> {provider.at_home_services || 'Contact us'}</p>
+                <p><strong>In-Clinic Services:</strong> {provider.in_clinic_services || 'Contact us'}</p>
+                <p><strong>Spanish Speakers:</strong> {provider.spanish_speakers || 'Contact us'}</p>
+                <p><strong>Insurance:</strong> {provider.insurance.map(i => i.name).join(', ') || 'Contact us'}</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -93,3 +112,42 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ provider, onClose }) => {
 };
 
 export default ProviderModal;
+
+
+// {/* // <h2>{provider.name}</h2>
+
+// //             {provider.locations.length > 0 ? ( */}
+//               provider.locations.slice(0, 4).map((location, index) => (
+//                 <p
+//                   key={index}
+//                   className={`contact-info ${hasMultipleLocations ? 'smaller-font' : ''}`}
+//                 >
+//                   <strong>Location {index + 1}:</strong>
+//                   {location.name && <span> {location.name}, </span>}
+//                   {location.address_1 && <span>{location.address_1}, </span>}
+//                   {location.address_2 && <span>{location.address_2}, </span>}
+//                   {location.city && <span>{location.city}, </span>}
+//                   {location.state && <span>{location.state} </span>}
+//                   {location.zip && <span>{location.zip}</span>}
+//                   {location.phone && <span> - Phone: <a href={`tel:${location.phone}`}>{location.phone}</a></span>}
+//                 </p>
+//               ))
+//             ) : (
+//               <p><strong>Physical address is not available for this provider</strong></p>
+//             )}
+
+//   <p className="website-text"><strong>Website:</strong> <a href={provider.website ?? undefined} target="_blank" rel="noopener noreferrer">{provider.website ?? 'N/A'}</a></p>
+//   <p className="email-text"><strong>Email:</strong> <a href={`mailto:${provider.email ?? ''}`} target="_blank" rel="noopener noreferrer">{provider.email ?? 'Does not have an email'}</a></p>
+// </div>
+
+// <div className="details">
+//   <p><strong>Counties Served:</strong> {provider.counties_served[0]?.county || 'Contact us'}</p>
+//   <p><strong>Ages Served:</strong> {provider.min_age} - {provider.max_age} years</p>
+//   <p><strong>Waitlist:</strong> {provider.waitlist || 'Contact us'}</p>
+//   <p><strong>Telehealth Services:</strong> {provider.telehealth_services || 'Contact us'}</p>
+//   <p><strong>At Home Services:</strong> {provider.at_home_services || 'Contact us'}</p>
+//   <p><strong>In-Clinic Services:</strong> {provider.in_clinic_services || 'Contact us'}</p>
+//   <p><strong>Spanish Speakers:</strong> {provider.spanish_speakers || 'Contact us'}</p>
+//   <p><strong>Insurance:</strong> {provider.insurance.map(i => i.name).join(', ') || 'Contact us'}</p>
+//           </div>
+//         </div>

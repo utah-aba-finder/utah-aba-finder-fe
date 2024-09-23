@@ -20,3 +20,22 @@ body {
   padding-top: 1rem;
   padding-bottom: 1rem;
 }
+
+.grid {
+  display: grid;
+}
+
+.title {
+  font-family: "Gotham", sans-serif;
+  color: #424266;
+  font-weight: 700;
+}
+
+.text {
+  text-align: center;
+  text-align: right;
+  text-align: justify;
+  font-weight: 400;
+  color: #808080;
+  line-height: 1.6;
+}

@@ -43,16 +43,16 @@ const ProvidersPage: React.FC = () => {
         }
         const providersList: MockProviders = await fetchProviders();
         const mappedProviders = providersList.data.map(provider => provider.attributes);
-    
+
         const sortedProviders = mappedProviders.sort((a, b) => {
-          const nameA = a.name ?? ''; 
-          const nameB = b.name ?? ''; 
+          const nameA = a.name ?? '';
+          const nameB = b.name ?? '';
           return nameA.localeCompare(nameB);
         });
-    
+
         setAllProviders(sortedProviders);
         setFilteredProviders(sortedProviders);
-    
+
         const uniqueInsurances = Array.from(new Set(
           sortedProviders.flatMap(provider => provider.insurance.map(ins => ins.name || '')).sort() as string[]
         ));
@@ -120,15 +120,15 @@ const ProvidersPage: React.FC = () => {
       serviceFilter(provider) &&
       waitlistFilter(provider)
     );
-    
+
     const sortedFilteredProviders = filtered.sort((a, b) => {
-      const nameA = a.name || ''; 
+      const nameA = a.name || '';
       const nameB = b.name || '';
       return nameA.localeCompare(nameB);
     });
-    
+
     setFilteredProviders(sortedFilteredProviders);
-    
+
     setIsFiltered(true);
     setCurrentPage(1);
   }, [allProviders]);
@@ -207,23 +207,23 @@ const ProvidersPage: React.FC = () => {
     }));
 
     const filteredResults = mappedResults.filter(provider =>
-      (!selectedService || 
+      (!selectedService ||
         (selectedService === 'telehealth' && provider.telehealth_services?.toLowerCase() === 'yes') ||
         (selectedService === 'at_home' && provider.at_home_services?.toLowerCase() === 'yes') ||
         (selectedService === 'in_clinic' && provider.in_clinic_services?.toLowerCase() === 'yes')) &&
-      (!selectedWaitList || 
+      (!selectedWaitList ||
         (selectedWaitList === '6 Months or Less' && (provider.waitlist ? parseInt(provider.waitlist, 10) <= 6 : false)) ||
         (selectedWaitList === 'no' && provider.waitlist?.toLowerCase() === 'no'))
     );
-    
+
     const sortedFilteredResults = filteredResults.sort((a, b) => {
-      const nameA = a.name || ''; 
+      const nameA = a.name || '';
       const nameB = b.name || '';
       return nameA.localeCompare(nameB);
     });
-    
+
     setFilteredProviders(sortedFilteredResults);
-    
+
     setCurrentPage(1);
   };
 
@@ -328,6 +328,7 @@ const ProvidersPage: React.FC = () => {
           <GoogleMap address={mapAddress} />
         </section>
       </div>
+
       <section className="provider-title-section">
         <h2>
           {isFiltered

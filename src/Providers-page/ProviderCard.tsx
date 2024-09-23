@@ -12,8 +12,9 @@ interface ProviderCardProps {
 const ProviderCard: React.FC<ProviderCardProps> = ({ provider, onViewDetails, renderViewOnMapButton }) => {
   return (
     <div className={`searched-provider-card ${provider.locations.length > 1 ? 'multiple-locations' : ''}`}>
-      <img src={provider.logo || puzzleLogo} alt="Provider Logo" className="provider-logo" />
 
+      <img src={provider.logo || puzzleLogo} alt="Provider Logo" className="provider-logo" />
+      
       <div className="title-and-info">
         <div className="searched-provider-card-title">
           <h3>{provider.name}</h3>
