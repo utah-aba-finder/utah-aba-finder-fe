@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './SearchBar.css';
-import { MockProviders } from '../Utility/Types';
+import { MockProviders, ProviderAttributes } from '../Utility/Types';
 
 interface SearchBarProps {
   onResults: (results: MockProviders) => void;
@@ -14,6 +14,7 @@ interface SearchBarProps {
   onServiceChange: (service: string) => void;
   onWaitListChange: (waitlist: string) => void;
   onReset: () => void;
+  providers: ProviderAttributes[];
 }
 
 const SearchBar: React.FC<SearchBarProps> = ({
@@ -25,6 +26,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
   onServiceChange,
   onWaitListChange,
   onReset,
+  providers,
 }) => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedCounty, setSelectedCounty] = useState<string>('');
@@ -72,7 +74,13 @@ const SearchBar: React.FC<SearchBarProps> = ({
             placeholder="Search for a provider..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-          />
+            list="provider-names"
+            />
+            <datalist id="provider-names">
+              {providers.map((provider, index) => (
+                <option key={index} value={provider.name ?? ''} />
+              ))}
+            </datalist>
 
           <div className="provider-county-dropdown">
             <select
