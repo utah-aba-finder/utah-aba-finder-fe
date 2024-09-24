@@ -182,12 +182,10 @@
   }
 
   .modal-grid-text {
-    height: 20em;
+    height: 16em;
     overflow-y: auto;
   }
-  .modal-grid {
-    height: auto;
-  }
+  
 
   .modal-img {
     width: 25%;
@@ -214,7 +212,7 @@
 
 
   .modal-grid-text {
-    height: 25em;
+    height: 21em;
   }
 
   .modal-img {
@@ -234,6 +232,9 @@
   .modal-grid {
     height: auto;
   }
+  .modal-grid-text {
+    height: 21em;
+  }
 
 }
 
@@ -249,7 +250,7 @@
   }
 
   .modal-grid {
-    height: 48em;
+    height: auto;
   }
 
 
@@ -261,7 +262,7 @@
   }
 
   .modal-grid {
-    height: 47em;
+    height: auto;
   }
 
   .modal-container {
