@@ -1,7 +1,7 @@
 import { useState, useEffect} from 'react'
+import { useParams } from 'react-router-dom'
 import './SuperAdmin.css'
-import { MockProviderData, MockProviders, ProviderAttributes } from '../Utility/Types'
-import  ProviderEdit  from '../Provider-edit/ProviderEdit'
+import { MockProviderData, ProviderAttributes } from '../Utility/Types'
 import { SuperAdminEdit } from './SuperAdminEdit'
 interface SuperAdminProps {
     providers: MockProviderData[];
@@ -10,8 +10,22 @@ interface SuperAdminProps {
 
 export const SuperAdmin: React.FC<SuperAdminProps> = ({ providers, setProviders }) => {
     const [selectedProvider, setSelectedProvider] = useState<MockProviderData | null>(null)
+    const { providerId } = useParams<{ providerId: string }>();
+    const provider = providers.find(p => p.id === (providerId ?? 0));
     
-
+    useEffect(() => {
+        if (providerId) {
+            const providerIdNumber = Number(providerId);
+            const provider = providers.find(p => p.id === providerIdNumber);
+            if (provider) {
+                setSelectedProvider(provider);
+            }
+        }
+    }, [providerId, provider]);
+    console.log('providerId:', providerId);
+    console.log('providers:', providers);
+    
+    console.log('found provider:', provider);
     const handleProviderSelect = (provider: ProviderAttributes) => {
         setSelectedProvider(provider as unknown as MockProviderData);
       };
@@ -41,7 +55,7 @@ return (
         <div style={{ width: '70%' }}>
           {selectedProvider ? (
             <SuperAdminEdit
-              providers={providers} 
+              provider={selectedProvider.attributes} 
               onUpdate={handleProviderUpdate} 
             />  
           ) : (

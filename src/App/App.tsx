@@ -1,5 +1,5 @@
 import './App.css';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useParams } from 'react-router-dom';
 import Homepage from '../Homepage/Homepage';
 import InformationPage from '../Information-page/InformationPage';
 import { LoginPage } from '../Provider-login/LoginPage';
@@ -77,7 +77,7 @@ function App() {
                 } />
                  <Route path='/superAdmin/edit/:providerId' element={
               <ProtectedRoute>
-                <SuperAdminEdit providers={allProviders} onUpdate={handleProviderUpdate} />
+                <SuperAdminEditWrapper providers={allProviders} onUpdate={handleProviderUpdate} />
               </ProtectedRoute> 
             } />
             <Route
@@ -95,6 +95,20 @@ function App() {
       <Footer />
     </div>
   );
+}
+function SuperAdminEditWrapper({ providers, onUpdate }: { providers: MockProviderData[], onUpdate: (updatedProvider: ProviderAttributes) => void }) {
+  const { providerId } = useParams();
+  const provider = providers.find(p => p.id === (providerId ?? 0));
+  
+  console.log('providerId:', providerId);
+  console.log('providers:', providers);
+  console.log('found provider:', provider);
+
+  if (!provider) {
+    return <div>Provider not found</div>;
+  }
+
+  return <SuperAdminEdit provider={provider.attributes} onUpdate={onUpdate} />;
 }
 function ProviderEditWrapper({ clearProviderData, onUpdate }: { clearProviderData: () => void, onUpdate: (updatedProvider: ProviderAttributes) => void  }) {
   const { loggedInProvider } = useAuth();
