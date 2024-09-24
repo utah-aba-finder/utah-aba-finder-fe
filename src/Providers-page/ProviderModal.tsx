@@ -81,14 +81,15 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ provider, address, mapAdd
                       <p>
                         <MapPin style={{ marginRight: '8px' }} />
                         <strong>Address: </strong>
-                        {provider.locations[0]?.address_1
-                          ? `${provider.locations[0]?.address_1}${provider.locations[0]?.address_2 ? ', ' : ''}`
+                        {location.address_1
+                          ? `${location.address_1}${location.address_2 ? ', ' : ''}`
                           : 'Physical address is not available for this provider.'}
-                        {provider.locations[0]?.address_2 && `${provider.locations[0]?.address_2}, `}
-                        {provider.locations[0]?.city && `${provider.locations[0]?.city}, `}
-                        {provider.locations[0]?.state && `${provider.locations[0]?.state} `}
-                        {provider.locations[0]?.zip && `${provider.locations[0]?.zip}`}
+                        {location.address_2 && `${location.address_2}, `}
+                        {location.city && `${location.city}, `}
+                        {location.state && `${location.state} `}
+                        {location.zip && `${location.zip}`}
                       </p>
+
                       <p>
                         <Phone style={{ marginRight: '8px' }} />
                         <strong>Phone: </strong><a href={`tel:${location.phone}`}>{location.phone}</a>
