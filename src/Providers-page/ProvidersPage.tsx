@@ -24,6 +24,9 @@ const ProvidersPage: React.FC = () => {
   const [selectedService, setSelectedService] = useState<string>('');
   const [selectedWaitList, setSelectedWaitList] = useState<string>('');
   const [mapAddress, setMapAddress] = useState<string>('Utah');
+  const [selectedAddress, setSelectedAddress] = useState<string | null>(null);
+
+
   const [isFiltered, setIsFiltered] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [showError, setShowError] = useState('');
@@ -139,7 +142,18 @@ const ProvidersPage: React.FC = () => {
 
   const handleProviderCardClick = (provider: ProviderAttributes) => {
     setSelectedProvider(provider);
+  
+   
+    const address = provider.locations.length > 0
+      ? `${provider.locations[0].address_1 || ''} ${provider.locations[0].address_2 || ''}, ${provider.locations[0].city || ''}, ${provider.locations[0].state || ''} ${provider.locations[0].zip || ''}`.trim()
+      : 'Address not available';
+  
+   
+    setMapAddress(address);
+    setSelectedAddress(address); 
   };
+  
+
 
   const handleViewOnMapClick = (address: string | null) => {
     setMapAddress(address || 'Utah');
@@ -383,7 +397,15 @@ const ProvidersPage: React.FC = () => {
         )}
       </div>
 
-      {selectedProvider && <ProviderModal provider={selectedProvider} onClose={handleCloseModal} />}
+      {selectedProvider && (
+        <ProviderModal
+        provider={selectedProvider}
+        address={selectedAddress || 'Address not available'} 
+        mapAddress={mapAddress}
+        onClose={handleCloseModal}
+      />
+      )}
+
     </div>
   );
 };
