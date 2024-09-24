@@ -12,13 +12,20 @@ interface ProviderCardProps {
 const ProviderCard: React.FC<ProviderCardProps> = ({ provider, onViewDetails, renderViewOnMapButton }) => {
   return (
     <div className={`searched-provider-card ${provider.locations.length > 1 ? 'multiple-locations' : ''}`}>
+
       <img src={provider.logo || puzzleLogo} alt="Provider Logo" className="provider-logo" />
 
       <div className="title-and-info">
         <div className="searched-provider-card-title">
           <h3>{provider.name}</h3>
           <h4>
-            {provider.locations[0]?.address_1 || 'Physical address is not available for this provider.'} {provider.locations[0]?.address_2} {provider.locations[0]?.city} {provider.locations[0]?.state} {provider.locations[0]?.zip}
+            {provider.locations[0]?.address_1
+              ? `${provider.locations[0]?.address_1}${provider.locations[0]?.address_2 ? ', ' : ''}`
+              : 'Physical address is not available for this provider.'}
+            {provider.locations[0]?.address_2 && `${provider.locations[0]?.address_2}, `}
+            {provider.locations[0]?.city && `${provider.locations[0]?.city}, `}
+            {provider.locations[0]?.state && `${provider.locations[0]?.state} `}
+            {provider.locations[0]?.zip && `${provider.locations[0]?.zip}`}
           </h4>
         </div>
         <div className="searched-provider-card-info">
