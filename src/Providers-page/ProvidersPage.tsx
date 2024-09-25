@@ -32,10 +32,29 @@ const ProvidersPage: React.FC = () => {
   const [showError, setShowError] = useState('');
   const [isLoading, setIsLoading] = useState(false)
   const errorTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
+  const [favoriteProviders, setFavoriteProviders] = useState<ProviderAttributes[]>([]);
 
   const mapSectionRef = useRef<HTMLDivElement>(null);
   const providersPerPage = 8;
+
+  useEffect(() => {
+    const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+    setFavoriteProviders(favorites);
+  }, []);
+
+  const toggleFavorite = (provider: ProviderAttributes) => {
+    const isFavorite = favoriteProviders.some(fav => fav.id === provider.id);
+    
+    let updatedFavorites;
+    if (isFavorite) {
+      updatedFavorites = favoriteProviders.filter(fav => fav.id !== provider.id);
+    } else {
+      updatedFavorites = [...favoriteProviders, provider];
+    }
+
+    setFavoriteProviders(updatedFavorites);
+    localStorage.setItem('favorites', JSON.stringify(updatedFavorites));
+  };
 
   useEffect(() => {
     const getProviders = async () => {
@@ -44,39 +63,23 @@ const ProvidersPage: React.FC = () => {
         if (errorTimeoutRef.current) {
           clearTimeout(errorTimeoutRef.current);
         }
-        
-        const cachedProviders = localStorage.getItem('providers');
-        if (cachedProviders) {
-          const providersList: MockProviders = JSON.parse(cachedProviders);
-          const mappedProviders = providersList.data.map(provider => provider.attributes);
-          
-          const sortedProviders = mappedProviders.sort((a, b) => {
-            const nameA = a.name ?? '';
-            const nameB = b.name ?? '';
-            return nameA.localeCompare(nameB);
-          });
-
-          setAllProviders(sortedProviders);
-          setFilteredProviders(sortedProviders);
-          updateUniqueInsuranceOptions(sortedProviders);
-          return;
-        }
-
         const providersList: MockProviders = await fetchProviders();
         const mappedProviders = providersList.data.map(provider => provider.attributes);
-        
+
         const sortedProviders = mappedProviders.sort((a, b) => {
           const nameA = a.name ?? '';
           const nameB = b.name ?? '';
           return nameA.localeCompare(nameB);
         });
 
-        localStorage.setItem('providers', JSON.stringify(providersList));
-
         setAllProviders(sortedProviders);
         setFilteredProviders(sortedProviders);
-        updateUniqueInsuranceOptions(sortedProviders);
-        
+
+        const uniqueInsurances = Array.from(new Set(
+          sortedProviders.flatMap(provider => provider.insurance.map(ins => ins.name || '')).sort() as string[]
+        ));
+        setUniqueInsuranceOptions(uniqueInsurances);
+        setMapAddress('Utah');
         setIsLoading(false);
         if (sortedProviders.length === 0) {
           errorTimeoutRef.current = setTimeout(() => {
@@ -91,16 +94,7 @@ const ProvidersPage: React.FC = () => {
         }, 5000);
       }
     };
-
-    const updateUniqueInsuranceOptions = (providers: ProviderAttributes[]) => {
-      const uniqueInsurances = Array.from(new Set(
-        providers.flatMap(provider => provider.insurance.map(ins => ins.name || '')).sort() as string[]
-      ));
-      setUniqueInsuranceOptions(uniqueInsurances);
-    };
-
     getProviders();
-
     return () => {
       if (errorTimeoutRef.current) {
         clearTimeout(errorTimeoutRef.current);
@@ -400,11 +394,13 @@ const ProvidersPage: React.FC = () => {
           <div className="provider-cards-grid">
             {paginatedProviders.map((provider, index) => (
               <ProviderCard
-                key={index}
-                provider={provider}
-                onViewDetails={handleProviderCardClick}
-                renderViewOnMapButton={renderViewOnMapButton}
-              />
+              key={index}
+              provider={provider}
+              onViewDetails={handleProviderCardClick}
+              renderViewOnMapButton={renderViewOnMapButton}
+              onToggleFavorite={() => toggleFavorite(provider)} // Add toggle favorite function here
+              isFavorited={favoriteProviders.some(fav => fav.id === provider.id)} // Check if provider is favorited
+            />
             ))}
           </div>
         )}
@@ -425,12 +421,13 @@ const ProvidersPage: React.FC = () => {
 
       {selectedProvider && (
         <ProviderModal
-          provider={selectedProvider}
-          address={selectedAddress || 'Address not available'} 
-          mapAddress={mapAddress}
-          onClose={handleCloseModal}
-        />
+        provider={selectedProvider}
+        address={selectedAddress || 'Address not available'} 
+        mapAddress={mapAddress}
+        onClose={handleCloseModal}
+      />
       )}
+
     </div>
   );
 };
