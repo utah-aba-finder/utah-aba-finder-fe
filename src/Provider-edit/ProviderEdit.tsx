@@ -376,7 +376,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
                         />
                     </div>
                 ))}
-                <button onClick={addNewLocation} className="add-location-button">
+                <button onClick={addNewLocation} className="add-location-button" disabled>
                     Add New Location
                 </button>
             <label htmlFor='name' className='editLabels'>Provider Name:</label>
