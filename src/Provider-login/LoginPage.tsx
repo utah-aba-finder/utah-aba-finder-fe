@@ -85,7 +85,15 @@ export const LoginPage: React.FC = () => {
         }
     };
     
-
+    const handleProviderUpdate = (updatedProvider: ProviderAttributes) => {
+        setCurrentProvider((prevProvider) => {
+            if (!prevProvider) return undefined;
+            return {
+                ...prevProvider,
+                ...updatedProvider,
+            };
+        });
+    };
     const handleShowPassword = () => {
         setShowPassword(!showPassword);
     }
@@ -147,7 +155,7 @@ export const LoginPage: React.FC = () => {
                     </form>
                 </div>
             ) : (
-                currentProvider && <ProviderEdit loggedInProvider={currentProvider} clearProviderData={clearProviderData} />
+                currentProvider && <ProviderEdit loggedInProvider={currentProvider} clearProviderData={clearProviderData} onUpdate={handleProviderUpdate} />
             )}
         </div>
     );

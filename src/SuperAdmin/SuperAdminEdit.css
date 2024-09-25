@@ -1,0 +1,46 @@
+.superAdminEditWrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100vh;
+}
+
+.superAdminEditFormWrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.superAdminEditForm {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.superAdminEditForm input {
+    margin: 10px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.superAdminEditForm label {
+    width: fit-content;
+    margin-left: 10px;
+    color: rgb(255, 64, 0);
+}
+
+.superAdminEditForm button {
+    margin: 10px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.superAdminEditForm button:hover {
+    background-color: rgb(175, 175, 175);
+}
+
+strong {
+    color: rgb(255, 64, 0);
+}

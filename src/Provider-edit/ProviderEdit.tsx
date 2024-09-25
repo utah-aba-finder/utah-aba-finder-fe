@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import "./ProviderEdit.css";
 import InsuranceModal from './InsuranceModal';
 import CountiesModal from './CountiesModal';
-import { Insurance, CountiesServed, MockProviderData } from '@/Utility/Types';
+import { Insurance, CountiesServed, MockProviderData, ProviderAttributes } from '@/Utility/Types';
 import gearImage from '../Assets/Gear@1x-0.5s-200px-200px.svg';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../Provider-login/AuthProvider';
@@ -14,13 +14,14 @@ import { cloneDeep } from 'lodash';
 interface ProviderEditProps {
     loggedInProvider: MockProviderData | null;
     clearProviderData: () => void;
+    onUpdate: (updatedProvider: ProviderAttributes) => void;
 }
 
-const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProviderData }) => {
+const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProviderData, onUpdate }) => {
     const [isInsuranceModalOpen, setIsInsuranceModalOpen] = useState(false);
     const [isCountiesModalOpen, setIsCountiesModalOpen] = useState(false);
     const [selectedCounties, setSelectedCounties] = useState<CountiesServed[]>([]);
-const [selectedInsurances, setSelectedInsurances] = useState<Insurance[]>([]);
+    const [selectedInsurances, setSelectedInsurances] = useState<Insurance[]>([]);
 
     const [isLoading, setIsLoading] = useState(true);
     const [locations, setLocations] = useState<any[]>([]);

@@ -1,5 +1,5 @@
 import './App.css';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useParams } from 'react-router-dom';
 import Homepage from '../Homepage/Homepage';
 import InformationPage from '../Information-page/InformationPage';
 import { LoginPage } from '../Provider-login/LoginPage';
@@ -14,19 +14,44 @@ import { Signup } from '../Signup/Signup';
 import AboutUs from '../AboutUs/AboutUs';
 import ProviderEdit from '../Provider-edit/ProviderEdit';
 import { AuthProvider, useAuth } from '../Provider-login/AuthProvider';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import ProtectedRoute from '../Provider-login/ProtectedRoute';
-import { MockProviderData } from '../Utility/Types';
+import { MockProviderData, MockProviders, ProviderAttributes } from '../Utility/Types';
+import { SuperAdmin } from '../SuperAdmin/SuperAdmin';
 import Resources from '../Resources/Resources';
+import { fetchProviders } from '../Utility/ApiCall';
+import { SuperAdminEdit } from '../SuperAdmin/SuperAdminEdit';
 
 
 
 function App() {
   const [loggedInProvider, setLoggedInProvider] = useState<MockProviderData | null>(null);
-
+  const [allProviders, setAllProviders] = useState<MockProviderData[]>([])
   const clearProviderData = () => {
     setLoggedInProvider(null);
   };
+
+  useEffect(() => {
+    const fetchAllProviders = async () => {
+      try {
+        const providers: MockProviders = await fetchProviders()
+        const data = providers.data
+        setAllProviders(data)
+      } catch (error) {
+        console.error('Error fetching providers:', error)
+      }
+    }
+    fetchAllProviders()
+  }, [])
+
+  const handleProviderUpdate = (updatedProvider: ProviderAttributes) => {
+    setAllProviders(prevProviders =>
+      prevProviders.map(provider =>
+        provider.id === updatedProvider.id ? { ...provider, ...updatedProvider } : provider
+      )
+    );
+  };   
+
   return (
     <div className="App">
       <Header />
@@ -44,11 +69,22 @@ function App() {
             <Route path='/signup' element={<Signup />} />
             <Route path='/about' element={<AboutUs />} />
             <Route path='/resources' element={<Resources />} />
+            
+            <Route path='/superAdmin' element={
+              <ProtectedRoute>
+                <SuperAdmin providers={allProviders} setProviders={setAllProviders}/>
+                </ProtectedRoute>
+                } />
+                 <Route path='/superAdmin/edit/:providerId' element={
+              <ProtectedRoute>
+                <SuperAdminEditWrapper providers={allProviders} onUpdate={handleProviderUpdate} />
+              </ProtectedRoute> 
+            } />
             <Route
               path="/providerEdit"
               element={
                 <ProtectedRoute>
-                  <ProviderEditWrapper clearProviderData={clearProviderData} />
+                  <ProviderEditWrapper clearProviderData={clearProviderData} onUpdate={handleProviderUpdate} />
                 </ProtectedRoute>
               }
             />
@@ -60,9 +96,23 @@ function App() {
     </div>
   );
 }
-function ProviderEditWrapper({ clearProviderData }: { clearProviderData: () => void }) {
+function SuperAdminEditWrapper({ providers, onUpdate }: { providers: MockProviderData[], onUpdate: (updatedProvider: ProviderAttributes) => void }) {
+  const { providerId } = useParams();
+  const provider = providers.find(p => p.id === (providerId ?? 0));
+  
+  console.log('providerId:', providerId);
+  console.log('providers:', providers);
+  console.log('found provider:', provider);
+
+  if (!provider) {
+    return <div>Provider not found</div>;
+  }
+
+  return <SuperAdminEdit provider={provider.attributes} onUpdate={onUpdate} />;
+}
+function ProviderEditWrapper({ clearProviderData, onUpdate }: { clearProviderData: () => void, onUpdate: (updatedProvider: ProviderAttributes) => void  }) {
   const { loggedInProvider } = useAuth();
-  return <ProviderEdit loggedInProvider={loggedInProvider} clearProviderData={clearProviderData} />;
+  return <ProviderEdit loggedInProvider={loggedInProvider} clearProviderData={clearProviderData} onUpdate={onUpdate} />;
 }
 
 export default App;
