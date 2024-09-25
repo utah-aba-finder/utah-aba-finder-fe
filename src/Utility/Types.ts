@@ -39,6 +39,7 @@ export interface ProviderAttributes {
     at_home_services: string | null;
     in_clinic_services: string | null;
     logo: string | null;
+    updated_last: string | null;
 }
 
 export interface MockProviderData {

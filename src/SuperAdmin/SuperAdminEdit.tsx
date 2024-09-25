@@ -82,7 +82,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({ provider , onUpd
     return (
     <div className='superAdminEditWrapper'>
         <section className='superAdminEditFormWrapper'>
-            <h1>Editing: <strong>{editedProvider.name}</strong></h1>
+            <h1>Editing: <strong className='superAdminEditFormName'>{editedProvider.name}</strong></h1>
             <form className='superAdminEditForm' onSubmit={handleSubmit}>
                 <label htmlFor="name">Name</label>
             <input

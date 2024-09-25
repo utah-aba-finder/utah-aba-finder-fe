@@ -10,6 +10,7 @@ import { toast } from 'react-toastify';
 import { ToastContainer } from 'react-toastify';
 import { useCallback } from 'react';
 import { cloneDeep } from 'lodash';
+import moment from 'moment';
 
 interface ProviderEditProps {
     loggedInProvider: MockProviderData | null;
@@ -310,7 +311,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
             <ToastContainer />
             <div className='user-info-section'>
                 <h1>Welcome, {loggedInProvider?.attributes.name}</h1>
-                <p>Last edited: </p>
+                <p>Last edited: {moment(loggedInProvider?.attributes.updated_last).format('MM/DD/YYYY')}</p>
                 <button className='logoutButton' onClick={handleLogout}>Logout</button>
                 <p>For any questions to the admin, please use the contact page.</p>
                 <Link to="/contact" className='contact-link'>Click here to go to the contact page</Link>
@@ -376,7 +377,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
                         />
                     </div>
                 ))}
-                <button onClick={addNewLocation} className="add-location-button">
+                <button onClick={addNewLocation} className="add-location-button" disabled>
                     Add New Location
                 </button>
             <label htmlFor='name' className='editLabels'>Provider Name:</label>
@@ -385,7 +386,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
             <label htmlFor='email' className='editLabels'>Provider Email:</label>
             <input id='email' type='text' name='email' value={formData.email} onChange={handleInputChange} />
 
-            <label htmlFor='cost' className='editLabels'>Provider Email:</label>
+            <label htmlFor='cost' className='editLabels'>Provider Cost:</label>
             <input id='cost' type='text' name='cost' value={formData.cost} onChange={handleInputChange} />
 
 

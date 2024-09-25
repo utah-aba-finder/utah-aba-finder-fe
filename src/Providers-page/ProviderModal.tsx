@@ -3,6 +3,7 @@ import './ProviderModal.css';
 import GoogleMap from './GoogleMap';
 import { MapPin, Phone, Globe, Mail } from 'lucide-react'
 import { useEffect, useState } from 'react';
+import moment from 'moment';
 
 interface Location {
   name?: string | null;
@@ -34,6 +35,7 @@ interface ProviderAttributes {
   in_clinic_services?: string | null;
   counties_served: { county: string | null }[];
   logo?: string | null;
+  updated_last: string | null;
 }
 
 interface ProviderModalProps {
@@ -70,6 +72,9 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ provider, address, mapAdd
             </div>
             <div className="provider-main-info">
               <h2 className="provider-name title">{provider.name}</h2>
+            <div className="update-section">
+                <span className="last-update">Last Updated {moment(provider.updated_last).format('MM/DD/YYYY')}</span>
+              </div>
               <p className="provider-address-phone text">
                 {provider.locations.length > 0 ? (
                   provider.locations.map((location, index) => (
@@ -113,44 +118,18 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ provider, address, mapAdd
               <p><strong>Counties Served:</strong> {provider.counties_served[0]?.county || 'Contact us'}
               </p>
 
-              <div className="update-section">
-                <span className="last-update">Last Updated - </span>
-              </div>
-
               <p><strong>Ages Served:</strong> {provider.min_age} - {provider.max_age} years</p>
-              <div className="update-section">
-                <span className="last-update">Last Updated - </span>
-              </div>
 
               <p><strong>Waitlist:</strong> {provider.waitlist || 'Contact us'}</p>
-              <div className="update-section">
-                <span className="last-update">Last Updated - </span>
-              </div>
-
               <p><strong>Telehealth Services:</strong> {provider.telehealth_services || 'Contact us'}</p>
-              <div className="update-section">
-                <span className="last-update">Last Updated - </span>
-              </div>
 
               <p><strong>At Home Services:</strong> {provider.at_home_services || 'Contact us'}</p>
-              <div className="update-section">
-                <span className="last-update">Last Updated - </span>
-              </div>
 
               <p><strong>In-Clinic Services:</strong> {provider.in_clinic_services || 'Contact us'}</p>
-              <div className="update-section">
-                <span className="last-update">Last Updated - </span>
-              </div>
 
               <p><strong>Spanish Speakers:</strong> {provider.spanish_speakers || 'Contact us'}</p>
-              <div className="update-section">
-                <span className="last-update">Last Updated - </span>
-              </div>
 
               <p><strong>Insurance:</strong> {provider.insurance.map(i => i.name).join(', ') || 'Contact us'}</p>
-              <div className="update-section">
-                <span className="last-update">Last Updated - </span>
-              </div>
 
             </div>
           </div>
