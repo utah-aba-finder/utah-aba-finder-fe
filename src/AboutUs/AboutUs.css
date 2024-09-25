@@ -55,12 +55,11 @@
     font-size: 1.54rem;
     margin-top: 1rem;
     margin-bottom: 1rem;
-    color: rgb(167, 125, 35); 
-    background-color: rgb(231, 231, 231); 
-    padding: 0.5rem; 
-    border-radius: 5px; 
-    display: inline-block; 
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, .3);
+    color: rgb(255, 106, 0);
+    background-color: rgb(231, 231, 231);
+    padding: 0.5rem;
+    border-radius: 5px;
+    display: inline-block;
 }
 
 
@@ -74,7 +73,7 @@
 }
 
 .about-us-link:hover {
-    color: rgb(167, 125, 35); 
+    color: rgb(167, 125, 35);
     text-decoration: none;
 }
 
@@ -88,11 +87,10 @@
 
 .front-end-title,
 .back-end-title {
-    color: rgb(158, 118, 32); 
+    color: rgb(255, 106, 0);
     text-align: center;
     margin: 0 auto;
     margin-bottom: 1rem;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, .3);
 }
 
 .card {
@@ -151,12 +149,13 @@
     height: 30px;
 }
 
-.divider {
+/* .profile-divider {
     width: 2px;
     background-color: #ff783e;
     margin: 0 20px;
     align-self: stretch;
-}
+    height: 100%;
+} */
 
 @media (max-width: 540px) {
     .about-us-title {
