@@ -385,7 +385,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
             <label htmlFor='email' className='editLabels'>Provider Email:</label>
             <input id='email' type='text' name='email' value={formData.email} onChange={handleInputChange} />
 
-            <label htmlFor='cost' className='editLabels'>Provider Email:</label>
+            <label htmlFor='cost' className='editLabels'>Provider Cost:</label>
             <input id='cost' type='text' name='cost' value={formData.cost} onChange={handleInputChange} />
 
 
