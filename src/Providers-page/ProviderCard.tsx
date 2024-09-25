@@ -1,7 +1,7 @@
 import React from 'react';
 import puzzleLogo from './puzzle.png';
 import { ProviderAttributes } from '../Utility/Types';
-import { MapPin, Phone, Globe, Mail } from 'lucide-react'
+import { MapPin, Phone, Mail } from 'lucide-react'
 
 
 

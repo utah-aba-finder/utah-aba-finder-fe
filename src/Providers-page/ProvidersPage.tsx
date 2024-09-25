@@ -7,7 +7,6 @@ import GoogleMap from './GoogleMap';
 import ProviderCard from './ProviderCard';
 import { fetchProviders } from '../Utility/ApiCall';
 import { MockProviders, ProviderAttributes } from '../Utility/Types';
-import { MapPin, Phone, Globe, Mail } from 'lucide-react'
 import gearImage from '../Assets/Gear@1x-0.5s-200px-200px.svg';
 
 
@@ -45,23 +44,39 @@ const ProvidersPage: React.FC = () => {
         if (errorTimeoutRef.current) {
           clearTimeout(errorTimeoutRef.current);
         }
+        
+        const cachedProviders = localStorage.getItem('providers');
+        if (cachedProviders) {
+          const providersList: MockProviders = JSON.parse(cachedProviders);
+          const mappedProviders = providersList.data.map(provider => provider.attributes);
+          
+          const sortedProviders = mappedProviders.sort((a, b) => {
+            const nameA = a.name ?? '';
+            const nameB = b.name ?? '';
+            return nameA.localeCompare(nameB);
+          });
+
+          setAllProviders(sortedProviders);
+          setFilteredProviders(sortedProviders);
+          updateUniqueInsuranceOptions(sortedProviders);
+          return;
+        }
+
         const providersList: MockProviders = await fetchProviders();
         const mappedProviders = providersList.data.map(provider => provider.attributes);
-
+        
         const sortedProviders = mappedProviders.sort((a, b) => {
           const nameA = a.name ?? '';
           const nameB = b.name ?? '';
           return nameA.localeCompare(nameB);
         });
 
+        localStorage.setItem('providers', JSON.stringify(providersList));
+
         setAllProviders(sortedProviders);
         setFilteredProviders(sortedProviders);
-
-        const uniqueInsurances = Array.from(new Set(
-          sortedProviders.flatMap(provider => provider.insurance.map(ins => ins.name || '')).sort() as string[]
-        ));
-        setUniqueInsuranceOptions(uniqueInsurances);
-        setMapAddress('Utah');
+        updateUniqueInsuranceOptions(sortedProviders);
+        
         setIsLoading(false);
         if (sortedProviders.length === 0) {
           errorTimeoutRef.current = setTimeout(() => {
@@ -76,7 +91,16 @@ const ProvidersPage: React.FC = () => {
         }, 5000);
       }
     };
+
+    const updateUniqueInsuranceOptions = (providers: ProviderAttributes[]) => {
+      const uniqueInsurances = Array.from(new Set(
+        providers.flatMap(provider => provider.insurance.map(ins => ins.name || '')).sort() as string[]
+      ));
+      setUniqueInsuranceOptions(uniqueInsurances);
+    };
+
     getProviders();
+
     return () => {
       if (errorTimeoutRef.current) {
         clearTimeout(errorTimeoutRef.current);
@@ -401,13 +425,12 @@ const ProvidersPage: React.FC = () => {
 
       {selectedProvider && (
         <ProviderModal
-        provider={selectedProvider}
-        address={selectedAddress || 'Address not available'} 
-        mapAddress={mapAddress}
-        onClose={handleCloseModal}
-      />
+          provider={selectedProvider}
+          address={selectedAddress || 'Address not available'} 
+          mapAddress={mapAddress}
+          onClose={handleCloseModal}
+        />
       )}
-
     </div>
   );
 };
