@@ -236,7 +236,7 @@ const ProvidersPage: React.FC = () => {
       return nameA.localeCompare(nameB);
     });
 
-    setFilteredProviders(sortedFilteredResults);
+    setFilteredProviders(sortedFilteredResults as ProviderAttributes[]);
 
     setCurrentPage(1);
   };
