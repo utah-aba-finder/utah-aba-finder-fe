@@ -21,13 +21,13 @@ export const SuperAdmin: React.FC<SuperAdminProps> = ({ providers, setProviders 
                 setSelectedProvider(provider);
             }
         }
-    }, [providerId, provider]);
+    }, [providerId, providers]);
     console.log('providerId:', providerId);
     console.log('providers:', providers);
     
     console.log('found provider:', provider);
-    const handleProviderSelect = (provider: ProviderAttributes) => {
-        setSelectedProvider(provider as unknown as MockProviderData);
+    const handleProviderSelect = (provider: MockProviderData) => {
+        setSelectedProvider(provider);
       };
     
       const handleProviderUpdate = (updatedProvider: ProviderAttributes) => {
@@ -41,18 +41,18 @@ export const SuperAdmin: React.FC<SuperAdminProps> = ({ providers, setProviders 
       };
 
 return (
-    <div>
+    <div className='superAdminWrapper'>
       <h1>Super Admin Dashboard</h1>
-      <div style={{ display: 'flex' }}>
-        <div style={{ width: '30%' }}>
+      <div className='superAdminDashboardWrapper'>
+        <div className='superAdminProvidersListWrapper'>
           <h2>Providers List</h2>
-          {providers.map(provider => (
-            <div key={provider.id} onClick={() => handleProviderSelect(provider.attributes)}>
+          {providers.sort((a, b) => (a.attributes.name ?? '').localeCompare(b.attributes.name ?? '') || 0).map(provider => (
+            <div key={provider.id} onClick={() => handleProviderSelect(provider)} className='superAdminProvidersListWrapperItem'>
               {provider?.attributes?.name}
             </div>
           ))}
         </div>
-        <div style={{ width: '70%' }}>
+        <div className='superAdminEditWrapper'>
           {selectedProvider ? (
             <SuperAdminEdit
               provider={selectedProvider.attributes} 
