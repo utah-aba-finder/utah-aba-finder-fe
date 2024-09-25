@@ -174,7 +174,7 @@
 
 @media (max-width: 1024px) and (max-height: 1366px) {
   .modal-grid-map {
-    height: 25em;
+    height: 24em;
   }
 
   .modal-container {
@@ -192,6 +192,18 @@
   }
 }
 
+@media (max-width: 1024px) {
+  .modal-container {
+    max-height: 100vh;
+  }
+  .modal-grid-map {
+    height: 23em;
+  }
+  .modal-grid-text {
+    height: 18em;
+    overflow-y: auto;
+  }
+}
 @media (max-width: 820px) and (max-height: 1180px) {
   .modal-grid-map {
     height: 20em;

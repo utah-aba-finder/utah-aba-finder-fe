@@ -7,6 +7,7 @@ import GoogleMap from './GoogleMap';
 import ProviderCard from './ProviderCard';
 import { fetchProviders } from '../Utility/ApiCall';
 import { MockProviders, ProviderAttributes } from '../Utility/Types';
+import { MapPin, Phone, Globe, Mail } from 'lucide-react'
 import gearImage from '../Assets/Gear@1x-0.5s-200px-200px.svg';
 
 

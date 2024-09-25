@@ -47,7 +47,6 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ provider, address, mapAdd
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    // Trigger the modal to appear with animation
     setTimeout(() => setIsVisible(true), 10);
   }, []);
   if (!provider) return null;

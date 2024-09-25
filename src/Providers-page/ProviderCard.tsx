@@ -1,6 +1,8 @@
 import React from 'react';
 import puzzleLogo from './puzzle.png';
 import { ProviderAttributes } from '../Utility/Types';
+import { MapPin, Phone, Globe, Mail } from 'lucide-react'
+
 
 
 interface ProviderCardProps {
@@ -19,6 +21,8 @@ const ProviderCard: React.FC<ProviderCardProps> = ({ provider, onViewDetails, re
         <div className="searched-provider-card-title">
           <h3>{provider.name}</h3>
           <h4>
+          <MapPin style={{ marginRight: '8px' }} />
+          <span>Address: </span>
             {provider.locations[0]?.address_1
               ? `${provider.locations[0]?.address_1}${provider.locations[0]?.address_2 ? ', ' : ''}`
               : 'Physical address is not available for this provider.'}
@@ -30,10 +34,12 @@ const ProviderCard: React.FC<ProviderCardProps> = ({ provider, onViewDetails, re
         </div>
         <div className="searched-provider-card-info">
           <p>
-            <strong>Phone:</strong> {provider.locations[0]?.phone || 'Phone number is not available.'}
+          <Phone style={{ marginRight: '8px' }} />
+            Phone: {provider.locations[0]?.phone || 'Phone number is not available.'}
           </p>
           <p>
-            <strong>Email:</strong> {provider.email || 'Email is not avaialble.'}
+          <Mail style={{ marginRight: '8px' }} />
+            Email: {provider.email || 'Email is not avaialble.'}
           </p>
 
           <div className="provider-card-buttons">

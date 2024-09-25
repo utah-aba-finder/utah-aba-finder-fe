@@ -63,6 +63,9 @@
     margin: 0 auto;
 }
 
+.title-and-info svg {
+    vertical-align: middle;
+}
 
 .searched-provider-card h3 {
     color: #21343a;
@@ -265,11 +268,11 @@
 }
 
 .view-on-map-dropdown-container:hover .view-on-map-dropdown {
-    color: #555555; 
+    color: #555555;
 }
 
 .view-on-map-dropdown-container:hover::after {
-    color: #555555; 
+    color: #555555;
 }
 
 .view-on-map-dropdown:hover {
@@ -372,7 +375,7 @@
     }
 
     .view-on-map-dropdown {
-        max-width: 200px; 
+        max-width: 200px;
         width: 90%;
         text-overflow: hidden;
     }
