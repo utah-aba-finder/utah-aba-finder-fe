@@ -118,6 +118,10 @@ button {
     color: white;
 }
 
+.add-location-button { 
+    cursor: not-allowed;
+}
+
 .user-info-section {
     display: flex;
     flex-direction: column;
