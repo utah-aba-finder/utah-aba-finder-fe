@@ -6,6 +6,8 @@ import githubIcon from '../Assets/github-icon.png';
 import seongPic from '../Assets/seong-pic.jpg';
 import jordanPic from '../Assets/jordan-pic.jpg';
 import kevinPic from '../Assets/kevin-pic.png';
+import cheePic from '../Assets/chee-pic.png';
+import austinPic from '../Assets/austin-pic.png';
 
 import './AboutUs.css';
 
@@ -99,13 +101,13 @@ const AboutUs: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="divider"></div>
+                {/* <div className="profile-divider"></div> */}
 
                 <div className="back-end-container card">
                     <h2 className="back-end-title">Back End</h2>
 
                     <div className="profile-card">
-                        <img src={smileIcon} alt="Smile" className="profile-icon" />
+                        <img src={austinPic} alt="Smile" className="profile-icon" />
                         <div className="profile-info">
                             <h3>Austin Carr-Jones</h3>
                             <p>Austin is a software engineer with a background in sales, using technologies like Ruby on Rails, RSpec, PostgreSQL, SQL, and Bootstrap to build effective solutions, leveraging 14 years of experience in optimizing CRM workflows and driving growth.</p>
@@ -121,7 +123,7 @@ const AboutUs: React.FC = () => {
                     </div>
 
                     <div className="profile-card">
-                        <img src={smileIcon} alt="Smile" className="profile-icon" />
+                        <img src={cheePic} alt="Smile" className="profile-icon" />
                         <div className="profile-info">
                             <h3>Chee Lee</h3>
                             <p>Chee is a software engineer with a background in healthcare, bringing analytical skills and a unique problem-solving perspective from five years in interventional radiology, and is eager to apply these abilities to developing innovative software solutions.</p>
