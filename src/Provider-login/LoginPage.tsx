@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import './LoginPage.css'
 import { User, Lock, Eye, EyeOff } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { MockProviderData, ProviderAttributes } from '../Utility/Types';
 import ProviderEdit from '../Provider-edit/ProviderEdit'
 import { useAuth } from './AuthProvider';
@@ -20,7 +19,6 @@ export const LoginPage: React.FC = () => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [currentProvider, setCurrentProvider] = useState<MockProviderData | undefined>();
     const { setToken } = useAuth();
-    const navigate = useNavigate();
 
     useEffect(() => {
         if (error) {
