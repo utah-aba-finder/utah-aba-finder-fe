@@ -27,9 +27,6 @@
         rgba(255, 252, 232, 0.751),
         rgba(131, 128, 141, 0.524)
       );
-      /* url('../Assets/texture.jpg');  */
-    background-size: cover; 
-    background-position: center;
     border-radius: 2rem;
     z-index: 2;
     backdrop-filter: blur(2rem);
@@ -38,4 +35,16 @@
     align-items: center;
     padding: 2rem;
   }
+
+  .glass::before {
+    content: '';
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    right: 5px;
+    bottom: 5px;
+    border: 1.5px solid rgb(255, 255, 255); 
+    border-radius: 29px; 
+    pointer-events: none; 
+}
   

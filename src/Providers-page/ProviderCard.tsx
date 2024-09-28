@@ -1,7 +1,7 @@
 import React from 'react';
 import puzzleLogo from './puzzle.png';
 import { ProviderAttributes } from '../Utility/Types';
-import { MapPin, Phone, Mail } from 'lucide-react';
+import { MapPin, Phone, Mail, Globe } from 'lucide-react';
 import './ProviderCard.css'
 
 interface ProviderCardProps {
@@ -45,7 +45,18 @@ const ProviderCard: React.FC<ProviderCardProps> = ({ provider, onViewDetails, re
                 <strong><Mail style={{ marginRight: '8px' }} />
                   Email: </strong>{provider.email || 'Email is not available.'}
               </h4>
-
+              <h4>
+                <strong><Globe style={{ marginRight: '8px' }} />
+                  Website: </strong>
+                <a
+                  href={provider.website ?? undefined}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="custom-link"
+                >
+                  {provider.website ?? 'Provider does not have a website yet.'}
+                </a>
+              </h4>
             </div>
 
             <div className="provider-card-buttons">
@@ -71,52 +82,3 @@ const ProviderCard: React.FC<ProviderCardProps> = ({ provider, onViewDetails, re
 };
 
 export default ProviderCard;
-
-
-
-//   </div>
-//   {renderViewOnMapButton(provider)}
-// </div>
-
-
-
-{/* <div className="searched-provider-card-title">
-  <h3>{provider.name}</h3>
-  <h4>
-  <MapPin style={{ marginRight: '8px' }} />
-  <span>Address: </span>
-  {provider.locations[0]?.address_1
-  ? `${provider.locations[0]?.address_1}${provider.locations[0]?.address_2 ? ', ' : ''}`
-      : 'Physical address is not available for this provider.'}
-    {provider.locations[0]?.address_2 && `${provider.locations[0]?.address_2}, `}
-    {provider.locations[0]?.city && `${provider.locations[0]?.city}, `}
-    {provider.locations[0]?.state && `${provider.locations[0]?.state} `}
-    {provider.locations[0]?.zip && `${provider.locations[0]?.zip}`}
-  </h4>
-</div>
-<div className="searched-provider-card-info">
-  <p>
-    <Phone style={{ marginRight: '8px' }} />
-    Phone: {provider.locations[0]?.phone || 'Phone number is not available.'}
-  </p>
-  <p>
-    <Mail style={{ marginRight: '8px' }} />
-    Email: {provider.email || 'Email is not available.'}
-  </p>
-
-  <div className="provider-card-buttons">
-    <button className="view-details-button" onClick={() => onViewDetails(provider)}>
-      View Details
-    </button>
-    {renderViewOnMapButton(provider)}
-    <button
-      className={`favorite-button ${isFavorited ? 'favorited' : ''}`}
-      onClick={(e) => {
-        e.stopPropagation();
-        onToggleFavorite(provider.id);
-      }}
-    >
-      {isFavorited ? 'Unfavorite' : 'Favorite'}
-    </button>
-  </div>
-</div> */}

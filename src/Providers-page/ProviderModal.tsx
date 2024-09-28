@@ -80,7 +80,7 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ provider, address, mapAdd
                   provider.locations.map((location, index) => (
                     <div key={index} className="provider-address-phone">
                       {hasMultipleLocations && (
-                        <p><strong>Location {index + 1}: </strong></p>
+                        <p><strong>Location {index + 1}: {location.name ? location.name : 'Unnamed Location'}</strong></p>
                       )}
                       <p>
                         <MapPin style={{ marginRight: '8px' }} />
