@@ -11,14 +11,11 @@
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  
-  /* Start with the modal being invisible and slightly down */
   opacity: 0;
   transform: translateY(20px);
   transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
-/* Show modal with fade-in and slide-up */
 .modal-overlay.show {
   opacity: 1;
   transform: translateY(0);
@@ -363,14 +360,13 @@
   .modal-grid-map {
     height: 19em;
   }
+
   .modal-grid-text {
     height: 29em;
   }
 
   .modal-container {
-
     max-height: 100vh;
-
     overflow-y: auto;
   }
 }
@@ -412,6 +408,7 @@
 }
 
 .provider-main-info {
+  text-align: justify;
   border-bottom: 1px solid #9ea3a8;
   padding-bottom: 8px;
 }

@@ -38,23 +38,32 @@ const ProvidersPage: React.FC = () => {
   const providersPerPage = 8;
 
   useEffect(() => {
-    const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
-    setFavoriteProviders(favorites);
+    const storedFavorites = localStorage.getItem('favoriteProviders');
+    if (storedFavorites) {
+      setFavoriteProviders(JSON.parse(storedFavorites));
+    }
   }, []);
 
-  const toggleFavorite = (provider: ProviderAttributes) => {
-    const isFavorite = favoriteProviders.some(fav => fav.id === provider.id);
-    
-    let updatedFavorites;
-    if (isFavorite) {
-      updatedFavorites = favoriteProviders.filter(fav => fav.id !== provider.id);
-    } else {
-      updatedFavorites = [...favoriteProviders, provider];
-    }
+  const toggleFavorite = useCallback((providerId: number) => {
+    setFavoriteProviders((prevFavorites) => {
+      const provider = allProviders.find(p => p.id === providerId);
+      if (!provider) return prevFavorites; // If provider not found, don't change anything
 
-    setFavoriteProviders(updatedFavorites);
-    localStorage.setItem('favorites', JSON.stringify(updatedFavorites));
-  };
+      const isFavorited = prevFavorites.some(fav => fav.id === providerId);
+
+      let newFavorites;
+      if (isFavorited) {
+        newFavorites = prevFavorites.filter(fav => fav.id !== providerId);
+      } else {
+        newFavorites = [...prevFavorites, provider];
+      }
+
+      // Update localStorage
+      localStorage.setItem('favoriteProviders', JSON.stringify(newFavorites));
+
+      return newFavorites;
+    });
+  }, [allProviders]);
 
   useEffect(() => {
     const getProviders = async () => {
@@ -64,7 +73,10 @@ const ProvidersPage: React.FC = () => {
           clearTimeout(errorTimeoutRef.current);
         }
         const providersList: MockProviders = await fetchProviders();
-        const mappedProviders = providersList.data.map(provider => provider.attributes);
+        const mappedProviders = providersList.data.map(provider => ({
+          ...provider.attributes,
+          id: provider.id // Ensure the top-level id is included
+        }));
 
         const sortedProviders = mappedProviders.sort((a, b) => {
           const nameA = a.name ?? '';
@@ -161,17 +173,17 @@ const ProvidersPage: React.FC = () => {
 
   const handleProviderCardClick = (provider: ProviderAttributes) => {
     setSelectedProvider(provider);
-  
-   
+
+
     const address = provider.locations.length > 0
       ? `${provider.locations[0].address_1 || ''} ${provider.locations[0].address_2 || ''}, ${provider.locations[0].city || ''}, ${provider.locations[0].state || ''} ${provider.locations[0].zip || ''}`.trim()
       : 'Address not available';
-  
-   
+
+
     setMapAddress(address);
-    setSelectedAddress(address); 
+    setSelectedAddress(address);
   };
-  
+
 
 
   const handleViewOnMapClick = (address: string | null) => {
@@ -350,86 +362,133 @@ const ProvidersPage: React.FC = () => {
   };
 
   return (
+    //   <div className="map">
+    //     <section className="google-map-section" ref={mapSectionRef}>
+    //       <GoogleMap address={mapAddress} />
+    //     </section>
+    //   </div>
+
+    //   <section className="provider-title-section">
+    //   </section>
+
     <div className="providers-page">
       <section className="find-your-provider-section">
         <img src={childrenBanner} alt="Find Your Provider" className="banner-image" />
         <h1 className="providers-banner-title">Find Your Provider</h1>
       </section>
+      <main>
+        <div className="provider-page-search-cards-section">
+          <SearchBar
+            providers={allProviders}
+            onResults={handleResults}
+            onSearch={handleSearch}
+            onCountyChange={handleCountyChange}
+            onInsuranceChange={handleInsuranceChange}
+            insuranceOptions={uniqueInsuranceOptions}
+            onSpanishChange={handleSpanishChange}
+            onServiceChange={handleServiceChange}
+            onWaitListChange={handleWaitListChange}
+            onReset={handleResetSearch}
+          />
+          <section className="glass">
+            <h2 className="searched-provider-number-status title">
+              {isFiltered
+                ? `Showing ${paginatedProviders.length} of ${combinedProviders.length} Providers`
+                : `Showing ${allProviders.length} Providers`}
+            </h2>
+            <section className="searched-provider-map-locations-list-section">
+              {isLoading && (
+                <div className="loading-container">
+                  <img src={gearImage} alt="Loading..." className="loading-gear" />
+                  <p>Loading providers...</p>
+                </div>
+              )}
+              {!isLoading && showError && <div className='error-message'>{showError}</div>}
+              {!isLoading && !showError && (
+                <div className="card-container">
 
-      <div className="map">
-        <section className="google-map-section" ref={mapSectionRef}>
-          <GoogleMap address={mapAddress} />
-        </section>
-      </div>
 
-      <section className="provider-title-section">
-        <h2>
-          {isFiltered
-            ? `Showing ${paginatedProviders.length} of ${combinedProviders.length} Providers`
-            : `Showing ${allProviders.length} Providers`}
-        </h2>
-      </section>
-      <SearchBar
-        providers={allProviders}
-        onResults={handleResults}
-        onSearch={handleSearch}
-        onCountyChange={handleCountyChange}
-        onInsuranceChange={handleInsuranceChange}
-        insuranceOptions={uniqueInsuranceOptions}
-        onSpanishChange={handleSpanishChange}
-        onServiceChange={handleServiceChange}
-        onWaitListChange={handleWaitListChange}
-        onReset={handleResetSearch}
-      />
-
-      <section className="searched-provider-map-locations-list-section">
-        {isLoading && (
-          <div className="loading-container">
-            <img src={gearImage} alt="Loading..." className="loading-gear" />
-            <p>Loading providers...</p>
-          </div>
-        )}
-        {!isLoading && showError && <div className='error-message'>{showError}</div>}
-        {!isLoading && !showError && (
-          <div className="provider-cards-grid">
-            {paginatedProviders.map((provider, index) => (
-              <ProviderCard
-              key={index}
-              provider={provider}
-              onViewDetails={handleProviderCardClick}
-              renderViewOnMapButton={renderViewOnMapButton}
-              onToggleFavorite={() => toggleFavorite(provider)} // Add toggle favorite function here
-              isFavorited={favoriteProviders.some(fav => fav.id === provider.id)} // Check if provider is favorited
-            />
-            ))}
-          </div>
-        )}
-      </section>
-
-      <div className="pagination-controls">
-        {currentPage > 1 && (
-          <button className="pagination-button" onClick={handlePreviousPage}>
-            &lt; Previous
-          </button>
-        )}
-        {currentPage < totalPages && (
-          <button className="pagination-button" onClick={handleNextPage}>
-            Next &gt;
-          </button>
-        )}
-      </div>
-
-      {selectedProvider && (
-        <ProviderModal
-        provider={selectedProvider}
-        address={selectedAddress || 'Address not available'} 
-        mapAddress={mapAddress}
-        onClose={handleCloseModal}
-      />
-      )}
-
+                  <div className="provider-cards-grid">
+                    {paginatedProviders.map((provider) => (
+                      <ProviderCard
+                        key={provider.id}
+                        provider={provider}
+                        onViewDetails={handleProviderCardClick}
+                        renderViewOnMapButton={renderViewOnMapButton}
+                        onToggleFavorite={toggleFavorite}
+                        isFavorited={favoriteProviders.some(fav => fav.id === provider.id)}
+                        />
+                      ))}
+                  </div>
+                  <div className="pagination-controls">
+                    {currentPage > 1 && (
+                      <button className="pagination-button" onClick={handlePreviousPage}>
+                        &lt; Previous
+                      </button>
+                    )}
+                    {currentPage < totalPages && (
+                      <button className="pagination-button" onClick={handleNextPage}>
+                        Next &gt;
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+            </section>
+          </section>
+        </div>
+              {selectedProvider && (
+                <ProviderModal
+                provider={selectedProvider}
+                address={selectedAddress || 'Address not available'}
+                mapAddress={mapAddress}
+                onClose={handleCloseModal}
+                />
+              )}
+      </main>
+      {/* <div className="circle1"></div>
+      <div className="circle2"></div> */}
     </div>
+
+
+
+    // </div>
   );
 };
+{/* <div className="games">
+  <div className="status">
+    <h1>Active Games</h1>
+    <input type="text" />
+  </div>
+  <div className="cards">
+    <div className="card">
+      <img src="./images/assassins.png" alt="" />
+      <div className="card-info">
+        <h2>Assassins Creed Valhalla</h2>
+        <p>PS5 Version</p>
+        <div className="progress"></div>
+      </div>
+      <h2 className="percentage">60%</h2>
+    </div>
+    <div className="card">
+      <img src="./images/sackboy.png" alt="" />
+      <div className="card-info">
+        <h2>Sackboy A Great Advanture</h2>
+        <p>PS5 Version</p>
+        <div className="progress"></div>
+      </div>
+      <h2 className="percentage">60%</h2>
+    </div>
+    <div className="card">
+      <img src="./images/spiderman.png" alt="" />
+      <div className="card-info">
+        <h2>Spiderman Miles Morales</h2>
+        <p>PS5 Version</p>
+        <div className="progress"></div>
+      </div>
+      <h2 className="percentage">60%</h2>
+    </div>
+  </div>
+  </div> */}
 
 export default ProvidersPage;

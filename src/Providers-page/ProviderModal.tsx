@@ -70,9 +70,9 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ provider, address, mapAdd
             <div className="modal-logo">
               <img src={provider.logo ?? undefined} alt={provider.name ?? undefined} className="modal-img" />
             </div>
+            <h2 className="provider-name title">{provider.name}</h2>
             <div className="provider-main-info">
-              <h2 className="provider-name title">{provider.name}</h2>
-            <div className="update-section">
+              <div className="update-section">
                 <span className="last-update">Last Updated {moment(provider.updated_last).format('MM/DD/YYYY')}</span>
               </div>
               <p className="provider-address-phone text">

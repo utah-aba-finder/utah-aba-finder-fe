@@ -1,0 +1,240 @@
+.provider-card {
+    display: flex;
+    /* background: linear-gradient(to left top, rgba(217, 217, 217, 0.787), rgba(255, 255, 255, 0.913)); */
+    background-color: rgb(223, 223, 223);
+    box-shadow: 6px 6px 20px rgba(122, 122, 122, 0.212);
+    border-radius: 30px;
+    overflow: hidden;
+    height: 300px; /* Set a fixed height for all cards */
+    position: relative;
+    transition: transform 0.3s ease, background-color 0.3s ease, color 0.3s ease;
+}
+
+.provider-card:hover {
+    transform: translateY(-8px) scale(1); /* Moves upwards and expands slightly */
+    /* background: linear-gradient(to left top, rgba(217, 217, 217, 0.787), rgba(104, 82, 82, 0.913)); */
+    background-color: rgba(220, 199, 104, 0.93);
+    color: #fff; /* Changes text color to white */
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.3); /* Adds a shadow on hover */
+}
+.provider-card:hover .card-name {
+    border-color: #fff; /* Changes the border color under the name */
+}
+
+.provider-card:hover h4 {
+    color: #fff; /* Changes the text color inside <h4> to white */
+}
+.provider-card::before {
+    content: '';
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    right: 4px;
+    bottom: 4px;
+    border: 1.5px solid rgb(255, 255, 255); 
+    border-radius: 29px; 
+    pointer-events: none; 
+}
+
+
+.card-logo-and-text {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    /* Ensure it takes full height of the card */
+}
+
+.card-grid-logo {
+    width: 33.33%;
+    background-color: rgb(210, 195, 149);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 15px;
+
+}
+
+.provider-logo {
+    max-width: 100%;
+    border-radius: 25px;
+    object-fit: contain;
+    padding: 1em;
+}
+
+.card-text {
+    flex: 1;
+    padding: 8px;
+    gap: .2em;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.card-text strong {
+    color: #424266;
+}
+
+.card-text-and-buttons {
+    display: flex;
+    flex-direction: column;
+    width: 66.67%;
+    /* Take up remaining space */
+}
+
+.card-name {
+    line-height: 1.2;
+    font-size: 28px;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    border-bottom: 1.5px solid #9ea3a8;
+    padding-bottom: 4px;
+    transition: border-color 0.3s ease; 
+
+}
+
+.card-text h4 {
+    margin: 0;
+    font-size: .9em;
+    line-height: 1.4;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    text-align: left;
+    transition: color 0.3s ease; 
+}
+
+.card-text h4 svg {
+    vertical-align: middle;
+    margin-right: 8px;
+}
+
+/* Provider Card Buttons */
+.provider-card-buttons {
+    padding: .5em;
+}
+
+.view-details-button,
+.view-on-map-button,
+.view-on-map-dropdown,
+.favorite-button,
+.pagination-button {
+    font-size: 1em;
+    font-weight: 600;
+    line-height: 1.2;
+    transition: color 0.45s ease;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.view-details-button {
+    border: none;
+    border-radius: 0.25rem;
+    background-color: #555555;
+    color: #ffffff;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s, transform 0.3s;
+    margin: .5em;
+}
+
+.favorite-button {
+    border: none;
+    border-radius: 0.25rem;
+    background-color: #555555;
+    color: #ffffff;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s, transform 0.3s;
+    margin: .5em;
+}
+
+.favorite-button:hover {
+    transform: translateY(-5px);
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    background-color: #ffffff;
+    color: #555555;
+}
+
+/* Style for "Favorited" */
+.favorite-button.favorited {
+    background-color: #563f5f;
+    color: #ffffff;
+}
+
+.favorite-button.favorited:hover {
+    background-color: #ffffff;
+    color: #A754C4;
+}
+
+/* Pagination Buttons */
+
+.pagination-button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    margin: 0 5px;
+    border-radius: 5px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s, transform 0.3s;
+}
+
+.pagination-button:hover {
+    background-color: white;
+    color: #007bff;
+    transform: translateY(-5px);
+}
+
+.pagination-controls {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+@media (max-width: 720px) {
+    .provider-card {
+        height: auto;
+    }
+
+    .card-text h4 {
+        margin: 0;
+        font-size: .9em;
+    }
+    .card-logo-and-text {
+        flex-direction: column;
+    }
+
+    .provider-logo {
+        max-width: 15em;
+        max-height: 5em;
+    }
+
+    .card-grid-logo {
+        width: 100%;
+        padding: 5px;
+    }
+
+    .card-text-and-buttons {
+        width: 100%;
+    }
+
+    .card-text {
+        padding: 15px;
+    }
+
+    .provider-card-buttons {
+        display: flex;
+        justify-content: center;
+        padding: 10px 0;
+    }
+}
