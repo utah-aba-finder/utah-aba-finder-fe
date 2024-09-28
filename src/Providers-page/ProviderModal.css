@@ -75,6 +75,12 @@
   transform: translateY(-2px);
 }
 
+.email-text {
+  border-bottom: 1.5px solid #9ea3a8;
+    transition: border-color 0.3s ease;
+    padding-bottom: 6px; 
+}
+
 .close-button:hover {
   color: #ff0000; 
 }
@@ -101,7 +107,9 @@
   margin-bottom: 4px;
   line-height: 1;
 }
-
+.provider-address-phone {
+  text-align: left;
+}
 .provider-address-phone svg {
   vertical-align: middle;
 }
@@ -430,8 +438,7 @@
 
 .provider-main-info {
   text-align: justify;
-  border-bottom: 1px solid #9ea3a8;
-  padding-bottom: 8px;
+  
 }
 
 .last-update {
