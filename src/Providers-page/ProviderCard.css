@@ -13,15 +13,15 @@
 
 .provider-card:hover {
     transform: translateY(-8px) scale(1); 
-    background: linear-gradient(to left top, rgb(210, 195, 149), rgb(210, 195, 149)),
-    url('../Assets/texture.jpg');    /* background-color: rgba(210, 192, 110, 0.93); */
+    background: linear-gradient(to left top, rgb(210, 195, 149), rgb(210, 195, 149));
+    /* url('../Assets/texture.jpg');     */
     color: #fff; 
     box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.3); 
 }
-.provider-card:hover .card-name {
-    border-color: #fff; 
-}
 
+.provider-card:hover h2 {
+    color: #fff; 
+}
 .provider-card:hover h4 {
     color: #fff; 
 }
@@ -29,10 +29,10 @@
 .provider-card::before {
     content: '';
     position: absolute;
-    top: 4px;
-    left: 4px;
-    right: 4px;
-    bottom: 4px;
+    top: 5px;
+    left: 5px;
+    right: 5px;
+    bottom: 5px;
     border: 1.5px solid rgb(255, 255, 255); 
     border-radius: 29px; 
     pointer-events: none; 
@@ -92,7 +92,12 @@
     overflow: hidden;
     -webkit-box-orient: vertical;
     border-bottom: 1.5px solid #9ea3a8;
-    transition: border-color 0.3s ease; 
+    transition: border-color 0.3s ease;
+    padding-bottom: 6px; 
+}
+
+.card-text h2 {
+    transition: color 0.3s ease; 
 }
 
 .card-text h4 {
@@ -143,7 +148,7 @@
 
 .view-details-button {
     border: none;
-    border-radius: 0.25rem;
+    border-radius: 6px;
     background-color: #555555;
     color: #ffffff;
     font-size: 1rem;
@@ -156,7 +161,7 @@
 
 .favorite-button {
     border: none;
-    border-radius: 0.25rem;
+    border-radius: 6px;
     background-color: #555555;
     color: #ffffff;
     font-size: 1rem;
@@ -194,7 +199,7 @@
     padding: 10px 20px;
     cursor: pointer;
     margin: 0 5px;
-    border-radius: 5px;
+    border-radius: 6px;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
     box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
     transition: background-color 0.3s, transform 0.3s;

@@ -23,9 +23,8 @@ const ProvidersPage: React.FC = () => {
   const [selectedSpanish, setSelectedSpanish] = useState<string>('');
   const [selectedService, setSelectedService] = useState<string>('');
   const [selectedWaitList, setSelectedWaitList] = useState<string>('');
-  const [mapAddress, setMapAddress] = useState<string>('Utah');
-  const [selectedAddress, setSelectedAddress] = useState<string | null>(null);
-
+  const [selectedAddress, setSelectedAddress] = useState<string>('');
+  const [mapAddress, setMapAddress] = useState<string>('');
 
   const [isFiltered, setIsFiltered] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -34,7 +33,7 @@ const ProvidersPage: React.FC = () => {
   const errorTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [favoriteProviders, setFavoriteProviders] = useState<ProviderAttributes[]>([]);
 
-  const mapSectionRef = useRef<HTMLDivElement>(null);
+  // const mapSectionRef = useRef<HTMLDivElement>(null);
   const providersPerPage = 8;
 
   useEffect(() => {
@@ -47,7 +46,7 @@ const ProvidersPage: React.FC = () => {
   const toggleFavorite = useCallback((providerId: number) => {
     setFavoriteProviders((prevFavorites) => {
       const provider = allProviders.find(p => p.id === providerId);
-      if (!provider) return prevFavorites; // If provider not found, don't change anything
+      if (!provider) return prevFavorites; 
 
       const isFavorited = prevFavorites.some(fav => fav.id === providerId);
 
@@ -183,14 +182,10 @@ const ProvidersPage: React.FC = () => {
     setSelectedAddress(address);
   };
 
-
-
-  const handleViewOnMapClick = (address: string | null) => {
-    setMapAddress(address || 'Utah');
-    if (mapSectionRef.current) {
-      mapSectionRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
+  const handleViewOnMapClick = (address: string) => {
+    setMapAddress(address);
   };
+
 
   const handleCloseModal = () => {
     setSelectedProvider(null);
@@ -319,32 +314,32 @@ const ProvidersPage: React.FC = () => {
   const renderViewOnMapButton = (provider: ProviderAttributes) => {
     const isAddressAvailable = provider.locations.length > 0 && provider.locations[0]?.address_1;
 
-    if (provider.locations.length > 1) {
-      return (
-        <div className="view-on-map-dropdown-container">
-          <select
-            className={`view-on-map-dropdown ${!isAddressAvailable ? 'disabled' : ''}`}
-            id='view-on-map-dropdown'
-            aria-label="View On Map Dropdown"
-            onChange={(e) => {
-              const index = e.target.value;
-              const location = provider.locations[parseInt(index)];
-              const fullAddress = `${location.address_1 || ''} ${location.address_2 || ''}, ${location.city || ''}, ${location.state || ''} ${location.zip || ''}`.trim();
-              handleViewOnMapClick(fullAddress);
-            }}
-            defaultValue=""
-            disabled={!isAddressAvailable}
-          >
-            <option value="" disabled>Select Location to View on Map</option>
-            {provider.locations.map((location, index) => (
-              <option key={index} value={index}>
-                {location.name} - {location.address_1 || ''}, {location.city}, {location.state} {location.zip}
-              </option>
-            ))}
-          </select>
-        </div>
-      );
-    }
+    // if (provider.locations.length > 1) {
+    //   return (
+    //     <div className="view-on-map-dropdown-container">
+    //       <select
+    //         className={`view-on-map-dropdown ${!isAddressAvailable ? 'disabled' : ''}`}
+    //         id='view-on-map-dropdown'
+    //         aria-label="View On Map Dropdown"
+    //         onChange={(e) => {
+    //           const index = e.target.value;
+    //           const location = provider.locations[parseInt(index)];
+    //           const fullAddress = `${location.address_1 || ''} ${location.address_2 || ''}, ${location.city || ''}, ${location.state || ''} ${location.zip || ''}`.trim();
+    //           handleViewOnMapClick(fullAddress);
+    //         }}
+    //         defaultValue=""
+    //         disabled={!isAddressAvailable}
+    //       >
+    //         <option value="" disabled>Select Location to View on Map</option>
+    //         {provider.locations.map((location, index) => (
+    //           <option key={index} value={index}>
+    //             {location.name} - {location.address_1 || ''}, {location.city}, {location.state} {location.zip}
+    //           </option>
+    //         ))}
+    //       </select>
+    //     </div>
+    //   );
+    // }
     return (
       <button
         className={`view-on-map-button ${!isAddressAvailable ? 'disabled' : ''}`}
@@ -441,7 +436,8 @@ const ProvidersPage: React.FC = () => {
                 address={selectedAddress || 'Address not available'}
                 mapAddress={mapAddress}
                 onClose={handleCloseModal}
-                />
+                onViewOnMapClick={handleViewOnMapClick}
+              />
               )}
       </main>
     </div>

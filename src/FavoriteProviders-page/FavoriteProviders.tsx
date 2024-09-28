@@ -10,6 +10,8 @@ const FavoriteProviders: React.FC = () => {
     const [favoriteProviders, setFavoriteProviders] = useState<ProviderAttributes[]>([]);
     const [selectedProvider, setSelectedProvider] = useState<ProviderAttributes | null>(null);
     const [selectedAddress, setSelectedAddress] = useState<string | null>(null);
+    const [mapAddress, setMapAddress] = useState<string>('');
+
 
     useEffect(() => {
         const storedFavorites = JSON.parse(localStorage.getItem('favoriteProviders') || '[]');
@@ -27,13 +29,19 @@ const FavoriteProviders: React.FC = () => {
     const handleProviderCardClick = (provider: ProviderAttributes) => {
         setSelectedProvider(provider);
 
+
         const address = provider.locations.length > 0
             ? `${provider.locations[0].address_1 || ''} ${provider.locations[0].address_2 || ''}, ${provider.locations[0].city || ''}, ${provider.locations[0].state || ''} ${provider.locations[0].zip || ''}`.trim()
             : 'Address not available';
 
+
+        setMapAddress(address);
         setSelectedAddress(address);
     };
 
+    const handleViewOnMapClick = (address: string) => {
+        setMapAddress(address);
+    };
     const handleCloseModal = () => {
         setSelectedProvider(null);
     };
@@ -65,16 +73,17 @@ const FavoriteProviders: React.FC = () => {
                             </div>
                         </div>
                     )}
-                    {selectedProvider && (
-                        <ProviderModal
-                            provider={selectedProvider}
-                            address={selectedAddress || 'Address not available'}
-                            mapAddress={selectedAddress || 'Address not available'}
-                            onClose={handleCloseModal}
-                        />
-                    )}
                 </section>
             </section>
+            {selectedProvider && (
+                <ProviderModal
+                    provider={selectedProvider}
+                    address={selectedAddress || 'Address not available'}
+                    mapAddress={mapAddress || 'Address not available'}
+                    onClose={handleCloseModal}
+                    onViewOnMapClick={handleViewOnMapClick}
+                />
+            )}
         </div>
     );
 };

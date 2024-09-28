@@ -43,9 +43,11 @@ interface ProviderModalProps {
   address: string;
   mapAddress: string;
   onClose: () => void;
+  onViewOnMapClick: (address: string) => void; 
 }
 
-const ProviderModal: React.FC<ProviderModalProps> = ({ provider, address, mapAddress, onClose }) => {
+
+const ProviderModal: React.FC<ProviderModalProps> = ({ provider, address, mapAddress, onViewOnMapClick, onClose }) => {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
@@ -80,8 +82,17 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ provider, address, mapAdd
                   provider.locations.map((location, index) => (
                     <div key={index} className="provider-address-phone">
                       {hasMultipleLocations && (
-                        <p><strong>Location {index + 1}: {location.name ? location.name : 'Unnamed Location'}</strong></p>
+                        <p><strong>Location {index + 1}: {location.name ? location.name : 'Unnamed Location'} -</strong><button
+                          className="view-on-map-button"
+                          onClick={() => {
+                            const fullAddress = `${location.address_1 || ''} ${location.address_2 || ''}, ${location.city || ''}, ${location.state || ''} ${location.zip || ''}`.trim();
+                            onViewOnMapClick(fullAddress);
+                          }}
+                        >
+                          View this address on the map
+                        </button></p>
                       )}
+
                       <p>
                         <MapPin style={{ marginRight: '8px' }} />
                         <strong>Address: </strong>
