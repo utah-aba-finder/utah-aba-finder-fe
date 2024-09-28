@@ -22,10 +22,11 @@
     border: none;
     padding: 0.5rem 1rem;
     justify-content: center;
-    background-color: #b9b9b9;
+    background-color: rgb(255, 255, 255);
     border-radius: 0.5rem;
     box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
 }
+
 
 .provider-map-searchbar input[type="text"],
 .provider-county-select,
@@ -59,7 +60,7 @@
 }
 
 .provider-map-searchbar input[type="text"]::placeholder {
-    color: #d2d2d2;
+    color: #ffffff;
 }
 
 .provider-map-searchbar input[type="text"]:hover,
@@ -104,7 +105,7 @@
     appearance: none;
     padding: 0.5rem 1rem;
     background-color: #555555;
-    color: #d2d2d2;
+    color: #ffffff;
     border: none;
     border-radius: 0.25rem;
     font-size: 1rem;
@@ -118,7 +119,7 @@
     appearance: none;
     padding: 0.5rem 1rem;
     background-color: #555555;
-    color: #d2d2d2;
+    color: #ffffff;
     border: none;
     border-radius: 0.25rem;
     font-size: 1rem;
@@ -132,7 +133,7 @@
     appearance: none;
     padding: 0.5rem 1rem;
     background-color: #555555;
-    color: #d2d2d2;
+    color: #ffffff;
     border: none;
     border-radius: 0.25rem;
     font-size: 1rem;
@@ -146,7 +147,7 @@
     appearance: none;
     padding: 0.5rem 1rem;
     background-color: #555555;
-    color: #d2d2d2;
+    color: #ffffff;
     border: none;
     border-radius: 0.25rem;
     font-size: 1rem;
@@ -160,7 +161,7 @@
     appearance: none;
     padding: 0.5rem 1rem;
     background-color: #555555;
-    color: #d2d2d2;
+    color: #ffffff;
     border: none;
     border-radius: 0.25rem;
     font-size: 1rem;
@@ -170,7 +171,7 @@
 
 .dropdown-arrow {
     position: absolute;
-    right: 1rem;
+    right: rem;
     top: 50%;
     transform: translateY(-50%);
     font-size: 1rem;

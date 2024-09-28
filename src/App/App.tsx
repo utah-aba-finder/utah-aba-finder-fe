@@ -21,6 +21,7 @@ import { SuperAdmin } from '../SuperAdmin/SuperAdmin';
 import Resources from '../Resources/Resources';
 import { fetchProviders } from '../Utility/ApiCall';
 import { SuperAdminEdit } from '../SuperAdmin/SuperAdminEdit';
+import FavoriteProviders from '../FavoriteProviders-page/FavoriteProviders'
 
 
 
@@ -69,6 +70,7 @@ function App() {
             <Route path='/signup' element={<Signup />} />
             <Route path='/about' element={<AboutUs />} />
             <Route path='/resources' element={<Resources />} />
+            <Route path='/favoriteproviders' element={<FavoriteProviders />} />
             
             <Route path='/superAdmin' element={
               <ProtectedRoute>

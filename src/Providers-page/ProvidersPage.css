@@ -1,451 +1,171 @@
 .providers-page {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    padding-bottom: 1rem;
-    background-color: #ffffffe4;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-bottom: 1rem;
+  background: linear-gradient(to right top, #d2bb86b5, #f1efda);
 }
 
 .find-your-provider-section {
-    position: relative;
-    width: 100%;
+  position: relative;
+  width: 100%;
 }
 
 .banner-image {
-    width: 100%;
-    height: 62vh;
-    object-fit: cover;
+  width: 100%;
+  height: 62vh;
+  object-fit: cover;
 }
 
 .providers-banner-title {
-    position: absolute;
-    top: 40%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: white;
-    font-size: 2.5rem;
-    text-align: center;
-    background-color: rgba(0, 0, 0, 0.5);
-    padding: 1rem;
-    border-radius: 10px;
-    z-index: 1;
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 2.5rem;
+  text-align: center;
+  background-color: rgba(0, 0, 0, 0.5);
+  padding: 1rem;
+  border-radius: 10px;
+  z-index: 1;
 }
 
 .map {
-    padding-left: 1.8rem;
-    padding-right: 1.8rem;
+  padding-left: 1.8rem;
+  padding-right: 1.8rem;
 }
 
 .google-map-section {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 0.8rem;
-    border: 5px solid #c4b56b;
-    gap: 1rem;
-    width: 100%;
-    height: 40rem;
-    max-width: 100%;
-    box-sizing: border-box;
-    overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.8rem;
+  border: 5px solid #c4b56b;
+  gap: 1rem;
+  width: 100%;
+  height: 40rem;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+
+.searched-provider-number-status {
+  text-align: center;
+  width: 100%;
 }
 
 .searched-provider-map-locations-list-section {
-    font-family: 'Open Sans', sans-serif;
-    justify-content: center;
-    width: 100%;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.card-container {
+  width: 100%;
+  max-width: 700px;
+  margin-left: .5em;
+  margin-right: .5em;
+
 }
 
 .provider-cards-grid {
-    display: grid;
-    gap: 1.6rem;
-    max-width: 1250px;
-    margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  width: 100%;
 }
 
+@media (min-width: 1263px) {
+  .card-container {
+    max-width: 1400px;
+  }
 
-.searched-provider-card h3 {
-    color: #21343a;
-    font-size: 1.5em;
-    font-weight: 900;
-    line-height: 1;
-    padding-bottom: 0.3em;
-    margin: 0 0 0.142857143em;
-    border-bottom: 2px solid #4a3525;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
-    transition: color 0.45s ease, border 0.45s ease;
+  .provider-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
-.searched-provider-card h4 {
-    color: #3e3e3e;
-    font-size: 1em;
-    font-weight: 700;
-    line-height: 1;
-    transition: color 0.45s ease;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
-}
-
-.searched-provider-card p {
-    color: #627084;
-    font-size: 1em;
-    font-weight: 700;
-    line-height: 1;
-    transition: color 0.45s ease;
-    opacity: 0;
-    transform: translateY(-1em);
-    transition: opacity 0.45s ease, transform 0.5s ease;
-}
-
-.title-and-info {
-    display: flex;
-    flex-direction: column;
-}
-
-.view-details-button,
-.view-on-map-button,
-.view-on-map-dropdown,
-.pagination-button {
-    font-size: 1em;
-    font-weight: 600;
-    line-height: 1.2;
-    margin: auto 0 0;
-    transition: color 0.45s ease;
-    background: none;
-    border: none;
-    cursor: pointer;
-}
-
-.searched-provider-card {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    overflow: hidden;
-    border-radius: 0.5em;
-    background: rgb(208, 208, 208);
-    box-shadow: 0 1.5em 2.5em -0.5em rgba(0, 0, 0, 0.1);
-    transition: transform 0.45s ease, background 0.45s ease;
-    padding: 1.2rem;
-    gap: 1em;
-    box-sizing: border-box;
-    position: relative;
-}
-
-.searched-provider-card::before {
-    content: '';
-    position: absolute;
-    top: 5px;
-    bottom: 5px;
-    left: 5px;
-    right: 5px;
-    border: 1.5px solid white;
-    pointer-events: none;
-    border-radius: 0.5em;
-}
-
-
-.provider-logo {
-    border-radius: 1em;
-    width: 15rem;
-    height: 8rem;
-    justify-content: center;
-    align-content: center;
-    align-items: center;
-}
-
-.provider-card-buttons {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    gap: 0.5rem;
-    padding-bottom: 0.2rem;
-}
-
-
-.searched-provider-card.multiple-locations .provider-card-buttons {
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-
-}
-
-.view-details-button,
-.view-on-map-button {
-    width: 100%;
-    border: none;
-    border-radius: 0.25rem;
-    background-color: #555555;
-    color: #ffffff;
-    font-size: 1rem;
-    cursor: pointer;
-    padding: 0.5rem;
-    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
-    transition: background-color 0.3s, transform 0.3s;
-    margin-bottom: 0.5rem;
-}
 
 .view-on-map-dropdown {
-    color: #ffffff;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: background-color 0.3s, transform 0.3s;
-    appearance: none;
-    max-width: 250px;
-    justify-content: center;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    overflow: hidden;
+  color: #ffffff;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.3s;
+  appearance: none;
+  max-width: 250px;
+  justify-content: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 .view-on-map-dropdown-container {
-    position: relative;
-    width: 90%;
-    text-align: center;
-    border: none;
-    border-radius: 0.25rem;
-    background-color: #555555;
-    color: #ffffff;
-    font-size: 1rem;
-    cursor: pointer;
-    padding: 0.5rem;
-    overflow: hidden;
-    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
-    transition: background-color 0.3s, transform 0.3s;
-    margin-bottom: 0.5rem;
-    appearance: none;
-    max-width: 100%;
-    display: inline-block;
+  position: relative;
+  width: 90%;
+  text-align: center;
+  border: none;
+  border-radius: 0.25rem;
+  background-color: #555555;
+  color: #ffffff;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  overflow: hidden;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.3s, transform 0.3s;
+  margin-bottom: 0.5rem;
+  appearance: none;
+  max-width: 100%;
+  display: inline-block;
 }
 
 .view-on-map-dropdown-container::after {
-    content: "\25BC";
-    position: absolute;
-    right: .4rem;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #ffffff;
-    pointer-events: none;
-    font-size: .8rem;
-}
-
-
-.searched-provider-card:hover {
-    background: #c4b56b;
-    transform: scale(1.02);
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
-}
-
-.searched-provider-card:hover h3 {
-    color: #FFFFFF;
-    border-bottom-color: #A754C4;
-}
-
-.searched-provider-card:hover h4 {
-    color: #FFFFFF;
-    border-bottom-color: #5f3724;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
-}
-
-.searched-provider-card:hover p {
-    color: #FFFFFF;
-    opacity: 1;
-    transform: none;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+  content: "\25BC";
+  position: absolute;
+  right: .4rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #ffffff;
+  pointer-events: none;
+  font-size: .8rem;
 }
 
 .view-details-button:hover,
 .view-on-map-button:hover,
 .view-on-map-dropdown-container:hover {
-    transform: translateY(-5px);
-    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
-    cursor: pointer;
-    transition: background-color 0.3s, transform 0.3s;
-    background-color: #ffffff;
-    color: #555555;
+  transform: translateY(-5px);
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.3s;
+  background-color: #ffffff;
+  color: #555555;
 }
 
 .view-on-map-dropdown-container:hover .view-on-map-dropdown {
-    color: #555555; 
+  color: #555555;
 }
 
 .view-on-map-dropdown-container:hover::after {
-    color: #555555; 
+  color: #555555;
 }
 
 .view-on-map-dropdown:hover {
-    color: #555555;
-}
-
-.pagination-controls {
-    display: flex;
-    justify-content: center;
-    margin-top: 20px;
-}
-
-.pagination-button {
-    background-color: #007bff;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    cursor: pointer;
-    margin: 0 5px;
-    border-radius: 5px;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
-    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
-    transition: background-color 0.3s, transform 0.3s;
-}
-
-.pagination-button:hover {
-    background-color: white;
-    color: #007bff;
-    transform: translateY(-5px);
+  color: #555555;
 }
 
 
 .view-on-map-button.disabled,
 .view-on-map-dropdown.disabled {
-    background-color: #ccc;
-    color: #666;
-    cursor: not-allowed;
-    opacity: 0.7;
+  background-color: #ccc;
+  color: #666;
+  cursor: not-allowed;
+  opacity: 0.7;
 }
 
 .view-on-map-button.disabled:hover,
 .view-on-map-dropdown.disabled:hover {
-    background-color: #ccc;
-
-}
-
-@media (min-width: 1262px) {
-    .provider-cards-grid {
-        grid-template-columns: repeat(2, minmax(600px, 1fr));
-        justify-content: center;
-    }
-}
-
-@media (max-width: 1261px) {
-    .provider-cards-grid {
-        justify-content: center;
-        margin-left: .5rem;
-        margin-right: .5rem;
-    }
-
-    .searched-provider-card {
-        width: auto;
-    }
-}
-
-@media (max-width: 767px) {
-    .providers-banner-title {
-        font-size: 2rem;
-    }
-
-    .provider-logo {
-        border-radius: 1em;
-        width: 7rem;
-        height: 5rem;
-        justify-content: center;
-        align-content: center;
-        align-items: center;
-        margin-left: 2px;
-    }
-
-
-    .searched-provider-card h3 {
-        font-size: 1.3em;
-    }
-
-    .searched-provider-card h4 {
-        font-size: .8em;
-    }
-
-    .searched-provider-card p {
-        font-size: .75em;
-    }
-
-    .searched-provider-card-info {
-        max-width: 11.99rem
-    }
-
-    .title-and-info {
-        max-height: 18.5rem;
-    }
-
-    .view-on-map-dropdown {
-        max-width: 200px; 
-        width: 90%;
-        text-overflow: hidden;
-    }
-
-    .view-on-map-dropdown-container {
-        max-width: 144px;
-    }
-
-    .map {
-        padding-left: .15rem;
-        padding-right: .15rem;
-    }
-
-    .google-map-section {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 1rem;
-        width: 100%;
-        height: 40rem;
-        max-width: 100%;
-        box-sizing: border-box;
-        overflow: hidden;
-        border-radius: 0.8rem;
-        border: 5px solid #c4b56b;
-    }
-
-    .provider-card-buttons {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-direction: column;
-        gap: 0.1rem;
-        text-align: center;
-        align-items: center;
-        justify-content: center;
-        padding: 1.1em;
-    }
-
-    .view-details-button,
-    .view-on-map-button,
-    .view-on-map-dropdown,
-    .pagination-button {
-        font-size: .9em;
-        font-weight: 600;
-    }
-}
-
-
-@media screen and (min-width: 768px) {
-    .searched-provider-card-content {
-        flex-direction: row;
-    }
-
-    .title-and-info {
-        align-items: center;
-    }
-
-
-    .view-on-map-dropdown {
-        width: auto;
-    }
-
-    .provider-card-buttons {
-        flex-direction: row;
-        align-items: center;
-    }
-
-    .view-details-button,
-    .view-on-map-button {
-        width: auto;
-        margin-bottom: 0;
-    }
-
+  background-color: #ccc;
 
 }
