@@ -6,24 +6,25 @@
     box-shadow: 6px 6px 20px rgba(122, 122, 122, 0.212);
     border-radius: 30px;
     overflow: hidden;
-    height: 350px; 
+    height: 350px;
     position: relative;
     transition: transform 0.3s ease, background-color 0.3s ease, color 0.3s ease;
 }
 
 .provider-card:hover {
-    transform: translateY(-8px) scale(1); 
+    transform: translateY(-8px) scale(1);
     background: linear-gradient(to left top, rgb(210, 195, 149), rgb(210, 195, 149));
     /* url('../Assets/texture.jpg');     */
-    color: #fff; 
-    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.3); 
+    color: #fff;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .provider-card:hover h2 {
-    color: #fff; 
+    color: #fff;
 }
+
 .provider-card:hover h4 {
-    color: #fff; 
+    color: #fff;
 }
 
 .provider-card::before {
@@ -33,9 +34,9 @@
     left: 5px;
     right: 5px;
     bottom: 5px;
-    border: 1.5px solid rgb(255, 255, 255); 
-    border-radius: 29px; 
-    pointer-events: none; 
+    border: 1.5px solid rgb(255, 255, 255);
+    border-radius: 29px;
+    pointer-events: none;
 }
 
 
@@ -52,11 +53,11 @@
     justify-content: center;
     align-items: center;
     padding: 15px;
-    transition: background-color 0.3s ease; 
+    transition: background-color 0.3s ease;
 }
 
 .provider-card:hover .card-grid-logo {
-    background-color: rgb(223, 223, 223); 
+    background-color: rgb(223, 223, 223);
 }
 
 .provider-logo {
@@ -93,11 +94,11 @@
     -webkit-box-orient: vertical;
     border-bottom: 1.5px solid #9ea3a8;
     transition: border-color 0.3s ease;
-    padding-bottom: 6px; 
+    padding-bottom: 6px;
 }
 
 .card-text h2 {
-    transition: color 0.3s ease; 
+    transition: color 0.3s ease;
 }
 
 .card-text h4 {
@@ -109,7 +110,7 @@
     display: -webkit-box;
     -webkit-box-orient: vertical;
     text-align: left;
-    transition: color 0.3s ease; 
+    transition: color 0.3s ease;
 }
 
 .card-text h4 svg {
@@ -118,14 +119,14 @@
 }
 
 .custom-link {
-    color: inherit; 
-    text-decoration: none; 
-  }
-  
-  .custom-link:hover {
-    text-decoration: underline; 
-    color: #3498db; 
-  }
+    color: inherit;
+    text-decoration: none;
+}
+
+.custom-link:hover {
+    text-decoration: underline;
+    color: #3498db;
+}
 
 /* Provider Card Buttons */
 .provider-card-buttons {
@@ -217,6 +218,8 @@
     margin-top: 20px;
 }
 
+/* Provider Card Responsiveness */
+
 @media (max-width: 720px) {
     .provider-card {
         height: auto;
@@ -226,6 +229,7 @@
         margin: 0;
         font-size: .9em;
     }
+
     .card-logo-and-text {
         flex-direction: column;
     }
