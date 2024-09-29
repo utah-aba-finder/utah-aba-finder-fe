@@ -64,10 +64,6 @@
 
 .card-container {
   width: 100%;
-  max-width: 700px;
-  margin-left: .5em;
-  margin-right: .5em;
-
 }
 
 .provider-cards-grid {
@@ -75,16 +71,6 @@
   grid-template-columns: 1fr;
   gap: 1rem;
   width: 100%;
-}
-
-@media (min-width: 1263px) {
-  .card-container {
-    max-width: 1400px;
-  }
-
-  .provider-cards-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
 }
 
 
@@ -168,4 +154,72 @@
 .view-on-map-dropdown.disabled:hover {
   background-color: #ccc;
 
+}
+
+/* Providers Page Responsiveness */
+
+@media (min-width: 1263px) {
+  .card-container {
+    max-width: 1400px;
+  }
+
+  .provider-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 344px) {
+  .provider-card {
+    width: 100%;
+    max-width: 280px;
+    margin: 0 auto;
+  }
+}
+
+@media (min-width: 360px) {
+  .provider-card {
+    width: 100%;
+    max-width: 300px;
+    margin: 0 auto;
+  }
+}
+
+@media (min-width: 375px) {
+  .provider-card {
+    width: 100%;
+    max-width: 315px;
+    margin: 0 auto;
+  }
+}
+
+@media (min-width: 412px) {
+  .provider-card {
+    width: 100%;
+    max-width: 350px;
+    margin: 0 auto;
+  }
+}
+
+@media (min-width: 414px) {
+  .provider-card {
+    width: 100%;
+    max-width: 350px;
+    margin: 0 auto;
+  }
+}
+
+@media (min-width: 430px) {
+  .provider-card {
+    width: 100%;
+    max-width: 380px;
+    margin: 0 auto;
+  }
+}
+
+@media (min-width: 500px) {
+  .provider-card {
+    width: auto;
+    max-width: 750px;
+    margin: 0 auto;
+  }
 }
