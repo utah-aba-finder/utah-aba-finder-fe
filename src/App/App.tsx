@@ -26,8 +26,10 @@ import FavoriteProviders from '../FavoriteProviders-page/FavoriteProviders'
 
 
 function App() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [loggedInProvider, setLoggedInProvider] = useState<MockProviderData | null>(null);
   const [allProviders, setAllProviders] = useState<MockProviderData[]>([])
+
   const clearProviderData = () => {
     setLoggedInProvider(null);
   };
@@ -86,7 +88,7 @@ function App() {
               path="/providerEdit"
               element={
                 <ProtectedRoute>
-                  <ProviderEditWrapper clearProviderData={clearProviderData} onUpdate={handleProviderUpdate} />
+                  <ProviderEditWrapper clearProviderData={clearProviderData} onUpdate={handleProviderUpdate}  />
                 </ProtectedRoute>
               }
             />
@@ -112,7 +114,7 @@ function SuperAdminEditWrapper({ providers, onUpdate }: { providers: MockProvide
 
   return <SuperAdminEdit provider={provider.attributes} onUpdate={onUpdate} />;
 }
-function ProviderEditWrapper({ clearProviderData, onUpdate }: { clearProviderData: () => void, onUpdate: (updatedProvider: ProviderAttributes) => void  }) {
+function ProviderEditWrapper({ clearProviderData, onUpdate, }: { clearProviderData: () => void, onUpdate: (updatedProvider: ProviderAttributes) => void}) {
   const { loggedInProvider } = useAuth();
   return <ProviderEdit loggedInProvider={loggedInProvider} clearProviderData={clearProviderData} onUpdate={onUpdate} />;
 }

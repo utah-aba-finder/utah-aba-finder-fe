@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react'
 import { MockProviderData, ProviderAttributes, CountiesServed, Insurance, Location } from '../Utility/Types'
 import './SuperAdminEdit.css'
 import gearImage from '../Assets/Gear@1x-0.5s-200px-200px.svg'
+import InsuranceModal from '../Provider-edit/InsuranceModal';
+import CountiesModal from '../Provider-edit/CountiesModal';
 
 interface SuperAdminEditProps {
     provider: ProviderAttributes;
@@ -14,13 +16,34 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({ provider , onUpd
     const [isCountiesModalOpen, setIsCountiesModalOpen] = useState(false);
     const [selectedCounties, setSelectedCounties] = useState<CountiesServed[]>([]);
     const [selectedInsurances, setSelectedInsurances] = useState<Insurance[]>([]);
-    const [locations, setLocations] = useState<Location[]>([]);
+    const [locations, setLocations] = useState<any[]>([]);
     const [isSaving, setIsSaving] = useState(false);
-    const [providerData, setProviderData] = useState<MockProviderData | null>(null);
-    const [originalFormData, setOriginalFormData] = useState<typeof formData | null>(null);
-    const [originalLocations, setOriginalLocations] = useState<typeof locations | null>(null);
-    const [originalInsurances, setOriginalInsurances] = useState<typeof selectedInsurances | null>(null);
-    const [originalCounties, setOriginalCounties] = useState<typeof selectedCounties | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [showError, setShowError] = useState('');
+
+    useEffect(() => {
+        if (provider) {
+            setEditedProvider(provider);
+            setSelectedCounties(provider.counties_served);
+            setSelectedInsurances(provider.insurance);
+            setLocations(provider.locations);
+            setIsLoading(false);
+        }
+    }, [provider]);
+
+    const handleSave = () => {
+        setIsSaving(true);
+        // Implement save logic here
+        onUpdate(editedProvider!);
+        setIsSaving(false);
+    };
+
+    const handleCancel = () => {
+        setEditedProvider(provider);
+        setSelectedCounties(provider.counties_served);
+        setSelectedInsurances(provider.insurance);
+        setLocations(provider.locations);
+    };
 
    const [formData, setFormData] = useState({
         logo: '',
@@ -76,7 +99,34 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({ provider , onUpd
     };
 
     const addNewLocation = () => {
-        setLocations([...locations, { name: null, address_1: null, city: null, state: null, zip: null, phone: null, id: null, address_2: null }]);
+        const newId = Math.max(0, ...locations.map(loc => loc.id)) + 1;
+        setLocations([...locations, {
+            id: newId,
+            name: '',
+            address_1: '',
+            city: '',
+            state: '',
+            zip: '',
+            phone: ''
+        }]);
+    };
+
+    const toggleInsuranceModal = () => {
+        setIsInsuranceModalOpen(prevState => !prevState);
+        console.log("Insurance modal toggled:", !isInsuranceModalOpen); // Add this line
+    };
+    
+    const toggleCountiesModal = () => {
+        setIsCountiesModalOpen(prevState => !prevState);
+        console.log("Counties modal toggled:", !isCountiesModalOpen); // Add this line
+    };
+
+    const handleInsurancesChange = (insurances: Insurance[]) => {
+        setSelectedInsurances(insurances);
+    };
+
+    const handleCountiesChange = (counties: CountiesServed[]) => {
+        setSelectedCounties(counties);
     };
   
     return (
@@ -228,6 +278,59 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({ provider , onUpd
                 onChange={handleInputChange} 
                 placeholder='Yes, No?'
             />
+            <label htmlFor='spanishSpeaking' className='editLabels'>Spanish Speakers: </label>
+            <input 
+                id='spanishSpeaking'
+                type="text"
+                name="spanishSpeaking"
+                value={editedProvider.spanish_speakers || ''}
+                onChange={handleInputChange}
+                placeholder="Yes, No"
+            /> 
+            <label htmlFor='minAge' className='editLabels'>Minimum Age: </label>
+            <input 
+                id='minAge'
+                type="text"
+                name="minAge"
+                value={editedProvider.min_age || ''}
+                onChange={handleInputChange}
+                placeholder="Minimum Age"
+            />
+            <label htmlFor='maxAge' className='editLabels'>Maximum Age: </label>
+            <input 
+                id='maxAge'
+                type="text"
+                name="maxAge"
+                value={editedProvider.max_age || ''}
+                onChange={handleInputChange}
+                placeholder="Maximum Age"
+            />
+            <button onClick={(e) => {
+                e.preventDefault();
+                toggleInsuranceModal();
+            }}>Edit Insurances</button>
+            <button onClick={(e) => {
+                e.preventDefault();
+                toggleCountiesModal();
+            }}>Edit Counties</button>
+            {isInsuranceModalOpen && (
+            <InsuranceModal 
+                isOpen={isInsuranceModalOpen} 
+                onClose={toggleInsuranceModal} 
+                selectedInsurances={selectedInsurances} 
+                onInsurancesChange={setSelectedInsurances} 
+                providerInsurances={editedProvider.insurance}
+            />
+            )}
+            {isCountiesModalOpen && (
+            <CountiesModal 
+                isOpen={isCountiesModalOpen} 
+                onClose={toggleCountiesModal}
+                selectedCounties={selectedCounties}
+                onCountiesChange={setSelectedCounties}
+                providerCounties={editedProvider.counties_served}
+            />
+            )}
             <div className='superAdminEditFormButtonsWrapper'>
                 <button className='cancelButton' type='button' onClick={() => setEditedProvider(null)}>Cancel</button>
                 <button type="submit">Update Provider</button>

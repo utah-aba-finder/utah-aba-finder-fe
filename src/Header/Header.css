@@ -49,15 +49,8 @@
 }
 
 .menu-content {
-    padding: 1.5rem;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1.5rem;
-    pointer-events: none;
     opacity: 0;
     height: 0;
-    overflow: hidden;
-    transition: opacity 0.3s ease-in-out, height 0.3s ease-in-out;
 }
 
 .menu-content a {
@@ -70,7 +63,7 @@
 }
 
 .menu-content a:hover {
-    color: rgb(253, 111, 54);
+    color: rgb(226, 77, 18);
     border-bottom: 2px solid rgb(253, 111, 54);
 }
 
@@ -80,6 +73,13 @@
     visibility: visible;
     pointer-events: auto;
     height: auto;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 2rem;
+    width: 85%;
+    /* padding: .5rem; */
 }
 
 @media (max-width: 480px) {

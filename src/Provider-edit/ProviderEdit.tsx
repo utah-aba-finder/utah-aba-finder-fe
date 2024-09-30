@@ -11,7 +11,6 @@ import { ToastContainer } from 'react-toastify';
 import { useCallback } from 'react';
 import { cloneDeep } from 'lodash';
 import moment from 'moment';
-
 interface ProviderEditProps {
     loggedInProvider: MockProviderData | null;
     clearProviderData: () => void;
@@ -31,11 +30,13 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
     const navigate = useNavigate();
     const { setToken } = useAuth();
     const [isSaving, setIsSaving] = useState(false);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [providerData, setProviderData] = useState<MockProviderData | null>(null);
     const [originalFormData, setOriginalFormData] = useState<typeof formData | null>(null);
     const [originalLocations, setOriginalLocations] = useState<typeof locations | null>(null);
     const [originalInsurances, setOriginalInsurances] = useState<typeof selectedInsurances | null>(null);
     const [originalCounties, setOriginalCounties] = useState<typeof selectedCounties | null>(null);
+    const [providerName, setProviderName] = useState('');
 
 
 
@@ -141,6 +142,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
             setSelectedCounties(initialCounties);
             setOriginalCounties(cloneDeep(initialCounties));
 
+            setProviderName(loggedInProvider.attributes.name ?? '');
             setIsLoading(false);
         } else {
             setIsLoading(false);
@@ -173,6 +175,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
         });
         setSelectedInsurances(updatedData.attributes.insurance ?? []);
         setSelectedCounties(updatedData.attributes.counties_served ?? []);
+        setProviderName(updatedData.attributes.name ?? '');
     }, []);
     useEffect(() => {
         if (loggedInProvider) {
@@ -239,15 +242,13 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
                         })
                     });
                     const responseData = await response.json();
-                    console.log('Response status:', response.status);
-                    console.log('Response headers:', Object.fromEntries(response.headers));
-                    console.log('RESPONSE DATA FROM PATCH:', responseData)
                     if (!response.ok) {
                         throw new Error('Failed to update provider data') &&
                         toast.error('Failed to update data, if the issue persists contact the admin')
                     }
                     setSelectedInsurances(responseData.data[0].attributes.insurance || []);
                     setSelectedCounties(responseData.data[0].attributes.counties_served || []);
+                    setProviderName(responseData.data[0].attributes.name);
                     toast.success('Provider data updated successfully');
                     setShowError('');
                 } catch (error) {
@@ -260,7 +261,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
 
             updateProviderData();
         }
-    }, [isSaving, formData, loggedInProvider?.id, loggedInProvider?.attributes.email, loggedInProvider?.attributes.cost, selectedInsurances, selectedCounties, updateLocalProviderData, locations]);
+    }, [isSaving, formData, loggedInProvider?.id, loggedInProvider?.attributes.name, loggedInProvider?.attributes.email, loggedInProvider?.attributes.cost, selectedInsurances, selectedCounties, updateLocalProviderData, locations]);
     useEffect(() => {
     }, [locations]);
 
@@ -283,18 +284,14 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
 
     const handleInsurancesChange = (newInsurances: Insurance[]) => {
         setSelectedInsurances(newInsurances);
-        console.log('Updated insurances:', newInsurances); // Add this log
       };
 
-    const toggleInsuranceModal = () => {
-        setIsInsuranceModalOpen(!isInsuranceModalOpen);
+      const toggleInsuranceModal = () => {
+        setIsInsuranceModalOpen(prev => !prev);
     };
-    useEffect(() => {
-        console.log('selectedInsurances updated:', selectedInsurances);
-      }, [selectedInsurances]);
 
     const toggleCountiesModal = () => {
-        setIsCountiesModalOpen(!isCountiesModalOpen);
+        setIsCountiesModalOpen(prev => !prev);
     };
 
     if (isLoading) {
@@ -310,8 +307,8 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
         <div className='provider-edit-container'>
             <ToastContainer />
             <div className='user-info-section'>
-                <h1>Welcome, {loggedInProvider?.attributes.name}</h1>
-                <p>Last edited: {moment(loggedInProvider?.attributes.updated_last).format('MM/DD/YYYY')}</p>
+                <h1>Welcome, {providerName}</h1>
+                <p>Last edited: {moment(loggedInProvider?.attributes.updated_last).format('MM/DD/YYYY hh:mm:ss a')}</p>
                 <button className='logoutButton' onClick={handleLogout}>Logout</button>
                 <p>For any questions to the admin, please use the contact page.</p>
                 <Link to="/contact" className='contact-link'>Click here to go to the contact page</Link>
