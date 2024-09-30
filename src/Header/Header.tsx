@@ -36,6 +36,7 @@ const Header: React.FC = () => {
             <nav id="menu-content" className={`menu-content ${menuOpen ? 'open' : ''}`} tabIndex={0}>
                 <Link to="/" onClick={toggleMenu}>Home</Link>
                 <Link to="/providers" onClick={toggleMenu}>Find Providers</Link>
+                <Link to="favoriteproviders" onClick={toggleMenu}> Favorited Providers </Link>
                 <Link to="/screening" onClick={toggleMenu}>Screening Tools</Link>
                 <Link to="/information" onClick={toggleMenu}>What is ASD?</Link>
                 <Link to="/resources" onClick={toggleMenu}>Resources</Link>

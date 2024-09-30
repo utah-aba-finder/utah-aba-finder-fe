@@ -3,7 +3,7 @@ import './ProvidersPage.css';
 import childrenBanner from '../Assets/children-banner.jpg';
 import ProviderModal from './ProviderModal';
 import SearchBar from './SearchBar';
-import GoogleMap from './GoogleMap';
+// import GoogleMap from './GoogleMap';
 import ProviderCard from './ProviderCard';
 import { fetchProviders } from '../Utility/ApiCall';
 import { MockProviders, ProviderAttributes } from '../Utility/Types';
@@ -23,19 +23,45 @@ const ProvidersPage: React.FC = () => {
   const [selectedSpanish, setSelectedSpanish] = useState<string>('');
   const [selectedService, setSelectedService] = useState<string>('');
   const [selectedWaitList, setSelectedWaitList] = useState<string>('');
-  const [mapAddress, setMapAddress] = useState<string>('Utah');
-  const [selectedAddress, setSelectedAddress] = useState<string | null>(null);
-
+  const [selectedAddress, setSelectedAddress] = useState<string>('');
+  const [mapAddress, setMapAddress] = useState<string>('');
 
   const [isFiltered, setIsFiltered] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [showError, setShowError] = useState('');
   const [isLoading, setIsLoading] = useState(false)
   const errorTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [favoriteProviders, setFavoriteProviders] = useState<ProviderAttributes[]>([]);
 
-
-  const mapSectionRef = useRef<HTMLDivElement>(null);
+  // const mapSectionRef = useRef<HTMLDivElement>(null);
   const providersPerPage = 8;
+
+  useEffect(() => {
+    const storedFavorites = localStorage.getItem('favoriteProviders');
+    if (storedFavorites) {
+      setFavoriteProviders(JSON.parse(storedFavorites));
+    }
+  }, []);
+
+  const toggleFavorite = useCallback((providerId: number) => {
+    setFavoriteProviders((prevFavorites) => {
+      const provider = allProviders.find(p => p.id === providerId);
+      if (!provider) return prevFavorites; 
+
+      const isFavorited = prevFavorites.some(fav => fav.id === providerId);
+
+      let newFavorites;
+      if (isFavorited) {
+        newFavorites = prevFavorites.filter(fav => fav.id !== providerId);
+      } else {
+        newFavorites = [...prevFavorites, provider];
+      }
+
+      localStorage.setItem('favoriteProviders', JSON.stringify(newFavorites));
+
+      return newFavorites;
+    });
+  }, [allProviders]);
 
   useEffect(() => {
     const getProviders = async () => {
@@ -45,7 +71,10 @@ const ProvidersPage: React.FC = () => {
           clearTimeout(errorTimeoutRef.current);
         }
         const providersList: MockProviders = await fetchProviders();
-        const mappedProviders = providersList.data.map(provider => provider.attributes);
+        const mappedProviders = providersList.data.map(provider => ({
+          ...provider.attributes,
+          id: provider.id
+        }));
 
         const sortedProviders = mappedProviders.sort((a, b) => {
           const nameA = a.name ?? '';
@@ -142,25 +171,21 @@ const ProvidersPage: React.FC = () => {
 
   const handleProviderCardClick = (provider: ProviderAttributes) => {
     setSelectedProvider(provider);
-  
-   
+
+
     const address = provider.locations.length > 0
       ? `${provider.locations[0].address_1 || ''} ${provider.locations[0].address_2 || ''}, ${provider.locations[0].city || ''}, ${provider.locations[0].state || ''} ${provider.locations[0].zip || ''}`.trim()
       : 'Address not available';
-  
-   
+
+
     setMapAddress(address);
-    setSelectedAddress(address); 
+    setSelectedAddress(address);
   };
-  
 
-
-  const handleViewOnMapClick = (address: string | null) => {
-    setMapAddress(address || 'Utah');
-    if (mapSectionRef.current) {
-      mapSectionRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
+  const handleViewOnMapClick = (address: string) => {
+    setMapAddress(address);
   };
+
 
   const handleCloseModal = () => {
     setSelectedProvider(null);
@@ -289,32 +314,32 @@ const ProvidersPage: React.FC = () => {
   const renderViewOnMapButton = (provider: ProviderAttributes) => {
     const isAddressAvailable = provider.locations.length > 0 && provider.locations[0]?.address_1;
 
-    if (provider.locations.length > 1) {
-      return (
-        <div className="view-on-map-dropdown-container">
-          <select
-            className={`view-on-map-dropdown ${!isAddressAvailable ? 'disabled' : ''}`}
-            id='view-on-map-dropdown'
-            aria-label="View On Map Dropdown"
-            onChange={(e) => {
-              const index = e.target.value;
-              const location = provider.locations[parseInt(index)];
-              const fullAddress = `${location.address_1 || ''} ${location.address_2 || ''}, ${location.city || ''}, ${location.state || ''} ${location.zip || ''}`.trim();
-              handleViewOnMapClick(fullAddress);
-            }}
-            defaultValue=""
-            disabled={!isAddressAvailable}
-          >
-            <option value="" disabled>Select Location to View on Map</option>
-            {provider.locations.map((location, index) => (
-              <option key={index} value={index}>
-                {location.name} - {location.address_1 || ''}, {location.city}, {location.state} {location.zip}
-              </option>
-            ))}
-          </select>
-        </div>
-      );
-    }
+    // if (provider.locations.length > 1) {
+    //   return (
+    //     <div className="view-on-map-dropdown-container">
+    //       <select
+    //         className={`view-on-map-dropdown ${!isAddressAvailable ? 'disabled' : ''}`}
+    //         id='view-on-map-dropdown'
+    //         aria-label="View On Map Dropdown"
+    //         onChange={(e) => {
+    //           const index = e.target.value;
+    //           const location = provider.locations[parseInt(index)];
+    //           const fullAddress = `${location.address_1 || ''} ${location.address_2 || ''}, ${location.city || ''}, ${location.state || ''} ${location.zip || ''}`.trim();
+    //           handleViewOnMapClick(fullAddress);
+    //         }}
+    //         defaultValue=""
+    //         disabled={!isAddressAvailable}
+    //       >
+    //         <option value="" disabled>Select Location to View on Map</option>
+    //         {provider.locations.map((location, index) => (
+    //           <option key={index} value={index}>
+    //             {location.name} - {location.address_1 || ''}, {location.city}, {location.state} {location.zip}
+    //           </option>
+    //         ))}
+    //       </select>
+    //     </div>
+    //   );
+    // }
     return (
       <button
         className={`view-on-map-button ${!isAddressAvailable ? 'disabled' : ''}`}
@@ -331,83 +356,92 @@ const ProvidersPage: React.FC = () => {
   };
 
   return (
+    //   <div className="map">
+    //     <section className="google-map-section" ref={mapSectionRef}>
+    //       <GoogleMap address={mapAddress} />
+    //     </section>
+    //   </div>
+
+    //   <section className="provider-title-section">
+    //   </section>
+
     <div className="providers-page">
       <section className="find-your-provider-section">
         <img src={childrenBanner} alt="Find Your Provider" className="banner-image" />
         <h1 className="providers-banner-title">Find Your Provider</h1>
       </section>
+      <main>
+        <div className="provider-page-search-cards-section">
+          <SearchBar
+            providers={allProviders}
+            onResults={handleResults}
+            onSearch={handleSearch}
+            onCountyChange={handleCountyChange}
+            onInsuranceChange={handleInsuranceChange}
+            insuranceOptions={uniqueInsuranceOptions}
+            onSpanishChange={handleSpanishChange}
+            onServiceChange={handleServiceChange}
+            onWaitListChange={handleWaitListChange}
+            onReset={handleResetSearch}
+          />
+          <section className="glass">
+            <h2 className="searched-provider-number-status title">
+              {isFiltered
+                ? `Showing ${paginatedProviders.length} of ${combinedProviders.length} Providers`
+                : `Showing ${allProviders.length} Providers`}
+            </h2>
+            <section className="searched-provider-map-locations-list-section">
+              {isLoading && (
+                <div className="loading-container">
+                  <img src={gearImage} alt="Loading..." className="loading-gear" />
+                  <p>Loading providers...</p>
+                </div>
+              )}
+              {!isLoading && showError && <div className='error-message'>{showError}</div>}
+              {!isLoading && !showError && (
+                <div className="card-container">
 
-      <div className="map">
-        <section className="google-map-section" ref={mapSectionRef}>
-          <GoogleMap address={mapAddress} />
-        </section>
-      </div>
-
-      <section className="provider-title-section">
-        <h2>
-          {isFiltered
-            ? `Showing ${paginatedProviders.length} of ${combinedProviders.length} Providers`
-            : `Showing ${allProviders.length} Providers`}
-        </h2>
-      </section>
-      <SearchBar
-        providers={allProviders}
-        onResults={handleResults}
-        onSearch={handleSearch}
-        onCountyChange={handleCountyChange}
-        onInsuranceChange={handleInsuranceChange}
-        insuranceOptions={uniqueInsuranceOptions}
-        onSpanishChange={handleSpanishChange}
-        onServiceChange={handleServiceChange}
-        onWaitListChange={handleWaitListChange}
-        onReset={handleResetSearch}
-      />
-
-      <section className="searched-provider-map-locations-list-section">
-        {isLoading && (
-          <div className="loading-container">
-            <img src={gearImage} alt="Loading..." className="loading-gear" />
-            <p>Loading providers...</p>
-          </div>
-        )}
-        {!isLoading && showError && <div className='error-message'>{showError}</div>}
-        {!isLoading && !showError && (
-          <div className="provider-cards-grid">
-            {paginatedProviders.map((provider, index) => (
-              <ProviderCard
-                key={index}
-                provider={provider}
-                onViewDetails={handleProviderCardClick}
-                renderViewOnMapButton={renderViewOnMapButton}
+                  <div className="provider-cards-grid">
+                    {paginatedProviders.map((provider) => (
+                      <ProviderCard
+                        key={provider.id}
+                        provider={provider}
+                        onViewDetails={handleProviderCardClick}
+                        renderViewOnMapButton={renderViewOnMapButton}
+                        onToggleFavorite={toggleFavorite}
+                        isFavorited={favoriteProviders.some(fav => fav.id === provider.id)}
+                        />
+                      ))}
+                  </div>
+                  <div className="pagination-controls">
+                    {currentPage > 1 && (
+                      <button className="pagination-button" onClick={handlePreviousPage}>
+                        &lt; Previous
+                      </button>
+                    )}
+                    {currentPage < totalPages && (
+                      <button className="pagination-button" onClick={handleNextPage}>
+                        Next &gt;
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+            </section>
+          </section>
+        </div>
+              {selectedProvider && (
+                <ProviderModal
+                provider={selectedProvider}
+                address={selectedAddress || 'Address not available'}
+                mapAddress={mapAddress}
+                onClose={handleCloseModal}
+                onViewOnMapClick={handleViewOnMapClick}
               />
-            ))}
-          </div>
-        )}
-      </section>
-
-      <div className="pagination-controls">
-        {currentPage > 1 && (
-          <button className="pagination-button" onClick={handlePreviousPage}>
-            &lt; Previous
-          </button>
-        )}
-        {currentPage < totalPages && (
-          <button className="pagination-button" onClick={handleNextPage}>
-            Next &gt;
-          </button>
-        )}
-      </div>
-
-      {selectedProvider && (
-        <ProviderModal
-        provider={selectedProvider}
-        address={selectedAddress || 'Address not available'} 
-        mapAddress={mapAddress}
-        onClose={handleCloseModal}
-      />
-      )}
-
+              )}
+      </main>
     </div>
+
   );
 };
 

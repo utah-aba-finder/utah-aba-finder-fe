@@ -43,13 +43,14 @@ interface ProviderModalProps {
   address: string;
   mapAddress: string;
   onClose: () => void;
+  onViewOnMapClick: (address: string) => void; 
 }
 
-const ProviderModal: React.FC<ProviderModalProps> = ({ provider, address, mapAddress, onClose }) => {
+
+const ProviderModal: React.FC<ProviderModalProps> = ({ provider, address, mapAddress, onViewOnMapClick, onClose }) => {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    // Trigger the modal to appear with animation
     setTimeout(() => setIsVisible(true), 10);
   }, []);
   if (!provider) return null;
@@ -71,9 +72,9 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ provider, address, mapAdd
             <div className="modal-logo">
               <img src={provider.logo ?? undefined} alt={provider.name ?? undefined} className="modal-img" />
             </div>
+            <h2 className="provider-name title">{provider.name}</h2>
             <div className="provider-main-info">
-              <h2 className="provider-name title">{provider.name}</h2>
-            <div className="update-section">
+              <div className="update-section">
                 <span className="last-update">Last Updated {moment(provider.updated_last).format('MM/DD/YYYY')}</span>
               </div>
               <p className="provider-address-phone text">
@@ -81,8 +82,17 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ provider, address, mapAdd
                   provider.locations.map((location, index) => (
                     <div key={index} className="provider-address-phone">
                       {hasMultipleLocations && (
-                        <p><strong>Location {index + 1}: </strong></p>
+                        <p><strong>Location {index + 1}: {location.name ? location.name : 'Unnamed Location'} -</strong><button
+                          className="view-on-map-button"
+                          onClick={() => {
+                            const fullAddress = `${location.address_1 || ''} ${location.address_2 || ''}, ${location.city || ''}, ${location.state || ''} ${location.zip || ''}`.trim();
+                            onViewOnMapClick(fullAddress);
+                          }}
+                        >
+                          View this address on the map
+                        </button></p>
                       )}
+
                       <p>
                         <MapPin style={{ marginRight: '8px' }} />
                         <strong>Address: </strong>
@@ -103,7 +113,7 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ provider, address, mapAdd
                         <Globe style={{ marginRight: '8px' }} />
                         <strong>Website:</strong> <a href={provider.website ?? undefined} target="_blank" rel="noopener noreferrer">{provider.website ?? 'Provider does not have a website yet.'}</a>
                       </p>
-                      <p>
+                      <p className="email-text">
                         <Mail style={{ marginRight: '8px' }} />
                         <strong>Email:</strong> <a href={`mailto:${provider.email ?? ''}`} target="_blank" rel="noopener noreferrer">{provider.email ?? 'Provider does not have an email yet.'}</a>
                       </p>
