@@ -166,7 +166,7 @@ export const LoginPage: React.FC = () => {
                             </button>
                         </div>
                                 {error && <p className="error-message">Failed to login. Please check your username and password and try again.</p>}
-                        <div className="forgot-password">Forgot Password <span>Click Here!</span></div>
+                        {/* <div className="forgot-password">Forgot Password <span>Click Here!</span></div> */}
                         <div className="submit-container">
                             <button type='submit' id='signup' className='loginButton' disabled={true}>Sign Up</button>
                             <button type='submit' id='login' className='loginButton'>Login</button>

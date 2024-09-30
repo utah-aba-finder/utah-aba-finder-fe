@@ -36,6 +36,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
     const [originalLocations, setOriginalLocations] = useState<typeof locations | null>(null);
     const [originalInsurances, setOriginalInsurances] = useState<typeof selectedInsurances | null>(null);
     const [originalCounties, setOriginalCounties] = useState<typeof selectedCounties | null>(null);
+    const [providerName, setProviderName] = useState('');
 
 
 
@@ -141,6 +142,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
             setSelectedCounties(initialCounties);
             setOriginalCounties(cloneDeep(initialCounties));
 
+            setProviderName(loggedInProvider.attributes.name ?? '');
             setIsLoading(false);
         } else {
             setIsLoading(false);
@@ -173,6 +175,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
         });
         setSelectedInsurances(updatedData.attributes.insurance ?? []);
         setSelectedCounties(updatedData.attributes.counties_served ?? []);
+        setProviderName(updatedData.attributes.name ?? '');
     }, []);
     useEffect(() => {
         if (loggedInProvider) {
@@ -245,6 +248,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
                     }
                     setSelectedInsurances(responseData.data[0].attributes.insurance || []);
                     setSelectedCounties(responseData.data[0].attributes.counties_served || []);
+                    setProviderName(responseData.data[0].attributes.name);
                     toast.success('Provider data updated successfully');
                     setShowError('');
                 } catch (error) {
@@ -303,8 +307,8 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
         <div className='provider-edit-container'>
             <ToastContainer />
             <div className='user-info-section'>
-                <h1>Welcome, {formData.name}</h1>
-                <p>Last edited: {moment(loggedInProvider?.attributes.updated_last).format('MM/DD/YYYY')}</p>
+                <h1>Welcome, {providerName}</h1>
+                <p>Last edited: {moment(loggedInProvider?.attributes.updated_last).format('MM/DD/YYYY hh:mm:ss a')}</p>
                 <button className='logoutButton' onClick={handleLogout}>Logout</button>
                 <p>For any questions to the admin, please use the contact page.</p>
                 <Link to="/contact" className='contact-link'>Click here to go to the contact page</Link>

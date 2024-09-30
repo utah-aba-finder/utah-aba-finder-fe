@@ -11,7 +11,7 @@ interface SuperAdminProps {
 export const SuperAdmin: React.FC<SuperAdminProps> = ({ providers, setProviders }) => {
     const [selectedProvider, setSelectedProvider] = useState<MockProviderData | null>(null)
     const { providerId } = useParams<{ providerId: string }>();
-    const provider = providers.find(p => p.id === (providerId ?? 0));
+    // const provider = providers.find(p => p.id === (providerId ?? 0));
     
     useEffect(() => {
         if (providerId) {
@@ -22,10 +22,7 @@ export const SuperAdmin: React.FC<SuperAdminProps> = ({ providers, setProviders 
             }
         }
     }, [providerId, providers]);
-    console.log('providerId:', providerId);
-    console.log('providers:', providers);
     
-    console.log('found provider:', provider);
     const handleProviderSelect = (provider: MockProviderData) => {
         setSelectedProvider(provider);
       };
