@@ -45,7 +45,6 @@ export const SuperAdmin: React.FC<SuperAdminProps> = ({ providers, setProviders 
 
     const handleLogout = () => {
         setToken(null);
-        window.location.href = '/login';
     };
 
     return (
