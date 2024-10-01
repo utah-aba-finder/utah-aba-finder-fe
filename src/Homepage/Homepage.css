@@ -320,16 +320,12 @@
     .icons-section {
         gap: 0;
         display: flex;
-        /* flex-direction: row; */
-        /* flex-wrap: wrap; */
-        /* padding-top: 1.5rem; */
         padding-bottom: 1.5rem;
         max-width: 100vw;
         justify-content: center;
         align-content: center;
         margin: 0;
         padding: 15px;
-        /* border: 1px solid red; */
     }
 
     .icons-section-icon {
@@ -339,10 +335,19 @@
 
     .icons-section-icon img {
         width: 30%;
+
     }
 
     .icons-section p {
         font-size: 0.7rem;
+    }
+
+    .icons-section-icon p {
+        margin-top: 0.5rem;
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: rgb(0, 0, 130);
+
     }
 }
 @media (max-width: 975px) and (min-height: 1558px) {
