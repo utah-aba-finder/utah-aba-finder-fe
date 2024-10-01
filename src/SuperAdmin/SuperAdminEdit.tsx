@@ -4,6 +4,8 @@ import './SuperAdminEdit.css'
 import gearImage from '../Assets/Gear@1x-0.5s-200px-200px.svg'
 import InsuranceModal from '../Provider-edit/InsuranceModal';
 import CountiesModal from '../Provider-edit/CountiesModal';
+import moment from 'moment';
+
 
 interface SuperAdminEditProps {
     provider: ProviderAttributes;
@@ -133,6 +135,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({ provider , onUpd
     <div className='superAdminEditWrapper'>
         <section className='superAdminEditFormWrapper'>
             <h1>Editing: <strong className='superAdminEditFormName'>{editedProvider.name}</strong></h1>
+            <p>Last updated: {editedProvider.updated_last ? moment(editedProvider.updated_last).format('MM/DD/YYYY') : 'N/A'}</p>
             <form className='superAdminEditForm' onSubmit={handleSubmit}>
                 <label htmlFor="name">Name</label>
             <input
@@ -142,6 +145,8 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({ provider , onUpd
                 onChange={handleInputChange}
                 placeholder="Provider Name"
             />
+            <div className='formContent'>
+            <div className='firstColumn'>
             {locations.map((location, index) => (
                     <div key={index} className="location-section">
                         <div>
@@ -208,6 +213,8 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({ provider , onUpd
                 <button onClick={addNewLocation} className="add-location-button">
                     Add New Location
                 </button>
+                </div>
+                <div className='secondColumn'>
                 <label htmlFor="logo">Logo</label>
             <input 
                 type="text"
@@ -305,6 +312,8 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({ provider , onUpd
                 onChange={handleInputChange}
                 placeholder="Maximum Age"
             />
+            </div>
+            </div>
             <button onClick={(e) => {
                 e.preventDefault();
                 toggleInsuranceModal();

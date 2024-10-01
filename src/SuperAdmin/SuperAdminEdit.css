@@ -2,7 +2,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    height: 100vh;
+    height: 100%;
 }
 
 .superAdminEditFormWrapper {
@@ -10,7 +10,20 @@
     flex-direction: column;
     height: 100%;
 }
+.formContent {
+    display: flex;
+    /* flex-direction: row; */
+    width: 100%;
+    border: 1px solid #ccc;
+}
 
+.firstColumn {
+    width: 50%;
+}
+
+.secondColumn {
+    width: 50%;
+}
 .superAdminEditForm {
     display: flex;
     flex-direction: column;
