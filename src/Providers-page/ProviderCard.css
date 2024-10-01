@@ -226,9 +226,13 @@
         height: auto;
     }
 
+    .card-name {
+        font-size: 1.3rem;
+    }
+
     .card-text h4 {
         margin: 0;
-        font-size: .9em;
+        font-size: 0.7rem;
     }
 
     .card-logo-and-text {
@@ -258,4 +262,5 @@
         justify-content: center;
         padding: 10px 0;
     }
+
 }

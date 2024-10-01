@@ -31,6 +31,7 @@ const Header: React.FC = () => {
                     tabIndex={0}
                     aria-expanded={menuOpen}
                     aria-controls="menu-content"
+                    id="menu-button"
                 />
             </div>
             <nav id="menu-content" className={`menu-content ${menuOpen ? 'open' : ''}`} tabIndex={0}>

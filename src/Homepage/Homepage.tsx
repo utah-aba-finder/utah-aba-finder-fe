@@ -7,17 +7,79 @@ import insuranceIcon from '../Assets/insurance-icon.png'
 import familyIcon from '../Assets/family-icon.png'
 import spanishPic from '../Assets/spanish-pic.jpg'
 import "./Homepage.css"
+import Joyride, { Step } from 'react-joyride';
+import studyIcon from '../Assets/material.png'
 
 type Props = {}
 
-type State = {}
+type State = {
+    run: boolean,
+    steps: Step[]
+}
 
 class Homepage extends Component<Props, State> {
-    state = {}
+    state = {
+        run: false,
+        steps: [
+            {
+                target: '.discover-section-title',
+                content: 'Welcome to our website! Start your journey by exploring our site.'
+            },
+            {
+                target: '.county-section',
+                content: 'Check out the counties we cover for ABA therapy in Utah.',
+            },
+            {
+                target: '.begin-section-button-container',
+                content: 'Click to view providers, take M-CHAT or CAST, or contact us for any questions.',
+            },
+            {
+                target: '.icons-section',
+                content: 'Here, you can locate providers, educate yourself with autism, get insurance info, get resources,and take the M-CHAT or the CAST test.',
+            },
+            {
+                target: '.spanish-section-button',
+                content: 'You can search for Spanish-speaking providers as well.',
+            },
+            {
+                target: '#menu-button',
+                content: 'Click menu button to view the contents and explore our website!',
+            },
+        ]
+    }
+
+    componentDidMount() {
+        const hasVisited = localStorage.getItem('hasVisited');
+
+        if (!hasVisited) {
+            this.setState({ run: true });
+        }
+    }
+
+    handleJoyrideCallback = (data: any) => {
+        const { status } = data;
+
+        const finishedStatuses = ['finished', 'skipped'];
+
+        if (finishedStatuses.includes(status)) {
+            localStorage.setItem('hasVisited', 'true');
+        }
+    };
 
     render() {
+        const { run, steps } = this.state;
+
         return (
             <div className='homepage-container'>
+                <Joyride
+                    run={run}
+                    steps={steps}
+                    continuous={true}
+                    showProgress={true}
+                    showSkipButton={true}
+                    callback={this.handleJoyrideCallback}
+                />
+
                 <div className='discover-section'>
                     <img src={utah} alt="background-image" className='discover-section-backgroundImage' />
                     <div className='discover-section-container'>
@@ -32,6 +94,7 @@ class Homepage extends Component<Props, State> {
                         </div>
                     </div>
                 </div>
+
                 <div className='county-section'>
                     <h2 className='county-section-title'>Counties Covered</h2>
                     <div className='county-section-list-wrapper'>
@@ -86,16 +149,20 @@ class Homepage extends Component<Props, State> {
                         </div>
                     </div>
                 </div>
+
                 <div className='begin-section'>
                     <h2 className='begin-section-title'>Begin Your Journey with Essential Information</h2>
-                    <p className='begin-section-description'>Not sure about your child’s condition or haven’t received a diagnosis yet? <br />We’re here for you. Start by taking a simple screening test to see if your child meets the criteria.</p>
+                    <p className='begin-section-description'>
+                        Not sure about your child’s condition or haven’t received a diagnosis yet? <br />
+                        We’re here for you. Start by taking a simple screening test to see if your child meets the criteria.
+                    </p>
                     <div className='begin-section-button-container'>
                         <Link to="/providers" className='begin-section-button1'> VIEW PROVIDERS</Link>
                         <Link to="/screening" className='begin-section-button2'>SCREENING TOOLS </Link>
                         <Link to="/contact" className='begin-section-button3'> CONTACT US</Link>
                     </div>
-
                 </div>
+
                 <div className="icons-section" id="view">
                     <div className="icons-section-icon" id={"block"}>
                         <Link to="/providers"><img src={mapIcon} alt="Map Icon" /></Link>
@@ -110,14 +177,21 @@ class Homepage extends Component<Props, State> {
                         <p>Verify Insurance Coverage</p>
                     </div>
                     <div className="icons-section-icon" id={"block"}>
+                        <Link to="/resources"><img src={studyIcon} alt="Resources Icon" /></Link>
+                        <p>Get helpful Resources</p>
+                    </div>
+                    <div className="icons-section-icon" id={"block"}>
                         <Link to="/screening"><img src={familyIcon} alt="Family Icon" /></Link>
                         <p>Rest Assured <br /> We got you!</p>
                     </div>
                 </div>
+
                 <div className='spanish-section'>
                     <div className="spanish-section-texts">
                         <h2 className='spanish-section-title'>Now Available: Spanish-Speaking Providers</h2>
-                        <p className='spanish-section-description'>We know how important it is to communicate in your language. We have Spanish-speaking providers available to assist with your ABA needs in Utah.</p>
+                        <p className='spanish-section-description'>
+                            We know how important it is to communicate in your language. We have Spanish-speaking providers available to assist with your ABA needs in Utah.
+                        </p>
                         <Link to="/providers" className='spanish-section-button'>Learn More</Link>
                     </div>
                     <div className="spanish-section-image">
