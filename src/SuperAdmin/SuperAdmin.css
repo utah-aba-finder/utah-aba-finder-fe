@@ -4,6 +4,8 @@
     align-items: center;
     text-align: center;
     height: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
 }
 
 .superAdminDashboardWrapper {
