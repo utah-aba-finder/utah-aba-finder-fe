@@ -7,10 +7,14 @@
 }
 
 .favorite-provider-list-section {
-    margin: 1em;
     justify-content: center;
     align-items: center;
     align-content: center
+}
+
+.favorite-provider-number {
+    padding-bottom: 10px;
+    font-size: 25px;
 }
 
 .favorite-provider-list-section {
