@@ -14,7 +14,7 @@
 ### To test with Cypress
 
 - [ ]  Type `npm install cypress --save-dev` into your terminal
-- [ ]  Type `npm run cypress #` in your terminal then visit the local host to view the application in your browser.
+- [ ]  Type `npx cypress open` in your terminal then visit the local host to view the application in your browser.
 - [ ]  Click E2E testing
 - [ ]  Click Start E2E Testing in Chrome
 
