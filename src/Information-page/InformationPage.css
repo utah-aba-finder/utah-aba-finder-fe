@@ -60,15 +60,16 @@
     background-color: rgb(222, 237, 251);
     padding: 1rem 5rem;
     width: 100%;
-    
+
 }
+
 .spaced-list li {
-    margin-bottom: 1rem; 
-  }
-  
-  .spaced-list li:last-child {
+    margin-bottom: 1rem;
+}
+
+.spaced-list li:last-child {
     margin-bottom: 0;
-  }
+}
 
 @media (max-width: 540px) {
     .info-banner-title {
@@ -89,4 +90,5 @@
     .info-content-section3 {
         padding: 1rem 2rem;
     }
+
 }

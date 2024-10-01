@@ -223,3 +223,9 @@
     margin: 0 auto;
   }
 }
+
+@media (max-width: 540px) {
+  .providers-banner-title {
+    font-size: 2rem;
+  }
+}
