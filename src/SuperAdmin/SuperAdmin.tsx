@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom'
 import './SuperAdmin.css'
 import { MockProviderData, ProviderAttributes } from '../Utility/Types'
 import { SuperAdminEdit } from './SuperAdminEdit'
+import { useAuth } from '../Provider-login/AuthProvider'
 
 interface SuperAdminProps {
     providers: MockProviderData[];
@@ -10,6 +11,7 @@ interface SuperAdminProps {
 }
 
 export const SuperAdmin: React.FC<SuperAdminProps> = ({ providers, setProviders }) => {
+    const { setToken } = useAuth();
     const [selectedProvider, setSelectedProvider] = useState<MockProviderData | null>(null)
     const { providerId } = useParams<{ providerId: string }>();
     
@@ -41,9 +43,15 @@ export const SuperAdmin: React.FC<SuperAdminProps> = ({ providers, setProviders 
         // Here you would also make an API call to update the provider in the backend
     };
 
+    const handleLogout = () => {
+        setToken(null);
+        window.location.href = '/login';
+    };
+
     return (
         <div className='superAdminWrapper'>
             <h1>Super Admin Dashboard</h1>
+            <button className='superAdminLogoutButton' onClick={handleLogout}>Logout</button>
             <div className='superAdminDashboardWrapper'>
                 <div className='superAdminProvidersListWrapper'>
                     <h2>Providers List</h2>

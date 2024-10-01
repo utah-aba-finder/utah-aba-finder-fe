@@ -137,14 +137,17 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({ provider , onUpd
             <h1>Editing: <strong className='superAdminEditFormName'>{editedProvider.name}</strong></h1>
             <p>Last updated: {editedProvider.updated_last ? moment(editedProvider.updated_last).format('MM/DD/YYYY') : 'N/A'}</p>
             <form className='superAdminEditForm' onSubmit={handleSubmit}>
+            <div className='providerNameWrapper'>
                 <label htmlFor="name">Name</label>
             <input
+                className='providerNameInput'
                 type="text"
                 name="name"
                 value={editedProvider.name || ''}
                 onChange={handleInputChange}
                 placeholder="Provider Name"
             />
+                </div>
             <div className='formContent'>
             <div className='firstColumn'>
             {locations.map((location, index) => (
@@ -312,16 +315,16 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({ provider , onUpd
                 onChange={handleInputChange}
                 placeholder="Maximum Age"
             />
-            </div>
-            </div>
-            <button onClick={(e) => {
+            <button className='editButtons' onClick={(e) => {
                 e.preventDefault();
                 toggleInsuranceModal();
             }}>Edit Insurances</button>
-            <button onClick={(e) => {
+            <button className='editButtons' onClick={(e) => {
                 e.preventDefault();
                 toggleCountiesModal();
             }}>Edit Counties</button>
+            </div>
+            </div>
             {isInsuranceModalOpen && (
             <InsuranceModal 
                 isOpen={isInsuranceModalOpen} 
