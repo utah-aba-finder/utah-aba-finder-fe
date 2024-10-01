@@ -22,33 +22,68 @@
     margin-right: 1em;
 }
 
+.banner-image {
+    width: 100%;
+    height: 30vh;
+    object-fit: cover;
+}
+
+
+.banner-title {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 2rem;
+    text-align: center;
+}
 
 .glass {
-    min-height: 80vh;
+    /* min-height: 19vh; */
     margin: 1em;
-    background: linear-gradient(
-        to right bottom,
-        rgba(255, 252, 232, 0.751),
-        rgba(131, 128, 141, 0.524)
-      );
+    background: linear-gradient(to right bottom,
+            rgba(255, 252, 232, 0.751),
+            rgba(131, 128, 141, 0.524));
     border-radius: 2rem;
     z-index: 2;
     backdrop-filter: blur(2rem);
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 15px;
-  }
+    padding: 25px;
 
-  .glass::before {
+}
+
+.favorite-provider-section-button {
+    font-size: 1rem;
+    padding: 10px 20px;
+    border-radius: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.glass::before {
     content: '';
     position: absolute;
     top: 5px;
     left: 5px;
     right: 5px;
     bottom: 5px;
-    border: 1.5px solid rgb(255, 255, 255); 
-    border-radius: 29px; 
-    pointer-events: none; 
+    border: 1.5px solid rgb(255, 255, 255);
+    border-radius: 29px;
+    pointer-events: none;
 }
-  
+
+@media (max-width: 540px) {
+    .providers-banner-title {
+        font-size: 2rem;
+    }
+
+    .favorite-provider-number {
+        font-size: 1rem;
+    }
+}

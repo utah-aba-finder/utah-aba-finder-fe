@@ -8,6 +8,7 @@ import familyIcon from '../Assets/family-icon.png'
 import spanishPic from '../Assets/spanish-pic.jpg'
 import "./Homepage.css"
 import Joyride, { Step } from 'react-joyride';
+import studyIcon from '../Assets/material.png'
 
 type Props = {}
 
@@ -34,7 +35,7 @@ class Homepage extends Component<Props, State> {
             },
             {
                 target: '.icons-section',
-                content: 'Here, you can locate providers, educate yourself with autism, get insurance info, and take the M-CHAT or the CAST test.',
+                content: 'Here, you can locate providers, educate yourself with autism, get insurance info, get resources,and take the M-CHAT or the CAST test.',
             },
             {
                 target: '.spanish-section-button',
@@ -174,6 +175,10 @@ class Homepage extends Component<Props, State> {
                     <div className="icons-section-icon" id={"block"}>
                         <Link to="/providers"><img src={insuranceIcon} alt="Insurance Icon" /></Link>
                         <p>Verify Insurance Coverage</p>
+                    </div>
+                    <div className="icons-section-icon" id={"block"}>
+                        <Link to="/resources"><img src={studyIcon} alt="Resources Icon" /></Link>
+                        <p>Get helpful Resources</p>
                     </div>
                     <div className="icons-section-icon" id={"block"}>
                         <Link to="/screening"><img src={familyIcon} alt="Family Icon" /></Link>

@@ -4,7 +4,7 @@ import ProviderCard from '../Providers-page/ProviderCard';
 import ProviderModal from '../Providers-page/ProviderModal';
 import playblocks from '../Assets/playblocks.jpg';
 import './FavoriteProviders.css'
-import {Link} from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 
 const FavoriteProviders: React.FC = () => {
@@ -60,7 +60,7 @@ const FavoriteProviders: React.FC = () => {
                     {favoriteProviders.length === 0 ? (
                         <div>
                             <p className="favorite-provider-number title">You have not favorited any providers yet</p>
-                            <Link to="/providers" className="begin-section-button1">VIEW PROVIDERS</Link>
+                            <Link to="/providers" className="favorite-provider-section-button">VIEW PROVIDERS</Link>
                         </div>
                     ) : (
                         <div>

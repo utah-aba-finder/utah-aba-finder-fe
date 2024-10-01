@@ -8,7 +8,7 @@ import ProviderCard from './ProviderCard';
 import { fetchProviders } from '../Utility/ApiCall';
 import { MockProviders, ProviderAttributes } from '../Utility/Types';
 import gearImage from '../Assets/Gear@1x-0.5s-200px-200px.svg';
-
+import Joyride, { Step } from 'react-joyride';
 
 const ProvidersPage: React.FC = () => {
   const [selectedProvider, setSelectedProvider] = useState<ProviderAttributes | null>(null);
@@ -36,6 +36,39 @@ const ProvidersPage: React.FC = () => {
   // const mapSectionRef = useRef<HTMLDivElement>(null);
   const providersPerPage = 8;
 
+  const [run, setRun] = useState(false);
+  const [steps] = useState<Step[]>([
+    {
+      target: '.provider-map-searchbar',
+      content: 'Use this search section to find providers by name, county, insurance, spanish speaking, services and waitlist status.',
+    },
+    {
+      target: '.provider-cards-grid',
+      content: 'Here you can see the available providers. Click on a provider to see more details, and to add them to your favorites.',
+    },
+    {
+      target: '.pagination-controls',
+      content: 'Use these buttons to navigate between different pages of providers.',
+    }
+  ]);
+
+  useEffect(() => {
+    const hasVisited = localStorage.getItem('providersPageVisited');
+    if (!hasVisited) {
+      setRun(true);
+    }
+  }, []);
+
+  const handleJoyrideCallback = (data: any) => {
+    const { status } = data;
+    const finishedStatuses = ['finished', 'skipped'];
+
+    if (finishedStatuses.includes(status)) {
+      localStorage.setItem('providersPageVisited', 'true');
+      setRun(false);
+    }
+  };
+
   useEffect(() => {
     const storedFavorites = localStorage.getItem('favoriteProviders');
     if (storedFavorites) {
@@ -46,7 +79,7 @@ const ProvidersPage: React.FC = () => {
   const toggleFavorite = useCallback((providerId: number) => {
     setFavoriteProviders((prevFavorites) => {
       const provider = allProviders.find(p => p.id === providerId);
-      if (!provider) return prevFavorites; 
+      if (!provider) return prevFavorites;
 
       const isFavorited = prevFavorites.some(fav => fav.id === providerId);
 
@@ -355,17 +388,26 @@ const ProvidersPage: React.FC = () => {
     );
   };
 
+  const handleResetTutorial = () => {
+    localStorage.removeItem('providersPageVisited');
+    setRun(true);
+  };
+
   return (
-    //   <div className="map">
-    //     <section className="google-map-section" ref={mapSectionRef}>
-    //       <GoogleMap address={mapAddress} />
-    //     </section>
-    //   </div>
-
-    //   <section className="provider-title-section">
-    //   </section>
-
     <div className="providers-page">
+      <Joyride
+        run={run}
+        steps={steps}
+        continuous={true}
+        showSkipButton={true}
+        showProgress={true}
+        callback={handleJoyrideCallback}
+      />
+      {/* 
+      <button onClick={handleResetTutorial} className="reset-tutorial-button">
+        Reset Tutorial
+      </button> */}
+
       <section className="find-your-provider-section">
         <img src={childrenBanner} alt="Find Your Provider" className="banner-image" />
         <h1 className="providers-banner-title">Find Your Provider</h1>
@@ -400,7 +442,6 @@ const ProvidersPage: React.FC = () => {
               {!isLoading && showError && <div className='error-message'>{showError}</div>}
               {!isLoading && !showError && (
                 <div className="card-container">
-
                   <div className="provider-cards-grid">
                     {paginatedProviders.map((provider) => (
                       <ProviderCard
@@ -410,8 +451,8 @@ const ProvidersPage: React.FC = () => {
                         renderViewOnMapButton={renderViewOnMapButton}
                         onToggleFavorite={toggleFavorite}
                         isFavorited={favoriteProviders.some(fav => fav.id === provider.id)}
-                        />
-                      ))}
+                      />
+                    ))}
                   </div>
                   <div className="pagination-controls">
                     {currentPage > 1 && (
@@ -430,18 +471,17 @@ const ProvidersPage: React.FC = () => {
             </section>
           </section>
         </div>
-              {selectedProvider && (
-                <ProviderModal
-                provider={selectedProvider}
-                address={selectedAddress || 'Address not available'}
-                mapAddress={mapAddress}
-                onClose={handleCloseModal}
-                onViewOnMapClick={handleViewOnMapClick}
-              />
-              )}
+        {selectedProvider && (
+          <ProviderModal
+            provider={selectedProvider}
+            address={selectedAddress || 'Address not available'}
+            mapAddress={mapAddress}
+            onClose={handleCloseModal}
+            onViewOnMapClick={handleViewOnMapClick}
+          />
+        )}
       </main>
     </div>
-
   );
 };
 
