@@ -77,3 +77,20 @@
 .providerNameInput {
     width: 50%;
 }
+
+@media (max-width: 819px) {
+    .superAdminEditForm {
+        width: 100%;
+    }
+    .superAdminEditFormWrapper {
+        height: 100%;
+        flex-direction: column;
+    }
+    .formContent {
+        flex-direction: column;
+    }
+    .firstColumn,
+    .secondColumn {
+        width: 100%;
+    }
+}
