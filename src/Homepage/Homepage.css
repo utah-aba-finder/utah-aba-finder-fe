@@ -335,10 +335,12 @@
 
     .icons-section p {
         font-size: 0.7rem;
+        font-weight: 500;
     }
 }
 
-@media (max-width: 1024px) {
+
+@media (min-width: 768px) {
 
     .icons-section-icon img {
         width: 110px;
@@ -362,10 +364,10 @@
 }
 
 
-@media (max-width: 1024px) {
+@media (min-width: 912px) {
 
     .icons-section-icon img {
-        width: 144px;
+        width: 134px;
         height: auto;
     }
 
