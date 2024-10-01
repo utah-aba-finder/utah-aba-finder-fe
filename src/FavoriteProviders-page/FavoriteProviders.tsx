@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { ProviderAttributes } from '../Utility/Types';
 import ProviderCard from '../Providers-page/ProviderCard';
 import ProviderModal from '../Providers-page/ProviderModal';
-import childrenBanner from '../Assets/children-banner.jpg';
+import playblocks from '../Assets/playblocks.jpg';
 import './FavoriteProviders.css'
+import {Link} from 'react-router-dom';
 
 
 const FavoriteProviders: React.FC = () => {
@@ -49,27 +50,36 @@ const FavoriteProviders: React.FC = () => {
     return (
         <div className="favorite-providers-page">
             <section className="find-your-provider-section">
-                <img src={childrenBanner} alt="Find Your Provider" className="banner-image" />
+                <img src={playblocks} alt="Find Your Provider" className="banner-image" />
                 <h1 className="providers-banner-title">Favorite Providers</h1>
             </section>
 
             <section className="glass">
+
                 <section className="favorite-provider-list-section">
                     {favoriteProviders.length === 0 ? (
-                        <p>No favorite providers yet.</p>
+                        <div>
+                            <p className="favorite-provider-number title">You have not favorited any providers yet</p>
+                            <Link to="/providers" className="begin-section-button1">VIEW PROVIDERS</Link>
+                        </div>
                     ) : (
-                        <div className="card-container">
-                            <div className="provider-cards-grid">
-                                {favoriteProviders.map((provider) => (
-                                    <ProviderCard
-                                        key={provider.id}
-                                        provider={provider}
-                                        onViewDetails={() => handleProviderCardClick(provider)}
-                                        onToggleFavorite={() => handleToggleFavorite(provider.id)}
-                                        isFavorited={true}
-                                        renderViewOnMapButton={() => null}
-                                    />
-                                ))}
+                        <div>
+                            <p className="favorite-provider-number title">
+                                You have {favoriteProviders.length} favorite provider{favoriteProviders.length !== 1 ? 's' : ''}
+                            </p>
+                            <div className="card-container">
+                                <div className="provider-cards-grid">
+                                    {favoriteProviders.map((provider) => (
+                                        <ProviderCard
+                                            key={provider.id}
+                                            provider={provider}
+                                            onViewDetails={() => handleProviderCardClick(provider)}
+                                            onToggleFavorite={() => handleToggleFavorite(provider.id)}
+                                            isFavorited={true}
+                                            renderViewOnMapButton={() => null}
+                                        />
+                                    ))}
+                                </div>
                             </div>
                         </div>
                     )}
