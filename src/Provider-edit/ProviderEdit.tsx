@@ -11,6 +11,8 @@ import { ToastContainer } from 'react-toastify';
 import { useCallback } from 'react';
 import { cloneDeep } from 'lodash';
 import moment from 'moment';
+import 'moment-timezone'; //Need to run npm i @types/moment-timezone to run this
+
 interface ProviderEditProps {
     loggedInProvider: MockProviderData | null;
     clearProviderData: () => void;
@@ -308,7 +310,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
             <ToastContainer />
             <div className='user-info-section'>
                 <h1>Welcome, {providerName}</h1>
-                <p>Last edited: {moment(loggedInProvider?.attributes.updated_last).format('MM/DD/YYYY hh:mm:ss a')}</p>
+                <p>Last edited: {moment(loggedInProvider?.attributes.updated_last).utc().local().format('MM/DD/YYYY hh:mm:ss a')} {moment.tz.guess()}</p>
                 <button className='logoutButton' onClick={handleLogout}>Logout</button>
                 <p>For any questions to the admin, please use the contact page.</p>
                 <Link to="/contact" className='contact-link'>Click here to go to the contact page</Link>

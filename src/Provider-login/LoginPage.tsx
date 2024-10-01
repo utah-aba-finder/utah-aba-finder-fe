@@ -135,7 +135,7 @@ export const LoginPage: React.FC = () => {
         <div className='loginWrapper'>
             <div className='loginBannerContainer'>
                 <img src={loginBanner} alt="Login Banner" className='loginBanner' />
-                <h1 className='loginImageText'>Provider Login</h1>
+                <h1 className='loginImageText'>{isLoggedIn ? 'Provider Edit Dashboard' : 'Provider Login'}</h1>
             </div>
             <ToastContainer />
             {!isLoggedIn ? (

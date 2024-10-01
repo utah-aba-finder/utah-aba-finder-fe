@@ -1,14 +1,32 @@
-.superAdminEditWrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    height: 100vh;
-}
-
 .superAdminEditFormWrapper {
     display: flex;
     flex-direction: column;
     height: 100%;
+}
+.formContent {
+    display: flex;
+    width: 100%;
+    border: 1px solid #ccc;
+}
+
+.providerNameWrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.firstColumn,
+.secondColumn {
+    display: flex;
+    flex-direction: column;
+    width: 50%;
+    align-items: center;
+}
+
+.firstColumn, .secondColumn input{
+    width: 50%;
 }
 
 .superAdminEditForm {
@@ -37,10 +55,42 @@
     border-radius: 5px;
 }
 
+.editButtons,
+.add-location-button {
+    width: 50%;
+}
+
 .superAdminEditForm button:hover {
     background-color: rgb(175, 175, 175);
 }
 
 .superAdminEditFormName {
     color: rgb(255, 64, 0);
+}
+
+.superAdminEditFormButtonsWrapper {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+}
+
+.providerNameInput {
+    width: 50%;
+}
+
+@media (max-width: 819px) {
+    .superAdminEditForm {
+        width: 100%;
+    }
+    .superAdminEditFormWrapper {
+        height: 100%;
+        flex-direction: column;
+    }
+    .formContent {
+        flex-direction: column;
+    }
+    .firstColumn,
+    .secondColumn {
+        width: 100%;
+    }
 }
