@@ -5,6 +5,8 @@ import ProviderModal from '../Providers-page/ProviderModal';
 import playblocks from '../Assets/playblocks.jpg';
 import './FavoriteProviders.css'
 import { Link } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+
 
 const FavoriteProviders: React.FC = () => {
     const [favoriteProviders, setFavoriteProviders] = useState<ProviderAttributes[]>([]);
@@ -12,7 +14,7 @@ const FavoriteProviders: React.FC = () => {
     const [selectedAddress, setSelectedAddress] = useState<string | null>(null);
     const [mapAddress, setMapAddress] = useState<string>('');
     const [currentPage, setCurrentPage] = useState<number>(1);
-    
+
     const providersPerPage = 8;
 
     useEffect(() => {
@@ -21,19 +23,32 @@ const FavoriteProviders: React.FC = () => {
     }, []);
 
     const handleToggleFavorite = (providerId: number) => {
+        console.log("Toggling favorite for:", providerId);
         setFavoriteProviders((prevFavorites) => {
+            const providerIndex = prevFavorites.findIndex(fav => fav.id === providerId);
+    
+            if (providerIndex === -1) {
+                console.log("Provider not found in favorites.");
+                return prevFavorites;
+            }
+    
             const updatedFavorites = prevFavorites.filter((fav) => fav.id !== providerId);
+    
+            // Update localStorage with the new favorites array
             localStorage.setItem('favoriteProviders', JSON.stringify(updatedFavorites));
-            
-            // Reset to first page if removing a provider would leave current page empty
+    
+          
+    
             const newTotalPages = Math.ceil(updatedFavorites.length / providersPerPage);
             if (currentPage > newTotalPages) {
                 setCurrentPage(Math.max(1, newTotalPages));
             }
-            
+    
             return updatedFavorites;
         });
     };
+    
+
 
     const handleProviderCardClick = (provider: ProviderAttributes) => {
         setSelectedProvider(provider);
@@ -65,7 +80,7 @@ const FavoriteProviders: React.FC = () => {
             setCurrentPage(prevPage => prevPage + 1);
         }
     };
-    
+
     const handlePreviousPage = () => {
         if (currentPage > 1) {
             setCurrentPage(prevPage => prevPage - 1);
@@ -74,6 +89,7 @@ const FavoriteProviders: React.FC = () => {
 
     return (
         <div className="favorite-providers-page">
+            <ToastContainer />
             <section className="find-your-provider-section">
                 <img src={playblocks} alt="Find Your Provider" className="banner-image" />
                 <h1 className="providers-banner-title">Favorite Providers</h1>

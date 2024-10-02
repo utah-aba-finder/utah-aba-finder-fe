@@ -2,7 +2,8 @@ import React from 'react';
 import puzzleLogo from '../Assets/puzzle.png';
 import { ProviderAttributes } from '../Utility/Types';
 import { MapPin, Phone, Mail, Globe } from 'lucide-react';
-import './ProviderCard.css'
+import './ProviderCard.css';
+import { toast } from 'react-toastify';
 
 interface ProviderCardProps {
   provider: ProviderAttributes;
@@ -13,13 +14,23 @@ interface ProviderCardProps {
 }
 
 const ProviderCard: React.FC<ProviderCardProps> = ({ provider, onViewDetails, renderViewOnMapButton, onToggleFavorite, isFavorited }) => {
+  
+  const handleToggleFavorite = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    if (isFavorited) {
+      toast.info(`${provider.name} removed from favorites`, { autoClose: 3000 });
+    } else {
+      toast.success(`${provider.name} added to favorites`, { autoClose: 3000 });
+    }
+
+    onToggleFavorite(provider.id);
+  };
+
   return (
-
     <div className={`searched-provider-card ${provider.locations.length > 1 ? 'multiple-locations' : ''}`}>
-
       <div className="provider-card">
         <div className="card-logo-and-text">
-
           <div className="card-grid-logo">
             <img src={provider.logo || puzzleLogo} alt="Provider Logo" className="provider-logo" />
           </div>
@@ -65,10 +76,7 @@ const ProviderCard: React.FC<ProviderCardProps> = ({ provider, onViewDetails, re
               </button>
               <button
                 className={`favorite-button ${isFavorited ? 'favorited' : ''}`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onToggleFavorite(provider.id);
-                }}
+                onClick={handleToggleFavorite}
               >
                 {isFavorited ? 'Unfavorite' : 'Favorite'}
               </button>
@@ -77,7 +85,6 @@ const ProviderCard: React.FC<ProviderCardProps> = ({ provider, onViewDetails, re
         </div>
       </div>
     </div>
-
   );
 };
 

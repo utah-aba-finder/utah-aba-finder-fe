@@ -9,6 +9,8 @@ import { fetchProviders } from '../Utility/ApiCall';
 import { MockProviders, ProviderAttributes } from '../Utility/Types';
 import gearImage from '../Assets/Gear@1x-0.5s-200px-200px.svg';
 import Joyride, { Step } from 'react-joyride';
+import FavoriteProviders from '../FavoriteProviders-page/FavoriteProviders'; // Adjust the path accordingly
+
 
 const ProvidersPage: React.FC = () => {
   const [selectedProvider, setSelectedProvider] = useState<ProviderAttributes | null>(null);
@@ -32,6 +34,7 @@ const ProvidersPage: React.FC = () => {
   const errorTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [favoriteProviders, setFavoriteProviders] = useState<ProviderAttributes[]>([]);
   const providersPerPage = 8;
+
 
   const [run, setRun] = useState(false);
   const [steps] = useState<Step[]>([
@@ -482,6 +485,7 @@ const ProvidersPage: React.FC = () => {
             </section>
           </section>
         </div>
+        
         {selectedProvider && (
           <ProviderModal
             provider={selectedProvider}
@@ -490,6 +494,7 @@ const ProvidersPage: React.FC = () => {
             onClose={handleCloseModal}
             onViewOnMapClick={handleViewOnMapClick}
           />
+          
         )}
       </main>
     </div>
