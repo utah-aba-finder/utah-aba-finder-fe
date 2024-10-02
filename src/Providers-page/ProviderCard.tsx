@@ -1,5 +1,5 @@
 import React from 'react';
-import puzzleLogo from './puzzle.png';
+import puzzleLogo from '../Assets/puzzle.png';
 import { ProviderAttributes } from '../Utility/Types';
 import { MapPin, Phone, Mail, Globe } from 'lucide-react';
 import './ProviderCard.css'

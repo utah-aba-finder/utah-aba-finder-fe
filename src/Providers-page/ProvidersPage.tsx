@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import './ProvidersPage.css';
-import childrenBanner from '../Assets/children-banner.jpg';
+import childrenBanner from '../Assets/children-banner-2.jpg';
 import ProviderModal from './ProviderModal';
 import SearchBar from './SearchBar';
 // import GoogleMap from './GoogleMap';
@@ -25,15 +25,12 @@ const ProvidersPage: React.FC = () => {
   const [selectedWaitList, setSelectedWaitList] = useState<string>('');
   const [selectedAddress, setSelectedAddress] = useState<string>('');
   const [mapAddress, setMapAddress] = useState<string>('');
-
   const [isFiltered, setIsFiltered] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [showError, setShowError] = useState('');
   const [isLoading, setIsLoading] = useState(false)
   const errorTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [favoriteProviders, setFavoriteProviders] = useState<ProviderAttributes[]>([]);
-
-  // const mapSectionRef = useRef<HTMLDivElement>(null);
   const providersPerPage = 8;
 
   const [run, setRun] = useState(false);
@@ -72,7 +69,13 @@ const ProvidersPage: React.FC = () => {
   useEffect(() => {
     const storedFavorites = localStorage.getItem('favoriteProviders');
     if (storedFavorites) {
-      setFavoriteProviders(JSON.parse(storedFavorites));
+      const parsedFavorites = JSON.parse(storedFavorites);
+      const sortedFavorites = parsedFavorites.sort((a: ProviderAttributes, b: ProviderAttributes) => {
+        const nameA = a.name?.toLowerCase() ?? '';
+        const nameB = b.name?.toLowerCase() ?? '';
+        return nameA.localeCompare(nameB);
+      });
+      setFavoriteProviders(sortedFavorites);
     }
   }, []);
 
@@ -90,11 +93,19 @@ const ProvidersPage: React.FC = () => {
         newFavorites = [...prevFavorites, provider];
       }
 
-      localStorage.setItem('favoriteProviders', JSON.stringify(newFavorites));
+      const sortedFavorites = newFavorites.sort((a, b) => {
+        const nameA = a.name?.toLowerCase() ?? '';
+        const nameB = b.name?.toLowerCase() ?? '';
+        return nameA.localeCompare(nameB);
+      });
 
-      return newFavorites;
+      localStorage.setItem('favoriteProviders', JSON.stringify(sortedFavorites));
+
+      return sortedFavorites;
     });
   }, [allProviders]);
+
+  
 
   useEffect(() => {
     const getProviders = async () => {
