@@ -39,17 +39,17 @@ const ProviderCard: React.FC<ProviderCardProps> = ({ provider, onViewDetails, re
               </h4>
               <h4>
                 <strong><Phone style={{ marginRight: '8px' }} />
-                  Phone: </strong>{provider.locations[0]?.phone || 'Phone number is not available.'}
+                  Phone: </strong><a href={`tel:${provider.locations[0]?.phone}`} className='custom-link'>{provider.locations[0]?.phone || 'Phone number is not available.'}</a>
               </h4>
               <h4>
                 <strong><Mail style={{ marginRight: '8px' }} />
-                  Email: </strong>{provider.email || 'Email is not available.'}
+                  Email: </strong><a href={`mailto:${provider.email}`} className='custom-link'>{provider.email || 'Email is not available.'}</a>
               </h4>
               <h4>
                 <strong><Globe style={{ marginRight: '8px' }} />
                   Website: </strong>
                 <a
-                  href={provider.website ?? undefined}
+                  href={provider.website?.includes('http') ? provider.website : `https://${provider.website}` ?? undefined}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="custom-link"
