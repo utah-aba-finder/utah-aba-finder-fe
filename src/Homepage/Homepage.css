@@ -334,22 +334,19 @@
     }
 
     .icons-section-icon img {
-        width: 30%;
+        width: 50%;
 
-    }
-
-    .icons-section p {
-        font-size: 0.7rem;
     }
 
     .icons-section-icon p {
         margin-top: 0.5rem;
-        font-size: 1.1rem;
-        font-weight: 800;
+        font-size: 0.7rem;
+        font-weight: 500;
         color: rgb(0, 0, 130);
 
     }
 }
+
 @media (max-width: 975px) and (min-height: 1558px) {
     .icons-section {
         padding-top: 1.5rem;
@@ -365,7 +362,7 @@
     .icons-section-icon img {
         width: 80%;
     }
-    
+
 }
 
 @keyframes appear {
