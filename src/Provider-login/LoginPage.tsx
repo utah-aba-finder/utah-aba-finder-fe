@@ -10,6 +10,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import gearImage from '../Assets/Gear@1x-0.5s-200px-200px.svg';
 import { fetchSingleProvider } from '../Utility/ApiCall';
 import loginBanner from '../Assets/behaviorPlan.jpg'
+import { useNavigate } from 'react-router-dom';
 
 export const LoginPage: React.FC = () => {
     const [showPassword, setShowPassword] = useState(false);
@@ -20,6 +21,7 @@ export const LoginPage: React.FC = () => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [currentProvider, setCurrentProvider] = useState<MockProviderData | undefined>();
     const { setToken } = useAuth();
+    const navigate = useNavigate();
 
     useEffect(() => {
         if (error) {
@@ -172,7 +174,8 @@ export const LoginPage: React.FC = () => {
                         {error && <p className="error-message">Failed to login. Please check your username and password and try again.</p>}
                         {/* <div className="forgot-password">Forgot Password <span>Click Here!</span></div> */}
                         <div className="submit-container">
-                            <button type='submit' id='signup' className='loginButton' disabled={true}>Sign Up</button>
+                            {/* <button type='submit' id='signup' className='signupButton' onClick={() => navigate('/signup')} disabled={true} >Sign Up</button> */}
+                            <button type='submit' id='signup' className='signupButton' onClick={() => toast("Feature coming soon")}>Sign Up</button>
                             <button type='submit' id='login' className='loginButton'>Login</button>
                         </div>
                     </form>

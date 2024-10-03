@@ -9,16 +9,17 @@
     align-items: center;
     justify-content: center;
     z-index: 1000;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .signup-modal-content {
-    display: flex;
+    display: absolute;
     flex-direction: column;
-    /* width: 100%; */
+    max-width: 99vw;
     justify-content: center;
     align-content: center;
-    height: 100%;
-    max-height: 90vh;
+    max-height: 99vh;
     color: rgb(251, 99, 57);
 }
 
@@ -30,6 +31,7 @@
 .locationHeader {
     font-size: 20px;
 }
+
 .closeButton {
     display: flex;
     padding: none;
@@ -37,10 +39,157 @@
     align-items: end;
     width: 100%;
 }
+
 .close {
     cursor: pointer;
 }
 
 .close:hover {
     color: red;
+}
+
+.signupForm input {
+    width: 50%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+    margin-bottom: 10px;
+    transition: border-color 0.2s;
+}
+
+.signupForm input:focus {
+    outline: none;
+    border-color: rgb(251, 99, 57);
+}
+
+
+.min_age,
+.max_age {
+    font-size: 16px;
+    margin-right: 10px;
+}
+
+.ageInputContainer {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+
+.addLocationButton,
+.addInsuranceButton {
+    width: 30%;
+    height: 30px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    background-color: rgb(251, 99, 57);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.addLocationButton:hover,
+.addInsuranceButton:hover {
+    background-color: rgb(250, 69, 18);
+}
+
+.submitButton {
+    width: 30%;
+    height: 50px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    background-color: rgb(251, 99, 57);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.submitButton:hover {
+    background-color: rgb(255, 63, 10);
+}
+
+.selected-counties {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    background-color: rgb(255, 255, 255);
+    color: black;
+    border-radius: 4px;
+    width: 51.5%;
+    margin-bottom: 10px;
+}
+
+.waitlist,
+.telehealthServices,
+.spanishSpeakers {
+    width: 51.5%;
+    margin-bottom: 10px;
+    height: 40px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+}
+
+/* In Clinic Services */
+.inClinicServices {
+    margin-top: 20px;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background-color: white;
+    max-width: 400px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.inClinicServicesHeader {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.inClinicServices label {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    font-size: 14px;
+    color: #333;
+    cursor: pointer;
+}
+
+.inClinicServices input[type="checkbox"] {
+    margin-right: 10px;
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+
+.inClinicServices .checkbox-label {
+    font-size: 14px;
+    color: #555;
+}
+
+.inClinicServices button {
+    background-color: #2c7edb;
+    color: white;
+    padding: 10px 15px;
+    font-size: 14px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 15px;
+}
+
+.inClinicServices button:hover {
+    background-color: #1b5da8;
 }
