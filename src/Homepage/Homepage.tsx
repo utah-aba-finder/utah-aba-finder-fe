@@ -52,9 +52,9 @@ class Homepage extends Component<Props, State> {
     componentDidMount() {
         const hasVisited = localStorage.getItem('hasVisited');
 
-        // if (!hasVisited) {
-        //     this.setState({ run: true });
-        // }
+        if (!hasVisited) {
+            this.setState({ run: true });
+        }
     }
 
     handleJoyrideCallback = (data: any) => {
@@ -62,9 +62,9 @@ class Homepage extends Component<Props, State> {
 
         const finishedStatuses = ['finished', 'skipped'];
 
-        // if (finishedStatuses.includes(status)) {
-        //     localStorage.setItem('hasVisited', 'true');
-        // }
+        if (finishedStatuses.includes(status)) {
+            localStorage.setItem('hasVisited', 'true');
+        }
     };
 
     render() {
