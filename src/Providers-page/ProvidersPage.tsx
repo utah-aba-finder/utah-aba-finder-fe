@@ -41,6 +41,7 @@ const ProvidersPage: React.FC = () => {
     {
       target: '.provider-map-searchbar',
       content: 'Use this search section to find providers by name, county, insurance, spanish speaking, services and waitlist status.',
+      disableBeacon: true
     },
     {
       target: '.provider-cards-grid',
