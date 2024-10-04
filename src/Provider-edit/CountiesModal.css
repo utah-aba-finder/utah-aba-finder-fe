@@ -78,12 +78,15 @@
     .modal {
         width: 90%;
         padding: 15px;
+        justify-content: center;
     }
     .counties-options {
-        grid-template-columns: repeat(2, 2fr);
-        border: 1px solid red;
+        grid-template-columns: repeat(2, 1fr);
+        margin-left: 5rem;
     }
     .county-option {
-        width: 100%;
+        width: 40%;
+        margin: 0;
+        padding: 0;
     }
 }
