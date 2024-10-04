@@ -40,8 +40,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
     const [originalCounties, setOriginalCounties] = useState<typeof selectedCounties | null>(null);
     const [providerName, setProviderName] = useState('');
 
-
-
     const handleSave = () => {
         setIsSaving(true);
     }

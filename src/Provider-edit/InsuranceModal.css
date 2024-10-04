@@ -76,14 +76,9 @@
         /* padding: 0; */
     }
     .modal-insurance-container {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: space-evenly;
+        grid-template-columns: repeat(2, 2fr);
         padding: 0;
-        text-wrap: nowrap;
         font-size: 12px;
-        margin: 0;
-        gap: 25px;
     }
     .modal-insurance input {
         width: 15%;
