@@ -14,7 +14,7 @@ type Props = {}
 
 type State = {
     run: boolean,
-    steps: Step[]
+    steps: Step[],
 }
 
 class Homepage extends Component<Props, State> {
@@ -23,7 +23,8 @@ class Homepage extends Component<Props, State> {
         steps: [
             {
                 target: '.discover-section-title',
-                content: 'Welcome to our website! Start your journey by exploring our site.'
+                content: 'Welcome to our website! Start your journey by a quick tour.',
+                disableBeacon: true
             },
             {
                 target: '.county-section',
@@ -51,9 +52,9 @@ class Homepage extends Component<Props, State> {
     componentDidMount() {
         const hasVisited = localStorage.getItem('hasVisited');
 
-        if (!hasVisited) {
-            this.setState({ run: true });
-        }
+        // if (!hasVisited) {
+        //     this.setState({ run: true });
+        // }
     }
 
     handleJoyrideCallback = (data: any) => {
@@ -61,9 +62,9 @@ class Homepage extends Component<Props, State> {
 
         const finishedStatuses = ['finished', 'skipped'];
 
-        if (finishedStatuses.includes(status)) {
-            localStorage.setItem('hasVisited', 'true');
-        }
+        // if (finishedStatuses.includes(status)) {
+        //     localStorage.setItem('hasVisited', 'true');
+        // }
     };
 
     render() {
@@ -88,7 +89,7 @@ class Homepage extends Component<Props, State> {
                         </h1>
                         <div className='discover-section-content'>
                             <p className='discover-section-description'>
-                                Are you feeling overwhelmed in your search for the right care? We’re here to guide you every step of the way. <br />Start your journey with confidence today.
+                                Are you feeling overwhelmed in your search for the right care? We're here to guide you every step of the way. <br />Start your journey with confidence today.
                             </p>
                             <Link to="/providers" className='discover-section-button'>Start Your Journey</Link>
                         </div>
@@ -153,8 +154,8 @@ class Homepage extends Component<Props, State> {
                 <div className='begin-section'>
                     <h2 className='begin-section-title'>Begin Your Journey with Essential Information</h2>
                     <p className='begin-section-description'>
-                        Not sure about your child’s condition or haven’t received a diagnosis yet? <br />
-                        We’re here for you. Start by taking a simple screening test to see if your child meets the criteria.
+                        Not sure about your child's condition or haven't received a diagnosis yet? <br />
+                        We're here for you. Start by taking a simple screening test to see if your child meets the criteria.
                     </p>
                     <div className='begin-section-button-container'>
                         <Link to="/providers" className='begin-section-button1'> VIEW PROVIDERS</Link>
