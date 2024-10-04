@@ -73,3 +73,17 @@
 .countyModalButtonSection {
     display: flex;
 }
+
+@media (max-width: 540px) {
+    .modal {
+        width: 90%;
+        padding: 15px;
+    }
+    .counties-options {
+        grid-template-columns: repeat(2, 2fr);
+        border: 1px solid red;
+    }
+    .county-option {
+        width: 100%;
+    }
+}

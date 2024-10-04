@@ -63,8 +63,7 @@
 }
 
 .menu-content a:hover {
-    color: rgb(226, 77, 18);
-    border-bottom: 2px solid rgb(253, 111, 54);
+    color: rgb(241, 74, 7);
 }
 
 .menu-content.open {

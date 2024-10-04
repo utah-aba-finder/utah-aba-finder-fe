@@ -364,6 +364,21 @@
     }
 
 }
+@media (orientation: landscape) and (max-width: 1066px) {
+    .icons-section {
+        padding-top: 1.5rem;
+        padding-bottom: 1.5rem;
+    }
+    .icons-section-icon {
+        width: 40%;
+        height: 100%;
+    }
+
+    .icons-section-icon img {
+        width: 50%;
+        height: 50%;
+    }
+}
 
 @keyframes appear {
     from {
