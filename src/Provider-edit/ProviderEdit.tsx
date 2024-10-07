@@ -12,7 +12,7 @@ import { useCallback } from 'react';
 import { cloneDeep } from 'lodash';
 import moment from 'moment';
 import 'moment-timezone'; //Need to run npm i @types/moment-timezone to run this
-
+import { AuthModal } from './AuthModal';
 interface ProviderEditProps {
     loggedInProvider: MockProviderData | null;
     clearProviderData: () => void;
@@ -22,6 +22,7 @@ interface ProviderEditProps {
 const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProviderData, onUpdate }) => {
     const [isInsuranceModalOpen, setIsInsuranceModalOpen] = useState(false);
     const [isCountiesModalOpen, setIsCountiesModalOpen] = useState(false);
+    const [authModalOpen, setAuthModalOpen] = useState(true);
     const [selectedCounties, setSelectedCounties] = useState<CountiesServed[]>([]);
     const [selectedInsurances, setSelectedInsurances] = useState<Insurance[]>([]);
 
@@ -306,12 +307,13 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
     return (
         <div className='provider-edit-container'>
             <ToastContainer />
+            {authModalOpen && <AuthModal onClose={() =>  setAuthModalOpen(false)}/>}
             <div className='user-info-section'>
                 <h1>Welcome, {providerName}</h1>
                 <p>Last edited: {moment(loggedInProvider?.attributes.updated_last).utc().local().format('MM/DD/YYYY hh:mm:ss a')} {moment.tz.guess()}</p>
                 <button className='logoutButton' onClick={handleLogout}>Logout</button>
                 <p>For any questions to the admin, please use the contact page.</p>
-                <Link to="/contact" className='contact-link'>Click here to go to the contact page</Link>
+                <Link to="/contact" className='contact-link' onClick={handleLogout}>Click here to go to the contact page</Link>
             </div>
 
             <h1>Edit Your Information</h1>
