@@ -62,6 +62,15 @@
     width: 50%;
 }
 
+.superAdminEditCost {
+    width: 52%;
+    max-width: 52%;
+    min-width: fit-content;
+    min-height: fit-content;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
 .superAdminEditForm button:hover {
     background-color: rgb(175, 175, 175);
 }

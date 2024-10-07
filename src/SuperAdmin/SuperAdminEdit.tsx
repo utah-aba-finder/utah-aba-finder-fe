@@ -82,7 +82,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({ provider , onUpd
     </div>
     }
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setEditedProvider(prev => prev ? { ...prev, [name]: value } : null);
     };
@@ -230,9 +230,9 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({ provider , onUpd
             <input 
                 type="text"
                 name="website"
-                value={editedProvider.website || ''}
+                value={editedProvider.website?.includes('http') ? editedProvider.website : `https://${editedProvider.website}` || ''}
                 onChange={handleInputChange}
-                placeholder="Provider Email"
+                placeholder="Provider website"
             />
            
             <label htmlFor="email">Email</label>
@@ -241,11 +241,11 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({ provider , onUpd
                 name="email"
                 value={editedProvider.email || ''}
                 onChange={handleInputChange}
-                placeholder="Provider Name"
+                placeholder="Provider Email"
             />
             <label htmlFor="cost">Cost</label>
-            <input 
-                type="text"
+            <textarea 
+                className='superAdminEditCost'
                 name="cost"
                 value={editedProvider.cost || ''}
                 onChange={handleInputChange}
