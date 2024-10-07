@@ -272,7 +272,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
         setLocations(updatedLocations);
     };
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setFormData(prevData => ({
             ...prevData,
@@ -386,7 +386,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
             <input id='email' type='text' name='email' value={formData.email} onChange={handleInputChange} />
 
             <label htmlFor='cost' className='editLabels'>Provider Cost:</label>
-            <input id='cost' type='text' name='cost' value={formData.cost} onChange={handleInputChange} />
+            <textarea id='cost' name='cost' value={formData.cost} onChange={handleInputChange} placeholder='Cost?' className='cost-input'/>
 
 
             <label htmlFor='website' className='editLabels'>Website: </label>
