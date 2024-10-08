@@ -9,8 +9,10 @@ import { fetchProviders } from '../Utility/ApiCall';
 import { MockProviders, ProviderAttributes } from '../Utility/Types';
 import gearImage from '../Assets/Gear@1x-0.5s-200px-200px.svg';
 import Joyride, { Step } from 'react-joyride';
-import FavoriteProviders from '../FavoriteProviders-page/FavoriteProviders'; // Adjust the path accordingly
 
+interface FavoriteDate {
+  [providerId: number]: string;
+}
 
 const ProvidersPage: React.FC = () => {
   const [selectedProvider, setSelectedProvider] = useState<ProviderAttributes | null>(null);
@@ -33,8 +35,8 @@ const ProvidersPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false)
   const errorTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [favoriteProviders, setFavoriteProviders] = useState<ProviderAttributes[]>([]);
+  const [favoriteDates, setFavoriteDates] = useState<FavoriteDate>({});
   const providersPerPage = 8;
-
 
   const [run, setRun] = useState(false);
   const [steps] = useState<Step[]>([
@@ -72,6 +74,8 @@ const ProvidersPage: React.FC = () => {
 
   useEffect(() => {
     const storedFavorites = localStorage.getItem('favoriteProviders');
+    const storedDates = localStorage.getItem('favoriteDates');
+
     if (storedFavorites) {
       const parsedFavorites = JSON.parse(storedFavorites);
       const sortedFavorites = parsedFavorites.sort((a: ProviderAttributes, b: ProviderAttributes) => {
@@ -81,8 +85,14 @@ const ProvidersPage: React.FC = () => {
       });
       setFavoriteProviders(sortedFavorites);
     }
+
+    if (storedDates) {
+      setFavoriteDates(JSON.parse(storedDates));
+    }
   }, []);
 
+
+  // Update the toggleFavorite function
   const toggleFavorite = useCallback((providerId: number) => {
     setFavoriteProviders((prevFavorites) => {
       const provider = allProviders.find(p => p.id === providerId);
@@ -93,8 +103,27 @@ const ProvidersPage: React.FC = () => {
       let newFavorites;
       if (isFavorited) {
         newFavorites = prevFavorites.filter(fav => fav.id !== providerId);
+
+        // Remove date when unfavoriting
+        setFavoriteDates(prevDates => {
+          const { [providerId]: _, ...rest } = prevDates;
+          localStorage.setItem('favoriteDates', JSON.stringify(rest));
+          return rest;
+        });
       } else {
         newFavorites = [...prevFavorites, provider];
+
+        // Add date when favoriting
+        const currentDate = new Date().toLocaleDateString('en-US', {
+          month: '2-digit',
+          day: '2-digit',
+          year: '2-digit'
+        });
+        setFavoriteDates(prevDates => {
+          const newDates = { ...prevDates, [providerId]: currentDate };
+          localStorage.setItem('favoriteDates', JSON.stringify(newDates));
+          return newDates;
+        });
       }
 
       const sortedFavorites = newFavorites.sort((a, b) => {
@@ -108,8 +137,6 @@ const ProvidersPage: React.FC = () => {
       return sortedFavorites;
     });
   }, [allProviders]);
-
-  
 
   useEffect(() => {
     const getProviders = async () => {
@@ -466,6 +493,7 @@ const ProvidersPage: React.FC = () => {
                         renderViewOnMapButton={renderViewOnMapButton}
                         onToggleFavorite={toggleFavorite}
                         isFavorited={favoriteProviders.some(fav => fav.id === provider.id)}
+                        favoritedDate={favoriteDates[provider.id]}
                       />
                     ))}
                   </div>
@@ -486,7 +514,7 @@ const ProvidersPage: React.FC = () => {
             </section>
           </section>
         </div>
-        
+
         {selectedProvider && (
           <ProviderModal
             provider={selectedProvider}
@@ -495,7 +523,7 @@ const ProvidersPage: React.FC = () => {
             onClose={handleCloseModal}
             onViewOnMapClick={handleViewOnMapClick}
           />
-          
+
         )}
       </main>
     </div>
