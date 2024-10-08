@@ -26,9 +26,7 @@ export const AuthModal = ({ onClose }: AuthModalProps) => {
             <div className='auth-modal-content'>
                 <X className='close-modal' onClick={onClose} />
                 <h1>For security reasons, if you refresh the page or navigate to another page, you will be logged out.</h1>
-                <p>If you have any questions, please contact the admin at <Link to="/contact" className='authwarning-link' onClick={handleLogout}>Contact Us</Link>. Upon clicking the link, you will also be logged out.</p>
-                <p>To continue editing your information, please click the button below.</p>
-                <button className='continue-editing-button' onClick={handleLogout}>Continue Editing</button>
+                <p>If you have any questions, please contact the admin at <Link to="/contact" className='authwarning-link' onClick={handleLogout}>Contact Us</Link>. Upon clicking the link, you will be logged out.</p>
             </div>
         </div>
     );
