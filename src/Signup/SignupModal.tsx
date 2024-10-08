@@ -101,7 +101,7 @@ export const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose }) => 
     setIsInsuranceModalOpen(false);
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     const providerPostData = {
@@ -116,10 +116,22 @@ export const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose }) => 
 
     setIsLoading(true);
 
-    setTimeout(() => {
-      console.log(providerPostData); // This is where you'd make the actual API call
+    try {
+      const response = await fetch('https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/providers', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(providerPostData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Error response:', errorData);
+        throw new Error(errorData.message || 'Failed to submit provider data');
+      }
+
       toast.success('Provider information submitted successfully');
-      setIsLoading(false);
 
       setProviderData({
         name: '',
@@ -138,7 +150,13 @@ export const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose }) => 
         in_clinic_services: '',
         logo: '',
       });
-    }, 2000);
+
+    } catch (error) {
+      console.error('Error submitting provider data:', error);
+      toast.error('Failed to submit provider information. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   if (!isOpen) return null;
