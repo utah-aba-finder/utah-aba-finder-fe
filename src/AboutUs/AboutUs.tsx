@@ -72,7 +72,7 @@ const AboutUs: React.FC = () => {
                         <img src={kevinPic} alt="kevin" className="profile-icon" />
                         <div className="profile-info">
                             <h3>Kevin Nelson</h3>
-                            <p>Kevin is a dedicated professional with a passion for exploring the world, having traveled across every continent, and brings a deep appreciation for diversity and adaptability to his collaborative work.</p>
+                            <p>Kevin Nelson is a software engineer with a background in business and legal operations, who combines his Juris Doctorate and Business Administration degrees to bridge the gap between business/law and tech.</p>
                             <div className="icon-container">
                                 <a href="https://www.linkedin.com/in/kevinnelson418/" target="_blank" rel="noopener noreferrer">
                                     <img src={LinkedinIcon} alt="LinkedIn" className="linkedin-icon" />
