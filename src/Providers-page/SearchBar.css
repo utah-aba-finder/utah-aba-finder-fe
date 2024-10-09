@@ -21,7 +21,6 @@
 }
 
 
-
 .provider-map-searchbar input[type="text"] {
     color: #ffffff;
     text-align: center;
@@ -150,4 +149,10 @@
     color: #ffffff;
     pointer-events: none;
     font-size: 0.8rem;
+}
+
+@media (max-width: 578px) {
+    .provider-map-searchbar input[type="text"] {
+        width: 97%;
+    }
 }
