@@ -151,8 +151,8 @@
     font-size: 0.8rem;
 }
 
-@media (max-width: 578px) {
+@media (max-width: 431px) {
     .provider-map-searchbar input[type="text"] {
-        width: 97%;
+        width: 96%;
     }
 }
