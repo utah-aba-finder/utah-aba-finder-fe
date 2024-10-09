@@ -72,7 +72,7 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ provider, address, mapAdd
             <section className="modal-logo-section">
               <div className="modal-logo">
                 <img src={provider.logo ?? undefined} alt={provider.name ?? undefined} className="modal-img" />
-              <h2 className="provider-name title">{provider.name}</h2>
+                <h2 className="provider-name title">{provider.name}</h2>
               </div>
             </section>
             <section className="modal-text-section">
@@ -110,15 +110,30 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ provider, address, mapAdd
 
                         <p>
                           <Phone style={{ marginRight: '8px' }} />
-                          <strong>Phone: </strong><a href={`tel:${location.phone}`}>{location.phone}</a>
+                          <strong>Phone: </strong>
+                          {location.phone ? (
+                            <a href={`tel:${location.phone}`}>{location.phone}</a>
+                          ) : (
+                            <span>Provider does not have a number for this location yet.</span>
+                          )}
                         </p>
                         <p>
                           <Globe style={{ marginRight: '8px' }} />
-                          <strong>Website:</strong> <a href={provider.website ?? undefined} target="_blank" rel="noopener noreferrer">{provider.website ?? 'Provider does not have a website yet.'}</a>
+                          <strong>Website: </strong>
+                          {provider.website ? (
+                            <a href={provider.website} target="_blank" rel="noopener noreferrer">{provider.website}</a>
+                          ) : (
+                            <span>Provider does not have a website yet.</span>)}
                         </p>
                         <p className="email-text">
                           <Mail style={{ marginRight: '8px' }} />
-                          <strong>Email:</strong> <a href={`mailto:${provider.email ?? ''}`} target="_blank" rel="noopener noreferrer">{provider.email ?? 'Provider does not have an email yet.'}</a>
+                          <strong>Email: </strong> 
+                          {provider.email ? (
+                          <a href={`mailto:${provider.email}`} target="_blank" rel="noopener noreferrer">{provider.email}
+                          </a>  
+                          ) : (
+                            <span>Provider does not have an email yet.</span>
+                          )}
                         </p>
                       </div>
                     ))
