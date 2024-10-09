@@ -95,8 +95,8 @@ const FavoriteProviders: React.FC = () => {
 
     return (
         <div className="favorite-providers-page">
-            <ToastContainer />
             <section className="find-your-provider-section">
+            <ToastContainer />
                 <img src={playblocks} alt="Find Your Provider" className="banner-image" />
                 <h1 className="providers-banner-title">Favorite Providers</h1>
             </section>

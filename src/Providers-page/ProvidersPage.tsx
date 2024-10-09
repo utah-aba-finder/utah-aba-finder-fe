@@ -91,8 +91,6 @@ const ProvidersPage: React.FC = () => {
     }
   }, []);
 
-
-  // Update the toggleFavorite function
   const toggleFavorite = useCallback((providerId: number) => {
     setFavoriteProviders((prevFavorites) => {
       const provider = allProviders.find(p => p.id === providerId);
@@ -104,7 +102,6 @@ const ProvidersPage: React.FC = () => {
       if (isFavorited) {
         newFavorites = prevFavorites.filter(fav => fav.id !== providerId);
 
-        // Remove date when unfavoriting
         setFavoriteDates(prevDates => {
           const { [providerId]: _, ...rest } = prevDates;
           localStorage.setItem('favoriteDates', JSON.stringify(rest));
@@ -113,7 +110,6 @@ const ProvidersPage: React.FC = () => {
       } else {
         newFavorites = [...prevFavorites, provider];
 
-        // Add date when favoriting
         const currentDate = new Date().toLocaleDateString('en-US', {
           month: '2-digit',
           day: '2-digit',
@@ -260,7 +256,6 @@ const ProvidersPage: React.FC = () => {
   const handleViewOnMapClick = (address: string) => {
     setMapAddress(address);
   };
-
 
   const handleCloseModal = () => {
     setSelectedProvider(null);
@@ -437,20 +432,20 @@ const ProvidersPage: React.FC = () => {
 
   return (
     <div className="providers-page">
-      <Joyride
-        run={run}
-        steps={steps}
-        continuous={true}
-        showSkipButton={true}
-        showProgress={true}
-        callback={handleJoyrideCallback}
-      />
       {/* 
       <button onClick={handleResetTutorial} className="reset-tutorial-button">
-        Reset Tutorial
+      Reset Tutorial
       </button> */}
 
       <section className="find-your-provider-section">
+        <Joyride
+          run={run}
+          steps={steps}
+          continuous={true}
+          showSkipButton={true}
+          showProgress={true}
+          callback={handleJoyrideCallback}
+        />
         <img src={childrenBanner} alt="Find Your Provider" className="banner-image" />
         <h1 className="providers-banner-title">Find Your Provider</h1>
       </section>
