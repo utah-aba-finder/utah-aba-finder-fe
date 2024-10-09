@@ -16,20 +16,19 @@
     justify-content: center;
     align-content: center;
     align-items: center;
+    max-width: 1300px;
 }
 
 .search-group {
     flex: 1 1 200px;
-    min-width: 360px;
+    min-width: 300px;
 }
 
-.search-input {
-    width: auto;
-}
+
 
 .provider-map-searchbar input[type="text"] {
     color: #ffffff;
-    padding-left: 3px;
+    text-align: center;
 }
 
 .provider-map-searchbar input[type="text"]::placeholder {
@@ -61,15 +60,10 @@
     max-width: 100%;
 }
 
-.provider-search-button,
-.provider-reset-button {
-    flex: 1;
-    max-width: 350px;
-    min-width: 149px;
-}
+
 
 .provider-map-searchbar input[type="text"] {
-    width: 99%;
+    width: 100%;
     border: none;
     border-radius: 0.25rem;
     font-size: 1rem;
@@ -85,7 +79,7 @@
 .provider-waitlist-select,
 .provider-search-button,
 .provider-reset-button {
-    width: 100%;
+    width: fill;
     border: none;
     border-radius: 0.25rem;
     font-size: 1rem;
