@@ -34,7 +34,6 @@
 .provider-map-searchbar input[type="text"]::placeholder {
     color: #ffffff;
     opacity: 0.7;
-    padding-left: 3px;
 }
 
 .filter-group {
@@ -63,12 +62,13 @@
 
 
 .provider-map-searchbar input[type="text"] {
-    width: 100%;
+    width: 99%;
     border: none;
     border-radius: 0.25rem;
     font-size: 1rem;
     height: 38px;
     color: #ffffff;
+    padding-left: 5px;
 }
 
 /* Common styles for inputs and selects */
