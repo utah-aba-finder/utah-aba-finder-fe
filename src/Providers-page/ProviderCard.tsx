@@ -9,22 +9,36 @@ interface ProviderCardProps {
   provider: ProviderAttributes;
   onViewDetails: (provider: ProviderAttributes) => void;
   renderViewOnMapButton: (provider: ProviderAttributes) => React.ReactNode;
-  onToggleFavorite: (providerId: number) => void;
+  onToggleFavorite: (providerId: number, date?: string) => void;
   isFavorited: boolean;
+  favoritedDate?: string;
 }
 
-const ProviderCard: React.FC<ProviderCardProps> = ({ provider, onViewDetails, renderViewOnMapButton, onToggleFavorite, isFavorited }) => {
+const ProviderCard: React.FC<ProviderCardProps> = ({ 
+  provider, 
+  onViewDetails, 
+  renderViewOnMapButton, 
+  onToggleFavorite, 
+  isFavorited,
+  favoritedDate 
+}) => {
   
   const handleToggleFavorite = (e: React.MouseEvent) => {
     e.stopPropagation();
     
+    const currentDate = new Date().toLocaleDateString('en-US', {
+      month: '2-digit',
+      day: '2-digit',
+      year: '2-digit'
+    });
+
     if (isFavorited) {
       toast.info(`${provider.name} removed from favorites`, { autoClose: 3000 });
+      onToggleFavorite(provider.id);
     } else {
       toast.success(`${provider.name} added to favorites`, { autoClose: 3000 });
+      onToggleFavorite(provider.id, currentDate);
     }
-
-    onToggleFavorite(provider.id);
   };
 
   return (
@@ -68,6 +82,11 @@ const ProviderCard: React.FC<ProviderCardProps> = ({ provider, onViewDetails, re
                   {provider.website ?? 'Provider does not have a website yet.'}
                 </a>
               </h4>
+              {isFavorited && favoritedDate && (
+                <div className="favorited-date text">
+                  Favorited on {favoritedDate}
+                </div>
+              )}
             </div>
 
             <div className="provider-card-buttons">

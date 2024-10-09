@@ -7,6 +7,9 @@ import './FavoriteProviders.css'
 import { Link } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 
+interface FavoriteDate {
+    [providerId: number]: string;
+}
 
 const FavoriteProviders: React.FC = () => {
     const [favoriteProviders, setFavoriteProviders] = useState<ProviderAttributes[]>([]);
@@ -14,40 +17,44 @@ const FavoriteProviders: React.FC = () => {
     const [selectedAddress, setSelectedAddress] = useState<string | null>(null);
     const [mapAddress, setMapAddress] = useState<string>('');
     const [currentPage, setCurrentPage] = useState<number>(1);
-
+    const [favoriteDates, setFavoriteDates] = useState<FavoriteDate>({});
     const providersPerPage = 8;
 
+
     useEffect(() => {
-        const storedFavorites = JSON.parse(localStorage.getItem('favoriteProviders') || '[]');
-        setFavoriteProviders(storedFavorites);
+        const storedFavorites = localStorage.getItem('favoriteProviders');
+        const storedDates = localStorage.getItem('favoriteDates');
+
+        if (storedFavorites) {
+            const parsedFavorites = JSON.parse(storedFavorites);
+            setFavoriteProviders(parsedFavorites);
+        }
+
+        if (storedDates) {
+            setFavoriteDates(JSON.parse(storedDates));
+        }
     }, []);
 
     const handleToggleFavorite = (providerId: number) => {
-        console.log("Toggling favorite for:", providerId);
         setFavoriteProviders((prevFavorites) => {
-            const providerIndex = prevFavorites.findIndex(fav => fav.id === providerId);
-    
-            if (providerIndex === -1) {
-                console.log("Provider not found in favorites.");
-                return prevFavorites;
-            }
-    
             const updatedFavorites = prevFavorites.filter((fav) => fav.id !== providerId);
-    
-            // Update localStorage with the new favorites array
             localStorage.setItem('favoriteProviders', JSON.stringify(updatedFavorites));
-    
-          
-    
+
+            setFavoriteDates(prevDates => {
+                const { [providerId]: _, ...rest } = prevDates;
+                localStorage.setItem('favoriteDates', JSON.stringify(rest));
+                return rest;
+            });
+
             const newTotalPages = Math.ceil(updatedFavorites.length / providersPerPage);
             if (currentPage > newTotalPages) {
                 setCurrentPage(Math.max(1, newTotalPages));
             }
-    
+
             return updatedFavorites;
         });
     };
-    
+
 
 
     const handleProviderCardClick = (provider: ProviderAttributes) => {
@@ -69,7 +76,6 @@ const FavoriteProviders: React.FC = () => {
         setSelectedProvider(null);
     };
 
-    // Calculate pagination values
     const indexOfLastProvider = currentPage * providersPerPage;
     const indexOfFirstProvider = indexOfLastProvider - providersPerPage;
     const currentProviders = favoriteProviders.slice(indexOfFirstProvider, indexOfLastProvider);
@@ -116,6 +122,7 @@ const FavoriteProviders: React.FC = () => {
                                             onViewDetails={() => handleProviderCardClick(provider)}
                                             onToggleFavorite={() => handleToggleFavorite(provider.id)}
                                             isFavorited={true}
+                                            favoritedDate={favoriteDates[provider.id]}
                                             renderViewOnMapButton={() => null}
                                         />
                                     ))}

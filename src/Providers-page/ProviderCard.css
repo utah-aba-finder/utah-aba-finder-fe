@@ -77,6 +77,21 @@
     overflow: hidden;
 }
 
+.favorited-date {
+    text-align: center;
+    margin-top: 0.5em;
+    padding: 0.3em;
+    font-size: 0.9em;
+    font-weight: 700;
+    font-family: "Gotham", sans-serif;
+    border-top: 1px solid rgba(86, 63, 95, 0.3);
+}
+
+.provider-card:hover .favorited-date {
+    color: #ffffff;
+    border-top: 1px solid rgba(255, 255, 255, 0.3);
+}
+
 .card-text strong {
     color: #424266;
 }

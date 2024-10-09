@@ -36,20 +36,14 @@ const SearchBar: React.FC<SearchBarProps> = ({
   const [selectedWaitList, setSelectedWaitList] = useState<string>('');
 
   const handleSearch = useCallback(() => {
-    const searchParams = {
+    onSearch({
       query: searchQuery,
       county: selectedCounty,
       insurance: selectedInsurance,
       spanish: selectedSpanish,
       service: selectedService,
       waitlist: selectedWaitList,
-    };
-
-    if (selectedWaitList === '6 Months or Less') {
-      searchParams.waitlist = '6 Months or Less';
-    }
-
-    onSearch(searchParams);
+    });
   }, [searchQuery, selectedCounty, selectedInsurance, selectedSpanish, selectedService, selectedWaitList, onSearch]);
 
   const handleReset = () => {
@@ -63,28 +57,29 @@ const SearchBar: React.FC<SearchBarProps> = ({
   };
 
   return (
-    <>
-      <section className="provider-map-search-section">
-        <div className="provider-map-searchbar">
-
-          <input
-            className="provider-text-select"
-            id="provider-text-select"
-            type="text"
-            placeholder="Search for a provider..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            list="provider-names"
+    <section className="provider-map-search-section">
+      <div className="provider-map-searchbar">
+        <div className="search-group">
+          <div className="search-input">
+            <input
+              type="text"
+              placeholder="Search for a provider..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              list="provider-names"
             />
             <datalist id="provider-names">
               {providers.map((provider, index) => (
                 <option key={index} value={provider.name ?? ''} />
               ))}
             </datalist>
+          </div>
+        </div>
 
-          <div className="provider-county-dropdown">
+        <div className="filter-group">
+          <div className="filter-item provider-county-dropdown">
             <select
-              className={`provider-county-select`}
+              className="provider-county-select"
               value={selectedCounty}
               onChange={(e) => setSelectedCounty(e.target.value)}
               aria-label="Select County"
@@ -122,10 +117,9 @@ const SearchBar: React.FC<SearchBarProps> = ({
             </select>
           </div>
 
-          <div className="provider-insurance-dropdown">
+          <div className="filter-item provider-insurance-dropdown">
             <select
               className="provider-insurance-select"
-              id="provider-insurance-select"
               value={selectedInsurance}
               onChange={(e) => {
                 setSelectedInsurance(e.target.value);
@@ -144,10 +138,9 @@ const SearchBar: React.FC<SearchBarProps> = ({
             </select>
           </div>
 
-          <div className="provider-spanish-dropdown">
+          <div className="filter-item provider-spanish-dropdown">
             <select
               className="provider-spanish-select"
-              id="provider-spanish-select"
               value={selectedSpanish}
               onChange={(e) => setSelectedSpanish(e.target.value)}
               aria-label="Spanish Language Option"
@@ -157,10 +150,9 @@ const SearchBar: React.FC<SearchBarProps> = ({
             </select>
           </div>
 
-          <div className="provider-service-dropdown">
+          <div className="filter-item provider-service-dropdown">
             <select
               className="provider-service-select"
-              id="provider-service-select"
               value={selectedService}
               onChange={(e) => setSelectedService(e.target.value)}
               aria-label="Select Service Type"
@@ -172,10 +164,9 @@ const SearchBar: React.FC<SearchBarProps> = ({
             </select>
           </div>
 
-          <div className="provider-waitlist-dropdown">
+          <div className="filter-item provider-waitlist-dropdown">
             <select
               className="provider-waitlist-select"
-              id="provider-waitlist-select"
               value={selectedWaitList}
               onChange={(e) => setSelectedWaitList(e.target.value)}
               aria-label="Select Waitlist Status"
@@ -185,20 +176,26 @@ const SearchBar: React.FC<SearchBarProps> = ({
               <option value="6 Months or Less">6 Months or Less</option>
             </select>
           </div>
-
-          <div className="search-bar-buttons">
-            <button className="provider-search-button" onClick={handleSearch}>
-              Search
-            </button>
-            <button className="provider-reset-button" onClick={handleReset}>
-              Reset
-            </button>
-          </div>
         </div>
-      </section>
+
+        <div className="button-group">
+          <button className="provider-search-button" onClick={handleSearch}>
+            Search
+          </button>
+          <button className="provider-reset-button" onClick={handleReset}>
+            Reset
+          </button>
+        </div>
+      </div>
       <ToastContainer />
-    </>
+    </section>
   );
 };
 
 export default SearchBar;
+
+
+
+
+
+

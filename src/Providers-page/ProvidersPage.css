@@ -104,7 +104,6 @@
   margin-bottom: 0.5rem;
   appearance: none;
   max-width: 100%;
-  display: inline-block;
 }
 
 .view-on-map-dropdown-container::after {

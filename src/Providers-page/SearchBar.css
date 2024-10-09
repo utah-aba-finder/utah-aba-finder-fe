@@ -1,182 +1,149 @@
-.error-message {
-    color: red;
-    font-size: 0.875em;
-    margin-top: 4px;
-}
-
-.input-container {
-    position: relative;
-}
-
 .provider-map-search-section {
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
+    justify-content: center;
+    margin-left: .5em;
+    margin-right: .5em;
 }
 
 .provider-map-searchbar {
     display: flex;
-    flex-direction: row;
-    gap: 0.5rem;
-    border: none;
-    padding: 0.5rem 1rem;
-    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    padding: .6rem;
     background-color: rgb(255, 255, 255);
     border-radius: 0.5rem;
     box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+    justify-content: center;
+    align-content: center;
+    align-items: center;
 }
 
-
-.provider-map-searchbar input[type="text"],
-.provider-county-select,
-.provider-insurance-select,
-.provider-spanish-select,
-.provider-search-button,
-.provider-service-select,
-.provider-waitlist-select {
-    padding: 0.5rem 1rem;
-    border: none;
-    border-radius: 0.25rem;
-    background-color: #555555;
-    color: #ffffff;
-    font-size: 1rem;
-    cursor: pointer;
-    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
-    transition: background-color 0.3s, transform 0.3s;
+.search-group {
+    flex: 1 1 200px;
+    min-width: 360px;
 }
 
-.provider-reset-button {
-    padding: 0.5rem 1rem;
-    border: none;
-    border-radius: 0.25rem;
-    background-color: #b73939;
+.search-input {
+    width: auto;
+}
+
+.provider-map-searchbar input[type="text"] {
     color: #ffffff;
-    font-size: 1rem;
-    font-weight: 750;
-    cursor: pointer;
-    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
-    transition: background-color 0.3s, transform 0.3s;
+    padding-left: 3px;
 }
 
 .provider-map-searchbar input[type="text"]::placeholder {
     color: #ffffff;
+    opacity: 0.7;
+    padding-left: 3px;
 }
 
+.filter-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    flex: 999 1 auto;
+    justify-content: center;
+}
+
+.filter-item {
+    flex: 1 1 160px;
+    min-width: 160px;
+    max-width: 250px;
+}
+
+.button-group {
+    display: flex;
+    gap: 0.4rem;
+    flex: 1 1 300px;
+    justify-content: center;
+    min-width: 200px;
+    max-width: 100%;
+}
+
+.provider-search-button,
+.provider-reset-button {
+    flex: 1;
+    max-width: 350px;
+    min-width: 149px;
+}
+
+.provider-map-searchbar input[type="text"] {
+    width: 99%;
+    border: none;
+    border-radius: 0.25rem;
+    font-size: 1rem;
+    height: 38px;
+    color: #ffffff;
+}
+
+/* Common styles for inputs and selects */
+.provider-county-select,
+.provider-insurance-select,
+.provider-spanish-select,
+.provider-service-select,
+.provider-waitlist-select,
+.provider-search-button,
+.provider-reset-button {
+    width: 100%;
+    border: none;
+    border-radius: 0.25rem;
+    font-size: 1rem;
+    height: 40px;
+    padding-left: .5em;
+    appearance: none;
+}
+
+/* Input and select specific styles */
+.provider-map-searchbar input[type="text"],
+.provider-county-select,
+.provider-insurance-select,
+.provider-spanish-select,
+.provider-service-select,
+.provider-waitlist-select {
+    background-color: #555555;
+    color: #ffffff;
+}
+
+/* Button specific styles */
+.provider-search-button {
+    background-color: #007bff;
+    color: white;
+    font-weight: 750;
+}
+
+.provider-reset-button {
+    background-color: #b73939;
+    color: white;
+    font-weight: 750;
+}
+
+/* Hover states */
 .provider-map-searchbar input[type="text"]:hover,
 .provider-county-select:hover,
 .provider-insurance-select:hover,
-.provider-search-button:hover,
 .provider-spanish-select:hover,
 .provider-service-select:hover,
 .provider-waitlist-select:hover {
     background-color: #444444;
-    transform: translateY(-2px);
+}
+
+.provider-search-button:hover {
+    background-color: #0056b3;
 }
 
 .provider-reset-button:hover {
     background-color: #e68181;
-    transform: translateY(-2px);
 }
 
-.provider-map-searchbar input[type="text"]:focus,
-.provider-county-select:focus,
-.provider-insurance-select:focus,
-.provider-search-button:focus,
-.provider-spanish-select:focus,
-.provider-service-dropdown:focus,
-.provider-waitlist-dropdown:focus {
-    outline: 2px solid #333;
-}
-
+/* Dropdown arrows */
 .provider-county-dropdown,
 .provider-insurance-dropdown,
+.provider-spanish-dropdown,
 .provider-service-dropdown,
 .provider-waitlist-dropdown {
     position: relative;
-    display: flex;
-    align-items: center;
     width: 100%;
-}
-
-.provider-insurance-select {
-    width: 180px;
-    box-sizing: border-box;
-    appearance: none;
-    padding: 0.5rem 1rem;
-    background-color: #555555;
-    color: #ffffff;
-    border: none;
-    border-radius: 0.25rem;
-    font-size: 1rem;
-    outline: none;
-    margin-right: 2px;
-}
-
-.provider-county-select {
-    width: 175px;
-    box-sizing: border-box;
-    appearance: none;
-    padding: 0.5rem 1rem;
-    background-color: #555555;
-    color: #ffffff;
-    border: none;
-    border-radius: 0.25rem;
-    font-size: 1rem;
-    outline: none;
-    margin-right: 2px;
-}
-
-.provider-spanish-select {
-    width: 105px;
-    box-sizing: border-box;
-    appearance: none;
-    padding: 0.5rem 1rem;
-    background-color: #555555;
-    color: #ffffff;
-    border: none;
-    border-radius: 0.25rem;
-    font-size: 1rem;
-    outline: none;
-    margin-right: 2px;
-}
-
-.provider-service-select {
-    width: 175px;
-    box-sizing: border-box;
-    appearance: none;
-    padding: 0.5rem 1rem;
-    background-color: #555555;
-    color: #ffffff;
-    border: none;
-    border-radius: 0.25rem;
-    font-size: 1rem;
-    outline: none;
-    margin-right: 2px;
-}
-
-.provider-waitlist-select{
-    width: 175px;
-    box-sizing: border-box;
-    appearance: none;
-    padding: 0.5rem 1rem;
-    background-color: #555555;
-    color: #ffffff;
-    border: none;
-    border-radius: 0.25rem;
-    font-size: 1rem;
-    outline: none;
-    margin-right: 2px;
-}
-
-.dropdown-arrow {
-    position: absolute;
-    right: rem;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 1rem;
-    color: #ffffff;
-    pointer-events: none;
 }
 
 .provider-county-dropdown::after,
@@ -186,139 +153,10 @@
 .provider-waitlist-dropdown::after {
     content: "\25BC";
     position: absolute;
-    right: .5rem;
+    right: 1rem;
     top: 50%;
     transform: translateY(-50%);
     color: #ffffff;
     pointer-events: none;
-    font-size: 1rem;
-}
-
-.provider-spanish-dropdown {
-    position: relative;
-    display: flex;
-    align-items: center;
-    width: 100%;
-}
-
-
-.search-bar-buttons {
-    display: flex;
-}
-
-.provider-search-button {
-    background-color: #007bff;
-    font-weight: 750;
-    color: white;
-    border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    cursor: pointer;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
-}
-
-.provider-search-button:hover {
-    background-color: #0056b3;
-}
-
-.input-error {
-    border: 2px solid red;
-}
-
-.search-bar-buttons {
-    display: flex;
-    flex-grow: 1;
-    justify-content: space-between;
-    gap: 0.5rem;
-    width: 100%;
-}
-
-.provider-search-button,
-.provider-reset-button {
-    flex-grow: 1;
-    text-align: center;
-    padding: 0.5rem 1rem;
-    max-width: 200px;
-}
-@media (max-width: 1262px) {
-    .provider-map-searchbar {
-        flex-direction: column;
-        gap: 1rem;
-        width: 19rem;
-    }
-    
-    .provider-county-select,
-    .provider-insurance-select,
-    .provider-spanish-select,
-    .provider-service-select,
-    .provider-waitlist-select {
-        width: 100%;
-    }
-
-    
-
-    .provider-county-dropdown::after {
-        content: "\25BC";
-        position: absolute;
-        right: 1rem;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #ffffff;
-        pointer-events: none;
-        font-size: 1rem;
-    }
-
-    .provider-insurance-dropdown::after {
-        content: "\25BC";
-        position: absolute;
-        right: 1rem;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #ffffff;
-        pointer-events: none;
-        font-size: 1rem;
-    }
-
-    .provider-spanish-dropdown::after {
-        content: "\25BC";
-        position: absolute;
-        right: 1rem;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #ffffff;
-        pointer-events: none;
-        font-size: 1rem;
-    }
-
-    .provider-service-dropdown::after {
-        content: "\25BC";
-        position: absolute;
-        right: 1rem;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #ffffff;
-        pointer-events: none;
-        font-size: 1rem;
-    }
-    .provider-waitlist-dropdown::after {
-        content: "\25BC";
-        position: absolute;
-        right: 1rem;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #ffffff;
-        pointer-events: none;
-        font-size: 1rem;
-    }
-}
-
-@media (min-width: 355px) {
-    .provider-map-searchbar {
-        padding: 0.5rem;
-        gap: 0.5rem;
-    }
-
-    .provider-search-button {
-        padding: 0.5rem;
-    }
+    font-size: 0.8rem;
 }
