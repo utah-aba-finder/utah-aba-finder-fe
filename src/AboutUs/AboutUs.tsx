@@ -56,7 +56,7 @@ const AboutUs: React.FC = () => {
                         <img src={jordanPic} alt="jordan" className="profile-icon" />
                         <div className="profile-info">
                             <h3>Jordan Williamson</h3>
-                            <p> Jordan Williamson is a front-end developer with a background as a Military Working Dog Handler in the U.S. Army, holding degrees in Criminal Justice and IT, passionate about creating accessible user interfaces that help others.</p>
+                            <p> Jordan is a front-end developer with a background as a Military Working Dog Handler in the U.S. Army, holding degrees in Criminal Justice and IT with a concentration in programming and software development, and a father of two ASD children.</p>
                             <div className="icon-container">
                                 <a href="https://www.linkedin.com/in/jordan-williamson-a079b3271/" target="_blank" rel="noopener noreferrer">
                                     <img src={LinkedinIcon} alt="LinkedIn" className="linkedin-icon" />
