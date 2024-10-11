@@ -85,16 +85,25 @@ class Homepage extends Component<Props, State> {
                     <img src={utah} alt="background-image" className='discover-section-backgroundImage' />
                     <div className='discover-section-container'>
                         <h1 className='discover-section-title'>
-                            Discover the Ideal ABA Therapy Provider <br /> for Your Child in Utah
+                            Find The Best Fit ABA Provider For You
                         </h1>
                         <div className='discover-section-content'>
                             <p className='discover-section-description'>
-                                Are you feeling overwhelmed in your search for the right care? We're here to guide you every step of the way. <br />Start your journey with confidence today.
+                                We’re here to guide you every step of the way in finding the best ABA provider for you. <br />Start your journey with confidence today.
                             </p>
+                        </div>
+                        <div className='discover-section-button-container'>
                             <Link to="/providers" className='discover-section-button'>Start Your Journey</Link>
                         </div>
                     </div>
                 </div>
+
+                {/* <div className="sponsor-section">
+                    <h2 className='sponsor-section-title'>Our Proud Sponsors</h2>
+                    <div className='sponsor-section-logos'>
+
+                    </div>
+                </div> */}
 
                 <div className='county-section'>
                     <h2 className='county-section-title'>Counties Covered</h2>
@@ -166,7 +175,7 @@ class Homepage extends Component<Props, State> {
 
                 <div className="icons-section" id="view">
                     <div className="icons-section-icon" id={"block"}>
-                        <Link className='homeIcons'to="/providers"><img src={mapIcon} alt="Map Icon" /></Link>
+                        <Link className='homeIcons' to="/providers"><img src={mapIcon} alt="Map Icon" /></Link>
                         <p>Locate the Providers</p>
                     </div>
                     <div className="icons-section-icon" id={"block"}>
