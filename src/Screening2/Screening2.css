@@ -40,14 +40,30 @@
 
 .scoreWrapper {
     display: flex;
+    flex-direction: column;
     width: 100%;
+    align-items: center;
     justify-content: center;
+}
+
+.castResources {
+    text-decoration: none;
+    color: white;
+    background-color: #ea4f08;
+    padding: 10px;
+    border-radius: .5rem;
+}
+
+.castResources:hover {
+    background-color: lightgreen;
+    color: black;
 }
 
 .scoreContainer {
     display: flex;
     flex-direction: column;
     width: 50%;
+    padding: 10px;
     background-color: lightslategrey;
     border-radius:  .5rem;
 }
@@ -104,6 +120,10 @@
     top: 20px; 
     z-index: 100;
     width: 30%;
+}
+
+.scoreContainer p:nth-child(1) {
+    color: rgb(170, 40, 40);
 }
 
 

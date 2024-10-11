@@ -89,15 +89,13 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
 
     };
     const addNewLocation = () => {
-        const newId = Math.max(0, ...locations.map(loc => loc.id)) + 1;
-    setLocations([...locations, {
-        id: newId,
-        name: '',
-        address_1: '',
-        city: '',
-        state: '',
-        zip: '',
-        phone: ''
+        setLocations([...locations, {
+            name: '',
+            address_1: '',
+            city: '',
+            state: '',
+            zip: '',
+            phone: ''
         }]);
     };
 
@@ -266,6 +264,14 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
     useEffect(() => {
     }, [locations]);
 
+    useEffect(() => {
+        if (showError) {
+            const timer = setTimeout(() => setShowError(''), 5000);
+            return () => clearTimeout(timer);
+        }
+    }, [showError]);
+
+
     const handleLocationChange = (index: number, field: string, value: string) => {
         const updatedLocations = [...locations];
         updatedLocations[index] = { ...updatedLocations[index], [field]: value };
@@ -303,7 +309,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
             </div>
         );
     }
-
+    
     return (
         <div className='provider-edit-container'>
             <ToastContainer />
@@ -376,7 +382,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
                         />
                     </div>
                 ))}
-                <button onClick={addNewLocation} className="add-location-button" disabled>
+                <button onClick={addNewLocation} className="add-location-button">
                     Add New Location
                 </button>
             <label htmlFor='name' className='editLabels'>Provider Name:</label>

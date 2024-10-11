@@ -129,7 +129,7 @@ button {
 }
 
 .add-location-button { 
-    cursor: not-allowed;
+    cursor: pointer;
 }
 
 .user-info-section {
