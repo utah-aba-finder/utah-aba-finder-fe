@@ -1,7 +1,7 @@
 import './Screening2.css'
 import React, { useState } from 'react'
 import { ProgressBar } from './ProgressBar'
-
+import { Link } from 'react-router-dom';
 
 interface castQuestions {
     question: string;
@@ -136,11 +136,14 @@ export const Screening2: React.FC = () => {
             {showScore && (
               <div className='scoreWrapper'>
                 <div className='scoreContainer'>
+                <p>Please keep in mind that these tools are intended to identify potential signs of autism and are not a substitute for an official diagnosis. Please seek a certified helthcare professional for an official diagnosis.</p>
                 <h1>Total Score: {totalScore()}</h1>
                 <p className='low'>Low risk: 0-14.</p>
                 <p className='medium'>Medium risk: 15-31.</p>
                 <p className='high'>High risk: 32-39.</p>
                 </div>
+                <h2>See additional resources below.</h2>
+                <Link to='/resources' className='castResources'>View Resources</Link>
               </div>
             )}
           </div>
