@@ -14,18 +14,18 @@ interface ProviderCardProps {
   favoritedDate?: string;
 }
 
-const ProviderCard: React.FC<ProviderCardProps> = ({ 
-  provider, 
-  onViewDetails, 
-  renderViewOnMapButton, 
-  onToggleFavorite, 
+const ProviderCard: React.FC<ProviderCardProps> = ({
+  provider,
+  onViewDetails,
+  renderViewOnMapButton,
+  onToggleFavorite,
   isFavorited,
-  favoritedDate 
+  favoritedDate
 }) => {
-  
+
   const handleToggleFavorite = (e: React.MouseEvent) => {
     e.stopPropagation();
-    
+
     const currentDate = new Date().toLocaleDateString('en-US', {
       month: '2-digit',
       day: '2-digit',
@@ -52,15 +52,21 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
             <div className="card-text text">
               <h2 className="card-name title">{provider.name}</h2>
               <h4>
-                <strong><MapPin style={{ marginRight: '8px' }} />
-                  <span>Address: </span></strong>
-                {provider.locations[0]?.address_1
-                  ? `${provider.locations[0]?.address_1}${provider.locations[0]?.address_2 ? ', ' : ''}`
-                  : 'Physical address is not available for this provider.'}
-                {provider.locations[0]?.address_2 && `${provider.locations[0]?.address_2}, `}
-                {provider.locations[0]?.city && `${provider.locations[0]?.city}, `}
-                {provider.locations[0]?.state && `${provider.locations[0]?.state} `}
-                {provider.locations[0]?.zip && `${provider.locations[0]?.zip}`}
+                <strong>
+                  <MapPin style={{ marginRight: '8px' }} />
+                  <span>Address: </span>
+                </strong>
+                {provider.locations[0]?.address_1 ? (
+                  <>
+                    {provider.locations[0].address_1}
+                    {provider.locations[0]?.address_2 && `, ${provider.locations[0].address_2}`}
+                    {provider.locations[0]?.city && `, ${provider.locations[0].city}`}
+                    {provider.locations[0]?.state && `, ${provider.locations[0].state}`}
+                    {provider.locations[0]?.zip && ` ${provider.locations[0].zip}`}
+                  </>
+                ) : (
+                  'Physical address is not available for this provider.'
+                )}
               </h4>
               <h4>
                 <strong><Phone style={{ marginRight: '8px' }} />

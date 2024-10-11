@@ -99,13 +99,11 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ provider, address, mapAdd
                         <p>
                           <MapPin style={{ marginRight: '8px' }} />
                           <strong>Address: </strong>
-                          {location.address_1
-                            ? `${location.address_1}${location.address_2 ? ', ' : ''}`
-                            : 'Physical address is not available for this provider.'}
-                          {location.address_2 && `${location.address_2}, `}
-                          {location.city && `${location.city}, `}
-                          {location.state && `${location.state} `}
-                          {location.zip && `${location.zip}`}
+                          {location.address_1 ? (
+                            `${location.address_1}${location.address_2 ? `, ${location.address_2}` : ''}${location.city ? `, ${location.city}` : ''}${location.state ? `, ${location.state}` : ''} ${location.zip || ''}`
+                          ) : (
+                            'Physical address is not available for this provider.'
+                          )}
                         </p>
 
                         <p>
@@ -127,10 +125,10 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ provider, address, mapAdd
                         </p>
                         <p className="email-text">
                           <Mail style={{ marginRight: '8px' }} />
-                          <strong>Email: </strong> 
+                          <strong>Email: </strong>
                           {provider.email ? (
-                          <a href={`mailto:${provider.email}`} target="_blank" rel="noopener noreferrer">{provider.email}
-                          </a>  
+                            <a href={`mailto:${provider.email}`} target="_blank" rel="noopener noreferrer">{provider.email}
+                            </a>
                           ) : (
                             <span>Provider does not have an email yet.</span>
                           )}
