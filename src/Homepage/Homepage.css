@@ -593,3 +593,23 @@
     background-color: #bb0101;
     color: white;
 }
+
+@media (max-width: 540px) {
+    .homepage-modal {
+        width: 80%;
+        max-width: 80%;
+        font-size: 0.8rem;
+        max-height: 60%;
+        overflow: auto;
+    }
+}
+
+@media (max-width: 400px) {
+    .homepage-modal {
+        width: 70%;
+        max-width: 70%;
+        font-size: 0.8rem;
+        max-height: 60%;
+        overflow: auto;
+    }
+}
