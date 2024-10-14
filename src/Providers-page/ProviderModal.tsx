@@ -67,13 +67,10 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ provider, address, mapAdd
           <div className="modal-grid-map">
             <GoogleMap address={mapAddress} />
           </div>
-
           <div className="modal-grid-text">
-            <section className="modal-logo-section">
-              <div className="modal-logo">
-                <img src={provider.logo ?? undefined} alt={provider.name ?? undefined} className="modal-img" />
-                <h2 className="provider-name title">{provider.name}</h2>
-              </div>
+            <section className="modal-logo">
+              <img src={provider.logo ?? undefined} alt={provider.name ?? undefined} className="modal-img" />
+              <h2 className="provider-name">{provider.name}</h2>
             </section>
             <section className="modal-text-section">
               <div className="provider-main-info">
