@@ -22,6 +22,7 @@ import Resources from '../Resources/Resources';
 import { fetchProviders } from '../Utility/ApiCall';
 import { SuperAdminEdit } from '../SuperAdmin/SuperAdminEdit';
 import FavoriteProviders from '../FavoriteProviders-page/FavoriteProviders'
+import Donations from '../Donations/Donations'
 
 
 
@@ -53,7 +54,7 @@ function App() {
         provider.id === updatedProvider.id ? { ...provider, ...updatedProvider } : provider
       )
     );
-  };   
+  };
 
   return (
     <div className="App">
@@ -73,22 +74,23 @@ function App() {
             <Route path='/about' element={<AboutUs />} />
             <Route path='/resources' element={<Resources />} />
             <Route path='/favoriteproviders' element={<FavoriteProviders />} />
-            
+            <Route path='/donate' element={<Donations />} />
+
             <Route path='/superAdmin' element={
               <ProtectedRoute>
-                <SuperAdmin providers={allProviders} setProviders={setAllProviders}/>
-                </ProtectedRoute>
-                } />
-                 <Route path='/superAdmin/edit/:providerId' element={
+                <SuperAdmin providers={allProviders} setProviders={setAllProviders} />
+              </ProtectedRoute>
+            } />
+            <Route path='/superAdmin/edit/:providerId' element={
               <ProtectedRoute>
                 <SuperAdminEditWrapper providers={allProviders} onUpdate={handleProviderUpdate} />
-              </ProtectedRoute> 
+              </ProtectedRoute>
             } />
             <Route
               path="/providerEdit"
               element={
                 <ProtectedRoute>
-                  <ProviderEditWrapper clearProviderData={clearProviderData} onUpdate={handleProviderUpdate}  />
+                  <ProviderEditWrapper clearProviderData={clearProviderData} onUpdate={handleProviderUpdate} />
                 </ProtectedRoute>
               }
             />
@@ -103,7 +105,7 @@ function App() {
 function SuperAdminEditWrapper({ providers, onUpdate }: { providers: MockProviderData[], onUpdate: (updatedProvider: ProviderAttributes) => void }) {
   const { providerId } = useParams();
   const provider = providers.find(p => p.id === (providerId ?? 0));
-  
+
   console.log('providerId:', providerId);
   console.log('providers:', providers);
   console.log('found provider:', provider);
@@ -114,7 +116,7 @@ function SuperAdminEditWrapper({ providers, onUpdate }: { providers: MockProvide
 
   return <SuperAdminEdit provider={provider.attributes} onUpdate={onUpdate} />;
 }
-function ProviderEditWrapper({ clearProviderData, onUpdate, }: { clearProviderData: () => void, onUpdate: (updatedProvider: ProviderAttributes) => void}) {
+function ProviderEditWrapper({ clearProviderData, onUpdate, }: { clearProviderData: () => void, onUpdate: (updatedProvider: ProviderAttributes) => void }) {
   const { loggedInProvider } = useAuth();
   return <ProviderEdit loggedInProvider={loggedInProvider} clearProviderData={clearProviderData} onUpdate={onUpdate} />;
 }
