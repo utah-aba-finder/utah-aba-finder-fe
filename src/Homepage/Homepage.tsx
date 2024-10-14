@@ -112,7 +112,7 @@ class Homepage extends Component<Props, State> {
                                     <br />
                                     <li><strong>Donation Feature:</strong> You'll be able to contribute and support autism care providers and families in need. Every donation makes a difference!</li>
                                     <br />
-                                    <li><strong>Expanding Services:</strong> We're adding <strong>occupational</strong> and <strong>speech therapy</strong> , and diagnosis providers to our platform, making it easier for you to find comprehensive care options for your child all in one place.</li>
+                                    <li><strong>Expanding Services:</strong> We're adding <strong>occupational</strong> and <strong>speech therapy</strong> , and <strong>diagnosis providers</strong> to our platform, making it easier for you to find comprehensive care options for your child all in one place.</li>
                                     <br />
                                     <li><strong>Nationwide Coverage:</strong> Our website is expanding to cover the entire <strong>United States</strong>! No matter where you are, you'll soon be able to find the right ABA providers, therapists, and resources near you.</li>
                                 </ul>
