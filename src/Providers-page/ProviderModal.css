@@ -17,6 +17,10 @@
   opacity: 1;
 }
 
+.modal-overlay.hide {
+  opacity: 0;
+}
+
 .modal-container {
   width: calc(100% - 2rem);
   height: calc(100% - 2rem);
@@ -45,7 +49,7 @@
 }
 
 .modal-img {
-  width: 30%;
+  width: 25%;
   border-radius: 15px;
   height: auto;
   justify-content: center;
@@ -62,22 +66,44 @@
 .modal-grid-text {
   overflow-y: auto;
 }
-.provider-name {
-  font-size: 1.5rem;
-  margin-top: 0.5rem;
-  border-bottom: 1px solid #9ea3a8;
-  padding-bottom: 0.5rem;
-}
 
 .close-button {
   position: absolute;
-  top: 20px;
-  right: 30px;
+  top: 20px; 
+  right: 30px; 
   background: transparent;
   border: none;
   font-size: 35px;
   cursor: pointer;
-  color: #4e1818;
+  color: #4e1818; 
+}
+.modal-tabs {
+  display: flex;
+  justify-content: center;
+  border-bottom: 1px solid #ccc;
+  margin-bottom: 1rem;
+}
+
+.tab-button {
+  padding: 0.5rem 1rem;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s;
+}
+
+.tab-button:hover {
+  background-color: #f0f0f0;
+}
+
+.tab-button.active {
+  border-bottom: 2px solid #007bff;
+  font-weight: bold;
+}
+
+.modal-text-section {
+  max-height: calc(100% - 60px); 
 }
 
 .view-on-map-button {
@@ -104,12 +130,12 @@
 
 .email-text {
   border-bottom: 1.5px solid #9ea3a8;
-  transition: border-color 0.3s ease;
-  padding-bottom: 6px;
+    transition: border-color 0.3s ease;
+    padding-bottom: 6px; 
 }
 
 .close-button:hover {
-  color: #ff0000;
+  color: #ff0000; 
 }
 
 .modal-grid-text strong {
@@ -202,6 +228,20 @@
   align-items: center;
 }
 
+@media (min-width: 1024px) {
+  .modal-grid {
+    flex-direction: row;
+  }
+
+  .modal-grid-map {
+    width: 50%;
+    height: auto;
+  }
+
+  .modal-grid-text {
+    width: 50%;
+  }
+}
 
 /* font sizes */
 .provider-name {
@@ -223,26 +263,10 @@
   display: flex;
 }
 
-/* Desktop layout */
-@media (min-width: 1024px) {
-  .modal-grid {
-    flex-direction: row;
-  }
-
-  .modal-grid-map {
-    width: 50%;
-    height: auto;
-  }
-
-  .modal-grid-text {
-    width: 50%;
-  }
-}
 /* Font sizes for multiple screens */
 @media (max-width: 1024px) {
   .provider-name {
     font-size: 28px;
-    margin-bottom: 24px;
   }
 
   .provider-address-phone {
@@ -279,7 +303,6 @@
   }
 
 }
-
 
 /* multiple locations */
 .provider-address-phone .multiple-locations {
