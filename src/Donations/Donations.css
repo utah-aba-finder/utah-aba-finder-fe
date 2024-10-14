@@ -1,0 +1,24 @@
+.donateBanner {
+    width: 100%;
+    height: 30vh;
+    object-fit: cover;
+}
+
+.donateBannerContainer {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 30vh;
+    width: 100%;
+}
+
+.donateBannerTitle {
+    position: absolute;
+    color: white;
+    font-size: 2.5rem;
+    text-align: center;
+    background-color: rgba(0, 0, 0, 0.5);
+    padding: 1rem;
+    border-radius: 10px;
+}
