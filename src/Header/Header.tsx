@@ -44,6 +44,7 @@ const Header: React.FC = () => {
                 <Link to="/providerLogin" onClick={toggleMenu}>Provider Login/Signup</Link>
                 <Link to="/about" onClick={toggleMenu}>About Us</Link>
                 <Link to="/contact" onClick={toggleMenu}>Contact Us</Link>
+                {/* <Link to="/donations" onClick={toggleMenu}>Donate</Link> */}
             </nav>
         </header>
     );
