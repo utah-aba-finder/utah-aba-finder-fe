@@ -4,7 +4,7 @@ import InsuranceModal from './InsuranceModal';
 import CountiesModal from './CountiesModal';
 import { Insurance, CountiesServed, MockProviderData, ProviderAttributes } from '@/Utility/Types';
 import gearImage from '../Assets/Gear@1x-0.5s-200px-200px.svg';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useParams } from 'react-router-dom';
 import { useAuth } from '../Provider-login/AuthProvider';
 import { toast } from 'react-toastify';
 import { ToastContainer } from 'react-toastify';
@@ -13,6 +13,8 @@ import { cloneDeep } from 'lodash';
 import moment from 'moment';
 import 'moment-timezone'; //Need to run npm i @types/moment-timezone to run this
 import { AuthModal } from './AuthModal';
+import { fetchSingleProvider } from '../Utility/ApiCall';
+
 interface ProviderEditProps {
     loggedInProvider: MockProviderData | null;
     clearProviderData: () => void;
@@ -44,6 +46,19 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
     const handleSave = () => {
         setIsSaving(true);
     }
+    useEffect(() => {
+        const hideAuthModal = localStorage.getItem('hideAuthModal');
+        if (hideAuthModal === 'true') {
+            setAuthModalOpen(false);
+        }
+    }, []);
+
+    const handleShownModal = (hideModal: boolean) => {
+        setAuthModalOpen(false);
+        if (hideModal) {
+            localStorage.setItem('hideAuthModal', 'true');
+        }
+    };
 
     const handleCancel = () => {
         if (originalFormData && originalLocations && originalInsurances && originalCounties) {
@@ -300,6 +315,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
     const toggleCountiesModal = () => {
         setIsCountiesModalOpen(prev => !prev);
     };
+    
 
     if (isLoading) {
         return (
@@ -313,7 +329,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
     return (
         <div className='provider-edit-container'>
             <ToastContainer />
-            {authModalOpen && <AuthModal onClose={() =>  setAuthModalOpen(false)}/>}
+            {authModalOpen && <AuthModal onClose={() =>  setAuthModalOpen(false)} handleShownModal={handleShownModal}/>}
             <div className='user-info-section'>
                 <h1>Welcome, {providerName}</h1>
                 <p>Last edited: {moment(loggedInProvider?.attributes.updated_last).utc().local().format('MM/DD/YYYY hh:mm:ss a')} {moment.tz.guess()}</p>
