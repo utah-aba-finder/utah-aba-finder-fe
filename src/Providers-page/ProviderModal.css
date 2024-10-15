@@ -40,7 +40,7 @@
 }
 
 .modal-grid-map {
-  height: 65%;
+  min-height: 50%;
 }
 
 .modal-logo {
