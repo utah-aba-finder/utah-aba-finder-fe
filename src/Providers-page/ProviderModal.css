@@ -70,7 +70,7 @@
 }
 
 .modal-grid-text {
-  overflow-y: auto;
+  overflow-y: scroll; /* Force the scrollbar to always be visible */
 }
 
 .close-button {
