@@ -20,7 +20,7 @@ export const LoginPage: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false)
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [currentProvider, setCurrentProvider] = useState<MockProviderData | undefined>();
-    const { setToken } = useAuth();
+    const { setToken, setLoggedInProvider } = useAuth();
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -49,25 +49,23 @@ export const LoginPage: React.FC = () => {
                     }
                 }),
             });
-
-            //     console.log('Response status:', response.status);
-            // console.log('Response headers:', response.headers);
-
             const data = await response.json();
-            // console.log('Response data:', data);
-            if (!response.ok || !data.data.provider_id) {
+            console.log('Response data:', data);
+
+
+            if (!response.ok) {
                 let errorMessage = 'Login failed';
-                if (response.status >= 400) {
-                    errorMessage = 'Invalid username or password';
-                } else if (data.status && data.status.message) {
-                    errorMessage = data.status.message;
-                } else if (!data.data.provider_id) {
-                    errorMessage = 'Provider ID not found';
+                if (response.status === 401) {
+                    errorMessage = 'Invalid email or password';
+                } else if (data.error) {
+                    errorMessage = data.error;
                 }
-                // console.log('Error message:', errorMessage);
-                toast.error(errorMessage);
                 throw new Error(errorMessage);
             }
+    
+
+           
+            
 
             const authHeader = response.headers.get('Authorization');
             if (!authHeader) {
@@ -78,23 +76,30 @@ export const LoginPage: React.FC = () => {
             sessionStorage.setItem('authToken', token);
             setToken(token);
 
-
-            const providerId = data.data.provider_id;
-            if (providerId) {
-                const providerDetails = await fetchSingleProvider(providerId);
-                setCurrentProvider(providerDetails);
-                setIsLoggedIn(true);
-                setUsername('');
-                setPassword('');
-                // if (data.data.role === 'super_admin') {
-                //     navigate('/super-admin');
-                // } else {
-                //     navigate('/providerEdit');
-                // }
+            if (data.data.role === 'super_admin') {
+                setLoggedInProvider(data.data);
+                navigate('/superAdmin');
+            } else if (data.data.role === 'provider_admin') {
+                const providerId = data.data?.provider_id;
+                if (providerId) {
+                    const providerDetails = await fetchSingleProvider(providerId);
+                    setLoggedInProvider({
+                        ...providerDetails,
+                        role: 'provider_admin' 
+                    });
+                    navigate(`/providerEdit/${providerId}`);
+                } else {
+                    console.error('Provider ID not found');
+                    toast.error('Provider ID not found');
+                    throw new Error('Provider ID not found');
+                }
             } else {
-                toast.error('Provider login failed');
-                throw new Error('Provider ID not found');
+                toast.error('Unknown user role');
+                throw new Error('Unknown user role');
             }
+
+            setUsername('');
+            setPassword('');
         } catch (err) {
             console.error('Login error:', err);
             setError(err instanceof Error ? err.message : 'An unexpected error occurred');
@@ -128,7 +133,6 @@ export const LoginPage: React.FC = () => {
         );
     }
 
-    // console.log('currentProvider from login page', currentProvider)
     const clearProviderData = () => {
         setIsLoggedIn(false);
         setCurrentProvider(undefined);
@@ -136,53 +140,46 @@ export const LoginPage: React.FC = () => {
     return (
         <div className='loginWrapper'>
             <div className='loginBannerContainer'>
-                <img src={loginBanner} alt="Login Banner" className='loginBanner' />
-                <h1 className='loginImageText'>{isLoggedIn ? 'Provider Edit Dashboard' : 'Provider Login'}</h1>
+            <img src={loginBanner} alt="Login Banner" className='loginBanner' />
+                <h1 className='loginImageText'>Provider Login</h1>
             </div>
             <ToastContainer />
-            {!isLoggedIn ? (
-                <div className='loginContainer'>
-                    <form className='loginForm' onSubmit={handleLogin}>
-                        <div className='input'>
-                            <User className='userIcon' />
-                            <input
-                                type='email'
-                                id='username'
-                                name='username'
-                                placeholder='User Name'
-                                value={username}
-                                onChange={(e) => setUsername(e.target.value)}
-                                required
-                            />
-                        </div>
-                        <div className='input'>
-                            <Lock className='lockIcon' />
-                            <input
-                                type={showPassword ? 'text' : 'password'}
-                                placeholder='Password'
-                                id='password'
-                                name='password'
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                required
-                            />
-                            <button className='eyeButton' type='button' onClick={handleShowPassword}>
-                                {showPassword ? <EyeOff className='eye' /> : <Eye className='eye' />}
-
-                            </button>
-                        </div>
-                        {error && <p className="error-message">Failed to login. Please check your username and password and try again.</p>}
-                        {/* <div className="forgot-password">Forgot Password <span>Click Here!</span></div> */}
-                        <div className="submit-container">
-                            {/* <button type='submit' id='signup' className='signupButton' onClick={() => navigate('/signup')} disabled={true} >Sign Up</button> */}
-                            <button type='submit' id='signup' className='signupButton' onClick={() => toast("Feature coming soon")}>Sign Up</button>
-                            <button type='submit' id='login' className='loginButton'>Login</button>
-                        </div>
-                    </form>
-                </div>
-            ) : (
-                currentProvider && <ProviderEdit loggedInProvider={currentProvider} clearProviderData={clearProviderData} onUpdate={handleProviderUpdate} />
-            )}
+            <div className='loginContainer'>
+                <form className='loginForm' onSubmit={handleLogin}>
+                    <div className='input'>
+                        <User className='userIcon' />
+                        <input
+                            type='email'
+                            id='username'
+                            name='username'
+                            placeholder='User Name'
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                            required
+                        />
+                    </div>
+                    <div className='input'>
+                        <Lock className='lockIcon' />
+                        <input
+                            type={showPassword ? 'text' : 'password'}
+                            placeholder='Password'
+                            id='password'
+                            name='password'
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                        />
+                        <button className='eyeButton' type='button' onClick={handleShowPassword}>
+                            {showPassword ? <EyeOff className='eye' /> : <Eye className='eye' />}
+                        </button>
+                    </div>
+                    {error && <p className="error-message">{error}</p>}
+                    <div className="submit-container">
+                        <button type='submit' id='signup' className='signupButton' onClick={() => toast("Feature coming soon")}>Sign Up</button>
+                        <button type='submit' id='login' className='loginButton'>Login</button>
+                    </div>
+                </form>
+            </div>
         </div>
     );
 }
