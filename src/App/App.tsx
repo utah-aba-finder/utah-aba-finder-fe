@@ -67,31 +67,29 @@ function App() {
             <Route path='/screening' element={<ScreeningPage />} />
             <Route path='/login' element={<LoginPage />} />
             <Route path='/screening/cast' element={<Screening2 />} />
-            <Route path='/providerLogin' element={<LoginPage />} />
             <Route path='/contact' element={<ContactUs />} />
             <Route path='/signup' element={<Signup />} />
             <Route path='/about' element={<AboutUs />} />
             <Route path='/resources' element={<Resources />} />
             <Route path='/favoriteproviders' element={<FavoriteProviders />} />
             
-            <Route path='/superAdmin' element={
-              <ProtectedRoute>
-                <SuperAdmin providers={allProviders} setProviders={setAllProviders}/>
-                </ProtectedRoute>
-                } />
-                 <Route path='/superAdmin/edit/:providerId' element={
-              <ProtectedRoute>
+           
+                 <Route path='/superAdmin/edit/:id' element={
+              <ProtectedRoute allowedRoles={['super_admin']}>
                 <SuperAdminEditWrapper providers={allProviders} onUpdate={handleProviderUpdate} />
               </ProtectedRoute> 
             } />
-            <Route
-              path="/providerEdit"
-              element={
-                <ProtectedRoute>
-                  <ProviderEditWrapper clearProviderData={clearProviderData} onUpdate={handleProviderUpdate}  />
-                </ProtectedRoute>
-              }
-            />
+           <Route path="/superAdmin" element={
+              <ProtectedRoute allowedRoles={['super_admin']}>
+                <SuperAdmin providers={allProviders} setProviders={setAllProviders}/>
+              </ProtectedRoute>
+            } />
+
+            <Route path="/providerEdit/:id" element={
+              <ProtectedRoute allowedRoles={['provider_admin', 'super_admin']}>
+                <ProviderEditWrapper clearProviderData={clearProviderData} onUpdate={handleProviderUpdate}  />
+              </ProtectedRoute>
+            } />
             <Route path='*' element={<PageNotFound />} />
           </Routes>
         </AuthProvider>
