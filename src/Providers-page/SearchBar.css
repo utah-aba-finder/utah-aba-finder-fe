@@ -72,6 +72,7 @@
 .provider-spanish-select,
 .provider-service-select,
 .provider-waitlist-select,
+.provider-age-select,
 .provider-search-button,
 .provider-reset-button {
     width: 100%;
@@ -90,6 +91,7 @@
 .provider-insurance-select,
 .provider-spanish-select,
 .provider-service-select,
+.provider-age-select,
 .provider-waitlist-select {
     background-color: #555555;
     color: #ffffff;
@@ -114,7 +116,8 @@
 .provider-insurance-select:hover,
 .provider-spanish-select:hover,
 .provider-service-select:hover,
-.provider-waitlist-select:hover {
+.provider-waitlist-select:hover,
+.provider-age-select:hover {
     background-color: #444444;
 }
 
@@ -131,7 +134,8 @@
 .provider-insurance-dropdown,
 .provider-spanish-dropdown,
 .provider-service-dropdown,
-.provider-waitlist-dropdown {
+.provider-waitlist-dropdown,
+.provider-age-dropdown {
     position: relative;
     width: 100%;
 }
@@ -140,7 +144,8 @@
 .provider-insurance-dropdown::after,
 .provider-spanish-dropdown::after,
 .provider-service-dropdown::after,
-.provider-waitlist-dropdown::after {
+.provider-waitlist-dropdown::after,
+.provider-age-dropdown::after {
     content: "\25BC";
     position: absolute;
     right: 1rem;
