@@ -46,11 +46,17 @@
 .modal-logo {
   padding-top: 1em;
   background-color: rgb(210, 195, 149);
+  transition: background-color 0.3s ease; /* Add smooth transition */
+}
+
+.modal-logo:hover {
+  background-color: white;
 }
 
 .modal-img {
-  width: 200px;
+  width: 180px;
   height: auto;
+  border-radius: .5em;
   justify-content: center;
   align-items: center;
   object-fit: contain;
@@ -90,6 +96,7 @@
   background: none;
   cursor: pointer;
   font-size: 1rem;
+  border-radius: .5em .5em 0 0em;
   transition: background-color 0.3s;
 }
 
