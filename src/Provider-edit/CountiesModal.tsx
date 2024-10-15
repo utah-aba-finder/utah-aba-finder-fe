@@ -67,8 +67,11 @@ const CountiesModal: React.FC<CountiesModalProps> = ({
     return (
         <>
             <div className="modal-backdrop" onClick={onClose}></div>
+
             <div className="modal">
                 <h2>Select Counties</h2>
+
+
                 <div className="counties-options">
                     {countiesOptions.map(option => (
                         <div key={option} className="county-option">
@@ -82,14 +85,18 @@ const CountiesModal: React.FC<CountiesModalProps> = ({
                         </div>
                     ))}
                 </div>
+
+
                 <div className='countyModalButtonSection'>
-                <button className="counties-options-button" onClick={handleCancel}>
+                    <button className="counties-options-button" onClick={handleCancel}>
                         Cancel
                     </button>
                     <button className="counties-options-button" onClick={handleSubmit}>
                         Save
                     </button>
                 </div>
+
+
             </div>
         </>
     );

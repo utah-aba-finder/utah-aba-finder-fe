@@ -79,7 +79,12 @@ export const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose }) => 
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setProviderData({ ...providerData, [name]: value });
+
+    if (name === 'website' && !value.startsWith('https://')) {
+      setProviderData({ ...providerData, [name]: `https://${value}` });
+    } else {
+      setProviderData({ ...providerData, [name]: value });
+    }
   };
 
   const handleLocationChange = (index: number, field: keyof Location, value: string) => {
@@ -92,6 +97,12 @@ export const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose }) => 
     setProviderData({
       ...providerData,
       locations: [...providerData.locations, { name: '', address_1: '', address_2: '', city: '', state: '', zip: '', phone: '' }],
+    });
+  };
+  const removeLocation = () => {
+    setProviderData({
+      ...providerData,
+      locations: providerData.locations.slice(0, -1),
     });
   };
 
@@ -117,10 +128,11 @@ export const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose }) => 
     setIsLoading(true);
 
     try {
-      const response = await fetch('https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/providers', {
+      const response = await fetch('https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/admin/providers', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer YOUR_ACCESS_TOKEN_HERE`,
         },
         body: JSON.stringify(providerPostData),
       });
@@ -136,7 +148,7 @@ export const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose }) => 
       setProviderData({
         name: '',
         locations: [{ name: '', address_1: '', address_2: '', city: '', state: '', zip: '', phone: '' }],
-        website: '',
+        website: 'https://',
         email: '',
         cost: '',
         insurance: [],
@@ -240,11 +252,12 @@ export const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose }) => 
               />
             </div>
           ))}
-          <Button onClick={addLocation} className='addLocationButton'>Add Location</Button>
+          <div className='locationButtonsContainer'>
+            <Button onClick={addLocation} className='addLocationButton'>Add Location</Button>
+            <Button onClick={removeLocation} className='removeLocationButton'>Remove Location</Button>
+          </div>
 
-
-
-          <Button onClick={() => setIsCountiesModalOpen(true)} className='addLocationButton'>
+          <Button onClick={() => setIsCountiesModalOpen(true)} className='selectCountiesButton'>
             Select Counties Served
           </Button>
 
