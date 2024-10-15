@@ -40,7 +40,7 @@
 }
 
 .modal-grid-map {
-  height: 50%;
+  height: 65%;
 }
 
 .modal-logo {
@@ -99,6 +99,24 @@
   font-size: 1rem;
   border-radius: .5em .5em 0 0em;
   transition: background-color 0.3s;
+  font-weight: 500;
+  color: #565656;
+}
+
+.tab-button:hover {
+  background-color: #f0f0f0;
+}
+
+.tab-button.active {
+  border-bottom: 2px solid #007bff;
+  color: #424266;
+  font-weight: bold;
+}
+
+@media (max-width: 768px) {
+  .tab-button {
+    color: #565656; 
+  }
 }
 
 .review-section {
@@ -113,15 +131,6 @@
   padding-bottom: 6em;
   justify-content: center;
   align-items: center;
-}
-
-.tab-button:hover {
-  background-color: #f0f0f0;
-}
-
-.tab-button.active {
-  border-bottom: 2px solid #007bff;
-  font-weight: bold;
 }
 
 .modal-text-section {
