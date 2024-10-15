@@ -78,21 +78,39 @@
 }
 
 .addLocationButton,
+.removeLocationButton {
+    width: 100%;
+    padding: 3px 10px;
+    border-radius: 5px;
+}
+
+.addLocationButton:hover,
+.removeLocationButton:hover {
+    background-color: rgb(255, 255, 255);
+}
+
+.selectCountiesButton,
 .addInsuranceButton {
-    width: 30%;
+    width: 52%;
     height: 30px;
     margin-top: 10px;
     margin-bottom: 10px;
-    background-color: rgb(251, 99, 57);
-    color: white;
-    border: none;
+    background-color: rgb(216, 216, 216);
+    color: black;
+    border: 1px solid black;
     border-radius: 4px;
     cursor: pointer;
 }
 
-.addLocationButton:hover,
+.selectCountiesButton:hover,
 .addInsuranceButton:hover {
-    background-color: rgb(250, 69, 18);
+    background-color: rgb(255, 255, 255);
+}
+
+.locationButtonsContainer {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
 }
 
 .submitButton {
@@ -112,6 +130,7 @@
 .submitButton:hover {
     background-color: rgb(255, 63, 10);
 }
+
 
 .selected-counties {
     display: flex;

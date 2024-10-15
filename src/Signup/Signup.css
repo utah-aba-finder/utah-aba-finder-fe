@@ -15,7 +15,6 @@
     padding: 1rem;
     border-radius: 10px;
     bottom: 85%;
-    left: 35%;
 }
 
 .signupContainer {
@@ -69,10 +68,10 @@
     align-items: center;
 }
 
-.instructionContainer {
+/* .instructionContainer {
     display: flex;
     width: 100%;
-}
+} */
 
 .iconColumn {
     display: flex;
@@ -80,9 +79,23 @@
     align-items: center;
     align-content: center;
     justify-content: space-between;
-    /* width: 20%; */
-    padding: 5px;
     margin-bottom: 20px;
+    font-size: 1.3rem;
+}
+
+.get-started-button {
+    font-size: 1.5rem;
+    padding: 1rem;
+    border-radius: 10px;
+    background-color: #ecf3fb;
+    color: rgb(0, 0, 0);
+    border: none;
+    cursor: pointer;
+}
+
+.get-started-button:hover {
+    background-color: #6a6a6a;
+    color: white;
 }
 
 /* 
@@ -228,14 +241,14 @@
     }
 }
 
-@media (max-width: 1558px) {
+/* @media (max-width: 1558px) {
     .downArrow {
         display: flex;
         width: 90%;
         margin-left: 4.5rem;
 
     }
-}
+} */
 
 
 @media (min-height: 393px) and (max-width: 852px) and (orientation: landscape) {

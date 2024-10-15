@@ -8,6 +8,7 @@ import { ScreeningPage } from '../Screening-page/ScreeningPage';
 import { Screening2 } from '../Screening2/Screening2';
 import Header from '../Header/Header'
 import Footer from '../Footer/Footer'
+import Donations from '../Donations/Donations';
 import { PageNotFound } from '../PageNotFound/PageNotFound';
 import ContactUs from '../ContactUs/ContactUs';
 import { Signup } from '../Signup/Signup';
@@ -72,7 +73,7 @@ function App() {
             <Route path='/about' element={<AboutUs />} />
             <Route path='/resources' element={<Resources />} />
             <Route path='/favoriteproviders' element={<FavoriteProviders />} />
-            
+             <Route path='/donate' element={<Donations />} />
            
                  <Route path='/superAdmin/edit/:id' element={
               <ProtectedRoute allowedRoles={['super_admin']}>
@@ -81,7 +82,7 @@ function App() {
             } />
            <Route path="/superAdmin" element={
               <ProtectedRoute allowedRoles={['super_admin']}>
-                <SuperAdmin providers={allProviders} setProviders={setAllProviders}/>
+                <SuperAdmin />
               </ProtectedRoute>
             } />
 
