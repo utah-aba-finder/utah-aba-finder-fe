@@ -63,8 +63,6 @@ export const LoginPage: React.FC = () => {
                 throw new Error(errorMessage);
             }
     
-            console.log('User role:', data.data.role);
-            console.log('Provider ID:', data.data.provider_id);
 
            
             
@@ -79,17 +77,16 @@ export const LoginPage: React.FC = () => {
             setToken(token);
 
             if (data.data.role === 'super_admin') {
-                console.log('Navigating to /superAdmin');
                 setLoggedInProvider(data.data);
                 navigate('/superAdmin');
             } else if (data.data.role === 'provider_admin') {
                 const providerId = data.data?.provider_id;
-                console.log('Provider ID:', providerId);
                 if (providerId) {
                     const providerDetails = await fetchSingleProvider(providerId);
-                    console.log('Provider details:', providerDetails);
-                    setLoggedInProvider(providerDetails);
-                    console.log(`Navigating to /providerEdit/${providerId}`);
+                    setLoggedInProvider({
+                        ...providerDetails,
+                        role: 'provider_admin' 
+                    });
                     navigate(`/providerEdit/${providerId}`);
                 } else {
                     console.error('Provider ID not found');

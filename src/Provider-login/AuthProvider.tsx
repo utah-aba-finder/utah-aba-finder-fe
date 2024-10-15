@@ -32,7 +32,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setToken,
     isAuthenticated: !!token,
     loggedInProvider,
-    setLoggedInProvider,
+    setLoggedInProvider: (provider: any) => {
+      setLoggedInProvider(provider);
+      sessionStorage.setItem('loggedInProvider', JSON.stringify(provider));
+    },
     userRole: loggedInProvider?.role || '',
   };
 
