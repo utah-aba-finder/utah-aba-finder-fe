@@ -6,13 +6,14 @@ import { MockProviders, ProviderAttributes } from '../Utility/Types';
 
 interface SearchBarProps {
   onResults: (results: MockProviders) => void;
-  onSearch: (params: { query: string; county: string; insurance: string; spanish: string; service: string; waitlist: string; }) => void;
+  onSearch: (params: { query: string; county: string; insurance: string; spanish: string; service: string; waitlist: string; age: string; }) => void;
   onCountyChange: (county: string) => void;
   insuranceOptions: string[];
   onInsuranceChange: (insurance: string) => void;
   onSpanishChange: (spanish: string) => void;
   onServiceChange: (service: string) => void;
   onWaitListChange: (waitlist: string) => void;
+  onAgeChange: (age: string) => void;
   onReset: () => void;
   providers: ProviderAttributes[];
 }
@@ -25,15 +26,18 @@ const SearchBar: React.FC<SearchBarProps> = ({
   onSpanishChange,
   onServiceChange,
   onWaitListChange,
+  onAgeChange,
   onReset,
   providers,
 }) => {
+  
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedCounty, setSelectedCounty] = useState<string>('');
   const [selectedInsurance, setSelectedInsurance] = useState<string>('');
   const [selectedSpanish, setSelectedSpanish] = useState<string>('');
   const [selectedService, setSelectedService] = useState<string>('');
   const [selectedWaitList, setSelectedWaitList] = useState<string>('');
+  const [selectedAge, setSelectedAge] = useState<string>('');
 
   const handleSearch = useCallback(() => {
     onSearch({
@@ -43,8 +47,9 @@ const SearchBar: React.FC<SearchBarProps> = ({
       spanish: selectedSpanish,
       service: selectedService,
       waitlist: selectedWaitList,
+      age: selectedAge,
     });
-  }, [searchQuery, selectedCounty, selectedInsurance, selectedSpanish, selectedService, selectedWaitList, onSearch]);
+  }, [searchQuery, selectedCounty, selectedInsurance, selectedSpanish, selectedService, selectedWaitList, selectedAge, onSearch]);
 
   const handleReset = () => {
     setSearchQuery('');
@@ -53,8 +58,11 @@ const SearchBar: React.FC<SearchBarProps> = ({
     setSelectedSpanish('');
     setSelectedService('');
     setSelectedWaitList('');
+    setSelectedAge('');
     onReset();
   };
+
+  const ageOptions = ['All Ages', ...Array.from({ length: 100 }, (_, i) => i.toString())];
 
   return (
     <section className="provider-map-search-section">
@@ -114,6 +122,24 @@ const SearchBar: React.FC<SearchBarProps> = ({
               <option value="Washington">Washington County</option>
               <option value="Wayne">Wayne County</option>
               <option value="Weber">Weber County</option>
+            </select>
+          </div>
+
+          <div className="filter-item provider-age-dropdown">
+            <select
+              className="provider-age-select"
+              value={selectedAge}
+              onChange={(e) => {
+                setSelectedAge(e.target.value);
+                onAgeChange(e.target.value);
+              }}
+              aria-label="Select Age"
+            >
+              {ageOptions.map((age, index) => (
+                <option key={index} value={age === 'All Ages' ? '' : age}>
+                  {age}
+                </option>
+              ))}
             </select>
           </div>
 

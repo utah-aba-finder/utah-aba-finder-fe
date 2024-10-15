@@ -315,6 +315,15 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({ provider , onUpd
                 onChange={handleInputChange}
                 placeholder="Maximum Age"
             />
+            <label htmlFor='status' className='editLabels'>Status: </label>
+            <input 
+                id='status'
+                type="text"
+                name="status"
+                value={editedProvider.status || ''}
+                onChange={handleInputChange}
+                placeholder="Status"
+                />
             <button className='editButtons' onClick={(e) => {
                 e.preventDefault();
                 toggleInsuranceModal();
