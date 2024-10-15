@@ -4,6 +4,7 @@
     height: 100%;
     width: 100%;
 }
+
 .formContent {
     display: flex;
     width: 100%;
@@ -26,8 +27,18 @@
     align-items: center;
 }
 
-.firstColumn, .secondColumn input{
+.firstColumn,
+.secondColumn input {
     width: 50%;
+}
+
+.superAdminStatusEdit {
+    width: 53%;
+    height: 40px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin: 10px;
+    padding: 10px;
 }
 
 .superAdminEditForm {
@@ -89,17 +100,22 @@
     width: 50%;
 }
 
+
+
 @media (max-width: 819px) {
     .superAdminEditForm {
         width: 100%;
     }
+
     .superAdminEditFormWrapper {
         height: 100%;
         flex-direction: column;
     }
+
     .formContent {
         flex-direction: column;
     }
+
     .firstColumn,
     .secondColumn {
         width: 100%;
