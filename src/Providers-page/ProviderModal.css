@@ -46,16 +46,17 @@
 .modal-logo {
   padding-top: 1em;
   background-color: rgb(210, 195, 149);
-  transition: background-color 0.3s ease; /* Add smooth transition */
+  transition: background-color 0.3s ease; 
 }
 
-.modal-logo:hover {
+/* .modal-logo:hover {
   background-color: white;
-}
+} */
 
 .modal-img {
   width: 180px;
   height: auto;
+  padding: .3em;
   border-radius: .5em;
   justify-content: center;
   align-items: center;
@@ -128,26 +129,24 @@
 }
 
 .view-on-map-button {
-  color: #373949;
-  border-radius: 15px;
+  background-color: #007bff; /* Customize button background color */
+  color: white;
+  border: none;
+  padding: 6px 12px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  font-weight: 600;
+  margin-left: 8px;
+  border-radius: 4px;
+  transition: background-color 0.3s ease, transform 0.3s ease; /* Add smooth transition for both background and transform */
+  transform: scale(1); /* Initial state */
 }
 
 .view-on-map-button:hover {
-  background-color: #e5b674;
-  transform: translateY(-2px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background-color: #0056b3; /* Hover effect */
+  color: white;
+  transform: scale(1.05); /* Slight scaling effect on hover */
 }
 
-.view-on-map-button:active {
-  transform: translateY(0);
-  box-shadow: none;
-}
-
-.view-on-map-button:hover svg {
-  transform: translateY(-2px);
-}
 
 .email-text {
   border-bottom: 1.5px solid #9ea3a8;
