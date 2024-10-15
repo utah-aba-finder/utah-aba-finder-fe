@@ -140,9 +140,9 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ provider, address, mapAdd
           </section>
         );
       case 'reviews':
-        return <div>Reviews content will go here</div>;
+        return <section className="review-section">Reviews content will go here</section>;
       case 'media':
-        return <div>Media content will go here</div>;
+        return <section className="media-section">Media content will go here</section>;
       default:
         return null;
     }
