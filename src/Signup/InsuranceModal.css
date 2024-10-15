@@ -1,82 +1,134 @@
 .insuranceModal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(243, 237, 237, 0.8);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  overflow: auto;
+}
+
+.insuranceModal-title {
+  margin-bottom: 20px;
+  font-size: 1.5rem;
+  text-align: center;
+  color: #333;
+}
+
+.insuranceModal-content {
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 2rem;
+  width: 90%;
+  max-width: 600px;
+  /* Ensure a controlled width */
+  max-height: 80vh;
+  /* Ensure it fits smaller screens */
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  position: relative;
+  z-index: 1001;
+  display: flex;
+  flex-direction: column;
+  font-size: 18px;
+  /* Adjust font size */
+  margin: 20px;
+  animation: fadeIn 0.3s ease-in-out;
+  overflow-y: auto;
+  /* Scrollable modal content */
+}
+
+.insurancesForm {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.2rem 2rem;
+  width: 100%;
+  color: #333;
+  text-align: left;
+
+}
+
+.insuranceInput {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.8rem;
+  justify-content: flex-start;
+  text-align: left;
+}
+
+.insuranceInput input[type="checkbox"] {
+  margin: 0;
+  cursor: pointer;
+}
+
+.insuranceInput label {
+  margin: 0;
+}
+
+
+/* .insuranceModal-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background-color: transparent;
+  border: none;
+  font-size: 1.5rem;
+  color: #e74c3c;
+  cursor: pointer;
+} */
+/* 
+.insuranceModal-close:hover {
+  color: #c0392b;
+} */
+
+.buttonContainer {
+  display: flex;
+  justify-content: center;
+  margin-top: 1.5rem;
+  gap: 1rem;
+}
+
+.buttonContainer button {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  background-color: #e74c3c;
+  color: #fff;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+
+.buttonContainer button:hover {
+  background-color: #c0392b;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (max-width: 540px) {
+  .insuranceModal-content {
+    padding: 1rem;
   }
 
   .insurancesForm {
-    display: flex;
-    flex-wrap: wrap;
-    width: 100%;
-    justify-content: center;
-    color: rgb(251, 99, 57);
+    grid-template-columns: 1fr;
+    /* Stack items vertically on small screens */
   }
-  
-  .insuranceModal-content {
-    background-color: #715d5d;
-    border-radius: 16px;
-    padding: 2rem;
-    width: 90%;
-    max-width: 700px;
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
-    position: relative;
-    z-index: 1001;
-    display: flex;
-    flex-wrap: wrap;
-    font-size: 20px;
-    margin: 20px;
-    align-items: center;
-    animation: fadeIn 0.4s ease-in-out;
+
+  .buttonContainer {
+    flex-direction: column;
   }
-  
-  .insuranceModal-close {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    background-color: transparent;
-    border: none;
-    font-size: 1.5rem;
-    color: red;
-    cursor: pointer;
-    transition: color 0.3s ease;
-  }
-  
-  .insuranceModal-close:hover {
-    color: #e74c3c;
-  }
-  
-  .modal-provider-logo {
-    width: 60%;
-    height: auto;
-    margin-bottom: 1rem;
-  }
-  
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: scale(0.9);
-    }
-  
-    to {
-      opacity: 1;
-      transform: scale(1);
-    }
-  }
-  
-  
-  @media (max-width: 540px) {
-    .insuranceModal-content {
-      padding: 1rem;
-    }
-  
-    .insuranceModal-provider-logo {
-      width: 100px;
-    }
-  }
+}

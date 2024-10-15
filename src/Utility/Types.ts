@@ -40,6 +40,7 @@ export interface ProviderAttributes {
     in_clinic_services: string | null;
     logo: string | null;
     updated_last: string | null;
+    status: string | null;
 }
 
 export interface MockProviderData {

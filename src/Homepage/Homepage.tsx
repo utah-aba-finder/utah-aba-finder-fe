@@ -21,7 +21,7 @@ interface State {
 
 class Homepage extends Component<Props, State> {
     state: State = {
-        run: false,
+        run: true,
         steps: [
             {
                 target: '.discover-section-title',
