@@ -36,6 +36,7 @@ const ProvidersPage: React.FC = () => {
   const errorTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [favoriteProviders, setFavoriteProviders] = useState<ProviderAttributes[]>([]);
   const [favoriteDates, setFavoriteDates] = useState<FavoriteDate>({});
+  const [selectedAge, setSelectedAge] = useState<string>('');
   const providersPerPage = 8;
 
   const [run, setRun] = useState(false);
@@ -183,7 +184,7 @@ const ProvidersPage: React.FC = () => {
     };
   }, []);
 
-  const handleSearch = useCallback(({ query, county, insurance, spanish, service, waitlist }: { query: string; county: string; insurance: string; spanish: string; service: string; waitlist: string }) => {
+  const handleSearch = useCallback(({ query, county, insurance, spanish, service, waitlist, age }: { query: string; county: string; insurance: string; spanish: string; service: string; waitlist: string; age: string }) => {
     const normalizedCounty = county.toLowerCase();
     const normalizedInsurance = insurance.toLowerCase();
 
@@ -213,6 +214,22 @@ const ProvidersPage: React.FC = () => {
         : provider.waitlist?.toLowerCase() === 'no';
     };
 
+
+
+    const ageFilter = (provider: ProviderAttributes) => {
+      if (!age) return true;
+      const selectedAgeNum = parseInt(age, 10);
+
+      const minAge = typeof provider.min_age === 'string' && provider.min_age === '- years'
+        ? 0
+        : parseInt(String(provider.min_age || '0'), 10);
+      const maxAge = typeof provider.max_age === 'string' && provider.max_age === '- years'
+        ? 99
+        : parseInt(String(provider.max_age || '99'), 10);
+
+      return selectedAgeNum >= minAge && selectedAgeNum <= maxAge;
+    };
+
     const filtered = allProviders.filter(provider =>
       provider.name?.toLowerCase().includes(query.toLowerCase()) &&
       (!county || provider.counties_served.some(c => c.county?.toLowerCase().includes(normalizedCounty))) &&
@@ -221,7 +238,8 @@ const ProvidersPage: React.FC = () => {
         (spanish === 'no' && (!provider.spanish_speakers || provider.spanish_speakers.toLowerCase() === 'no')) ||
         (spanish === 'yes' && (provider.spanish_speakers?.toLowerCase() === 'yes' || provider.spanish_speakers === null || provider.spanish_speakers.toLowerCase() === 'limited'))) &&
       serviceFilter(provider) &&
-      waitlistFilter(provider)
+      waitlistFilter(provider) &&
+      ageFilter(provider)
     );
 
     const sortedFilteredProviders = filtered.sort((a, b) => {
@@ -231,13 +249,13 @@ const ProvidersPage: React.FC = () => {
     });
 
     setFilteredProviders(sortedFilteredProviders);
-
+    setSelectedAge(age);
     setIsFiltered(true);
     setCurrentPage(1);
   }, [allProviders]);
 
   useEffect(() => {
-    handleSearch({ query: '', county: '', insurance: '', spanish: '', service: '', waitlist: '' });
+    handleSearch({ query: '', county: '', insurance: '', spanish: '', service: '', waitlist: '', age: '' });
   }, [handleSearch]);
 
   const handleProviderCardClick = (provider: ProviderAttributes) => {
@@ -268,6 +286,7 @@ const ProvidersPage: React.FC = () => {
     setSelectedSpanish('');
     setSelectedService('');
     setSelectedWaitList('');
+    setSelectedAge('');
     setIsFiltered(false);
     setMapAddress('Utah');
     setCurrentPage(1);
@@ -381,35 +400,12 @@ const ProvidersPage: React.FC = () => {
     }
   };
 
+  const handleAgeChange = (age: string) => {
+    setSelectedAge(age);
+  };
   const renderViewOnMapButton = (provider: ProviderAttributes) => {
     const isAddressAvailable = provider.locations.length > 0 && provider.locations[0]?.address_1;
 
-    // if (provider.locations.length > 1) {
-    //   return (
-    //     <div className="view-on-map-dropdown-container">
-    //       <select
-    //         className={`view-on-map-dropdown ${!isAddressAvailable ? 'disabled' : ''}`}
-    //         id='view-on-map-dropdown'
-    //         aria-label="View On Map Dropdown"
-    //         onChange={(e) => {
-    //           const index = e.target.value;
-    //           const location = provider.locations[parseInt(index)];
-    //           const fullAddress = `${location.address_1 || ''} ${location.address_2 || ''}, ${location.city || ''}, ${location.state || ''} ${location.zip || ''}`.trim();
-    //           handleViewOnMapClick(fullAddress);
-    //         }}
-    //         defaultValue=""
-    //         disabled={!isAddressAvailable}
-    //       >
-    //         <option value="" disabled>Select Location to View on Map</option>
-    //         {provider.locations.map((location, index) => (
-    //           <option key={index} value={index}>
-    //             {location.name} - {location.address_1 || ''}, {location.city}, {location.state} {location.zip}
-    //           </option>
-    //         ))}
-    //       </select>
-    //     </div>
-    //   );
-    // }
     return (
       <button
         className={`view-on-map-button ${!isAddressAvailable ? 'disabled' : ''}`}
@@ -461,6 +457,7 @@ const ProvidersPage: React.FC = () => {
             onSpanishChange={handleSpanishChange}
             onServiceChange={handleServiceChange}
             onWaitListChange={handleWaitListChange}
+            onAgeChange={handleAgeChange}
             onReset={handleResetSearch}
           />
           <section className="glass">
