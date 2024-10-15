@@ -55,7 +55,6 @@ const ProvidersPage: React.FC = () => {
       content: 'Use these buttons to navigate between different pages of providers.',
     }
   ]);
-
   useEffect(() => {
     const hasVisited = localStorage.getItem('providersPageVisited');
     if (!hasVisited) {
