@@ -40,7 +40,7 @@
 }
 
 .modal-grid-map {
-  height: 400px; 
+  height: 70%;
 }
 
 .modal-logo {
@@ -49,8 +49,7 @@
 }
 
 .modal-img {
-  width: 25%;
-  border-radius: 15px;
+  width: 20%;
   height: auto;
   justify-content: center;
   align-items: center;
@@ -69,14 +68,15 @@
 
 .close-button {
   position: absolute;
-  top: 20px; 
-  right: 30px; 
+  top: 20px;
+  right: 30px;
   background: transparent;
   border: none;
   font-size: 35px;
   cursor: pointer;
-  color: #4e1818; 
+  color: #4e1818;
 }
+
 .modal-tabs {
   display: flex;
   justify-content: center;
@@ -93,6 +93,20 @@
   transition: background-color 0.3s;
 }
 
+.review-section {
+  margin: 2rem;
+  padding-bottom: 6rem;
+  justify-content: center;
+  align-items: center;
+}
+
+.media-section {
+  margin: 2rem;
+  padding-bottom: 6em;
+  justify-content: center;
+  align-items: center;
+}
+
 .tab-button:hover {
   background-color: #f0f0f0;
 }
@@ -103,7 +117,7 @@
 }
 
 .modal-text-section {
-  max-height: calc(100% - 60px); 
+  max-height: calc(100% - 60px);
 }
 
 .view-on-map-button {
@@ -130,22 +144,22 @@
 
 .email-text {
   border-bottom: 1.5px solid #9ea3a8;
-    transition: border-color 0.3s ease;
-    padding-bottom: 6px; 
+  transition: border-color 0.3s ease;
+  padding-bottom: 6px;
 }
 
 .close-button:hover {
-  color: #ff0000; 
+  color: #ff0000;
 }
 
 .modal-grid-text strong {
   color: #424266;
 }
 
-
 .provider-details {
   grid-template-columns: 40px auto;
   text-align: left;
+  padding-bottom: 1rem;
 }
 
 .provider-details p {
@@ -318,6 +332,50 @@
 
 @media (max-width: 576px) {
   .provider-address-phone .multiple-locations {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 1023px) and (orientation: landscape) {
+  .modal-grid {
+    flex-direction: row;
+  }
+
+  .modal-grid-map {
+    width: 50%;
+    height: 100%;
+  }
+
+  .modal-grid-text {
+    width: 50%;
+    height: 100%;
+    overflow-y: auto;
+  }
+
+  .modal-logo {
+    padding-top: 0.5em;
+  }
+
+  .provider-name {
+    font-size: 24px;
+    margin-top: 8px;
+    padding-bottom: 4px;
+  }
+
+  .modal-tabs {
+    margin-bottom: 0.5rem;
+  }
+
+  .tab-button {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.9rem;
+  }
+
+  .modal-text-section {
+    padding: 0.5em;
+  }
+
+  .provider-address-phone, .provider-details {
     font-size: 14px;
   }
 }
