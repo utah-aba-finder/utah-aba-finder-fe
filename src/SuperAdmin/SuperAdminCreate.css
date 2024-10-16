@@ -1,0 +1,96 @@
+.superAdminCreateWrapper h1 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+
+.superAdminCreateWrapper form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.superAdminCreateWrapper form input {
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 0.25rem;
+    width: 55%;
+}
+
+.superAdminCreateWrapper form button {
+    padding: 0.5rem 1rem;
+    border: none;
+    background-color: #ff9627;
+    color: white;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    width: 35%;
+}
+
+.superAdminCreateWrapper form button:hover {
+    background-color: #ff5900;
+}
+
+.superAdminCreateWrapper .error-message {
+    color: red;
+    margin-bottom: 1rem;
+}
+
+.superAdmin-add-location-button {
+    margin-bottom: 1rem;
+}
+
+.superAdmin-location-wrapper {
+    border: 1px solid #ccc;
+    margin: 1rem;
+    max-width: 700px;
+}
+
+.superAdmin-input-wrapper {
+    align-items: stretch;
+    width: 50%;
+
+}
+
+
+.superAdmin-input-wrapper label {
+    margin-right: 0.5rem;
+
+}
+
+.superAdmin-age-container {
+    display: flex;
+    flex-direction: row;
+    width: 30%;
+}
+
+.superAdmin-waitlist-container {
+    display: flex;
+    flex-direction: row;
+    width: 30%;
+    padding-bottom: 1rem;
+}
+
+.superAdmin-waitlist-select {
+    width: 80%;
+    padding: 0.5rem;
+}
+
+.superAdmin-input-wrapper-at-home,
+.superAdmin-input-wrapper-in-clinic,
+.superAdmin-input-wrapper-telehealth,
+.superAdmin-input-wrapper-spanish {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    width: 30%;
+    padding-bottom: 1rem;
+}
+
+.superAdmin-input-wrapper-at-home select,
+.superAdmin-input-wrapper-in-clinic select,
+.superAdmin-input-wrapper-telehealth select,
+.superAdmin-input-wrapper-spanish select {
+    width: 80%;
+    padding: 0.5rem;
+}
