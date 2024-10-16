@@ -42,7 +42,7 @@ const Header: React.FC = () => {
                 <Link to="/information" onClick={toggleMenu}>What is ASD?</Link>
                 <Link to="/resources" onClick={toggleMenu}>Resources</Link>
                 <Link to="/login" onClick={toggleMenu}>Provider Login/Signup</Link>
-                <Link to="/about" onClick={toggleMenu}>About Us</Link>
+                <Link to="/about" onClick={toggleMenu}>About</Link>
                 <Link to="/contact" onClick={toggleMenu}>Contact Us</Link>
                 {/* <Link to="/donations" onClick={toggleMenu}>Donate</Link> */}
             </nav>
