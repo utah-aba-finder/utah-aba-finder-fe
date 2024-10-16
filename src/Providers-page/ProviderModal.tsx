@@ -140,7 +140,7 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ provider, address, mapAdd
           </section>
         );
       case 'reviews':
-        return <section className="review-section">Reviews content will go here</section>;
+        return <section className="review-section">Client testimonial content will go here</section>;
       case 'media':
         return <section className="media-section">Media content will go here</section>;
       default:
@@ -178,7 +178,7 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ provider, address, mapAdd
                 onKeyDown={(e) => handleKeyDown(e, 'reviews')}
                 tabIndex={0}
               >
-                Reviews
+                Testimonials
               </button>
               <button
                 className={`tab-button ${activeTab === 'media' ? 'active' : ''}`}
