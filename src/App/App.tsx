@@ -23,6 +23,7 @@ import { fetchProviders } from '../Utility/ApiCall';
 import { SuperAdminEdit } from '../SuperAdmin/SuperAdminEdit';
 import FavoriteProviders from '../FavoriteProviders-page/FavoriteProviders'
 import Donations from '../Donations/Donations'
+import SuperAdminCreate from '../SuperAdmin/SuperAdminCreate';
 
 
 
@@ -73,22 +74,28 @@ function App() {
             <Route path='/about' element={<AboutUs />} />
             <Route path='/resources' element={<Resources />} />
             <Route path='/favoriteproviders' element={<FavoriteProviders />} />
-             <Route path='/donate' element={<Donations />} />
-           
-                 <Route path='/superAdmin/edit/:id' element={
+            <Route path='/donate' element={<Donations />} />
+
+            <Route path='/superAdmin/edit/:id' element={
               <ProtectedRoute allowedRoles={['super_admin']}>
                 <SuperAdminEditWrapper providers={allProviders} onUpdate={handleProviderUpdate} />
-              </ProtectedRoute> 
+                <SuperAdminCreate />
+              </ProtectedRoute>
             } />
-           <Route path="/superAdmin" element={
+            <Route path="/superAdmin" element={
               <ProtectedRoute allowedRoles={['super_admin']}>
-                <SuperAdmin providers={allProviders} setProviders={setAllProviders}/>
+                <SuperAdmin providers={allProviders} setProviders={setAllProviders} />
+              </ProtectedRoute>
+            } />
+            <Route path="/superAdmin/create" element={
+              <ProtectedRoute allowedRoles={['super_admin']}>
+                <SuperAdminCreate />
               </ProtectedRoute>
             } />
 
             <Route path="/providerEdit/:id" element={
               <ProtectedRoute allowedRoles={['provider_admin', 'super_admin']}>
-                <ProviderEditWrapper clearProviderData={clearProviderData} onUpdate={handleProviderUpdate}  />
+                <ProviderEditWrapper clearProviderData={clearProviderData} onUpdate={handleProviderUpdate} />
               </ProtectedRoute>
             } />
             <Route path='*' element={<PageNotFound />} />
