@@ -30,7 +30,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
   onReset,
   providers,
 }) => {
-  
+
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedCounty, setSelectedCounty] = useState<string>('');
   const [selectedInsurance, setSelectedInsurance] = useState<string>('');
@@ -62,7 +62,18 @@ const SearchBar: React.FC<SearchBarProps> = ({
     onReset();
   };
 
-  const ageOptions = ['All Ages', ...Array.from({ length: 100 }, (_, i) => i.toString())];
+  const ageOptions = [
+    { label: 'All Ages', value: '' },
+    { label: '0-2 years', value: '0-2' },
+    { label: '3-5 years', value: '3-5' },
+    { label: '5-7 years', value: '5-7' },
+    { label: '8-10 years', value: '8-10' },
+    { label: '11-13 years', value: '11-13' },
+    { label: '13-15 years', value: '13-15' },
+    { label: '16-18 years', value: '16-18' },
+    { label: '19+ years', value: '19+' },
+  ];
+
 
   return (
     <section className="provider-map-search-section">
@@ -133,11 +144,11 @@ const SearchBar: React.FC<SearchBarProps> = ({
                 setSelectedAge(e.target.value);
                 onAgeChange(e.target.value);
               }}
-              aria-label="Select Age"
+              aria-label="Select Age Group"
             >
-              {ageOptions.map((age, index) => (
-                <option key={index} value={age === 'All Ages' ? '' : age}>
-                  {age}
+              {ageOptions.map((option, index) => (
+                <option key={index} value={option.value}>
+                  {option.label}
                 </option>
               ))}
             </select>

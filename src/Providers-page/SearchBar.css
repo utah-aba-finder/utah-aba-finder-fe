@@ -81,8 +81,12 @@
     font-size: 1rem;
     height: 40px;
     padding-left: .4em;
+    padding-right: 2em; 
     appearance: none;
     transition: background-color 0.3s ease;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 /* Input and select specific styles */
@@ -148,12 +152,14 @@
 .provider-age-dropdown::after {
     content: "\25BC";
     position: absolute;
-    right: 1rem;
+    right: 0.5rem;
     top: 50%;
     transform: translateY(-50%);
     color: #ffffff;
     pointer-events: none;
     font-size: 0.8rem;
+    background-color: #555555; 
+    padding: 0 0.3rem; 
 }
 
 @media (max-width: 431px) {

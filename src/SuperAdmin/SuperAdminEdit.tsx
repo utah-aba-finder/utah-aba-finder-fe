@@ -35,7 +35,6 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({ provider, onUpda
 
     const handleSave = () => {
         setIsSaving(true);
-        // Implement save logic here
         onUpdate(editedProvider!);
         setIsSaving(false);
     };
