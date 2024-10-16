@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import './SuperAdmin.css'
 import { MockProviderData, ProviderAttributes } from '../Utility/Types'
 import { SuperAdminEdit } from './SuperAdminEdit'
 import { useAuth } from '../Provider-login/AuthProvider'
+
 
 interface SuperAdminProps {
     providers: MockProviderData[];
@@ -14,7 +15,8 @@ export const SuperAdmin: React.FC<SuperAdminProps> = ({ providers, setProviders 
     const { setToken } = useAuth();
     const [selectedProvider, setSelectedProvider] = useState<MockProviderData | null>(null)
     const { providerId } = useParams<{ providerId: string }>();
-    
+    const navigate = useNavigate();
+
     useEffect(() => {
         if (providerId) {
             const providerIdNumber = Number(providerId);
@@ -24,7 +26,7 @@ export const SuperAdmin: React.FC<SuperAdminProps> = ({ providers, setProviders 
             }
         }
     }, [providerId, providers]);
-    
+
     const handleProviderSelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
         const selectedProviderId = Number(event.target.value);
         const provider = providers.find(p => p.id === selectedProviderId);
@@ -32,14 +34,14 @@ export const SuperAdmin: React.FC<SuperAdminProps> = ({ providers, setProviders 
             setSelectedProvider(provider);
         }
     };
-    
+
     const handleProviderUpdate = (updatedProvider: ProviderAttributes) => {
-        const updatedProviders = providers.map(p => 
+        const updatedProviders = providers.map(p =>
             p.id === updatedProvider.id ? { ...p, ...updatedProvider } : p
         );
         setProviders(updatedProviders);
         setSelectedProvider(null);
-        
+
         // Here you would also make an API call to update the provider in the backend
     };
 
@@ -50,7 +52,9 @@ export const SuperAdmin: React.FC<SuperAdminProps> = ({ providers, setProviders 
     return (
         <div className='superAdminWrapper'>
             <h1>Super Admin Dashboard</h1>
+
             <button className='superAdminLogoutButton' onClick={handleLogout}>Logout</button>
+
             <div className='superAdminDashboardWrapper'>
                 <div className='superAdminProvidersListWrapper'>
                     <h2>Providers List</h2>
@@ -63,17 +67,25 @@ export const SuperAdmin: React.FC<SuperAdminProps> = ({ providers, setProviders 
                         ))}
                     </select>
                 </div>
+
+
                 <div className='superAdminEditWrapper'>
                     {selectedProvider ? (
                         <SuperAdminEdit
-                            provider={selectedProvider.attributes} 
-                            onUpdate={handleProviderUpdate} 
-                        />  
+                            provider={selectedProvider.attributes}
+                            onUpdate={handleProviderUpdate}
+                        />
                     ) : (
                         <p>Select a provider to edit</p>
                     )}
                 </div>
+                <div className='superAdminCreateDeleteButtonsWrapper'>
+                    <button className='superAdminCreateButton' onClick={() => navigate('/superAdmin/create')}>Create New Provider</button>
+                    <button className='superAdminDeleteButton' disabled>Delete Provider</button>
+                </div>
             </div>
+
+
         </div>
     );
 };
