@@ -79,7 +79,7 @@ function App() {
             <Route path='/superAdmin/edit/:id' element={
               <ProtectedRoute allowedRoles={['super_admin']}>
                 <SuperAdminEditWrapper providers={allProviders} onUpdate={handleProviderUpdate} />
-                <SuperAdminCreate />
+                {/* <SuperAdminCreate /> */}
               </ProtectedRoute>
             } />
             <Route path="/superAdmin" element={

@@ -1,6 +1,6 @@
 .superAdminCreateWrapper h1 {
     font-size: 2rem;
-    margin-bottom: 1rem;
+    margin-bottom: 3rem;
 }
 
 .superAdminCreateWrapper form {
@@ -61,7 +61,7 @@
 .superAdmin-age-container {
     display: flex;
     flex-direction: row;
-    width: 30%;
+    width: 35%;
 }
 
 .superAdmin-waitlist-container {
@@ -93,4 +93,41 @@
 .superAdmin-input-wrapper-spanish select {
     width: 80%;
     padding: 0.5rem;
+}
+
+.superAdmin-create-buttons-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    width: 50%;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+@media (max-width: 667px) {
+    .superAdminCreateWrapper h1 {
+        font-size: 1.3rem;
+    }
+
+    .superAdmin-input-wrapper {
+        font-size: 1rem;
+        width: 100%;
+    }
+
+    .superAdmin-waitlist-container,
+    .superAdmin-input-wrapper-telehealth,
+    .superAdmin-input-wrapper-spanish,
+    .superAdmin-input-wrapper-at-home,
+    .superAdmin-input-wrapper-in-clinic {
+        width: 85%;
+    }
+
+    .superAdmin-age-container {
+        width: 95%;
+    }
+
+
+    .superAdmin-create-buttons-container {
+        width: 100%;
+    }
 }

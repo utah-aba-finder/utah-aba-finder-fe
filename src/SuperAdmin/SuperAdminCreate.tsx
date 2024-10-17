@@ -2,7 +2,13 @@ import React, { useState } from 'react';
 import './SuperAdminCreate.css';
 import { toast } from 'react-toastify';
 import { ToastContainer } from 'react-toastify';
-const SuperAdminCreate = () => {
+import { useNavigate } from 'react-router-dom'
+
+interface SuperAdminCreateProps {
+    handleCloseForm: () => void;
+}
+
+const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({ handleCloseForm }) => {
     const [formData, setFormData] = useState({
         id: null,
         name: '',
@@ -136,6 +142,7 @@ const SuperAdminCreate = () => {
 
             // console.log('Provider created successfully!');
             toast.success('Provider created successfully!');
+            handleCloseForm();
         } catch (error) {
             console.error('Error creating provider:', error);
             setError('There was an error creating the provider. Please try again.');
@@ -156,8 +163,8 @@ const SuperAdminCreate = () => {
                         <input type="text" name="name" value={formData.name} onChange={handleChange} placeholder="Provider Name" required />
                     </div>
                     <div className='superAdmin-input-wrapper'>
-                        <label htmlFor="email">Email</label>
-                        <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="Email" required />
+                        <label htmlFor="email">E-mail Address</label>
+                        <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="E-mail Address" required />
                     </div>
                     {/* <input type="password" name="password" value={formData.password} onChange={handleChange} placeholder="Password" required />
                 <input type="password" name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} placeholder="Confirm Password" required /> */}
@@ -194,7 +201,7 @@ const SuperAdminCreate = () => {
                                     setFormData(prev => ({ ...prev, website: `https://${e.target.value}` }));
                                 }
                             }}
-                            placeholder="Website => 'https://' will be added automatically"
+                            placeholder="'https://' will be added automatically"
                             required
                         />
                     </div>
@@ -230,6 +237,12 @@ const SuperAdminCreate = () => {
                             />
                         </div>
                     </div>
+
+                    <div className='superAdmin-input-wrapper'>
+                        <label htmlFor="logo">Logo URL</label>
+                        <input type="text" name="logo" value={formData.logo} onChange={handleChange} placeholder="Logo URL" />
+                    </div>
+
                     <div className='superAdmin-waitlist-container'>
                         <label htmlFor="waitlist">Waitlist Information</label>
                         <select name="waitlist" className='superAdmin-waitlist-select' value={formData.waitlist} onChange={handleChange} required>
@@ -238,10 +251,7 @@ const SuperAdminCreate = () => {
                             <option value="6 months or less">6 months or less</option>
                         </select>
                     </div>
-                    <div className='superAdmin-input-wrapper'>
-                        <label htmlFor="logo">Logo URL</label>
-                        <input type="text" name="logo" value={formData.logo} onChange={handleChange} placeholder="Logo URL" />
-                    </div>
+
 
                     <div className='superAdmin-input-wrapper-telehealth'>
                         <label htmlFor="telehealth_services">Telehealth Services</label>
@@ -300,7 +310,9 @@ const SuperAdminCreate = () => {
                             <option value="contact-us">Contact Us</option>
                         </select>
                     </div>
-                    <button className='superAdmin-create-new-provider-button' type="submit" disabled={isSaving}>Create Provider</button>
+                    <div className='superAdmin-create-buttons-container'>
+                        <button className='superAdmin-create-new-provider-button' type="submit" disabled={isSaving}>Create Provider</button>
+                    </div>
                 </form>
             </div>
         </div>

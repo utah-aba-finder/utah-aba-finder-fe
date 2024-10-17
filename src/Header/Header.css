@@ -162,3 +162,34 @@
         padding: 0;
     }
 }
+
+@media (max-width: 375px) {
+    .menu-content a {
+        font-size: 0.7rem;
+    }
+
+    .begin-section-title,
+    .spanish-section-title {
+        font-size: 1rem;
+    }
+
+}
+
+@media (max-width: 412px) {
+    .discover-section-title {
+        font-size: 1.3rem;
+    }
+
+    .begin-section-title,
+    .spanish-section-title {
+        font-size: 1.2rem;
+    }
+
+    .begin-section-button1,
+    .begin-section-button2,
+    .begin-section-button3 {
+        font-size: 0.7rem;
+    }
+
+
+}
