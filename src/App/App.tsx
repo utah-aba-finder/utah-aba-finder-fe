@@ -113,7 +113,7 @@ function SuperAdminEditWrapper({ providers, onUpdate }: { providers: MockProvide
     return <div>Provider not found</div>;
   }
 
-  return <SuperAdminEdit provider={provider.attributes} onUpdate={onUpdate} />;
+  return <SuperAdminEdit provider={provider} onUpdate={onUpdate} />;
 }
 function ProviderEditWrapper({ clearProviderData, onUpdate, }: { clearProviderData: () => void, onUpdate: (updatedProvider: ProviderAttributes) => void}) {
   const { loggedInProvider } = useAuth();

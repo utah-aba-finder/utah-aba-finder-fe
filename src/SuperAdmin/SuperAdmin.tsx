@@ -82,7 +82,7 @@ export const SuperAdmin = () => {
                 <div className='superAdminEditWrapper'>
                     {selectedProvider ? (
                         <SuperAdminEdit
-                            provider={selectedProvider.attributes}
+                            provider={selectedProvider}
                             onUpdate={handleProviderUpdate}
                         />
                     ) : (
