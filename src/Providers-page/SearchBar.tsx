@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './SearchBar.css';
@@ -16,6 +16,7 @@ interface SearchBarProps {
   onAgeChange: (age: string) => void;
   onReset: () => void;
   providers: ProviderAttributes[];
+  totalProviders: number;
 }
 
 const SearchBar: React.FC<SearchBarProps> = ({
@@ -29,8 +30,8 @@ const SearchBar: React.FC<SearchBarProps> = ({
   onAgeChange,
   onReset,
   providers,
+  totalProviders,
 }) => {
-
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedCounty, setSelectedCounty] = useState<string>('');
   const [selectedInsurance, setSelectedInsurance] = useState<string>('');
@@ -38,6 +39,8 @@ const SearchBar: React.FC<SearchBarProps> = ({
   const [selectedService, setSelectedService] = useState<string>('');
   const [selectedWaitList, setSelectedWaitList] = useState<string>('');
   const [selectedAge, setSelectedAge] = useState<string>('');
+  const [showNotification, setShowNotification] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
 
   const handleSearch = useCallback(() => {
     onSearch({
@@ -49,7 +52,24 @@ const SearchBar: React.FC<SearchBarProps> = ({
       waitlist: selectedWaitList,
       age: selectedAge,
     });
+    setShowNotification(true);
+    setIsVisible(true);
   }, [searchQuery, selectedCounty, selectedInsurance, selectedSpanish, selectedService, selectedWaitList, selectedAge, onSearch]);
+
+
+  useEffect(() => {
+    if (showNotification) {
+      const hideTimer = setTimeout(() => {
+        setShowNotification(false);
+      }, 3000);
+      return () => clearTimeout(hideTimer);
+    } else if (!showNotification && isVisible) {
+      const removeTimer = setTimeout(() => {
+        setIsVisible(false);
+      }, 300);
+      return () => clearTimeout(removeTimer);
+    }
+  }, [showNotification, isVisible]);
 
   const handleReset = () => {
     setSearchQuery('');
@@ -224,6 +244,15 @@ const SearchBar: React.FC<SearchBarProps> = ({
           </button>
         </div>
       </div>
+      {isVisible && (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div className={`bg-blue-500 text-white p-4 rounded-lg shadow-lg transform transition-all duration-300 ease-in-out ${showNotification ? 'animate-jump-in' : 'animate-jump-out'}`}>
+            <span className="font-bold">
+              Your search resulted in {providers.length} providers of a total of {totalProviders}
+            </span>
+          </div>
+        </div>
+      )}
       <ToastContainer />
     </section>
   );

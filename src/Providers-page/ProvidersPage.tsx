@@ -448,7 +448,8 @@ const ProvidersPage: React.FC = () => {
       <main>
         <div className="provider-page-search-cards-section">
           <SearchBar
-            providers={allProviders}
+            providers={filteredProviders}
+            totalProviders={allProviders.length}
             onResults={handleResults}
             onSearch={handleSearch}
             onCountyChange={handleCountyChange}
