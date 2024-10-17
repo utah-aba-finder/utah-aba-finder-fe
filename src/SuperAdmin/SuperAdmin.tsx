@@ -1,53 +1,64 @@
 import { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import './SuperAdmin.css'
-import { MockProviderData, ProviderAttributes } from '../Utility/Types'
+import { MockProviderData, ProviderAttributes, CountiesServed, Insurance, MockProviders } from '../Utility/Types'
 import { SuperAdminEdit } from './SuperAdminEdit'
 import { useAuth } from '../Provider-login/AuthProvider'
+import SuperAdminCreate from './SuperAdminCreate'
+import { toast } from 'react-toastify'
+import { fetchProviders } from '../Utility/ApiCall'
 
-
-interface SuperAdminProps {
-    providers: MockProviderData[];
-    setProviders: React.Dispatch<React.SetStateAction<MockProviderData[]>>;
-}
-
-export const SuperAdmin: React.FC<SuperAdminProps> = ({ providers, setProviders }) => {
+export const SuperAdmin = () => {
     const { setToken } = useAuth();
     const [selectedProvider, setSelectedProvider] = useState<MockProviderData | null>(null)
-    const { providerId } = useParams<{ providerId: string }>();
-    const navigate = useNavigate();
+    const [providers, setProviders] = useState<MockProviderData[]>([]);
+    const [openNewProviderForm, setOpenNewProviderForm] = useState(false);;
 
     useEffect(() => {
-        if (providerId) {
-            const providerIdNumber = Number(providerId);
-            const provider = providers.find(p => p.id === providerIdNumber);
-            if (provider) {
-                setSelectedProvider(provider);
-            }
-        }
-    }, [providerId, providers]);
+      const fetchAllProviders = async () => {
+          try {
+              const response = await fetch('https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/admin/providers', {
+                  headers: {
+                      'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`
+                  }
+              });
+              if (!response.ok) {
+                  throw new Error('Failed to fetch providers');
+              }
+              const fetchedProviders: MockProviders = await response.json();
+              console.log(fetchedProviders);
+              setProviders(fetchedProviders.data);
+          } catch (error) {
+              console.error('Error fetching providers:', error);
+              toast.error('Failed to fetch providers. Please try again later.');
+          }
+      };
+      fetchAllProviders();
+  }, []);
 
     const handleProviderSelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
-        const selectedProviderId = Number(event.target.value);
-        const provider = providers.find(p => p.id === selectedProviderId);
-        if (provider) {
-            setSelectedProvider(provider);
-        }
+        const providerId = Number(event.target.value);
+        const provider = providers.find(p => p.id === providerId);
+        setSelectedProvider(provider || null);
     };
 
     const handleProviderUpdate = (updatedProvider: ProviderAttributes) => {
-        const updatedProviders = providers.map(p =>
-            p.id === updatedProvider.id ? { ...p, ...updatedProvider } : p
+        setProviders(prevProviders =>
+            prevProviders.map(p =>
+                p.id === updatedProvider.id ? { ...p, attributes: updatedProvider } : p
+            )
         );
-        setProviders(updatedProviders);
-        setSelectedProvider(null);
-
-        // Here you would also make an API call to update the provider in the backend
+        toast.success('Provider updated successfully');
     };
 
+        
     const handleLogout = () => {
         setToken(null);
     };
+
+    const toggleNewProviderForm = () => {
+      setOpenNewProviderForm(prev => !prev)
+    }
 
     return (
         <div className='superAdminWrapper'>
@@ -58,16 +69,15 @@ export const SuperAdmin: React.FC<SuperAdminProps> = ({ providers, setProviders 
             <div className='superAdminDashboardWrapper'>
                 <div className='superAdminProvidersListWrapper'>
                     <h2>Providers List</h2>
-                    <select onChange={handleProviderSelect} value={selectedProvider?.id || ''}>
+                    <select onChange={handleProviderSelect} value={selectedProvider?.id || ""}>
                         <option value="">Select a provider</option>
-                        {providers.sort((a, b) => (a.attributes.name ?? '').localeCompare(b.attributes.name ?? '') || 0).map(provider => (
+                        {providers.map(provider => (
                             <option key={provider.id} value={provider.id}>
-                                {provider?.attributes?.name}
+                                {provider.attributes.name}
                             </option>
                         ))}
                     </select>
                 </div>
-
 
                 <div className='superAdminEditWrapper'>
                     {selectedProvider ? (
@@ -80,12 +90,11 @@ export const SuperAdmin: React.FC<SuperAdminProps> = ({ providers, setProviders 
                     )}
                 </div>
                 <div className='superAdminCreateDeleteButtonsWrapper'>
-                    <button className='superAdminCreateButton' onClick={() => navigate('/superAdmin/create')}>Create New Provider</button>
+                    <button className='superAdminCreateButton' onClick={() => toggleNewProviderForm()}>{!openNewProviderForm ? 'Create New Provider' : 'Close New Provider Form'}</button>
                     <button className='superAdminDeleteButton' disabled>Delete Provider</button>
                 </div>
+                {openNewProviderForm ? <SuperAdminCreate handleCloseForm={toggleNewProviderForm}/> : null}
             </div>
-
-
         </div>
     );
 };

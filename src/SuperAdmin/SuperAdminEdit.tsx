@@ -5,6 +5,8 @@ import gearImage from '../Assets/Gear@1x-0.5s-200px-200px.svg'
 import InsuranceModal from '../Provider-edit/InsuranceModal';
 import CountiesModal from '../Provider-edit/CountiesModal';
 import moment from 'moment';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 
 interface SuperAdminEditProps {
@@ -22,23 +24,25 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({ provider, onUpda
     const [isSaving, setIsSaving] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [showError, setShowError] = useState('');
+    const [providerId, setProviderId] = useState<number | null>(null);
+
 
     useEffect(() => {
-        if (provider) {
+        if (provider && provider.id) {
             setEditedProvider(provider);
             setSelectedCounties(provider.counties_served);
             setSelectedInsurances(provider.insurance);
             setLocations(provider.locations);
+            setProviderId(provider.id);
             setIsLoading(false);
         }
     }, [provider]);
 
-    const handleSave = () => {
-        setIsSaving(true);
-        // Implement save logic here
-        onUpdate(editedProvider!);
-        setIsSaving(false);
-    };
+    // const handleSave = () => {
+    //     setIsSaving(true);
+    //     onUpdate(editedProvider!);
+    //     setIsSaving(false);
+    // };
 
     const handleCancel = () => {
         setEditedProvider(provider);
@@ -67,13 +71,8 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({ provider, onUpda
         min_age: 0,
         max_age: 0,
         telehealth: '',
+        status: '',
     });
-
-    useEffect(() => {
-        if (provider) {
-            setEditedProvider(provider);
-        }
-    }, [provider]);
 
     if (!editedProvider) {
         return <div className="loading-container">
@@ -82,15 +81,121 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({ provider, onUpda
         </div>
     }
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
-        setEditedProvider(prev => prev ? { ...prev, [name]: value } : null);
+        setEditedProvider(prev => {
+            if (!prev) return null;
+            
+            // Handle nested fields
+            if (name === 'min_age' || name === 'max_age') {
+                return {
+                    ...prev,
+                    [name]: parseInt(value) || 0  // Convert to number, default to 0 if NaN
+                };
+            }
+            
+            return { ...prev, [name]: value };
+        });
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (editedProvider) {
-            onUpdate(editedProvider);
+        setIsSaving(true);
+    
+        if (!provider || !provider.id) {
+            console.error('Provider ID is missing');
+            toast.error('Cannot update provider: Provider ID is missing');
+            setIsSaving(false);
+            return;
+        }
+    
+        try {
+            const requestBody = JSON.stringify({
+                data: [
+                    {
+                        type: "provider",
+                        attributes: {
+                            name: editedProvider.name,
+                            locations: locations.map(location => ({
+                                id: location.id,
+                                name: location.name,
+                                address_1: location.address_1,
+                                city: location.city,
+                                state: location.state,
+                                zip: location.zip,
+                                phone: location.phone
+                            })),
+                            website: editedProvider.website,
+                            email: editedProvider.email,
+                            cost: editedProvider.cost,
+                            insurance: selectedInsurances.map(ins => ({
+                                name: ins.name,
+                                id: ins.id,
+                                accepted: true
+                            })),
+                            counties_served: selectedCounties.map(county => ({
+                                county: county.county
+                            })),
+                            min_age: editedProvider.min_age,
+                            max_age: editedProvider.max_age,
+                            waitlist: editedProvider.waitlist,
+                            telehealth_services: editedProvider.telehealth_services,
+                            spanish_speakers: editedProvider.spanish_speakers,
+                            at_home_services: editedProvider.at_home_services,
+                            in_clinic_services: editedProvider.in_clinic_services,
+                            logo: editedProvider.logo,
+                            status: editedProvider.status
+                        }
+                    }
+                ]
+            });
+    
+            console.log('Request body:', requestBody);
+            console.log('Provider ID:', providerId);
+    
+            const authToken = sessionStorage.getItem('authToken');
+            if (!authToken) {
+                throw new Error('Authentication token is missing');
+            }
+    
+            const response = await fetch(`https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/admin/providers/${providerId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`
+                },
+                body: requestBody
+            });
+    
+            if (!response.ok) {
+                if (response.status === 401) {
+                    throw new Error('Unauthorized: Please log in again');
+                }
+                const errorText = await response.text();
+                console.error('Response status:', response.status);
+                console.error('Response text:', errorText);
+                throw new Error(`Failed to update provider data: ${response.status} ${response.statusText}\n${errorText}`);
+            }
+    
+            const updatedProvider = await response.json();
+            console.log('Updated provider:', updatedProvider);
+            onUpdate(updatedProvider.data[0].attributes);
+            toast.success('Provider updated successfully');
+        } catch (error) {
+            console.error('Error updating provider:', error);
+            if (error instanceof Error) {
+                if (error.message.includes('Unauthorized')) {
+                    toast.error('Your session has expired. Please log in again.');
+                    // Implement logout or redirect to login page
+                } else {
+                    toast.error(`Failed to update provider: ${error.message}`);
+                }
+            } else {
+                toast.error('An unknown error occurred');
+            }
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -311,44 +416,46 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({ provider, onUpda
                                 placeholder='Yes, No?'
                             />
 
-                            <label htmlFor='telehealth' className='editLabels'>Telehealth Services: </label>
+                            <label htmlFor='telehealth_services' className='editLabels'>Telehealth Services: </label>
                             <input
-                                id='telehealth'
+                                id='telehealth_services'
                                 type="text"
-                                name="telehealth"
+                                name="telehealth_services"
                                 value={editedProvider.telehealth_services || ''}
                                 onChange={handleInputChange}
                                 placeholder='Yes, No?'
                             />
 
-                            <label htmlFor='spanishSpeaking' className='editLabels'>Spanish Speakers: </label>
+                            <label htmlFor='spanish_speakers' className='editLabels'>Spanish Speakers: </label>
                             <input
-                                id='spanishSpeaking'
+                                id='spanish_speakers'
                                 type="text"
-                                name="spanishSpeaking"
+                                name="spanish_speakers"
                                 value={editedProvider.spanish_speakers || ''}
                                 onChange={handleInputChange}
                                 placeholder="Yes, No"
                             />
 
-                            <label htmlFor='minAge' className='editLabels'>Minimum Age: </label>
+                            <label htmlFor='min_age' className='editLabels'>Minimum Age: </label>
                             <input
-                                id='minAge'
-                                type="text"
-                                name="minAge"
+                                id='min_age'
+                                type="number"
+                                name="min_age"
                                 value={editedProvider.min_age || ''}
                                 onChange={handleInputChange}
-                                placeholder="Minimum Age"
+                                placeholder="1"
+                                min="1"
                             />
 
-                            <label htmlFor='maxAge' className='editLabels'>Maximum Age: </label>
+                            <label htmlFor='max_age' className='editLabels'>Maximum Age: </label>
                             <input
-                                id='maxAge'
-                                type="text"
-                                name="maxAge"
+                                id='max_age'
+                                type="number"
+                                name="max_age"
                                 value={editedProvider.max_age || ''}
                                 onChange={handleInputChange}
-                                placeholder="Maximum Age"
+                                placeholder="25"
+                                max="100"
                             />
 
                             <button className='editButtons' onClick={(e) => {
