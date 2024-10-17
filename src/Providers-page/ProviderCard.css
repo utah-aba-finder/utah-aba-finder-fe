@@ -2,10 +2,10 @@
     display: flex;
     background: linear-gradient(to left top, rgba(249, 249, 249, 0.767), rgba(223, 223, 223, 0.848));
     box-shadow: 6px 6px 20px rgba(122, 122, 122, 0.212);
-    border-radius: 30px;
+    border-radius: 55px;
     overflow: hidden;
-    height: 315px;
-    font-size: 0.9em;
+    height: 340px;
+    font-size: .95em;
     position: relative;
     transition: transform 0.3s ease, background-color 0.3s ease, color 0.3s ease;
 }
@@ -33,10 +33,9 @@
     right: 5px;
     bottom: 5px;
     border: 1.5px solid rgb(255, 255, 255);
-    border-radius: 29px;
+    border-radius: 50px;
     pointer-events: none;
 }
-
 
 .card-logo-and-text {
     display: flex;
@@ -67,13 +66,13 @@
 
 .card-text {
     flex: 1;
-    padding: 5px;
-    padding-right: 10px;
-    gap: .2em;
+    padding: 1em;
+    gap: .6em;
     display: flex;
     flex-direction: column;
     justify-content: center;
     overflow: hidden;
+    font-family: "Gotham", sans-serif;
 }
 
 .favorited-date {
@@ -98,17 +97,16 @@
 .card-text-and-buttons {
     display: flex;
     flex-direction: column;
-    width: 66.67%;
 }
 
 .card-name {
     line-height: 1.2;
-    font-size: 23px;
+    font-size: 28px;
     overflow: hidden;
     -webkit-box-orient: vertical;
     border-bottom: 1.5px solid #9ea3a8;
     transition: border-color 0.3s ease;
-    padding-bottom: 4px;
+    padding-bottom: 5px;
 }
 
 .card-text h2 {
@@ -117,7 +115,7 @@
 
 .card-text h4 {
     margin: 0;
-    font-size: .80em;
+    font-size: 1em;
     line-height: 1.4;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -139,81 +137,79 @@
 
 .custom-link:hover {
     text-decoration: underline;
-    color: #3498db;
+    color: #5d84aa;
 }
 
 /* Provider Card Buttons */
 .provider-card-buttons {
-    padding-bottom: 1em;
-}
-
-.view-details-button,
-.favorite-button,
-.pagination-button {
-    font-weight: 600;
-    line-height: 1.2;
-    transition: color 0.45s ease;
-    background: none;
-    border: none;
-    cursor: pointer;
+    padding-bottom: 1.2em;
+    gap: .1em;
 }
 
 .view-details-button {
-    border: none;
-    border-radius: 6px;
-    background-color: #555555;
-    color: #ffffff;
-    font-size: .8rem;
-    cursor: pointer;
-    padding: 0.5rem;
-    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
-    transition: background-color 0.3s, transform 0.3s;
-    margin: .5em;
+    margin-right: .5em;
 }
 
+.view-details-button,
 .favorite-button {
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: #ffffff;
     border: none;
-    border-radius: 6px;
-    background-color: #555555;
-    color: #ffffff;
-    font-size: .8rem;
-    cursor: pointer;
-    padding: 0.5rem;
-    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
+    font-size: 18px;
+    border-radius: 25px;
+    width: 140px;
+    height: 35px;
+    font-weight: bold;
+    position: relative;
+    box-shadow: 0px 4px 10px -2px rgba(0, 0, 0, 0.3);
     transition: background-color 0.3s, transform 0.3s;
-    margin: .5em;
+    background-color: #4A6FA5;
+    transition: background-color 0.3s, transform 0.3s;
+    /* background-image: linear-gradient(90deg, rgba(57, 210, 248, 1), rgb(121, 157, 180)); */
 }
-
+.view-details-button:hover,
 .favorite-button:hover {
-    transform: translateY(-5px);
-    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
-    cursor: pointer;
-    background-color: #ffffff;
-    color: #555555;
+    background-color: #74a3ea;
 }
 
-/* Style for "Favorited" */
 .favorite-button.favorited {
-    background-color: #563f5f;
-    color: #ffffff;
+    background-color: #A54A4A;
 }
 
 .favorite-button.favorited:hover {
-    background-color: #ffffff;
-    color: #A754C4;
+    background-color: #e68181;
 }
+
+/* .view-details-button::before,
+  .favorite-button::before {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    right: 3px;
+    bottom: 3px;
+    border: .5px solid rgb(255, 255, 255);
+    border-radius: 30px;
+    pointer-events: none;
+} */
 
 /* Pagination Buttons */
 .pagination-button {
-    background-color: #007bff;
-    color: white;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: #ffffff;
     border: none;
-    padding: 10px 20px;
-    cursor: pointer;
-    margin: 0 5px;
-    border-radius: 6px;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
-    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
+    font-size: 18px;
+    border-radius: 25px;
+    width: 150px;
+    height: 40px;
+    font-weight: bold;
+    position: relative;
+    box-shadow: 0px 4px 10px -2px rgba(0, 0, 0, 0.3);
+    background-color: #4A6FA5;
     transition: background-color 0.3s, transform 0.3s;
 }
 
@@ -227,11 +223,12 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-top: 20px;
+    padding-bottom: 1.5em;
 }
 
 .pagination-info {
     margin-bottom: 10px;
+    margin-right: .3em;
     font-weight: 600;
     font-size: 18px;
     color: #666;
@@ -239,10 +236,30 @@
 
 .pagination-controls {
     display: flex;
-    justify-content: center;
+}
+
+.pagination-button {
+margin-right: .3em;
 }
 
 /* Provider Card Responsiveness */
+@media (max-width: 1663px) {
+    .provider-card {
+        font-size: 1em;
+    }
+    .card-name {
+        font-size: 25px;
+    }
+
+    .card-text h4 {
+        font-size: .80em;
+    }
+
+    .card-text {
+        gap: .4em;
+        margin: .75rem;
+    }
+}
 
 @media (max-width: 1263px) {
     .card-name {
@@ -261,7 +278,7 @@
 
     .card-text h4 {
         margin: 0;
-        font-size: 0.7rem;
+        font-size: 0.75rem;
     }
 
     .card-logo-and-text {
@@ -289,7 +306,18 @@
     .provider-card-buttons {
         display: flex;
         justify-content: center;
-        padding: 10px 0;
     }
 
+    .view-details-button,
+    .favorite-button {
+        font-size: 18px;
+        border-radius: 25px;
+        width: 130px;
+        height: 35px;
+        font-weight: bold;
+        position: relative;
+        box-shadow: 0px 4px 10px -2px rgba(0, 0, 0, 0.3);
+        background-color: #4A6FA5;
+        /* background-image: linear-gradient(90deg, rgba(57, 210, 248, 1), rgb(121, 157, 180)); */
+    }
 }

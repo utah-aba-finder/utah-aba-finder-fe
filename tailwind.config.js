@@ -20,7 +20,11 @@ module.exports = {
         'jump-in': 'jump-in 0.3s ease-in-out',
         'jump-out': 'jump-out 0.3s ease-in-out',
       },
-
+      colors: {
+        steelblue: {
+          DEFAULT: '#4A6FA5',  // Steel Blue RGB(74, 111, 165)
+        },
+      },
       transitionProperty: {
         'height': 'height',
         'spacing': 'margin, padding',

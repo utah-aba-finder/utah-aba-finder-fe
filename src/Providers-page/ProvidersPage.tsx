@@ -445,6 +445,15 @@ const ProvidersPage: React.FC = () => {
         <img src={childrenBanner} alt="Find Your Provider" className="banner-image" />
         <h1 className="providers-banner-title">Find Your Provider</h1>
       </section>
+      <div className="glass-container">
+        <div className="glass-two">
+          <h2 className="searched-provider-number-status title">
+            {isFiltered
+              ? `Showing ${paginatedProviders.length} of ${combinedProviders.length} Providers`
+              : `Showing ${allProviders.length} Providers`}
+          </h2>
+        </div>
+      </div>
       <main>
         <div className="provider-page-search-cards-section">
           <SearchBar
@@ -462,11 +471,6 @@ const ProvidersPage: React.FC = () => {
             onReset={handleResetSearch}
           />
           <section className="glass">
-            <h2 className="searched-provider-number-status title">
-              {isFiltered
-                ? `Showing ${paginatedProviders.length} of ${combinedProviders.length} Providers`
-                : `Showing ${allProviders.length} Providers`}
-            </h2>
             <section className="searched-provider-map-locations-list-section">
               {isLoading && (
                 <div className="loading-container">

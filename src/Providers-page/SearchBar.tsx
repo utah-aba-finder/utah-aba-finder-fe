@@ -195,18 +195,6 @@ const SearchBar: React.FC<SearchBarProps> = ({
             </select>
           </div>
 
-          <div className="filter-item provider-spanish-dropdown">
-            <select
-              className="provider-spanish-select"
-              value={selectedSpanish}
-              onChange={(e) => setSelectedSpanish(e.target.value)}
-              aria-label="Spanish Language Option"
-            >
-              <option value="">Spanish?</option>
-              <option value="yes">Yes</option>
-            </select>
-          </div>
-
           <div className="filter-item provider-service-dropdown">
             <select
               className="provider-service-select"
@@ -233,6 +221,19 @@ const SearchBar: React.FC<SearchBarProps> = ({
               <option value="6 Months or Less">6 Months or Less</option>
             </select>
           </div>
+
+          <div className="filter-item provider-spanish-dropdown">
+            <select
+              className="provider-spanish-select"
+              value={selectedSpanish}
+              onChange={(e) => setSelectedSpanish(e.target.value)}
+              aria-label="Spanish Language Option"
+            >
+              <option value="">Spanish?</option>
+              <option value="yes">Yes</option>
+            </select>
+          </div>
+
         </div>
 
         <div className="button-group">
@@ -246,7 +247,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
       </div>
       {isVisible && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
-          <div className={`bg-blue-500 text-white p-4 rounded-lg shadow-lg transform transition-all duration-300 ease-in-out ${showNotification ? 'animate-jump-in' : 'animate-jump-out'}`}>
+          <div className={`bg-steelblue text-white p-4 rounded-lg shadow-lg transform transition-all duration-300 ease-in-out ${showNotification ? 'animate-jump-in' : 'animate-jump-out'}`}>
             <span className="font-bold">
               Your search resulted in {providers.length} providers of a total of {totalProviders}
             </span>
