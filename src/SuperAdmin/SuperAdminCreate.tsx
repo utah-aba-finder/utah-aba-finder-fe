@@ -172,7 +172,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({ handleCloseForm }) 
 
                     {formData.locations.map((location, index) => (
                         <div>
-                            <div key={index} className='superAdmin-location-wrapper'>
+                            <div key={location.id || index} className='superAdmin-location-wrapper'>
                                 <h3>Location {index + 1}</h3>
                                 <input type="text" placeholder="Location Name" value={location.name} onChange={(e) => handleLocationChange(index, 'name', e.target.value)} />
                                 <input type="text" placeholder="Street Address" value={location.address_1} onChange={(e) => handleLocationChange(index, 'address_1', e.target.value)} />
