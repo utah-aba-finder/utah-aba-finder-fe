@@ -490,19 +490,23 @@ const ProvidersPage: React.FC = () => {
                       />
                     ))}
                   </div>
-                  <div className="pagination-controls">
-                    {currentPage > 1 && (
-                      <button className="pagination-button" onClick={handlePreviousPage}>
-                        &lt; Previous
-                      </button>
-                    )}
-                    {currentPage < totalPages && (
-                      <button className="pagination-button" onClick={handleNextPage}>
-                        Next &gt;
-                      </button>
-                    )}
+                  <div className="pagination-section">
+                    <p className="pagination-info">Page {currentPage} of {totalPages}</p>
+                    <div className="pagination-controls">
+                      {currentPage > 1 && (
+                        <button className="pagination-button" onClick={handlePreviousPage}>
+                          &lt; Previous
+                        </button>
+                      )}
+                      {currentPage < totalPages && (
+                        <button className="pagination-button" onClick={handleNextPage}>
+                          Next &gt;
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
+
               )}
             </section>
           </section>

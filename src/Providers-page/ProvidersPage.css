@@ -68,9 +68,9 @@
 
 .provider-cards-grid {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 1rem;
-  width: 100%;
+  grid-template-columns: repeat(minmax(280px, 1fr)); /* Reduced from likely 300px */
+  gap: 20px; /* Reduced from likely 30px */
+  padding: 20px; /* Reduced from likely 30px */
 }
 
 
@@ -157,9 +157,9 @@
 
 /* Providers Page Responsiveness */
 
-@media (min-width: 1263px) {
+@media (min-width: 1150px) {
   .card-container {
-    max-width: 1400px;
+    max-width: 1500px;
   }
 
   .provider-cards-grid {
