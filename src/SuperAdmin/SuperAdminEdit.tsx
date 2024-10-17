@@ -5,17 +5,17 @@ import gearImage from '../Assets/Gear@1x-0.5s-200px-200px.svg'
 import InsuranceModal from '../Provider-edit/InsuranceModal';
 import CountiesModal from '../Provider-edit/CountiesModal';
 import moment from 'moment';
-import { toast } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 
 interface SuperAdminEditProps {
-    provider: ProviderAttributes;
+    provider: MockProviderData;
     onUpdate: (updatedProvider: ProviderAttributes) => void
 }
 
 export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({ provider, onUpdate }) => {
-    const [editedProvider, setEditedProvider] = useState<ProviderAttributes | null>(null);
+    const [editedProvider, setEditedProvider] = useState<ProviderAttributes | null>(provider.attributes);
     const [isInsuranceModalOpen, setIsInsuranceModalOpen] = useState(false);
     const [isCountiesModalOpen, setIsCountiesModalOpen] = useState(false);
     const [selectedCounties, setSelectedCounties] = useState<CountiesServed[]>([]);
@@ -24,17 +24,20 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({ provider, onUpda
     const [isSaving, setIsSaving] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [showError, setShowError] = useState('');
-    const [providerId, setProviderId] = useState<number | null>(null);
-
 
     useEffect(() => {
-        if (provider && provider.id) {
-            setEditedProvider(provider);
-            setSelectedCounties(provider.counties_served);
-            setSelectedInsurances(provider.insurance);
-            setLocations(provider.locations);
-            setProviderId(provider.id);
+        console.log("Provider prop received:", provider.id);
+        console.log("PROVIDER LINE 30:", provider);
+        if (provider && provider.attributes) {
+            setEditedProvider(provider.attributes);
+            setSelectedCounties(provider.attributes.counties_served || []);
+            setSelectedInsurances(provider.attributes.insurance || []);
+            setLocations(provider.attributes.locations || []);
             setIsLoading(false);
+            console.log("Provider data loaded:", provider);
+        } else {
+            console.warn("Provider prop is null, undefined, or missing attributes");
+            setIsLoading(true);
         }
     }, [provider]);
 
@@ -45,10 +48,10 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({ provider, onUpda
     // };
 
     const handleCancel = () => {
-        setEditedProvider(provider);
-        setSelectedCounties(provider.counties_served);
-        setSelectedInsurances(provider.insurance);
-        setLocations(provider.locations);
+        setEditedProvider(provider.attributes);
+        setSelectedCounties(provider.attributes.counties_served);
+        setSelectedInsurances(provider.attributes.insurance);
+        setLocations(provider.attributes.locations);
     };
 
     const [formData, setFormData] = useState({
@@ -102,9 +105,10 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({ provider, onUpda
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSaving(true);
-    
+        console.log("Submit handler called. Current provider:", provider);
+        console.log("Current editedProvider:", editedProvider);
         if (!provider || !provider.id) {
-            console.error('Provider ID is missing');
+            console.error('Provider or Provider ID is missing');
             toast.error('Cannot update provider: Provider ID is missing');
             setIsSaving(false);
             return;
@@ -114,9 +118,10 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({ provider, onUpda
             const requestBody = JSON.stringify({
                 data: [
                     {
+                        id: provider.id,
                         type: "provider",
                         attributes: {
-                            name: editedProvider.name,
+                            name: editedProvider?.name,
                             locations: locations.map(location => ({
                                 id: location.id,
                                 name: location.name,
@@ -145,21 +150,21 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({ provider, onUpda
                             at_home_services: editedProvider.at_home_services,
                             in_clinic_services: editedProvider.in_clinic_services,
                             logo: editedProvider.logo,
-                            status: editedProvider.status
+                            status: editedProvider.status,
+                            updated_last: editedProvider.updated_last
                         }
                     }
                 ]
             });
     
             console.log('Request body:', requestBody);
-            console.log('Provider ID:', providerId);
     
             const authToken = sessionStorage.getItem('authToken');
             if (!authToken) {
                 throw new Error('Authentication token is missing');
             }
     
-            const response = await fetch(`https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/admin/providers/${providerId}`, {
+            const response = await fetch(`https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/admin/providers/${provider.id}`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
@@ -238,6 +243,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({ provider, onUpda
 
     return (
         <div className='superAdminEditWrapper'>
+            <ToastContainer />
             <section className='superAdminEditFormWrapper'>
                 <h1>Editing: <strong className='superAdminEditFormName'>{editedProvider.name}</strong></h1>
                 <p>Last updated: {editedProvider.updated_last ? moment(editedProvider.updated_last).format('MM/DD/YYYY') : 'N/A'}</p>

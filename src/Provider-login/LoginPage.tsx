@@ -173,7 +173,7 @@ export const LoginPage: React.FC = () => {
                             {showPassword ? <EyeOff className='eye' /> : <Eye className='eye' />}
                         </button>
                     </div>
-                    {error && <p className="error-message">{error}</p>}
+                    {error && <p className="error-message">Username or password incorrect, try again.</p>}
                     <div className="submit-container">
                         <button type='submit' id='signup' className='signupButton' onClick={() => toast("Feature coming soon")}>Sign Up</button>
                         <button type='submit' id='login' className='loginButton'>Login</button>
