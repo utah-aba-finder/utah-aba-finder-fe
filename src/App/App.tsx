@@ -8,6 +8,7 @@ import { ScreeningPage } from '../Screening-page/ScreeningPage';
 import { Screening2 } from '../Screening2/Screening2';
 import Header from '../Header/Header'
 import Footer from '../Footer/Footer'
+import Donations from '../Donations/Donations';
 import { PageNotFound } from '../PageNotFound/PageNotFound';
 import ContactUs from '../ContactUs/ContactUs';
 import { Signup } from '../Signup/Signup';
@@ -22,9 +23,7 @@ import Resources from '../Resources/Resources';
 import { fetchProviders } from '../Utility/ApiCall';
 import { SuperAdminEdit } from '../SuperAdmin/SuperAdminEdit';
 import FavoriteProviders from '../FavoriteProviders-page/FavoriteProviders'
-import Donations from '../Donations/Donations'
 import SuperAdminCreate from '../SuperAdmin/SuperAdminCreate';
-
 
 
 function App() {
@@ -55,7 +54,7 @@ function App() {
         provider.id === updatedProvider.id ? { ...provider, ...updatedProvider } : provider
       )
     );
-  };
+  };   
 
   return (
     <div className="App">
@@ -75,21 +74,17 @@ function App() {
             <Route path='/resources' element={<Resources />} />
             <Route path='/favoriteproviders' element={<FavoriteProviders />} />
             <Route path='/donate' element={<Donations />} />
+            
 
             <Route path='/superAdmin/edit/:id' element={
               <ProtectedRoute allowedRoles={['super_admin']}>
                 <SuperAdminEditWrapper providers={allProviders} onUpdate={handleProviderUpdate} />
-                <SuperAdminCreate />
+                {/* <SuperAdminCreate /> */}
               </ProtectedRoute>
             } />
             <Route path="/superAdmin" element={
               <ProtectedRoute allowedRoles={['super_admin']}>
-                <SuperAdmin providers={allProviders} setProviders={setAllProviders} />
-              </ProtectedRoute>
-            } />
-            <Route path="/superAdmin/create" element={
-              <ProtectedRoute allowedRoles={['super_admin']}>
-                <SuperAdminCreate />
+                <SuperAdmin />
               </ProtectedRoute>
             } />
 
@@ -109,7 +104,7 @@ function App() {
 function SuperAdminEditWrapper({ providers, onUpdate }: { providers: MockProviderData[], onUpdate: (updatedProvider: ProviderAttributes) => void }) {
   const { providerId } = useParams();
   const provider = providers.find(p => p.id === (providerId ?? 0));
-
+  
   console.log('providerId:', providerId);
   console.log('providers:', providers);
   console.log('found provider:', provider);
@@ -120,7 +115,7 @@ function SuperAdminEditWrapper({ providers, onUpdate }: { providers: MockProvide
 
   return <SuperAdminEdit provider={provider.attributes} onUpdate={onUpdate} />;
 }
-function ProviderEditWrapper({ clearProviderData, onUpdate, }: { clearProviderData: () => void, onUpdate: (updatedProvider: ProviderAttributes) => void }) {
+function ProviderEditWrapper({ clearProviderData, onUpdate, }: { clearProviderData: () => void, onUpdate: (updatedProvider: ProviderAttributes) => void}) {
   const { loggedInProvider } = useAuth();
   return <ProviderEdit loggedInProvider={loggedInProvider} clearProviderData={clearProviderData} onUpdate={onUpdate} />;
 }

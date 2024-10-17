@@ -4,8 +4,11 @@ import { toast } from 'react-toastify';
 import { ToastContainer } from 'react-toastify';
 import { useNavigate } from 'react-router-dom'
 
-const SuperAdminCreate = () => {
-    const navigate = useNavigate();
+interface SuperAdminCreateProps {
+    handleCloseForm: () => void;
+}
+
+const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({ handleCloseForm }) => {
     const [formData, setFormData] = useState({
         id: null,
         name: '',
@@ -139,6 +142,7 @@ const SuperAdminCreate = () => {
 
             // console.log('Provider created successfully!');
             toast.success('Provider created successfully!');
+            handleCloseForm();
         } catch (error) {
             console.error('Error creating provider:', error);
             setError('There was an error creating the provider. Please try again.');
@@ -307,7 +311,6 @@ const SuperAdminCreate = () => {
                         </select>
                     </div>
                     <div className='superAdmin-create-buttons-container'>
-                        <button className='superAdmin-back-button' onClick={() => navigate('/superAdmin')}>Back</button>
                         <button className='superAdmin-create-new-provider-button' type="submit" disabled={isSaving}>Create Provider</button>
                     </div>
                 </form>
