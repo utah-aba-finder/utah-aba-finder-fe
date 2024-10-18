@@ -71,7 +71,8 @@ export const SuperAdmin = () => {
                     <h2>Providers List</h2>
                     <select onChange={handleProviderSelect} value={selectedProvider?.id || ""}>
                         <option value="">Select a provider</option>
-                        {providers.map(provider => (
+                        {providers.sort((a, b) => (a.attributes.name || '').localeCompare(b.attributes.name || ''))
+                            .map(provider => (
                             <option key={provider.id} value={provider.id}>
                                 {provider.attributes.name}
                             </option>
@@ -83,7 +84,15 @@ export const SuperAdmin = () => {
                     {selectedProvider ? (
                         <SuperAdminEdit
                             provider={selectedProvider}
-                            onUpdate={handleProviderUpdate}
+                            onUpdate={(updatedProvider) => {
+                                setProviders(prevProviders =>
+                                    prevProviders.map(p =>
+                                        p.id === updatedProvider.id ? { ...p, attributes: updatedProvider } : p
+                                    )
+                                );
+                                setSelectedProvider({ ...selectedProvider, attributes: updatedProvider });
+                                // toast.success('Provider updated successfully');
+                            }}
                         />
                     ) : (
                         <p>Select a provider to edit</p>
