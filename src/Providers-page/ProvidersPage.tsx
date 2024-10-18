@@ -55,6 +55,7 @@ const ProvidersPage: React.FC = () => {
       content: 'Use these buttons to navigate between different pages of providers.',
     }
   ]);
+
   useEffect(() => {
     const hasVisited = localStorage.getItem('providersPageVisited');
     if (!hasVisited) {
@@ -444,10 +445,20 @@ const ProvidersPage: React.FC = () => {
         <img src={childrenBanner} alt="Find Your Provider" className="banner-image" />
         <h1 className="providers-banner-title">Find Your Provider</h1>
       </section>
+      <div className="glass-container">
+        <div className="glass-two">
+          <h2 className="searched-provider-number-status title">
+            {isFiltered
+              ? `Showing ${paginatedProviders.length} of ${combinedProviders.length} Providers`
+              : `Showing ${allProviders.length} Providers`}
+          </h2>
+        </div>
+      </div>
       <main>
         <div className="provider-page-search-cards-section">
           <SearchBar
-            providers={allProviders}
+            providers={filteredProviders}
+            totalProviders={allProviders.length}
             onResults={handleResults}
             onSearch={handleSearch}
             onCountyChange={handleCountyChange}
@@ -460,11 +471,6 @@ const ProvidersPage: React.FC = () => {
             onReset={handleResetSearch}
           />
           <section className="glass">
-            <h2 className="searched-provider-number-status title">
-              {isFiltered
-                ? `Showing ${paginatedProviders.length} of ${combinedProviders.length} Providers`
-                : `Showing ${allProviders.length} Providers`}
-            </h2>
             <section className="searched-provider-map-locations-list-section">
               {isLoading && (
                 <div className="loading-container">
@@ -488,19 +494,23 @@ const ProvidersPage: React.FC = () => {
                       />
                     ))}
                   </div>
-                  <div className="pagination-controls">
-                    {currentPage > 1 && (
-                      <button className="pagination-button" onClick={handlePreviousPage}>
-                        &lt; Previous
-                      </button>
-                    )}
-                    {currentPage < totalPages && (
-                      <button className="pagination-button" onClick={handleNextPage}>
-                        Next &gt;
-                      </button>
-                    )}
+                  <div className="pagination-section">
+                    <p className="pagination-info">Page {currentPage} of {totalPages}</p>
+                    <div className="pagination-controls">
+                      {currentPage > 1 && (
+                        <button className="pagination-button" onClick={handlePreviousPage}>
+                          &lt; Previous
+                        </button>
+                      )}
+                      {currentPage < totalPages && (
+                        <button className="pagination-button" onClick={handleNextPage}>
+                          Next &gt;
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
+
               )}
             </section>
           </section>

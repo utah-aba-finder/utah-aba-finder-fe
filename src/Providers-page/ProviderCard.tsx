@@ -1,7 +1,7 @@
 import React from 'react';
 import puzzleLogo from '../Assets/puzzle.png';
 import { ProviderAttributes } from '../Utility/Types';
-import { MapPin, Phone, Mail, Globe } from 'lucide-react';
+import { MapPin, Phone, Mail, Globe, Eye, ToggleLeft, ToggleRight } from 'lucide-react';
 import './ProviderCard.css';
 import { toast } from 'react-toastify';
 
@@ -50,7 +50,7 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
           </div>
           <div className="card-text-and-buttons">
             <div className="card-text text">
-              <h2 className="card-name title">{provider.name}</h2>
+              <div className="card-name title">{provider.name}</div>
               <h4>
                 <strong>
                   <MapPin style={{ marginRight: '8px' }} />
@@ -94,16 +94,21 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
                 </div>
               )}
             </div>
-
             <div className="provider-card-buttons">
               <button className="view-details-button" onClick={() => onViewDetails(provider)}>
-                View Details
+                <Eye size={16} style={{ marginRight: '8px', verticalAlign: 'middle' }} />
+                Details
               </button>
               <button
                 className={`favorite-button ${isFavorited ? 'favorited' : ''}`}
                 onClick={handleToggleFavorite}
               >
-                {isFavorited ? 'Unfavorite' : 'Favorite'}
+                {isFavorited ? (
+                  <ToggleRight size={16} style={{ marginRight: '8px', verticalAlign: 'middle' }} />
+                ) : (
+                  <ToggleLeft size={16} style={{ marginRight: '8px', verticalAlign: 'middle' }} />
+                )}
+                {'Favorite'}
               </button>
             </div>
           </div>
