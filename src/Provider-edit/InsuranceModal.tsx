@@ -84,7 +84,7 @@ const InsuranceModal: React.FC<InsuranceModalProps> = ({
     return (
         <>
             <div className="modal-backdrop" onClick={onClose}></div>
-            <div className="modal">
+            <div className="insurance-modal">
                 <h2>Select Insurance Coverage</h2>
                 <div className="modal-insurance-container">
                     {insuranceOptions.map(option => (

@@ -68,7 +68,7 @@ const CountiesModal: React.FC<CountiesModalProps> = ({
         <>
             <div className="modal-backdrop" onClick={onClose}></div>
 
-            <div className="modal">
+            <div className="counties-modal">
                 <h2>Select Counties</h2>
 
 
