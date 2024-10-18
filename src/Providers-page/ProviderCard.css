@@ -124,17 +124,17 @@
     text-align: left;
     transition: color 0.3s ease;
     text-indent: -27px; 
-    padding-left: 27px; /* This offsets the text-indent to align the first line */
+    padding-left: 27px; /
 }
 
 .card-text h4 strong {
     display: inline-block;
-    text-indent: 0; /* Reset text-indent for the strong element */
-    margin-right: 8px; /* Add some space after the icon and "Address:" text */
+    text-indent: 0; 
+    margin-right: 8px; 
 }
 .card-text h4 svg {
     vertical-align: middle;
-    margin-right: 4px; /* Reduced from 8px to 4px to tighten up the spacing */
+    margin-right: 4px; 
 }
 
 .card-text > * {
@@ -290,7 +290,7 @@ margin-right: .3em;
     .card-text h4 {
         margin: 0;
         font-size: 0.75rem;
-        text-indent: -20px; /* Slightly smaller indent for mobile */
+        text-indent: -20px; 
         padding-left: 20px;
     }
 
