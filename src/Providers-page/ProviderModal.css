@@ -175,11 +175,13 @@
 
 .provider-details p {
   margin-bottom: 4px;
+  font-weight: 500;
   line-height: 1;
 }
 
 .provider-address-phone {
   text-align: left;
+  font-weight: 600;
 }
 
 .provider-address-phone svg {
