@@ -8,13 +8,13 @@
     z-index: 1000;
 }
 
-.modal {
+.insurance-modal {
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     background-color: #fff;
-    padding: 20px;
+    padding: 1rem;
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     width: 90%; 
@@ -35,21 +35,28 @@
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); 
     gap: 20px;
     padding: 20px;
-    justify-content: center;
 }
 
 .modal-insurance {
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    margin-bottom: 5px;
+    height: fit-content;
+    gap: 5px;
+    padding: 10px;
 }
 
 .modal-insurance input {
     margin-right: 10px;
 }
+
 .insuranceModalButtons {
     display: flex;
+    justify-content: center;
+    flex-direction: row;
+    width: 100%;
+    gap: 1rem;
+    margin-top: 1rem;
 }
 
 .insurance {
@@ -60,7 +67,6 @@
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    margin: 0 auto;
 }
 
 .insurance:hover {
@@ -68,12 +74,11 @@
 }
 
 @media (max-width: 768px){
-    .modal {
-        height: 90vh; /* Change from 80% to 90vh */
-        max-height: 90vh; /* Add this line */
-        overflow-y: scroll; /* Change from auto to scroll */
+    .insurance-modal {
+        height: 90vh; 
+        max-height: 90vh; 
+        overflow-y: scroll; 
         justify-content: center;
-        /* padding: 0; */
     }
     .modal-insurance-container {
         grid-template-columns: repeat(2, 2fr);
@@ -88,7 +93,7 @@
 }
 
 @media (max-height: 600px) and (orientation: landscape) {
-    .modal {
+    .insurance-modal {
         transform: translate(-50%, 0);
         height: 100vh;
         max-height: 100vh;
@@ -97,7 +102,7 @@
         overflow-y: scoll;
     }
 
-    .modal h2 {
+    .insurance-modal h2 {
         margin-bottom: 10px;
     }
 
@@ -115,16 +120,16 @@
 }
 
 @media (max-height: 1000px) and (orientation: landscape) {
-    .modal {
+    .insurance-modal {
         top: 0;
-        transform: translate(-50%, 0);
-        height: 100vh;
-        max-height: 100vh;
+        transform: translate(-50%, 0%);
+        height: 90%;
+        max-height: 90%;
         display: flex;
         flex-direction: column;
     }
 
-    .modal h2 {
+    .insurance-modal h2 {
         margin-bottom: 10px;
     }
 
@@ -132,11 +137,20 @@
         flex-grow: 1;
         overflow-y: auto;
         grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-        gap: 10px;
+        gap: 5px;
+        scrollbar-color: #000 #fff;
         padding: 10px;
     }
 
     .modal-insurance {
         font-size: 12px;
+    }
+    .insuranceModalButtons {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        gap: 0.5rem;
     }
 }
