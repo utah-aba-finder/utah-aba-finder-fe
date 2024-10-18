@@ -8,96 +8,48 @@ import moment from 'moment';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-
 interface SuperAdminEditProps {
     provider: MockProviderData;
     onUpdate: (updatedProvider: ProviderAttributes) => void
 }
 
 export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({ provider, onUpdate }) => {
-    const [editedProvider, setEditedProvider] = useState<ProviderAttributes | null>(provider.attributes);
+    const [editedProvider, setEditedProvider] = useState<ProviderAttributes | null>(null);
     const [isInsuranceModalOpen, setIsInsuranceModalOpen] = useState(false);
     const [isCountiesModalOpen, setIsCountiesModalOpen] = useState(false);
     const [selectedCounties, setSelectedCounties] = useState<CountiesServed[]>([]);
     const [selectedInsurances, setSelectedInsurances] = useState<Insurance[]>([]);
-    const [locations, setLocations] = useState<any[]>([]);
+    const [locations, setLocations] = useState<Location[]>([]);
     const [isSaving, setIsSaving] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
-    const [showError, setShowError] = useState('');
 
     useEffect(() => {
-        console.log("Provider prop received:", provider.id);
-        console.log("PROVIDER LINE 30:", provider);
         if (provider && provider.attributes) {
             setEditedProvider(provider.attributes);
             setSelectedCounties(provider.attributes.counties_served || []);
             setSelectedInsurances(provider.attributes.insurance || []);
             setLocations(provider.attributes.locations || []);
             setIsLoading(false);
-            console.log("Provider data loaded:", provider);
         } else {
             console.warn("Provider prop is null, undefined, or missing attributes");
             setIsLoading(true);
         }
     }, [provider]);
 
-    // const handleSave = () => {
-    //     setIsSaving(true);
-    //     onUpdate(editedProvider!);
-    //     setIsSaving(false);
-    // };
-
     const handleCancel = () => {
-        setEditedProvider(provider.attributes);
-        setSelectedCounties(provider.attributes.counties_served);
-        setSelectedInsurances(provider.attributes.insurance);
-        setLocations(provider.attributes.locations);
+        if (provider && provider.attributes) {
+            setEditedProvider(provider.attributes);
+            setSelectedCounties(provider.attributes.counties_served || []);
+            setSelectedInsurances(provider.attributes.insurance || []);
+            setLocations(provider.attributes.locations || []);
+            toast.success('Provider data reset to last saved information');
+        }
     };
-
-    const [formData, setFormData] = useState({
-        logo: '',
-        name: '',
-        website: '',
-        location: '',
-        address: '',
-        email: '',
-        cost: '',
-        city: '',
-        state: '',
-        zipCode: '',
-        phone: '',
-        spanishSpeakers: '',
-        serviceType: '',
-        waitlistTime: '',
-        in_clinic_services: '',
-        at_home_services: '',
-        min_age: 0,
-        max_age: 0,
-        telehealth: '',
-        status: '',
-    });
-
-    if (!editedProvider) {
-        return <div className="loading-container">
-            <img src={gearImage} alt="Loading..." className="loading-gear" />
-            <p>Loading provider data...</p>
-        </div>
-    }
-
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         setEditedProvider(prev => {
             if (!prev) return null;
-            
-            // Handle nested fields
-            if (name === 'min_age' || name === 'max_age') {
-                return {
-                    ...prev,
-                    [name]: parseInt(value) || 0  // Convert to number, default to 0 if NaN
-                };
-            }
-            
             return { ...prev, [name]: value };
         });
     };
@@ -105,65 +57,32 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({ provider, onUpda
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSaving(true);
-        console.log("Submit handler called. Current provider:", provider);
-        console.log("Current editedProvider:", editedProvider);
-        if (!provider || !provider.id) {
-            console.error('Provider or Provider ID is missing');
-            toast.error('Cannot update provider: Provider ID is missing');
+        if (!provider || !provider.id || !editedProvider) {
+            console.error('Provider, Provider ID, or editedProvider is missing');
+            toast.error('Cannot update provider: Missing data');
             setIsSaving(false);
             return;
         }
-    
+
         try {
             const requestBody = JSON.stringify({
-                data: [
-                    {
-                        id: provider.id,
-                        type: "provider",
-                        attributes: {
-                            name: editedProvider?.name,
-                            locations: locations.map(location => ({
-                                id: location.id,
-                                name: location.name,
-                                address_1: location.address_1,
-                                city: location.city,
-                                state: location.state,
-                                zip: location.zip,
-                                phone: location.phone
-                            })),
-                            website: editedProvider.website,
-                            email: editedProvider.email,
-                            cost: editedProvider.cost,
-                            insurance: selectedInsurances.map(ins => ({
-                                name: ins.name,
-                                id: ins.id,
-                                accepted: true
-                            })),
-                            counties_served: selectedCounties.map(county => ({
-                                county: county.county
-                            })),
-                            min_age: editedProvider.min_age,
-                            max_age: editedProvider.max_age,
-                            waitlist: editedProvider.waitlist,
-                            telehealth_services: editedProvider.telehealth_services,
-                            spanish_speakers: editedProvider.spanish_speakers,
-                            at_home_services: editedProvider.at_home_services,
-                            in_clinic_services: editedProvider.in_clinic_services,
-                            logo: editedProvider.logo,
-                            status: editedProvider.status,
-                            updated_last: editedProvider.updated_last
-                        }
+                data: [{
+                    id: provider.id,
+                    type: "provider",
+                    attributes: {
+                        ...editedProvider,
+                        insurance: selectedInsurances,
+                        counties_served: selectedCounties,
+                        locations: locations
                     }
-                ]
+                }]
             });
-    
-            console.log('Request body:', requestBody);
-    
+
             const authToken = sessionStorage.getItem('authToken');
             if (!authToken) {
                 throw new Error('Authentication token is missing');
             }
-    
+
             const response = await fetch(`https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/admin/providers/${provider.id}`, {
                 method: 'PATCH',
                 headers: {
@@ -172,33 +91,18 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({ provider, onUpda
                 },
                 body: requestBody
             });
-    
+
             if (!response.ok) {
-                if (response.status === 401) {
-                    throw new Error('Unauthorized: Please log in again');
-                }
-                const errorText = await response.text();
-                console.error('Response status:', response.status);
-                console.error('Response text:', errorText);
-                throw new Error(`Failed to update provider data: ${response.status} ${response.statusText}\n${errorText}`);
+                throw new Error(`Failed to update provider data: ${response.status} ${response.statusText}`);
             }
-    
+
             const updatedProvider = await response.json();
-            console.log('Updated provider:', updatedProvider);
             onUpdate(updatedProvider.data[0].attributes);
+            setEditedProvider(updatedProvider.data[0].attributes);
             toast.success('Provider updated successfully');
         } catch (error) {
             console.error('Error updating provider:', error);
-            if (error instanceof Error) {
-                if (error.message.includes('Unauthorized')) {
-                    toast.error('Your session has expired. Please log in again.');
-                    // Implement logout or redirect to login page
-                } else {
-                    toast.error(`Failed to update provider: ${error.message}`);
-                }
-            } else {
-                toast.error('An unknown error occurred');
-            }
+            toast.error(`Failed to update provider: ${error instanceof Error ? error.message : 'Unknown error'}`);
         } finally {
             setIsSaving(false);
         }
@@ -206,16 +110,16 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({ provider, onUpda
 
     const handleLocationChange = (index: number, field: string, value: string) => {
         const updatedLocations = [...locations];
-        updatedLocations[index][field as keyof Location] = value as any;
+        updatedLocations[index] = { ...updatedLocations[index], [field]: value };
         setLocations(updatedLocations);
     };
 
     const addNewLocation = () => {
-        const newId = Math.max(0, ...locations.map(loc => loc.id)) + 1;
         setLocations([...locations, {
-            id: newId,
+            id: null,
             name: '',
             address_1: '',
+            address_2: '',
             city: '',
             state: '',
             zip: '',
@@ -225,21 +129,30 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({ provider, onUpda
 
     const toggleInsuranceModal = () => {
         setIsInsuranceModalOpen(prevState => !prevState);
-        console.log("Insurance modal toggled:", !isInsuranceModalOpen); // Add this line
     };
 
     const toggleCountiesModal = () => {
         setIsCountiesModalOpen(prevState => !prevState);
-        console.log("Counties modal toggled:", !isCountiesModalOpen); // Add this line
     };
 
-    const handleInsurancesChange = (insurances: Insurance[]) => {
-        setSelectedInsurances(insurances);
+    const handleCountiesChange = (newCounties: CountiesServed[]) => {
+        setSelectedCounties(newCounties);
     };
 
-    const handleCountiesChange = (counties: CountiesServed[]) => {
-        setSelectedCounties(counties);
+    const handleInsurancesChange = (newInsurances: Insurance[]) => {
+        setSelectedInsurances(newInsurances);
     };
+
+    if (isLoading) {
+        return <div className="loading-container">
+            <img src={gearImage} alt="Loading..." className="loading-gear" />
+            <p>Loading provider data...</p>
+        </div>;
+    }
+
+    if (!editedProvider) {
+        return <div>No provider data available</div>;
+    }
 
     return (
         <div className='superAdminEditWrapper'>
@@ -263,7 +176,6 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({ provider, onUpda
                         <div className='firstColumn'>
                             {locations.map((location, index) => (
                                 <div key={index} className="location-section">
-
                                     <div>
                                         <h3>Location {index + 1}</h3>
                                     </div>
@@ -339,7 +251,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({ provider, onUpda
                                     </div>
                                 </div>
                             ))}
-                            <button onClick={addNewLocation} className="add-location-button">
+                            <button onClick={addNewLocation} type="button" className="add-location-button">
                                 Add New Location
                             </button>
                         </div>
@@ -349,7 +261,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({ provider, onUpda
                                 className='superAdminStatusEdit'
                                 name="status"
                                 value={editedProvider.status || ''}
-                                onChange={(e) => handleInputChange(e as any)}
+                                onChange={handleInputChange}
                             >
                                 <option value="" disabled>Select provider status</option>
                                 <option value="approved">Approved</option>
@@ -370,7 +282,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({ provider, onUpda
                             <input
                                 type="text"
                                 name="website"
-                                value={editedProvider.website?.includes('http') ? editedProvider.website : `https://${editedProvider.website}` || ''}
+                                value={editedProvider.website || ''}
                                 onChange={handleInputChange}
                                 placeholder="Provider website"
                             />
@@ -476,26 +388,28 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({ provider, onUpda
                         </div>
                     </div>
                     {isInsuranceModalOpen && (
-                        <InsuranceModal
-                            isOpen={isInsuranceModalOpen}
-                            onClose={toggleInsuranceModal}
-                            selectedInsurances={selectedInsurances}
-                            onInsurancesChange={setSelectedInsurances}
-                            providerInsurances={editedProvider.insurance}
-                        />
+                    <InsuranceModal
+                        isOpen={isInsuranceModalOpen}
+                        onClose={() => setIsInsuranceModalOpen(false)}
+                        selectedInsurances={selectedInsurances}
+                        onInsurancesChange={handleInsurancesChange}
+                        providerInsurances={provider.attributes.insurance || []}
+                    />
                     )}
                     {isCountiesModalOpen && (
                         <CountiesModal
                             isOpen={isCountiesModalOpen}
-                            onClose={toggleCountiesModal}
+                            onClose={() => setIsCountiesModalOpen(false)}
                             selectedCounties={selectedCounties}
-                            onCountiesChange={setSelectedCounties}
-                            providerCounties={editedProvider.counties_served}
+                            onCountiesChange={handleCountiesChange}
+                            providerCounties={provider.attributes.counties_served || []}
                         />
                     )}
                     <div className='superAdminEditFormButtonsWrapper'>
-                        <button className='cancelButton' type='button' onClick={() => setEditedProvider(null)}>Cancel</button>
-                        <button type="submit">Update Provider</button>
+                        <button className='cancelButton' type='button' onClick={handleCancel}>Cancel</button>
+                        <button type="submit" disabled={isSaving}>
+                            {isSaving ? 'Updating...' : 'Update Provider'}
+                        </button>
                     </div>
                 </form>
             </section>
