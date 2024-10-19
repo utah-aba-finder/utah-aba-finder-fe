@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import "./ProviderEdit.css";
 import InsuranceModal from './InsuranceModal';
 import CountiesModal from './CountiesModal';
-import { Insurance, CountiesServed, MockProviderData, ProviderAttributes } from '@/Utility/Types';
+import { Insurance, CountiesServed, MockProviderData, ProviderAttributes } from '../Utility/Types';
 import gearImage from '../Assets/Gear@1x-0.5s-200px-200px.svg';
 import { useNavigate, Link, useParams } from 'react-router-dom';
 import { useAuth } from '../Provider-login/AuthProvider';
@@ -11,6 +11,7 @@ import { ToastContainer } from 'react-toastify';
 import { useCallback } from 'react';
 import { cloneDeep } from 'lodash';
 import moment from 'moment';
+import 'react-toastify/dist/ReactToastify.css';
 import 'moment-timezone'; //Need to run npm i @types/moment-timezone to run this
 import { AuthModal } from './AuthModal';
 
@@ -105,7 +106,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
             toast.error('Unable to revert changes. Original data not available.');
         }
     };
-
 
     const [formData, setFormData] = useState({
         logo: '',

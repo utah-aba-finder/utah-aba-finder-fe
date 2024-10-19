@@ -87,6 +87,7 @@ export const LoginPage: React.FC = () => {
                         ...providerDetails,
                         role: 'provider_admin' 
                     });
+                    toast.info('You are logged in as ' + providerDetails.attributes.name)
                     navigate(`/providerEdit/${providerId}`);
                 } else {
                     console.error('Provider ID not found');
@@ -111,15 +112,6 @@ export const LoginPage: React.FC = () => {
         }
     };
 
-    const handleProviderUpdate = (updatedProvider: ProviderAttributes) => {
-        setCurrentProvider((prevProvider) => {
-            if (!prevProvider) return undefined;
-            return {
-                ...prevProvider,
-                ...updatedProvider,
-            };
-        });
-    };
     const handleShowPassword = () => {
         setShowPassword(!showPassword);
     }
@@ -133,10 +125,6 @@ export const LoginPage: React.FC = () => {
         );
     }
 
-    const clearProviderData = () => {
-        setIsLoggedIn(false);
-        setCurrentProvider(undefined);
-    };
     return (
         <div className='loginWrapper'>
             <div className='loginBannerContainer'>

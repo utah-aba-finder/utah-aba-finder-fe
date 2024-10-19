@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { jwtDecode } from 'jwt-decode';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 interface AuthContextType {
   token: string | null;
@@ -62,6 +63,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     sessionStorage.removeItem('authToken');
     localStorage.removeItem('authToken');
     navigate('/login');
+    toast.info('You have been logged out')
   };
 
   const contextValue: AuthContextType = {
