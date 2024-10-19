@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react'
 import './LoginPage.css'
 import { User, Lock, Eye, EyeOff } from 'lucide-react';
 import { MockProviderData, ProviderAttributes } from '../Utility/Types';
-import ProviderEdit from '../Provider-edit/ProviderEdit'
 import { useAuth } from './AuthProvider';
 import { toast } from 'react-toastify';
 import { ToastContainer } from 'react-toastify';
@@ -18,9 +17,11 @@ export const LoginPage: React.FC = () => {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [currentProvider, setCurrentProvider] = useState<MockProviderData | undefined>();
-    const { setToken, setLoggedInProvider } = useAuth();
+    const { setToken, setLoggedInProvider, logout } = useAuth();
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -50,7 +51,6 @@ export const LoginPage: React.FC = () => {
                 }),
             });
             const data = await response.json();
-            console.log('Response data:', data);
 
 
             if (!response.ok) {

@@ -13,7 +13,6 @@ import { cloneDeep } from 'lodash';
 import moment from 'moment';
 import 'moment-timezone'; //Need to run npm i @types/moment-timezone to run this
 import { AuthModal } from './AuthModal';
-import { fetchSingleProvider } from '../Utility/ApiCall';
 
 interface ProviderEditProps {
     loggedInProvider: MockProviderData | null;
@@ -33,7 +32,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
 
     const [showError, setShowError] = useState('');
     const navigate = useNavigate();
-    const { setToken } = useAuth();
+    const { logout } = useAuth();
     const [isSaving, setIsSaving] = useState(false);
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [providerData, setProviderData] = useState<MockProviderData | null>(null);
@@ -42,6 +41,41 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
     const [originalInsurances, setOriginalInsurances] = useState<typeof selectedInsurances | null>(null);
     const [originalCounties, setOriginalCounties] = useState<typeof selectedCounties | null>(null);
     const [providerName, setProviderName] = useState('');
+    const [sessionTimeLeft, setSessionTimeLeft] = useState<number | null>(null);
+
+    useEffect(() => {
+        const tokenExpiry = sessionStorage.getItem('tokenExpiry');
+        if (tokenExpiry) {
+            const updateSessionTime = () => {
+                const timeLeft = Math.max(0, Math.floor((parseInt(tokenExpiry) - Date.now()) / 1000));
+                setSessionTimeLeft(timeLeft);
+                
+                if (timeLeft <= 300 && timeLeft > 0) { // Show warning when 5 minutes or less remain
+                    toast.warn(`Your session will expire in ${timeLeft} seconds. Please save your work.`, {
+                        position: "top-center",
+                        autoClose: false,
+                        hideProgressBar: false,
+                        closeOnClick: true,
+                        pauseOnHover: true,
+                        draggable: true,
+                    });
+                } else if (timeLeft === 0) {
+                    toast.error('Your session has expired. Please log in again.', {
+                        position: "top-center",
+                        autoClose: false,
+                        hideProgressBar: false,
+                        closeOnClick: true,
+                        pauseOnHover: true,
+                        draggable: true,
+                    });
+                    handleLogout();
+                }
+            };
+
+            const timer = setInterval(updateSessionTime, 1000);
+            return () => clearInterval(timer);
+        }
+    }, []);
 
     const handleSave = () => {
         setIsSaving(true);
@@ -96,11 +130,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
     });
 
     const handleLogout = () => {
-        setToken(null);
-        clearProviderData();
-        sessionStorage.removeItem('authToken');
-        localStorage.removeItem('authToken')
-        navigate('/login');
+        logout();
 
     };
     const addNewLocation = () => {
@@ -329,6 +359,11 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
     return (
         <div className='provider-edit-container'>
             <ToastContainer />
+            {sessionTimeLeft !== null && sessionTimeLeft <= 300 && (
+                <div className="session-warning">
+                    Session expires in: {Math.floor(sessionTimeLeft / 60)}:{(sessionTimeLeft % 60).toString().padStart(2, '0')}
+                </div>
+            )}
             {authModalOpen && <AuthModal onClose={() =>  setAuthModalOpen(false)} handleShownModal={handleShownModal}/>}
             <div className='user-info-section'>
                 <h1>Welcome, {providerName}</h1>
