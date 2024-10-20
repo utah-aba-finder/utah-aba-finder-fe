@@ -141,7 +141,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
             zip: '',
             phone: ''
         };
-        setLocations(prevLocations => sortBy([...prevLocations, newLocation], 'id'));
     };
 
     useEffect(() => {
@@ -324,7 +323,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
         const updatedLocations = [...locations];
         updatedLocations[index] = { ...updatedLocations[index], [field]: value };
         setLocations(updatedLocations);
-        setLocations(sortBy(updatedLocations, 'id'));
     };
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
