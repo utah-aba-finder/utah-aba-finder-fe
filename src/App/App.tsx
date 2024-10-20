@@ -23,7 +23,6 @@ import Resources from '../Resources/Resources';
 import { fetchProviders } from '../Utility/ApiCall';
 import { SuperAdminEdit } from '../SuperAdmin/SuperAdminEdit';
 import FavoriteProviders from '../FavoriteProviders-page/FavoriteProviders'
-import SuperAdminCreate from '../SuperAdmin/SuperAdminCreate';
 
 
 function App() {
@@ -79,7 +78,6 @@ function App() {
             <Route path='/superAdmin/edit/:id' element={
               <ProtectedRoute allowedRoles={['super_admin']}>
                 <SuperAdminEditWrapper providers={allProviders} onUpdate={handleProviderUpdate} />
-                {/* <SuperAdminCreate /> */}
               </ProtectedRoute>
             } />
             <Route path="/superAdmin" element={

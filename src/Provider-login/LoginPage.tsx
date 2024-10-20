@@ -112,6 +112,16 @@ export const LoginPage: React.FC = () => {
         }
     };
 
+    const handleProviderUpdate = (updatedProvider: ProviderAttributes) => {
+        setCurrentProvider((prevProvider) => {
+            if (!prevProvider) return undefined;
+            return {
+                ...prevProvider,
+                ...updatedProvider,
+            };
+        });
+    };
+
     const handleShowPassword = () => {
         setShowPassword(!showPassword);
     }
@@ -124,7 +134,6 @@ export const LoginPage: React.FC = () => {
             </div>
         );
     }
-
     return (
         <div className='loginWrapper'>
             <div className='loginBannerContainer'>
