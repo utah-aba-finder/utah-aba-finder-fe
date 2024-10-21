@@ -5,14 +5,49 @@ import { MockProviderData, ProviderAttributes, CountiesServed, Insurance, MockPr
 import { SuperAdminEdit } from './SuperAdminEdit'
 import { useAuth } from '../Provider-login/AuthProvider'
 import SuperAdminCreate from './SuperAdminCreate'
-import { toast } from 'react-toastify'
-import { fetchProviders } from '../Utility/ApiCall'
+import { toast, ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'; 
 
 export const SuperAdmin = () => {
     const { setToken } = useAuth();
     const [selectedProvider, setSelectedProvider] = useState<MockProviderData | null>(null)
     const [providers, setProviders] = useState<MockProviderData[]>([]);
-    const [openNewProviderForm, setOpenNewProviderForm] = useState(false);;
+    const [openNewProviderForm, setOpenNewProviderForm] = useState(false);
+    const [sessionTimeLeft, setSessionTimeLeft] = useState<number | null>(null);
+
+    useEffect(() => {
+        const tokenExpiry = sessionStorage.getItem('tokenExpiry');
+        if (tokenExpiry) {
+            const updateSessionTime = () => {
+                const timeLeft = Math.max(0, Math.floor((parseInt(tokenExpiry) - Date.now()) / 1000));
+                setSessionTimeLeft(timeLeft);
+                
+                if (timeLeft <= 300 && timeLeft > 0) { // Show warning when 5 minutes or less remain
+                    toast.warn(`Your session will expire in ${timeLeft} seconds. Please save your work.`, {
+                        position: "top-center",
+                        autoClose: false,
+                        hideProgressBar: false,
+                        closeOnClick: true,
+                        pauseOnHover: true,
+                        draggable: true,
+                    });
+                } else if (timeLeft === 0) {
+                    toast.error('Your session has expired. Please log in again.', {
+                        position: "top-center",
+                        autoClose: false,
+                        hideProgressBar: false,
+                        closeOnClick: true,
+                        pauseOnHover: true,
+                        draggable: true,
+                    });
+                    handleLogout();
+                }
+            };
+
+            const timer = setInterval(updateSessionTime, 1000);
+            return () => clearInterval(timer);
+        }
+    }, []);
 
     useEffect(() => {
       const fetchAllProviders = async () => {
@@ -62,6 +97,12 @@ export const SuperAdmin = () => {
 
     return (
         <div className='superAdminWrapper'>
+            <ToastContainer />
+            {sessionTimeLeft !== null && sessionTimeLeft <= 300 && (
+                <div className="session-warning">
+                    Session expires in: {Math.floor(sessionTimeLeft / 60)}:{(sessionTimeLeft % 60).toString().padStart(2, '0')}
+                </div>
+            )}
             <h1>Super Admin Dashboard</h1>
 
             <button className='superAdminLogoutButton' onClick={handleLogout}>Logout</button>

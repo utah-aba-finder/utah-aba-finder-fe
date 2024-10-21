@@ -2,19 +2,19 @@ import React, { useState, useEffect } from 'react';
 import "./ProviderEdit.css";
 import InsuranceModal from './InsuranceModal';
 import CountiesModal from './CountiesModal';
-import { Insurance, CountiesServed, MockProviderData, ProviderAttributes } from '@/Utility/Types';
+import { Insurance, CountiesServed, MockProviderData, ProviderAttributes } from '../Utility/Types';
 import gearImage from '../Assets/Gear@1x-0.5s-200px-200px.svg';
-import { useNavigate, Link, useParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../Provider-login/AuthProvider';
 import { toast } from 'react-toastify';
 import { ToastContainer } from 'react-toastify';
 import { useCallback } from 'react';
 import { cloneDeep } from 'lodash';
 import moment from 'moment';
+import 'react-toastify/dist/ReactToastify.css';
 import 'moment-timezone'; //Need to run npm i @types/moment-timezone to run this
 import { AuthModal } from './AuthModal';
-import { fetchSingleProvider } from '../Utility/ApiCall';
-
+import { sortBy } from 'lodash';
 interface ProviderEditProps {
     loggedInProvider: MockProviderData | null;
     clearProviderData: () => void;
@@ -32,8 +32,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
     const [locations, setLocations] = useState<any[]>([]);
 
     const [showError, setShowError] = useState('');
-    const navigate = useNavigate();
-    const { setToken } = useAuth();
+    const { logout } = useAuth();
     const [isSaving, setIsSaving] = useState(false);
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [providerData, setProviderData] = useState<MockProviderData | null>(null);
@@ -42,6 +41,41 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
     const [originalInsurances, setOriginalInsurances] = useState<typeof selectedInsurances | null>(null);
     const [originalCounties, setOriginalCounties] = useState<typeof selectedCounties | null>(null);
     const [providerName, setProviderName] = useState('');
+    const [sessionTimeLeft, setSessionTimeLeft] = useState<number | null>(null);
+
+    useEffect(() => {
+        const tokenExpiry = sessionStorage.getItem('tokenExpiry');
+        if (tokenExpiry) {
+            const updateSessionTime = () => {
+                const timeLeft = Math.max(0, Math.floor((parseInt(tokenExpiry) - Date.now()) / 1000));
+                setSessionTimeLeft(timeLeft);
+                
+                if (timeLeft <= 300 && timeLeft > 0) { // Show warning when 5 minutes or less remain
+                    toast.warn(`Your session will expire in ${timeLeft} seconds. Please save your work.`, {
+                        position: "top-center",
+                        autoClose: false,
+                        hideProgressBar: false,
+                        closeOnClick: true,
+                        pauseOnHover: true,
+                        draggable: true,
+                    });
+                } else if (timeLeft === 0) {
+                    toast.error('Your session has expired. Please log in again.', {
+                        position: "top-center",
+                        autoClose: false,
+                        hideProgressBar: false,
+                        closeOnClick: true,
+                        pauseOnHover: true,
+                        draggable: true,
+                    });
+                    handleLogout();
+                }
+            };
+
+            const timer = setInterval(updateSessionTime, 1000);
+            return () => clearInterval(timer);
+        }
+    }, []);
 
     const handleSave = () => {
         setIsSaving(true);
@@ -72,7 +106,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
         }
     };
 
-
     const [formData, setFormData] = useState({
         logo: '',
         name: '',
@@ -96,22 +129,18 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
     });
 
     const handleLogout = () => {
-        setToken(null);
-        clearProviderData();
-        sessionStorage.removeItem('authToken');
-        localStorage.removeItem('authToken')
-        navigate('/login');
+        logout();
 
     };
     const addNewLocation = () => {
-        setLocations([...locations, {
+        const newLocation = {
             name: '',
             address_1: '',
             city: '',
             state: '',
             zip: '',
             phone: ''
-        }]);
+        };
     };
 
     useEffect(() => {
@@ -136,7 +165,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
                 in_clinic_services: loggedInProvider.attributes.in_clinic_services ?? '',
                 at_home_services: loggedInProvider.attributes.at_home_services ?? '',
                 min_age: loggedInProvider.attributes.min_age ?? 0,
-                max_age: loggedInProvider.attributes.max_age ?? 0,
+                max_age: loggedInProvider.attributes.max_age ?? 0
             };
             setFormData(initialFormData);
             setOriginalFormData(cloneDeep(initialFormData));
@@ -185,7 +214,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
             in_clinic_services: updatedData.attributes.in_clinic_services ?? '',
             at_home_services: updatedData.attributes.at_home_services ?? '',
             min_age: updatedData.attributes.min_age ?? 0,
-            max_age: updatedData.attributes.max_age ?? 0,
+            max_age: updatedData.attributes.max_age ?? 0
         });
         setSelectedInsurances(updatedData.attributes.insurance ?? []);
         setSelectedCounties(updatedData.attributes.counties_served ?? []);
@@ -249,7 +278,8 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
                                         spanish_speakers: formData.spanishSpeakers,
                                         at_home_services: formData.at_home_services,
                                         in_clinic_services: formData.in_clinic_services,
-                                        logo: formData.logo
+                                        logo: formData.logo,
+                                        updated_last: loggedInProvider?.attributes.updated_last ?? new Date().toISOString()
                                     }
                                 }
                             ]
@@ -260,6 +290,8 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
                         throw new Error('Failed to update provider data') &&
                         toast.error('Failed to update data, if the issue persists contact the admin')
                     }
+                    setFormData(responseData.data[0].attributes);
+                    onUpdate(responseData.data[0].attributes);
                     setSelectedInsurances(responseData.data[0].attributes.insurance || []);
                     setSelectedCounties(responseData.data[0].attributes.counties_served || []);
                     setProviderName(responseData.data[0].attributes.name);
@@ -329,6 +361,11 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
     return (
         <div className='provider-edit-container'>
             <ToastContainer />
+            {sessionTimeLeft !== null && sessionTimeLeft <= 300 && (
+                <div className="session-warning">
+                    Session expires in: {Math.floor(sessionTimeLeft / 60)}:{(sessionTimeLeft % 60).toString().padStart(2, '0')}
+                </div>
+            )}
             {authModalOpen && <AuthModal onClose={() =>  setAuthModalOpen(false)} handleShownModal={handleShownModal}/>}
             <div className='user-info-section'>
                 <h1>Welcome, {providerName}</h1>
@@ -346,7 +383,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
                     {locations.map((location, index) => (
                     <div key={index} className="location-section">
                         <div>
-                        <h3>Location {index + 1}</h3>
+                        <h3>Location: {location.name}</h3>
                         </div>
                         <label htmlFor={`location-name-${index}`} className="editLabels">Location Name:</label>
                         <input

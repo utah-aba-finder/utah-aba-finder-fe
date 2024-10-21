@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react'
 import './LoginPage.css'
 import { User, Lock, Eye, EyeOff } from 'lucide-react';
 import { MockProviderData, ProviderAttributes } from '../Utility/Types';
-import ProviderEdit from '../Provider-edit/ProviderEdit'
 import { useAuth } from './AuthProvider';
 import { toast } from 'react-toastify';
 import { ToastContainer } from 'react-toastify';
@@ -18,9 +17,11 @@ export const LoginPage: React.FC = () => {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [currentProvider, setCurrentProvider] = useState<MockProviderData | undefined>();
-    const { setToken, setLoggedInProvider } = useAuth();
+    const { setToken, setLoggedInProvider, logout } = useAuth();
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -50,7 +51,6 @@ export const LoginPage: React.FC = () => {
                 }),
             });
             const data = await response.json();
-            console.log('Response data:', data);
 
 
             if (!response.ok) {
@@ -87,6 +87,7 @@ export const LoginPage: React.FC = () => {
                         ...providerDetails,
                         role: 'provider_admin' 
                     });
+                    toast.info('You are logged in as ' + providerDetails.attributes.name)
                     navigate(`/providerEdit/${providerId}`);
                 } else {
                     console.error('Provider ID not found');
@@ -120,6 +121,7 @@ export const LoginPage: React.FC = () => {
             };
         });
     };
+
     const handleShowPassword = () => {
         setShowPassword(!showPassword);
     }
@@ -132,11 +134,6 @@ export const LoginPage: React.FC = () => {
             </div>
         );
     }
-
-    const clearProviderData = () => {
-        setIsLoggedIn(false);
-        setCurrentProvider(undefined);
-    };
     return (
         <div className='loginWrapper'>
             <div className='loginBannerContainer'>
