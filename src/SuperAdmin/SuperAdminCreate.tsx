@@ -3,6 +3,8 @@ import './SuperAdminCreate.css';
 import { toast } from 'react-toastify';
 import { ToastContainer } from 'react-toastify';
 import { useNavigate } from 'react-router-dom'
+import CountiesModal from '../Provider-edit/CountiesModal'
+import { CountiesServed } from '../Utility/Types';
 
 interface SuperAdminCreateProps {
     handleCloseForm: () => void;
@@ -17,7 +19,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({ handleCloseForm }) 
         confirmPassword: '',
         locations: [{ id: null, name: '', address_1: '', city: '', state: '', zip: '', phone: '' }],
         insurances: [],
-        counties_served: [],
+        counties_served: [] as string[],
         website: '',
         cost: '',
         min_age: '',
@@ -32,6 +34,9 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({ handleCloseForm }) 
 
     const [isSaving, setIsSaving] = useState(false);
     const [error, setError] = useState('');
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedCounties, setSelectedCounties] = useState<string[]>([]);
+
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
@@ -62,6 +67,19 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({ handleCloseForm }) 
         setFormData(prev => ({ ...prev, locations: updatedLocations }));
     };
 
+    const handleOpenModal = () => {
+        setIsModalOpen(true);
+    };
+
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+    };
+
+    const handleCountiesChange = (newCounties: CountiesServed[]) => {
+        const countyNames = newCounties.map(county => county.county).filter(county => county !== null) as string[];
+        setSelectedCounties(countyNames);
+        setFormData(prev => ({ ...prev, counties_served: countyNames }));
+    };
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -98,7 +116,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({ handleCloseForm }) 
                                     accepted: true
                                 })),
                                 counties_served: formData.counties_served.map(county => ({
-                                    county: null
+                                    county
                                 })),
                                 min_age: parseInt(formData.min_age),
                                 max_age: parseInt(formData.max_age),
@@ -140,7 +158,6 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({ handleCloseForm }) 
                 logo: '',
             });
 
-            // console.log('Provider created successfully!');
             toast.success('Provider created successfully!');
             handleCloseForm();
         } catch (error) {
@@ -166,8 +183,6 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({ handleCloseForm }) 
                         <label htmlFor="email">E-mail Address</label>
                         <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="E-mail Address" required />
                     </div>
-                    {/* <input type="password" name="password" value={formData.password} onChange={handleChange} placeholder="Password" required />
-                <input type="password" name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} placeholder="Confirm Password" required /> */}
 
 
                     {formData.locations.map((location, index) => (
@@ -189,6 +204,21 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({ handleCloseForm }) 
 
                         </div>
                     ))}
+
+                    <div className='superAdmin-counties-modal-container'>
+                        <button type="button" onClick={handleOpenModal} className='superAdmin-open-counties-button'>
+                            Open Counties Modal
+                        </button>
+
+                        <CountiesModal
+                            isOpen={isModalOpen}
+                            onClose={handleCloseModal}
+                            selectedCounties={selectedCounties.map(county => ({ county }))}
+                            onCountiesChange={handleCountiesChange}
+                            providerCounties={[] as CountiesServed[]}
+                        />
+                    </div>
+
                     <div className='superAdmin-input-wrapper'>
                         <label htmlFor="website">Website</label>
                         <input
