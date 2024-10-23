@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import './SuperAdminCreate.css';
 import { toast } from 'react-toastify';
 import { ToastContainer } from 'react-toastify';
-import { useNavigate } from 'react-router-dom'
-import CountiesModal from '../Provider-edit/CountiesModal'
-import { CountiesServed } from '../Utility/Types';
+import { useNavigate } from 'react-router-dom';
+import CountiesModal from '../Provider-edit/CountiesModal';
+import { CountiesServed, Insurance } from '../Utility/Types';
+import { InsuranceModal } from '../Signup/InsuranceModal';
 
 interface SuperAdminCreateProps {
     handleCloseForm: () => void;
@@ -18,7 +19,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({ handleCloseForm }) 
         password: '',
         confirmPassword: '',
         locations: [{ id: null, name: '', address_1: '', city: '', state: '', zip: '', phone: '' }],
-        insurances: [],
+        insurances: [] as string[],
         counties_served: [] as string[],
         website: '',
         cost: '',
@@ -34,16 +35,12 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({ handleCloseForm }) 
 
     const [isSaving, setIsSaving] = useState(false);
     const [error, setError] = useState('');
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isCountiesModalOpen, setIsCountiesModalOpen] = useState(false);
+    const [isInsuranceModalOpen, setIsInsuranceModalOpen] = useState(false);
     const [selectedCounties, setSelectedCounties] = useState<string[]>([]);
-
+    const [selectedInsurances, setSelectedInsurances] = useState<string[]>([]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
-    };
-
-    const handleRadioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
     };
@@ -67,18 +64,35 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({ handleCloseForm }) 
         setFormData(prev => ({ ...prev, locations: updatedLocations }));
     };
 
-    const handleOpenModal = () => {
-        setIsModalOpen(true);
+    // Counties Modal Handlers
+    const handleOpenCountiesModal = () => {
+        setIsCountiesModalOpen(true);
     };
 
-    const handleCloseModal = () => {
-        setIsModalOpen(false);
+    const handleCloseCountiesModal = () => {
+        setIsCountiesModalOpen(false);
     };
 
     const handleCountiesChange = (newCounties: CountiesServed[]) => {
         const countyNames = newCounties.map(county => county.county).filter(county => county !== null) as string[];
         setSelectedCounties(countyNames);
         setFormData(prev => ({ ...prev, counties_served: countyNames }));
+    };
+
+    // Insurance Modal Handlers
+    const handleOpenInsuranceModal = () => {
+        setIsInsuranceModalOpen(true);
+    };
+
+    const handleCloseInsuranceModal = () => {
+        setIsInsuranceModalOpen(false);
+    };
+
+    // Updated to ensure insurance is saved and modal closes
+    const handleInsurancesChange = (selectedInsuranceNames: string[]) => {
+        setSelectedInsurances(selectedInsuranceNames);
+        setFormData(prev => ({ ...prev, insurances: selectedInsuranceNames }));
+        setIsInsuranceModalOpen(false); // Manually close modal after selection
     };
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -111,8 +125,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({ handleCloseForm }) 
                                 email: formData.email,
                                 cost: formData.cost,
                                 insurance: formData.insurances.map(ins => ({
-                                    name: null,
-                                    id: null,
+                                    name: ins,
                                     accepted: true
                                 })),
                                 counties_served: formData.counties_served.map(county => ({
@@ -184,39 +197,50 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({ handleCloseForm }) 
                         <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="E-mail Address" required />
                     </div>
 
-
                     {formData.locations.map((location, index) => (
-                        <div>
-                            <div key={location.id || index} className='superAdmin-location-wrapper'>
-                                <h3>Location {index + 1}</h3>
-                                <input type="text" placeholder="Location Name" value={location.name} onChange={(e) => handleLocationChange(index, 'name', e.target.value)} />
-                                <input type="text" placeholder="Street Address" value={location.address_1} onChange={(e) => handleLocationChange(index, 'address_1', e.target.value)} />
-                                <input type="text" placeholder="City" value={location.city} onChange={(e) => handleLocationChange(index, 'city', e.target.value)} />
-                                <input type="text" placeholder="State" value={location.state} onChange={(e) => handleLocationChange(index, 'state', e.target.value)} />
-                                <input type="text" placeholder="Zip" value={location.zip} onChange={(e) => handleLocationChange(index, 'zip', e.target.value)} />
-                                <input type="text" placeholder="Phone" value={location.phone} onChange={(e) => handleLocationChange(index, 'phone', e.target.value)} />
-                                <div>
-                                    <button type="button" onClick={(event) => addNewLocation()} className='superAdmin-add-location-button'>Add Location</button>
-                                    {/* <button type="button" onClick={(event) => removeLocation(index)}>Remove Location</button> */}
-                                </div>
-
+                        <div key={location.id || index} className='superAdmin-location-wrapper'>
+                            <h3>Location {index + 1}</h3>
+                            <input type="text" placeholder="Location Name" value={location.name} onChange={(e) => handleLocationChange(index, 'name', e.target.value)} />
+                            <input type="text" placeholder="Street Address" value={location.address_1} onChange={(e) => handleLocationChange(index, 'address_1', e.target.value)} />
+                            <input type="text" placeholder="City" value={location.city} onChange={(e) => handleLocationChange(index, 'city', e.target.value)} />
+                            <input type="text" placeholder="State" value={location.state} onChange={(e) => handleLocationChange(index, 'state', e.target.value)} />
+                            <input type="text" placeholder="Zip" value={location.zip} onChange={(e) => handleLocationChange(index, 'zip', e.target.value)} />
+                            <input type="text" placeholder="Phone" value={location.phone} onChange={(e) => handleLocationChange(index, 'phone', e.target.value)} />
+                            <div>
+                                <button type="button" onClick={addNewLocation} className='superAdmin-add-location-button'>Add Location</button>
                             </div>
-
                         </div>
                     ))}
 
                     <div className='superAdmin-counties-modal-container'>
-                        <button type="button" onClick={handleOpenModal} className='superAdmin-open-counties-button'>
-                            Open Counties Modal
+                        <button type="button" onClick={handleOpenCountiesModal} className='superAdmin-open-counties-button'>
+                            Select Counties
                         </button>
 
-                        <CountiesModal
-                            isOpen={isModalOpen}
-                            onClose={handleCloseModal}
-                            selectedCounties={selectedCounties.map(county => ({ county }))}
-                            onCountiesChange={handleCountiesChange}
-                            providerCounties={[] as CountiesServed[]}
-                        />
+                        {isCountiesModalOpen && (
+                            <CountiesModal
+                                isOpen={isCountiesModalOpen}
+                                onClose={handleCloseCountiesModal}
+                                selectedCounties={selectedCounties.map(county => ({ county }))}
+                                onCountiesChange={handleCountiesChange}
+                                providerCounties={[] as CountiesServed[]}
+                            />
+                        )}
+                    </div>
+
+                    <div className='superAdmin-insurance-modal-container'>
+                        <button type="button" onClick={handleOpenInsuranceModal} className='superAdmin-open-insurance-button'>
+                            Select Insurances
+                        </button>
+
+                        {isInsuranceModalOpen && (
+                            <InsuranceModal
+                                isOpen={isInsuranceModalOpen}
+                                onClose={handleCloseInsuranceModal}
+                                onSelect={handleInsurancesChange}
+
+                            />
+                        )}
                     </div>
 
                     <div className='superAdmin-input-wrapper'>
@@ -282,7 +306,6 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({ handleCloseForm }) 
                         </select>
                     </div>
 
-
                     <div className='superAdmin-input-wrapper-telehealth'>
                         <label htmlFor="telehealth_services">Telehealth Services</label>
                         <select
@@ -324,7 +347,6 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({ handleCloseForm }) 
                             <option value="no">No</option>
                         </select>
                     </div>
-
 
                     <div className='superAdmin-input-wrapper-spanish'>
                         <label htmlFor="spanish_speakers">Spanish Speakers</label>

@@ -8,9 +8,10 @@ interface Insurance {
 }
 
 interface InsuranceModalProps {
-    isOpen: boolean;
+    isOpen: boolean | any;
     onClose: () => void;
     onSelect: (selectedInsurances: string[]) => void;
+
 }
 
 export const InsuranceModal: React.FC<InsuranceModalProps> = ({ isOpen, onClose, onSelect }) => {
