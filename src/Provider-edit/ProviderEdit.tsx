@@ -14,7 +14,6 @@ import moment from 'moment';
 import 'react-toastify/dist/ReactToastify.css';
 import 'moment-timezone'; //Need to run npm i @types/moment-timezone to run this
 import { AuthModal } from './AuthModal';
-import { sortBy } from 'lodash';
 interface ProviderEditProps {
     loggedInProvider: MockProviderData | null;
     clearProviderData: () => void;
