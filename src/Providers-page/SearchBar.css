@@ -87,6 +87,7 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    text-align: center;
 }
 
 /* Input and select specific styles */
@@ -171,5 +172,19 @@
 @media (max-width: 431px) {
     .provider-map-searchbar input[type="text"] {
         width: 96%;
+    }
+}
+
+@media (max-width: 819px) {
+    .provider-county-select,
+.provider-insurance-select,
+.provider-spanish-select,
+.provider-service-select,
+.provider-waitlist-select,
+.provider-age-select,
+.provider-search-button,
+.provider-reset-button {
+    padding-left: 0;
+    padding-right: 0;
     }
 }

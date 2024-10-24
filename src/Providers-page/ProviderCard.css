@@ -278,7 +278,7 @@ margin-right: .3em;
     }
 }
 
-@media (max-width: 720px) {
+@media (max-width: 819px) {
     .provider-card {
         height: auto;
     }
@@ -330,7 +330,7 @@ margin-right: .3em;
     .favorite-button {
         font-size: 18px;
         border-radius: 25px;
-        width: 130px;
+        width: fit-content;
         height: 35px;
         font-weight: bold;
         position: relative;
