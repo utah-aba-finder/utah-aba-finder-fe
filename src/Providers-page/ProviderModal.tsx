@@ -135,6 +135,7 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ provider, address, mapAdd
               <p><strong>At Home Services:</strong> {provider.at_home_services || 'Contact us'}</p>
               <p><strong>In-Clinic Services:</strong> {provider.in_clinic_services || 'Contact us'}</p>
               <p><strong>Spanish Speakers:</strong> {provider.spanish_speakers || 'Contact us'}</p>
+              <p><strong>Cost:</strong> {provider.cost || 'Contact us'}</p>
               <p><strong>Insurance:</strong> {provider.insurance.map(i => i.name).join(', ') || 'Contact us'}</p>
             </div>
           </section>
