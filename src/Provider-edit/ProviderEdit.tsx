@@ -14,7 +14,6 @@ import moment from 'moment';
 import 'react-toastify/dist/ReactToastify.css';
 import 'moment-timezone'; //Need to run npm i @types/moment-timezone to run this
 import { AuthModal } from './AuthModal';
-import { sortBy } from 'lodash';
 interface ProviderEditProps {
     loggedInProvider: MockProviderData | null;
     clearProviderData: () => void;
@@ -42,6 +41,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
     const [originalCounties, setOriginalCounties] = useState<typeof selectedCounties | null>(null);
     const [providerName, setProviderName] = useState('');
     const [sessionTimeLeft, setSessionTimeLeft] = useState<number | null>(null);
+    const [updatedLast, setUpdatedLast] = useState<string | null>(null);
 
     useEffect(() => {
         const tokenExpiry = sessionStorage.getItem('tokenExpiry');
@@ -141,6 +141,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
             zip: '',
             phone: ''
         };
+        setLocations([...locations, newLocation]);
     };
 
     useEffect(() => {
@@ -219,6 +220,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
         setSelectedInsurances(updatedData.attributes.insurance ?? []);
         setSelectedCounties(updatedData.attributes.counties_served ?? []);
         setProviderName(updatedData.attributes.name ?? '');
+        setUpdatedLast(updatedData.attributes.updated_last ?? null);
     }, []);
     useEffect(() => {
         if (loggedInProvider) {
@@ -228,6 +230,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
                 accepted: true 
               })));
             setIsLoading(false);
+            setUpdatedLast(loggedInProvider.attributes.updated_last ?? null);
         } else {
             setIsLoading(false);
             setShowError('Failed to load provider data. Please try again later.');
@@ -248,38 +251,15 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
                         body: JSON.stringify({
                             data: [
                                 {
+                                    id: loggedInProvider?.id,
                                     type: "provider",
+                                    ...loggedInProvider,
                                     attributes: {
-                                        name: formData.name,
-                                        locations: locations.map(location => ({
-                                            id: location.id,
-                                            name: location.name,
-                                            address_1: location.address_1,
-                                            city: location.city,
-                                            state: location.state,
-                                            zip: location.zip,
-                                            phone: location.phone
-                                        })),
-                                        website: formData.website,
-                                        email: formData.email,
-                                        cost: formData.cost,
-                                        insurance: selectedInsurances.map(ins => ({
-                                            name: ins.name,
-                                            id: ins.id,
-                                            accepted: true
-                                        })),
-                                        counties_served: selectedCounties.map(county => ({
-                                            county: county.county
-                                        })),
-                                        min_age: formData.min_age,
-                                        max_age: formData.max_age,
-                                        waitlist: formData.waitlistTime,
-                                        telehealth_services: formData.telehealth,
-                                        spanish_speakers: formData.spanishSpeakers,
-                                        at_home_services: formData.at_home_services,
-                                        in_clinic_services: formData.in_clinic_services,
-                                        logo: formData.logo,
-                                        updated_last: loggedInProvider?.attributes.updated_last ?? new Date().toISOString()
+                                        ...formData,
+                                        ...loggedInProvider?.attributes,
+                                        insurance: selectedInsurances,
+                                        counties_served: selectedCounties,
+                                        locations: locations
                                     }
                                 }
                             ]
@@ -295,6 +275,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
                     setSelectedInsurances(responseData.data[0].attributes.insurance || []);
                     setSelectedCounties(responseData.data[0].attributes.counties_served || []);
                     setProviderName(responseData.data[0].attributes.name);
+                    setUpdatedLast(responseData.data[0].attributes.updated_last ?? null);
                     toast.success('Provider data updated successfully');
                     setShowError('');
                 } catch (error) {
@@ -307,9 +288,8 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
 
             updateProviderData();
         }
-    }, [isSaving, formData, loggedInProvider?.id, loggedInProvider?.attributes.name, loggedInProvider?.attributes.email, loggedInProvider?.attributes.cost, selectedInsurances, selectedCounties, updateLocalProviderData, locations]);
-    useEffect(() => {
-    }, [locations]);
+    }, [isSaving, formData, loggedInProvider?.id, loggedInProvider?.attributes.name, loggedInProvider?.attributes.email, loggedInProvider?.attributes.cost, selectedInsurances, selectedCounties, updateLocalProviderData, locations, updatedLast]);
+    
 
     useEffect(() => {
         if (showError) {
@@ -369,7 +349,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
             {authModalOpen && <AuthModal onClose={() =>  setAuthModalOpen(false)} handleShownModal={handleShownModal}/>}
             <div className='user-info-section'>
                 <h1>Welcome, {providerName}</h1>
-                <p>Last edited: {moment(loggedInProvider?.attributes.updated_last).utc().local().format('MM/DD/YYYY hh:mm:ss a')} {moment.tz.guess()}</p>
+                <p>Last edited: {updatedLast ? moment(updatedLast).local().format('MM/DD/YYYY hh:mm:ss a') : moment(loggedInProvider?.attributes.updated_last).local().format('MM/DD/YYYY hh:mm:ss a')} {moment.tz.guess()}</p>
                 <button className='logoutButton' onClick={handleLogout}>Logout</button>
                 <p>For any questions to the admin, please use the contact page. <strong>You will be logged out.</strong></p>
                 <Link to="/contact" className='contact-link' onClick={handleLogout}>Click here to go to the contact page</Link>

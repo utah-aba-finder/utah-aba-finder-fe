@@ -108,7 +108,7 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
                 ) : (
                   <ToggleLeft size={16} style={{ marginRight: '8px', verticalAlign: 'middle' }} />
                 )}
-                {'Favorite'}
+                {isFavorited ? 'Unfavorite' : 'Favorite'}
               </button>
             </div>
           </div>
