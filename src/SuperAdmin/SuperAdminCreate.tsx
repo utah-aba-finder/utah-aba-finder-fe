@@ -124,13 +124,8 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({ handleCloseForm }) 
                                 website: formData.website,
                                 email: formData.email,
                                 cost: formData.cost,
-                                insurance: formData.insurances.map(ins => ({
-                                    name: ins,
-                                    accepted: true
-                                })),
-                                counties_served: formData.counties_served.map(county => ({
-                                    county
-                                })),
+                                insurance: selectedInsurances,
+                                counties_served: selectedCounties,
                                 min_age: parseInt(formData.min_age),
                                 max_age: parseInt(formData.max_age),
                                 waitlist: formData.waitlist,

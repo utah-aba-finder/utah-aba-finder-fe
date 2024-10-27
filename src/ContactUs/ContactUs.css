@@ -3,6 +3,16 @@
     flex-direction: column;
 }
 
+.contact-us-text {
+    margin-top: 2rem;
+    align-self: center;
+    width: 90%;
+}
+
+.contact-us-phone-number {
+    color: rgb(251, 145, 15);
+}
+
 .contact-banner {
     position: relative;
     display: flex;

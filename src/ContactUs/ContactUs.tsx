@@ -35,6 +35,10 @@ const ContactUs: React.FC = () => {
                 <img src={teamBanner} className='contact-banner-pic' alt="Team Banner" />
                 <h1 className='contact-banner-title'>Contact Us</h1>
             </div>
+            <div className='contact-us-text'>
+                <p>If you have any questions or feedback, please feel free to contact us using the form below.</p>
+                <p>Or feel free to call us at <a href="tel:1(385)560-4481" className='contact-us-phone-number'>(385) 560-4481</a></p>
+            </div>
             <form ref={form} className='contact-input-container' onSubmit={handleSubmit}>
                 <input name="user_name" placeholder='Your name' className='contact-input-name' required />
                 <input
