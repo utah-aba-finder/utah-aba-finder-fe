@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import './SuperAdminCreate.css';
 import { toast } from 'react-toastify';
 import { ToastContainer } from 'react-toastify';
-import { useNavigate } from 'react-router-dom';
 import CountiesModal from '../Provider-edit/CountiesModal';
 import { CountiesServed, Insurance } from '../Utility/Types';
 import { InsuranceModal } from '../Signup/InsuranceModal';
+import 'react-toastify/dist/ReactToastify.css';
 
 interface SuperAdminCreateProps {
     handleCloseForm: () => void;
