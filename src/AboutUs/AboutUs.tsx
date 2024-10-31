@@ -137,22 +137,6 @@ const AboutUs: React.FC = () => {
                             </div>
                         </div>
                     </div>
-
-                    <div className="profile-card">
-                        <img src={smileIcon} alt="Smile" className="profile-icon" />
-                        <div className="profile-info">
-                            <h3>Mel Langhoff</h3>
-                            <p>Mel is a backend developer specializing in Ruby on Rails, with a background in IT & SAP Project Management, skilled in cloud migration, Agile methodologies, and SaaS SDLC implementations. Fluent in Spanish, she’s passionate about bridging cultural gaps and enhancing communication and empathy.</p>
-                            <div className="icon-container">
-                                <a href="https://www.linkedin.com/in/melissalanghoff/" target="_blank" rel="noopener noreferrer">
-                                    <img src={LinkedinIcon} alt="LinkedIn" className="linkedin-icon" />
-                                </a>
-                                <a href="https://github.com/mel-langhoff" target="_blank" rel="noopener noreferrer">
-                                    <img src={githubIcon} alt="GitHub" className="github-icon" />
-                                </a>
-                            </div>
-                        </div>
-                    </div>
                 </div>
 
             </div>
