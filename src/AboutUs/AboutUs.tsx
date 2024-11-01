@@ -51,7 +51,7 @@ const AboutUs: React.FC = () => {
 
                 <div className="front-end-container card">
                     <div className="front-end-title-container">
-                        <h2 className="title">Meet the Team</h2>
+                        <h2 className="team-title">Meet the Team</h2>
                     </div>
                     <div className="profile-cards-container">   
                         <div className="profile-card">
