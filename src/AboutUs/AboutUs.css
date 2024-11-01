@@ -82,42 +82,52 @@
     flex-direction: row;
     justify-content: space-evenly;
     text-align: center;
+    width: 100%;
     margin-top: 2rem;
 }
 
-.front-end-title,
-.back-end-title {
+.title {
     color: rgb(255, 106, 0);
     text-align: center;
     margin: 0 auto;
-    margin-bottom: 1rem;
+    margin-bottom: 2rem;
+    font-size: 2.5rem;
 }
 
 .card {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
     background-color: rgb(231, 231, 231);
     padding: 20px;
-    border-radius: 8px;
     width: 100%;
-    max-width: 500px;
     margin: 10px;
-    border-radius: 30px;
+    border-radius: 50px;
     text-align: left;
+}
+
+.profile-cards-container {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+    width: 100%;
 }
 
 .profile-card {
     display: flex;
     align-items: flex-start;
     margin-bottom: 4rem;
+    width: 50%;
 }
 
 .profile-icon {
-    width: 60px;
+    width: 5rem;
     height: auto;
     margin-right: 15px;
-    border-radius: 50%;
+    border-radius: 20%;
+    height: 10rem;
+    width: 10rem;
+    object-fit: cover;
 }
 
 .profile-info {
@@ -157,7 +167,7 @@
     height: 100%;
 } */
 
-@media (max-width: 540px) {
+@media (max-width: 720px) {
     .about-us-title {
         font-size: 2rem;
     }
@@ -173,6 +183,25 @@
     }
 
     .card {
+        width: 90%;
+    }
+
+    .profile-card {
+        width: 100%;
+    }
+
+    .title {
+        font-size: 2rem;
+    }
+
+    .profile-icon {
+        width: 10rem;
+        height: 10rem;
+    }
+}
+
+@media (max-width: 1066px) and (orientation: landscape) {
+    .profile-card {
         width: 90%;
     }
 }
