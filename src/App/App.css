@@ -1,38 +1,31 @@
-html,
-body {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-}
-
 .App {
   text-align: center;
   width: 100%;
   min-height: 100vh;
   justify-content: center;
+  /* Remove the padding-top from here */
 }
 
-.Header {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 3px solid orange;
-  padding-top: 1rem;
-  padding-bottom: 1rem;
+/* Remove any margin/padding from body */
+body {
+  margin: 0;
+  padding: 0;
 }
 
-.grid {
-  display: grid;
+/* Add a wrapper for main content */
+.main-content {
+  padding-top: 62px; /* Height of header (6px orange strip + 56px main header) */
+  width: 100%;
 }
 
-.title {
-  font-family: "Gotham", sans-serif;
-  color: #424266;
-  font-weight: 700;
+/* If you have page banners, you might want to add this */
+.page-banner {
+  width: 100%;
+  margin-top: -62px; /* Negative margin to pull banner up under header */
+  padding-top: 62px; /* Add padding to push content down */
 }
 
-.text {
-  font-weight: 400;
-  color: #565656;
+// Header Component (Header.tsx) adjustments:
+.fixed w-full top-0 z-50 {
+  height: 62px; /* Total header height */
 }
