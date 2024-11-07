@@ -6,11 +6,15 @@
 .contact-us-text {
     margin-top: 2rem;
     align-self: center;
-    width: 90%;
 }
 
 .contact-us-phone-number {
     color: rgb(251, 145, 15);
+}
+
+.contact-content{
+    background-color: #f7eee4;
+    padding-bottom: 2em;
 }
 
 .contact-banner {

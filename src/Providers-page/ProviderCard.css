@@ -339,3 +339,42 @@ margin-right: .3em;
         /* background-image: linear-gradient(90deg, rgba(57, 210, 248, 1), rgb(121, 157, 180)); */
     }
 }
+
+/* Animations and Effects */
+
+.provider-cards-grid {
+    position: relative;
+  }
+  
+  .provider-card-wrapper {
+    opacity: 1;
+    transform: translateY(0);
+    transition: all 0.3s ease-in-out;
+  }
+  
+  /* Animation for cards leaving */
+  .provider-cards-grid.animating .provider-card-wrapper {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  
+  /* Animation for cards entering */
+  .provider-cards-grid:not(.animating) .provider-card-wrapper {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  /* Prevent interaction during animation */
+  .provider-cards-grid.animating {
+    pointer-events: none;
+  }

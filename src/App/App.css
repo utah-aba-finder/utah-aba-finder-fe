@@ -25,7 +25,34 @@ body {
   padding-top: 62px; /* Add padding to push content down */
 }
 
-// Header Component (Header.tsx) adjustments:
 .fixed w-full top-0 z-50 {
   height: 62px; /* Total header height */
+}
+
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content {
+  flex: 1;
+  padding-top: 4.5rem; /* Adjust based on header height */
+  display: flex;
+  flex-direction: column;
+}
+
+.grid {
+  display: grid;
+}
+
+.title {
+  font-family: "Gotham", sans-serif;
+  color: #424266;
+  font-weight: 700;
+}
+
+.text {
+  font-weight: 400;
+  color: #565656;
 }
