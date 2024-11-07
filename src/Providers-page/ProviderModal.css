@@ -28,7 +28,7 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  background-color: rgb(227, 227, 227);
+  background-color: rgb(255, 255, 255);
   border-radius: 30px;
   overflow: hidden;
 }
@@ -45,7 +45,7 @@
 
 .modal-logo {
   padding-top: 1em;
-  background-color: rgb(210, 195, 149);
+  background-color: whitesmoke;
   transition: background-color 0.3s ease; 
 }
 
