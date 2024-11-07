@@ -129,11 +129,7 @@ function SuperAdminEditWrapper({
   onUpdate: (updatedProvider: ProviderAttributes) => void;
 }) {
   const { providerId } = useParams();
-  const provider = providers.find((p) => p.id === (providerId ?? 0));
-
-  console.log("providerId:", providerId);
-  console.log("providers:", providers);
-  console.log("found provider:", provider);
+  const provider = providers.find(p => p.id === (providerId ?? 0));
 
   if (!provider) {
     return <div>Provider not found</div>;
