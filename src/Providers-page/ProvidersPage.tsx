@@ -494,6 +494,7 @@ const ProvidersPage: React.FC = () => {
         setCurrentPage(prevPage => prevPage + 1);
         setIsAnimating(false);
       }, 300); 
+    }
   };
 
   const handlePreviousPage = () => {
