@@ -50,7 +50,7 @@
 }
 
 .glass-two {
-  margin: .5em;
+  margin: 0.5em;
   background-color: white;
   border-radius: 3.3rem;
   z-index: 2;
@@ -67,10 +67,9 @@
   align-items: center;
 }
 
-
 .searched-provider-number-status {
   display: flex;
-justify-content: center;
+  justify-content: center;
 }
 .card-container {
   width: 100%;
@@ -78,9 +77,9 @@ justify-content: center;
 
 .provider-cards-grid {
   display: grid;
-  grid-template-columns: repeat(minmax(280px, 1fr)); 
-  gap: 20px; 
-  padding: 20px; 
+  grid-template-columns: repeat(minmax(280px, 1fr));
+  gap: 20px;
+  padding: 20px;
 }
 
 /* Providers Page Responsiveness */

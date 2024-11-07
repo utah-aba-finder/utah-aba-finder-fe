@@ -56,6 +56,7 @@
     height: fit-content;
     width: 100%;
     padding: 20px 0;
+    background-color: #f7eee4;
 }
 
 .loginForm {
@@ -263,7 +264,7 @@
 
     .loginContainer {
         min-height: 50vh;
-        padding: 40px 0;
+        padding: 20px 0;
     }
 
     .loginForm {

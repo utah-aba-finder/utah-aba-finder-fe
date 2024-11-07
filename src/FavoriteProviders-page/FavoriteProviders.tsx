@@ -96,56 +96,60 @@ const FavoriteProviders: React.FC = () => {
     return (
         <div className="favorite-providers-page">
             <section className="find-your-provider-section">
-            <ToastContainer />
+                <ToastContainer />
                 <img src={playblocks} alt="Find Your Provider" className="banner-image" />
                 <h1 className="providers-banner-title">Favorite Providers</h1>
             </section>
 
-            <section className="glass">
-                <section className="favorite-provider-list-section">
-                    {favoriteProviders.length === 0 ? (
-                        <div className="favorite-provider-info">
-                            <p className="favorite-provider-number title">You have not favorited any providers yet</p>
-                            <Link to="/providers" className="favorite-provider-section-button">VIEW PROVIDERS</Link>
-                        </div>
-                    ) : (
-                        <div>
-                            <p className="favorite-provider-number title">
-                                You have {favoriteProviders.length} favorite provider{favoriteProviders.length !== 1 ? 's' : ''}
-                            </p>
-                            <div className="card-container">
-                                <div className="provider-cards-grid">
-                                    {currentProviders.map((provider) => (
-                                        <ProviderCard
-                                            key={provider.id}
-                                            provider={provider}
-                                            onViewDetails={() => handleProviderCardClick(provider)}
-                                            onToggleFavorite={() => handleToggleFavorite(provider.id)}
-                                            isFavorited={true}
-                                            favoritedDate={favoriteDates[provider.id]}
-                                            renderViewOnMapButton={() => null}
-                                        />
-                                    ))}
-                                </div>
-                                {favoriteProviders.length > providersPerPage && (
-                                    <div className="pagination-controls">
-                                        {currentPage > 1 && (
-                                            <button className="pagination-button" onClick={handlePreviousPage}>
-                                                &lt; Previous
-                                            </button>
-                                        )}
-                                        {currentPage < totalPages && (
-                                            <button className="pagination-button" onClick={handleNextPage}>
-                                                Next &gt;
-                                            </button>
-                                        )}
-                                    </div>
-                                )}
+            <div className="glass-container">
+                {favoriteProviders.length === 0 ? (
+                    <div className="favorite-provider-info">
+                        <p className="favorite-provider-number title">You have not favorited any providers yet</p>
+                        <Link to="/providers" className="favorite-provider-section-button">VIEW PROVIDERS</Link>
+                    </div>
+                ) : (
+                    <p className="favorite-provider-number title">
+                        You have {favoriteProviders.length} favorite provider{favoriteProviders.length !== 1 ? 's' : ''}
+                    </p>
+                )}
+            </div>
+
+            {favoriteProviders.length > 0 && (
+                <section className={`glass ${totalPages > 1 ? 'with-pagination' : ''}`}>
+                    <div className="favorite-provider-list-section">
+                        <div className="card-container">
+                            <div className="provider-cards-grid">
+                                {currentProviders.map((provider) => (
+                                    <ProviderCard
+                                        key={provider.id}
+                                        provider={provider}
+                                        onViewDetails={() => handleProviderCardClick(provider)}
+                                        onToggleFavorite={() => handleToggleFavorite(provider.id)}
+                                        isFavorited={true}
+                                        favoritedDate={favoriteDates[provider.id]}
+                                        renderViewOnMapButton={() => null}
+                                    />
+                                ))}
                             </div>
+                            {favoriteProviders.length > providersPerPage && (
+                                <div className="favorite-pagination-controls">
+                                    {currentPage > 1 && (
+                                        <button className="pagination-button" onClick={handlePreviousPage}>
+                                            &lt; Previous
+                                        </button>
+                                    )}
+                                    {currentPage < totalPages && (
+                                        <button className="pagination-button" onClick={handleNextPage}>
+                                            Next &gt;
+                                        </button>
+                                    )}
+                                </div>
+                            )}
                         </div>
-                    )}
+                    </div>
                 </section>
-            </section>
+            )}
+
             {selectedProvider && (
                 <ProviderModal
                     provider={selectedProvider}

@@ -35,13 +35,14 @@ const ContactUs: React.FC = () => {
                 <img src={teamBanner} className='contact-banner-pic' alt="Team Banner" />
                 <h1 className='contact-banner-title'>Contact Us</h1>
             </div>
-            <div className='contact-us-text'>
-                <p>If you have any questions or feedback, please feel free to contact us using the form below.</p>
-                <p>Or feel free to call us at <a href="tel:1(385)560-4481" className='contact-us-phone-number'>(385) 560-4481</a></p>
-            </div>
-            <form ref={form} className='contact-input-container' onSubmit={handleSubmit}>
-                <input name="user_name" placeholder='Your name' className='contact-input-name' required />
-                <input
+            <div className="contact-content">
+                <div className='contact-us-text'>
+                    <p>If you have any questions or feedback, please feel free to contact us using the form below.</p>
+                    <p>Or feel free to call us at <a href="tel:1(385)560-4481" className='contact-us-phone-number'>(385) 560-4481</a></p>
+                </div>
+                <form ref={form} className='contact-input-container' onSubmit={handleSubmit}>
+                    <input name="user_name" placeholder='Your name' className='contact-input-name' required />
+                     <input
                     name="user_email"
                     placeholder='Your e-mail address'
                     className='contact-input-email'
@@ -49,10 +50,11 @@ const ContactUs: React.FC = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                />
-                <textarea name="message" placeholder='Message' className='contact-input-message' required />
-                <button className='contact-page-button' type="submit">Send</button>
-            </form>
+                    />
+                     <textarea name="message" placeholder='Message' className='contact-input-message' required />
+                    <button className='contact-page-button' type="submit">Send</button>
+                </form>
+            </div>
         </div>
     );
 }

@@ -1,4 +1,4 @@
-.main-logo-link {
+/* .main-logo-link {
     display: inline-block;
     padding: 20px;
 }
@@ -78,7 +78,6 @@
     justify-content: center;
     gap: 2rem;
     width: 85%;
-    /* padding: .5rem; */
 }
 
 @media (max-width: 480px) {
@@ -192,4 +191,4 @@
     }
 
 
-}
+} */
