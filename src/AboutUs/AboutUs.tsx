@@ -50,13 +50,16 @@ const AboutUs: React.FC = () => {
             <div className="about-us-portfolio">
 
                 <div className="front-end-container card">
-                    <h2 className="front-end-title">Front End</h2>
-
-                    <div className="profile-card">
-                        <img src={jordanPic} alt="jordan" className="profile-icon" />
+                    <div className="front-end-title-container">
+                        <h2 className="team-title">Meet the Team</h2>
+                    </div>
+                    <div className="profile-cards-container">   
+                        <div className="profile-card">
+                            <img src={jordanPic} alt="jordan" className="profile-icon" />
                         <div className="profile-info">
                             <h3>Jordan Williamson</h3>
-                            <p> Jordan is a front-end developer with a background as a Military Working Dog Handler in the U.S. Army, holding degrees in Criminal Justice and IT with a concentration in programming and software development, and a father of two ASD children.</p>
+                            <h3>Founder, Front End Developer</h3>
+                            <p> Jordan is a front-end developer with a background as a Military Working Dog Handler in the U.S. Army, holding degrees in Criminal Justice and IT with a concentration in programming and software development, and a father of two ASD children. Jordan wanted to create a platform that would make it easier for parents to find needed resources for their children.</p>
                             <div className="icon-container">
                                 <a href="https://www.linkedin.com/in/jordan-williamson-a079b3271/" target="_blank" rel="noopener noreferrer">
                                     <img src={LinkedinIcon} alt="LinkedIn" className="linkedin-icon" />
@@ -72,6 +75,7 @@ const AboutUs: React.FC = () => {
                         <img src={kevinPic} alt="kevin" className="profile-icon" />
                         <div className="profile-info">
                             <h3>Kevin Nelson</h3>
+                            <h3>Co-Founder, Front End Developer</h3>
                             <p>Kevin Nelson is a software engineer with a background in business and legal operations, who combines his Juris Doctorate and Business Administration degrees to bridge the gap between business/law and tech.</p>
                             <div className="icon-container">
                                 <a href="https://www.linkedin.com/in/kevinnelson418/" target="_blank" rel="noopener noreferrer">
@@ -88,6 +92,7 @@ const AboutUs: React.FC = () => {
                         <img src={seongPic} alt="Seong" className="profile-icon" />
                         <div className="profile-info">
                             <h3>Seong Kang</h3>
+                            <h3>Co-Founder, Front End Developer</h3>
                             <p>Seong is passionate about accessibility, responsive design, and creating better UI/UX, blending a background in the U.S. Army, behavioral health, and entertainment technology with skills in React, JavaScript, HTML, and CSS.</p>
                             <div className="icon-container">
                                 <a href="https://www.linkedin.com/in/seong-kang/" target="_blank" rel="noopener noreferrer">
@@ -99,17 +104,11 @@ const AboutUs: React.FC = () => {
                             </div>
                         </div>
                     </div>
-                </div>
-
-                {/* <div className="profile-divider"></div> */}
-
-                <div className="back-end-container card">
-                    <h2 className="back-end-title">Back End</h2>
-
                     <div className="profile-card">
                         <img src={austinPic} alt="Smile" className="profile-icon" />
                         <div className="profile-info">
                             <h3>Austin Carr-Jones</h3>
+                            <h3>Co-Founder, Back End Developer</h3>
                             <p>Austin is a software engineer with a background in sales, using technologies like Ruby on Rails, RSpec, PostgreSQL, SQL, and Bootstrap to build effective solutions, leveraging 14 years of experience in optimizing CRM workflows and driving growth.</p>
                             <div className="icon-container">
                                 <a href="https://www.linkedin.com/in/austin-carr-jones/" target="_blank" rel="noopener noreferrer">
@@ -126,6 +125,7 @@ const AboutUs: React.FC = () => {
                         <img src={cheePic} alt="Smile" className="profile-icon" />
                         <div className="profile-info">
                             <h3>Chee Lee</h3>
+                            <h3>Co-Founder, Back End Developer</h3>
                             <p>Chee is a software engineer with a background in healthcare, bringing analytical skills and a unique problem-solving perspective from five years in interventional radiology, and is eager to apply these abilities to developing innovative software solutions.</p>
                             <div className="icon-container">
                                 <a href="https://www.linkedin.com/in/chee-lee-rtr/" target="_blank" rel="noopener noreferrer">
@@ -138,7 +138,7 @@ const AboutUs: React.FC = () => {
                         </div>
                     </div>
                 </div>
-
+                </div>
             </div>
         </div>
     );
