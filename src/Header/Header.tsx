@@ -50,7 +50,7 @@ const Header = () => {
                 <img
                   src={Logo}
                   alt="Utah ABA Locator"
-                  className="h-[5.6rem] w-auto max-w-[200px] object-contain"
+                  className="h-[5.6rem] w-auto max-w-[300px] object-contain"
                 />
               </Link>
   
