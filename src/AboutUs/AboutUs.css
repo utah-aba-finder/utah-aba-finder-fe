@@ -100,7 +100,7 @@
 .card {
     display: flex;
     flex-direction: column;
-    background-color: rgb(231, 231, 231);
+    background-color: rgb(255, 255, 255);
     padding: 20px;
     width: 100%;
     margin: 10px;
