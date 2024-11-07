@@ -63,7 +63,7 @@ function App() {
 
   return (
     <div className="App">
-      <Header /> {/* This will be your new styled header */}
+      <Header /> 
       <div className="main-content">
         <AuthProvider>
           <Routes>
