@@ -1,6 +1,7 @@
 .provider-card {
     display: flex;
-    background: linear-gradient(to left top, rgba(249, 249, 249, 0.767), rgba(223, 223, 223, 0.848));
+    background-color: white;
+    /* background: linear-gradient(to left top, rgb(249, 249, 249), rgba(223, 223, 223, 0.848)); */
     box-shadow: 6px 6px 20px rgba(122, 122, 122, 0.212);
     border-radius: 55px;
     overflow: hidden;
@@ -13,7 +14,7 @@
 .provider-card:hover {
     transform: translateY(-8px) scale(1);
     background: linear-gradient(to left top, rgb(210, 195, 149), rgb(210, 195, 149));
-    color: #fff;
+    color: #ffffff;
     box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.3);
 }
 
@@ -32,7 +33,7 @@
     left: 5px;
     right: 5px;
     bottom: 5px;
-    border: 1.5px solid rgb(255, 255, 255);
+    border: 1.5px solid rgb(224, 224, 224);
     border-radius: 50px;
     pointer-events: none;
 }
@@ -54,7 +55,7 @@
 }
 
 .provider-card:hover .card-grid-logo {
-    background-color: rgb(223, 223, 223);
+    background-color: #f7eee4;
 }
 
 .provider-logo {

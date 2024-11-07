@@ -47,11 +47,12 @@ margin-bottom: 1.2em;
 
 .glass {
   margin: 0.5em;
-  background: linear-gradient(
+background: #eaeaea;
+  /* background: linear-gradient(
     to right bottom,
     rgba(255, 252, 232, 0.751),
     rgba(131, 128, 141, 0.524)
-  );
+  ); */
   border-radius: 3.3rem;
   z-index: 2;
   backdrop-filter: blur(2rem);
