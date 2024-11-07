@@ -64,7 +64,6 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({ handleCloseForm }) 
         setFormData(prev => ({ ...prev, locations: updatedLocations }));
     };
 
-    // Counties Modal Handlers
     const handleOpenCountiesModal = () => {
         setIsCountiesModalOpen(true);
     };
