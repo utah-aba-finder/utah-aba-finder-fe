@@ -4,7 +4,7 @@ import "./Footer.css";
 
 const Footer = () => {
     return (
-        <footer className="footer"> {/* Added top margin */}
+        <footer className="footer"> 
             <div className="h-[.2em] bg-[#ff5722] w-full" />
             <div className="footer-content bg-white">
                 <div className="social-icons">

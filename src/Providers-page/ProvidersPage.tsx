@@ -493,8 +493,7 @@ const ProvidersPage: React.FC = () => {
       setTimeout(() => {
         setCurrentPage(prevPage => prevPage + 1);
         setIsAnimating(false);
-      }, 300); // Match this with animation duration
-    }
+      }, 300); 
   };
 
   const handlePreviousPage = () => {
@@ -503,7 +502,7 @@ const ProvidersPage: React.FC = () => {
       setTimeout(() => {
         setCurrentPage(prevPage => prevPage - 1);
         setIsAnimating(false);
-      }, 300); // Match this with animation duration
+      }, 300); 
     }
   };
 
