@@ -9,9 +9,10 @@ import 'react-toastify/dist/ReactToastify.css';
 
 interface SuperAdminCreateProps {
     handleCloseForm: () => void;
+    onProviderCreated: () => void;
 }
 
-const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({ handleCloseForm}) => {
+const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({ handleCloseForm, onProviderCreated}) => {
     const [formData, setFormData] = useState({
         id: null,
         name: '',
@@ -129,7 +130,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({ handleCloseForm}) =
             }
             
             toast.success(`Provider ${formData.name} created successfully!`);
-
+            onProviderCreated();
             setFormData({
                 id: null,
                 name: '',

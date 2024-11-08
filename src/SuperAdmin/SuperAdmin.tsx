@@ -136,7 +136,7 @@ export const SuperAdmin = () => {
                     <button className='superAdminCreateButton' onClick={() => toggleNewProviderForm()}>{!openNewProviderForm ? 'Create New Provider' : 'Close New Provider Form'}</button>
                     <button className='superAdminDeleteButton' disabled>Delete Provider</button>
                 </div>
-                {openNewProviderForm ? <SuperAdminCreate handleCloseForm={toggleNewProviderForm}/> : null}
+                {openNewProviderForm ? <SuperAdminCreate handleCloseForm={toggleNewProviderForm} onProviderCreated={fetchAllProviders}/> : null}
             </div>
         </div>
     );
