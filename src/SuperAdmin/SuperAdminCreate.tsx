@@ -74,10 +74,6 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({ handleCloseForm }) 
         setIsInsuranceModalOpen(true);
     };
 
-    const handleCloseInsuranceModal = () => {
-        setIsInsuranceModalOpen(false);
-    };
-
     const handleInsurancesChange = (selectedInsuranceNames: Insurance[]) => {
         setSelectedInsurances(selectedInsuranceNames);
     };
@@ -131,6 +127,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({ handleCloseForm }) 
                 const errorData = await response.json();
                 throw new Error(errorData.message || 'Failed to create provider');
             }
+            toast.success('Provider created successfully!');
 
             setFormData({
                 id: null,
@@ -153,7 +150,6 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({ handleCloseForm }) 
                 logo: '',
             });
 
-            toast.success('Provider created successfully!');
             handleCloseForm();
         } catch (error) {
             console.error('Error creating provider:', error);
@@ -205,7 +201,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({ handleCloseForm }) 
                                 onClose={handleCloseCountiesModal}
                                 selectedCounties={selectedCounties}
                                 onCountiesChange={handleCountiesChange}
-                                providerCounties={[] as CountiesServed[]}
+                                providerCounties={selectedCounties}
                             />
                         )}
                     </div>
