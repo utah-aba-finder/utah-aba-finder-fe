@@ -9,9 +9,10 @@ import 'react-toastify/dist/ReactToastify.css';
 
 interface SuperAdminCreateProps {
     handleCloseForm: () => void;
+    onProviderCreated?: () => void; // Add callback prop
 }
 
-const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({ handleCloseForm }) => {
+const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({ handleCloseForm, onProviderCreated }) => {
     const [formData, setFormData] = useState({
         id: null,
         name: '',
@@ -127,8 +128,10 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({ handleCloseForm }) 
                 const errorData = await response.json();
                 throw new Error(errorData.message || 'Failed to create provider');
             }
+            
             toast.success('Provider created successfully!');
 
+            // Reset form data
             setFormData({
                 id: null,
                 name: '',
@@ -149,6 +152,11 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({ handleCloseForm }) 
                 in_clinic_services: '',
                 logo: '',
             });
+
+            // Call the callback to refresh provider list
+            if (onProviderCreated) {
+                onProviderCreated();
+            }
 
             handleCloseForm();
         } catch (error) {
@@ -213,11 +221,11 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({ handleCloseForm }) 
 
                         {isInsuranceModalOpen && (
                             <InsuranceModal
-                            isOpen={isInsuranceModalOpen}
-                            onClose={() => setIsInsuranceModalOpen(false)}
-                            selectedInsurances={selectedInsurances}
-                            onInsurancesChange={handleInsurancesChange}
-                            providerInsurances={selectedInsurances}
+                                isOpen={isInsuranceModalOpen}
+                                onClose={() => setIsInsuranceModalOpen(false)}
+                                selectedInsurances={selectedInsurances}
+                                onInsurancesChange={handleInsurancesChange}
+                                providerInsurances={selectedInsurances}
                             />
                         )}
                     </div>

@@ -47,9 +47,8 @@ export const SuperAdmin = () => {
             const timer = setInterval(updateSessionTime, 1000);
             return () => clearInterval(timer);
         }
-    }, []);
+    }, );
 
-    useEffect(() => {
       const fetchAllProviders = async () => {
           try {
               const response = await fetch('https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/admin/providers', {
@@ -68,8 +67,10 @@ export const SuperAdmin = () => {
               toast.error('Failed to fetch providers. Please try again later.');
           }
       };
-      fetchAllProviders();
-  }, []);
+
+  useEffect(() => {
+    fetchAllProviders();
+  }, [])
 
     const handleProviderSelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
         const providerId = Number(event.target.value);
@@ -143,7 +144,7 @@ export const SuperAdmin = () => {
                     <button className='superAdminCreateButton' onClick={() => toggleNewProviderForm()}>{!openNewProviderForm ? 'Create New Provider' : 'Close New Provider Form'}</button>
                     <button className='superAdminDeleteButton' disabled>Delete Provider</button>
                 </div>
-                {openNewProviderForm ? <SuperAdminCreate handleCloseForm={toggleNewProviderForm}/> : null}
+                {openNewProviderForm ? <SuperAdminCreate handleCloseForm={toggleNewProviderForm} onProviderCreated={fetchAllProviders}/> : null}
             </div>
         </div>
     );
