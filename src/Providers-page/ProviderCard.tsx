@@ -80,7 +80,7 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
                 <strong><Globe style={{ marginRight: '8px' }} />
                   Website: </strong>
                 <a
-                  href={provider.website?.includes('http') ? provider.website : `https://${provider.website}` ?? undefined}
+                  href={provider.website?.includes('http') || provider.website?.includes('https') ? provider.website : `https://${provider.website}` ?? undefined}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="custom-link"

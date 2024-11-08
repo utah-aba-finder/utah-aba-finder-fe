@@ -363,6 +363,8 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({ provider, onUpda
                                 onChange={handleInputChange}
                                 placeholder="1"
                                 min="1"
+                                max="100"
+                                step="0.5"
                             />
 
                             <label htmlFor='max_age' className='editLabels'>Maximum Age: </label>

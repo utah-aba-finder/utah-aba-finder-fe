@@ -9,10 +9,9 @@ import 'react-toastify/dist/ReactToastify.css';
 
 interface SuperAdminCreateProps {
     handleCloseForm: () => void;
-    onProviderCreated?: () => void; // Add callback prop
 }
 
-const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({ handleCloseForm, onProviderCreated }) => {
+const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({ handleCloseForm}) => {
     const [formData, setFormData] = useState({
         id: null,
         name: '',
@@ -129,9 +128,8 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({ handleCloseForm, on
                 throw new Error(errorData.message || 'Failed to create provider');
             }
             
-            toast.success('Provider created successfully!');
+            toast.success(`Provider ${formData.name} created successfully!`);
 
-            // Reset form data
             setFormData({
                 id: null,
                 name: '',
@@ -152,13 +150,9 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({ handleCloseForm, on
                 in_clinic_services: '',
                 logo: '',
             });
-
-            // Call the callback to refresh provider list
-            if (onProviderCreated) {
-                onProviderCreated();
-            }
-
-            handleCloseForm();
+            setTimeout(() => {
+                handleCloseForm();
+            }, 3000);
         } catch (error) {
             console.error('Error creating provider:', error);
             setError('There was an error creating the provider. Please try again.');
@@ -290,6 +284,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({ handleCloseForm, on
                             <option value="" disabled>Select Waitlist Information</option>
                             <option value="no wait list">No wait list</option>
                             <option value="6 months or less">6 months or less</option>
+                            <option value="6 months or more">6 months or more</option>
                         </select>
                     </div>
 
