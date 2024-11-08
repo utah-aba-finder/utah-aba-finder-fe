@@ -4,14 +4,14 @@ import { toast } from 'react-toastify';
 import { ToastContainer } from 'react-toastify';
 import CountiesModal from '../Provider-edit/CountiesModal';
 import { CountiesServed, Insurance } from '../Utility/Types';
-import { InsuranceModal } from '../Signup/InsuranceModal';
+import InsuranceModal from '../Provider-edit/InsuranceModal';
 import 'react-toastify/dist/ReactToastify.css';
 
 interface SuperAdminCreateProps {
     handleCloseForm: () => void;
 }
 
-const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({ handleCloseForm }) => {
+const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({ handleCloseForm}) => {
     const [formData, setFormData] = useState({
         id: null,
         name: '',
@@ -37,8 +37,8 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({ handleCloseForm }) 
     const [error, setError] = useState('');
     const [isCountiesModalOpen, setIsCountiesModalOpen] = useState(false);
     const [isInsuranceModalOpen, setIsInsuranceModalOpen] = useState(false);
-    const [selectedCounties, setSelectedCounties] = useState<string[]>([]);
-    const [selectedInsurances, setSelectedInsurances] = useState<string[]>([]);
+    const [selectedCounties, setSelectedCounties] = useState<CountiesServed[]>([]);
+    const [selectedInsurances, setSelectedInsurances] = useState<Insurance[]>([]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
@@ -58,12 +58,6 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({ handleCloseForm }) 
         }));
     };
 
-    const removeLocation = (index: number) => {
-        const updatedLocations = [...formData.locations];
-        updatedLocations.splice(index, 1);
-        setFormData(prev => ({ ...prev, locations: updatedLocations }));
-    };
-
     const handleOpenCountiesModal = () => {
         setIsCountiesModalOpen(true);
     };
@@ -73,25 +67,15 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({ handleCloseForm }) 
     };
 
     const handleCountiesChange = (newCounties: CountiesServed[]) => {
-        const countyNames = newCounties.map(county => county.county).filter(county => county !== null) as string[];
-        setSelectedCounties(countyNames);
-        setFormData(prev => ({ ...prev, counties_served: countyNames }));
+        setSelectedCounties(newCounties);
     };
 
-    // Insurance Modal Handlers
     const handleOpenInsuranceModal = () => {
         setIsInsuranceModalOpen(true);
     };
 
-    const handleCloseInsuranceModal = () => {
-        setIsInsuranceModalOpen(false);
-    };
-
-    // Updated to ensure insurance is saved and modal closes
-    const handleInsurancesChange = (selectedInsuranceNames: string[]) => {
+    const handleInsurancesChange = (selectedInsuranceNames: Insurance[]) => {
         setSelectedInsurances(selectedInsuranceNames);
-        setFormData(prev => ({ ...prev, insurances: selectedInsuranceNames }));
-        setIsInsuranceModalOpen(false); // Manually close modal after selection
     };
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -143,6 +127,8 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({ handleCloseForm }) 
                 const errorData = await response.json();
                 throw new Error(errorData.message || 'Failed to create provider');
             }
+            
+            toast.success(`Provider ${formData.name} created successfully!`);
 
             setFormData({
                 id: null,
@@ -164,9 +150,9 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({ handleCloseForm }) 
                 in_clinic_services: '',
                 logo: '',
             });
-
-            toast.success('Provider created successfully!');
-            handleCloseForm();
+            setTimeout(() => {
+                handleCloseForm();
+            }, 3000);
         } catch (error) {
             console.error('Error creating provider:', error);
             setError('There was an error creating the provider. Please try again.');
@@ -215,9 +201,9 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({ handleCloseForm }) 
                             <CountiesModal
                                 isOpen={isCountiesModalOpen}
                                 onClose={handleCloseCountiesModal}
-                                selectedCounties={selectedCounties.map(county => ({ county }))}
+                                selectedCounties={selectedCounties}
                                 onCountiesChange={handleCountiesChange}
-                                providerCounties={[] as CountiesServed[]}
+                                providerCounties={selectedCounties}
                             />
                         )}
                     </div>
@@ -230,9 +216,10 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({ handleCloseForm }) 
                         {isInsuranceModalOpen && (
                             <InsuranceModal
                                 isOpen={isInsuranceModalOpen}
-                                onClose={handleCloseInsuranceModal}
-                                onSelect={handleInsurancesChange}
-
+                                onClose={() => setIsInsuranceModalOpen(false)}
+                                selectedInsurances={selectedInsurances}
+                                onInsurancesChange={handleInsurancesChange}
+                                providerInsurances={selectedInsurances}
                             />
                         )}
                     </div>
@@ -297,6 +284,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({ handleCloseForm }) 
                             <option value="" disabled>Select Waitlist Information</option>
                             <option value="no wait list">No wait list</option>
                             <option value="6 months or less">6 months or less</option>
+                            <option value="6 months or more">6 months or more</option>
                         </select>
                     </div>
 
