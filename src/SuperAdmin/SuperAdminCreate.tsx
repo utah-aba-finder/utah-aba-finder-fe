@@ -16,6 +16,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({ handleCloseForm, on
     const [formData, setFormData] = useState({
         id: null,
         name: '',
+        provider_type: '',
         email: '',
         password: '',
         confirmPassword: '',
@@ -96,6 +97,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({ handleCloseForm, on
                             type: "provider",
                             attributes: {
                                 name: formData.name,
+                                provider_type: formData.provider_type,
                                 locations: formData.locations.map(location => ({
                                     id: location.id,
                                     name: location.name,
@@ -134,6 +136,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({ handleCloseForm, on
             setFormData({
                 id: null,
                 name: '',
+                provider_type: '',
                 email: '',
                 password: '',
                 confirmPassword: '',
@@ -170,12 +173,20 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({ handleCloseForm, on
                 {error && <p className="error-message">{error}</p>}
                 <form onSubmit={handleSubmit}>
                     <div className='superAdmin-input-wrapper'>
+                        <label htmlFor="provider_type">Provider Type</label>
+                        <select name="provider_type" value={formData.provider_type} onChange={handleChange} required>
+                            <option value="" disabled>Select Provider Type</option>
+                            <option value="aba_therapy">ABA Therapy</option>
+                            <option value="autism_evaluation">Autism Evaluation</option>
+                        </select>
+                    </div>
+                    <div className='superAdmin-input-wrapper'>
                         <label htmlFor="name">Provider Name</label>
                         <input type="text" name="name" value={formData.name} onChange={handleChange} placeholder="Provider Name" required />
                     </div>
                     <div className='superAdmin-input-wrapper'>
                         <label htmlFor="email">E-mail Address</label>
-                        <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="E-mail Address" required />
+                        <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="E-mail Address" />
                     </div>
 
                     {formData.locations.map((location, index) => (
@@ -337,7 +348,6 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({ handleCloseForm, on
                             name="spanish_speakers"
                             value={formData.spanish_speakers}
                             onChange={handleChange}
-                            required
                         >
                             <option value="">Select an option</option>
                             <option value="yes">Yes</option>

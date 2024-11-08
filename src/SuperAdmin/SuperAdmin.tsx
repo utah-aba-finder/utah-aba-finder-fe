@@ -84,7 +84,6 @@ export const SuperAdmin = () => {
                 p.id === updatedProvider.id ? { ...p, attributes: updatedProvider } : p
             )
         );
-        toast.success('Provider updated successfully');
     };
 
         

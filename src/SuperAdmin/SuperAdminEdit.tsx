@@ -12,6 +12,10 @@ interface SuperAdminEditProps {
     provider: MockProviderData;
     onUpdate: (updatedProvider: ProviderAttributes) => void
 }
+const toastConfig = {
+    autoClose: 3000, // Close after 3 seconds
+    limit: 3 // Limit number of toasts shown at once
+};
 
 export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({ provider, onUpdate }) => {
     const [editedProvider, setEditedProvider] = useState<ProviderAttributes | null>(null);
@@ -35,6 +39,12 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({ provider, onUpda
             setIsLoading(true);
         }
     }, [provider]);
+
+    useEffect(() => {
+        return () => {
+            toast.dismiss();
+        };
+    }, []);
 
     const handleCancel = () => {
         if (provider && provider.attributes) {
@@ -99,10 +109,14 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({ provider, onUpda
             const updatedProvider = await response.json();
             onUpdate(updatedProvider.data[0].attributes);
             setEditedProvider(updatedProvider.data[0].attributes);
-            toast.success('Provider updated successfully');
+            setTimeout(() => {
+                toast.success('Provider updated successfully', toastConfig);    
+            }, 100);
         } catch (error) {
             console.error('Error updating provider:', error);
-            toast.error(`Failed to update provider: ${error instanceof Error ? error.message : 'Unknown error'}`);
+            setTimeout(() => {
+                toast.error('Failed to update provider', toastConfig);      
+            }, 100);
         } finally {
             setIsSaving(false);
         }
@@ -256,6 +270,18 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({ provider, onUpda
                             </button>
                         </div>
                         <div className='secondColumn'>
+                            <div className='superAdminEditStatusWrapper'>
+                                <label htmlFor="provider_type">Provider Type</label>
+                                <select
+                                    className='superAdminStatusEdit'
+                                    name="provider_type"
+                                    value={editedProvider.provider_type || ''}
+                                    onChange={handleInputChange}
+                                >
+                                    <option value="aba_therapy">ABA Therapy</option>
+                                    <option value="autism_evaluation">Autism Evaluation</option>
+                                </select>
+                            </div>
                             <label htmlFor="status">Status</label>
                             <select
                                 className='superAdminStatusEdit'
@@ -313,9 +339,10 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({ provider, onUpda
                                 onChange={handleInputChange}
                                 placeholder="Yes, No? Timeline? "
                             />
-
-                            <label htmlFor='in_clinic_services' className='editLabels'>In-clinic services: </label>
-                            <input
+                            {editedProvider.provider_type === 'aba_therapy' && (
+                                <>
+                                    <label htmlFor='in_clinic_services' className='editLabels'>In-clinic services: </label>
+                                    <input
                                 id='in_clinic_services'
                                 type="text"
                                 name="in_clinic_services"
@@ -342,7 +369,9 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({ provider, onUpda
                                 value={editedProvider.telehealth_services || ''}
                                 onChange={handleInputChange}
                                 placeholder='Yes, No?'
-                            />
+                                    />
+                                </>
+                            )}
 
                             <label htmlFor='spanish_speakers' className='editLabels'>Spanish Speakers: </label>
                             <input
