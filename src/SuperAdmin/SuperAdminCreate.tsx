@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 import { ToastContainer } from 'react-toastify';
 import CountiesModal from '../Provider-edit/CountiesModal';
 import { CountiesServed, Insurance } from '../Utility/Types';
-import { InsuranceModal } from '../Signup/InsuranceModal';
+import InsuranceModal from '../Provider-edit/InsuranceModal';
 import 'react-toastify/dist/ReactToastify.css';
 
 interface SuperAdminCreateProps {
@@ -37,8 +37,8 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({ handleCloseForm }) 
     const [error, setError] = useState('');
     const [isCountiesModalOpen, setIsCountiesModalOpen] = useState(false);
     const [isInsuranceModalOpen, setIsInsuranceModalOpen] = useState(false);
-    const [selectedCounties, setSelectedCounties] = useState<string[]>([]);
-    const [selectedInsurances, setSelectedInsurances] = useState<string[]>([]);
+    const [selectedCounties, setSelectedCounties] = useState<CountiesServed[]>([]);
+    const [selectedInsurances, setSelectedInsurances] = useState<Insurance[]>([]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
@@ -58,12 +58,6 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({ handleCloseForm }) 
         }));
     };
 
-    const removeLocation = (index: number) => {
-        const updatedLocations = [...formData.locations];
-        updatedLocations.splice(index, 1);
-        setFormData(prev => ({ ...prev, locations: updatedLocations }));
-    };
-
     const handleOpenCountiesModal = () => {
         setIsCountiesModalOpen(true);
     };
@@ -73,12 +67,9 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({ handleCloseForm }) 
     };
 
     const handleCountiesChange = (newCounties: CountiesServed[]) => {
-        const countyNames = newCounties.map(county => county.county).filter(county => county !== null) as string[];
-        setSelectedCounties(countyNames);
-        setFormData(prev => ({ ...prev, counties_served: countyNames }));
+        setSelectedCounties(newCounties);
     };
 
-    // Insurance Modal Handlers
     const handleOpenInsuranceModal = () => {
         setIsInsuranceModalOpen(true);
     };
@@ -87,11 +78,8 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({ handleCloseForm }) 
         setIsInsuranceModalOpen(false);
     };
 
-    // Updated to ensure insurance is saved and modal closes
-    const handleInsurancesChange = (selectedInsuranceNames: string[]) => {
+    const handleInsurancesChange = (selectedInsuranceNames: Insurance[]) => {
         setSelectedInsurances(selectedInsuranceNames);
-        setFormData(prev => ({ ...prev, insurances: selectedInsuranceNames }));
-        setIsInsuranceModalOpen(false); // Manually close modal after selection
     };
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -215,7 +203,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({ handleCloseForm }) 
                             <CountiesModal
                                 isOpen={isCountiesModalOpen}
                                 onClose={handleCloseCountiesModal}
-                                selectedCounties={selectedCounties.map(county => ({ county }))}
+                                selectedCounties={selectedCounties}
                                 onCountiesChange={handleCountiesChange}
                                 providerCounties={[] as CountiesServed[]}
                             />
@@ -229,10 +217,11 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({ handleCloseForm }) 
 
                         {isInsuranceModalOpen && (
                             <InsuranceModal
-                                isOpen={isInsuranceModalOpen}
-                                onClose={handleCloseInsuranceModal}
-                                onSelect={handleInsurancesChange}
-
+                            isOpen={isInsuranceModalOpen}
+                            onClose={() => setIsInsuranceModalOpen(false)}
+                            selectedInsurances={selectedInsurances}
+                            onInsurancesChange={handleInsurancesChange}
+                            providerInsurances={selectedInsurances}
                             />
                         )}
                     </div>

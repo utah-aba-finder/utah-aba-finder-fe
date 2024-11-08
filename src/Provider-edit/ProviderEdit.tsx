@@ -288,7 +288,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
 
             updateProviderData();
         }
-    }, [isSaving, formData, loggedInProvider?.id, loggedInProvider?.attributes.name, loggedInProvider?.attributes.email, loggedInProvider?.attributes.cost, selectedInsurances, selectedCounties, updateLocalProviderData, locations, updatedLast]);
+    }, [isSaving, formData, loggedInProvider?.id, loggedInProvider?.attributes.name, loggedInProvider?.attributes.email, loggedInProvider?.attributes.cost, onUpdate, loggedInProvider, selectedInsurances, selectedCounties, updateLocalProviderData, locations, updatedLast]);
     
 
     useEffect(() => {
