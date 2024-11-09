@@ -55,7 +55,7 @@
 }
 
 .provider-card:hover .card-grid-logo {
-    background-color: #ffffff;
+    background-color: #f7eee4;
 }
 
 .provider-logo {
@@ -171,7 +171,7 @@
     border: none;
     font-size: 18px;
     border-radius: 25px;
-    width: 150px;
+    width: 140px;
     height: 35px;
     font-weight: bold;
     position: relative;
@@ -332,7 +332,7 @@ margin-right: .3em;
     .favorite-button {
         font-size: 18px;
         border-radius: 25px;
-        width: 7.1em;
+        width: fit-content;
         height: 35px;
         font-weight: bold;
         position: relative;
