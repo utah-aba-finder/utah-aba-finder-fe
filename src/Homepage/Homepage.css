@@ -23,7 +23,6 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-    z-index: -1;
     filter: brightness(100%);
     opacity: 0.55;
     background-color: white;
@@ -67,11 +66,12 @@
 }
 
 .discover-section-button {
-    background-color: #b12a33;
+    background-color: #0A965E;
     color: white;
     border: none;
     border-radius: 15px;
-    font-size: 1rem;
+    font-size: 1.2rem;
+    font-weight: 600;
     padding: 1rem;
     margin-left: 1rem;
     cursor: pointer;

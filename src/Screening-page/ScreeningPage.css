@@ -39,18 +39,21 @@
 .ScreeningMessage {
     width: 30%;
     height: fit-content;
-    background-color: pink;
+    background-color: #EAEAEA;
+    background-color: white;
     border-radius: .5rem;
     padding: 20px;
     font-size: 1.2rem;
     text-align: left;
     color: rgb(64, 64, 64);
+    box-shadow: 6px 6px 20px rgba(122, 122, 122, 0.212);
+    margin-top: 1em;
 }
 
 .BorderDiv {
     height: 70vh;
     width: 5px;
-    background-color: gold;
+    background-color: #FF6A00;
 }
 
 .ScreeningButtons {
@@ -63,7 +66,7 @@
 
 .ScreeningButton1 {
     height: 7%;
-    background-color: #ea4f08;
+    background-color: #4A6FA5;
     color: white;
     padding: 15px 32px;
     text-align: center;
@@ -85,7 +88,7 @@
 
 .ScreeningButton2 {
     height: 7%;
-    background-color: #7146c6;
+    background-color: #4A6FA5;
     color: white;
     padding: 15px 32px;
     text-align: center;
@@ -102,7 +105,7 @@
 .ScreeningButton3 {
     height: 7%;
     color: white;
-    background-color: #007bff;
+    background-color: #4A6FA5;
     padding: 15px 32px;
     text-align: center;
     text-decoration: none;
@@ -118,7 +121,7 @@
 
 .keepInMind,
 .buttonText {
-    color: blue;
+    color: #FF6A00;
     font-size: 2rem;
 }
 
@@ -129,7 +132,7 @@
 .ScreeningButton1:hover,
 .ScreeningButton2:hover,
 .ScreeningButton3:hover {
-    background-color: green;
+    background-color: #5a7eb2;
 }
 
 @media (max-width: 540px) {
