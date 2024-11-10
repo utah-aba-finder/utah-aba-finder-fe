@@ -33,7 +33,7 @@
     left: 5px;
     right: 5px;
     bottom: 5px;
-    border: 1.5px solid rgb(224, 224, 224);
+    border: 1.5px solid #EAEAEA;
     border-radius: 50px;
     pointer-events: none;
 }
@@ -55,7 +55,7 @@
 }
 
 .provider-card:hover .card-grid-logo {
-    background-color: #f7eee4;
+    background-color: #ffffff;
 }
 
 .provider-logo {
