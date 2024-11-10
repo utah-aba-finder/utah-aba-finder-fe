@@ -438,10 +438,10 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({ loggedInProvider, clearProv
             <input id='spanishSpeakers' type="text" name="spanishSpeakers" value={formData.spanishSpeakers} onChange={handleInputChange} placeholder='Yes, No, Limited?'/>
             
             <label htmlFor='min_age' className='editLabels'>Minimum Age Served: </label>
-            <input id='min_age' type="number" name="min_age" value={formData.min_age} onChange={handleInputChange} />
+            <input id='min_age' type="number" name="min_age" value={formData.min_age} onChange={handleInputChange} step='.5' />
             
             <label htmlFor='max_age' className='editLabels'>Maximum Age Served: </label>
-            <input id='max_age' type="number" name="max_age" value={formData.max_age} onChange={handleInputChange} />
+            <input id='max_age' type="number" name="max_age" value={formData.max_age} step='.5' onChange={handleInputChange} />
             
             <label htmlFor='waitlist' className='editLabels'>Waitlist Information: </label>
             <input id='waitlist' type="text" name="waitlistTime" value={formData.waitlistTime} onChange={handleInputChange} placeholder='Yes, No? Timeline?'/>

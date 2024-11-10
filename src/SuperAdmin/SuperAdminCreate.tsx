@@ -268,6 +268,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({ handleCloseForm, on
                                 min="1"
                                 max="99"
                                 required
+                                step='.5'
                             />
                         </div>
                         <div className='superAdmin-input-wrapper'>
@@ -281,6 +282,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({ handleCloseForm, on
                                 min="1"
                                 max="99"
                                 required
+                                step='.5'
                             />
                         </div>
                     </div>
@@ -294,6 +296,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({ handleCloseForm, on
                         <label htmlFor="waitlist">Waitlist Information</label>
                         <select name="waitlist" className='superAdmin-waitlist-select' value={formData.waitlist} onChange={handleChange} required>
                             <option value="" disabled>Select Waitlist Information</option>
+                            <option value='contact us'>Contact Us</option>
                             <option value="no wait list">No wait list</option>
                             <option value="6 months or less">6 months or less</option>
                             <option value="6 months or more">6 months or more</option>
