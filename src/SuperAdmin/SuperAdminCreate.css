@@ -104,6 +104,19 @@
     margin-top: 1rem;
 }
 
+.superAdmin-input-wrapper {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    width: 30%;
+    padding-bottom: 1rem;
+}
+
+.superAdmin-input-wrapper select {
+    width: fit-content;
+    padding: 0.5rem;
+}
+
 .superAdmin-create-new-provider-button {
     margin-bottom: 2rem;
 }

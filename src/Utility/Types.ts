@@ -23,6 +23,7 @@ export interface CountiesServed {
 export interface ProviderAttributes {
     id: number;
     name: string | null;
+    provider_type: string | null;
     locations: Location[];
     insurance: Insurance[];
     counties_served: CountiesServed[];
