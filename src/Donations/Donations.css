@@ -22,3 +22,206 @@
     padding: 1rem;
     border-radius: 10px;
 }
+
+/* checkout Form Section */
+
+.checkoutForm {
+    width: 90%;
+    max-width: 600px;
+    margin: 0 auto;
+    border: 1px solid #ccc;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    margin-top: 30px;
+    align-items: center;
+}
+
+.checkoutTitle {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.checkoutDescription {
+    margin-bottom: 100px;
+    text-align: center;
+    max-width: 90%;
+    margin: 0 auto;
+}
+
+.checkoutDescription p {
+    color: #333;
+}
+
+.paymentTypeContainer,
+.amountSelectionContainer {
+    margin-top: 30px;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.paymentTypeContainer label,
+.amountOptions label {
+    display: inline-block;
+    margin: 0 10px;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.paymentTypeSelect {
+    width: 50%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 0.8rem;
+}
+
+.customAmountInput {
+    display: block;
+    margin: 10px auto;
+    padding: 8px;
+    width: 36%;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.cardElement {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+.donateButton {
+    width: 100%;
+    padding: 10px;
+    font-size: 1rem;
+    font-weight: bold;
+    color: #fff;
+    background-color: #007bff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.donateButton:hover {
+    background-color: #0056b3;
+}
+
+.donateButton:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+/* Donator Info Section */
+
+.donatorInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.donatorInputContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.donatorInputContainer label {
+    font-weight: 600;
+    color: #434343;
+    margin-bottom: 5px;
+    text-align: left;
+}
+
+.donatorInputContainer input {
+    width: 95%;
+    padding: 12px;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.donatorInputContainer input:focus {
+    border-color: #007bff;
+    outline: none;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+
+
+.donatorInputContainer {
+    margin-bottom: 10px;
+}
+
+.donatorInputContainer input[id="city"],
+.donatorInputContainer input[id="state"],
+.donatorInputContainer input[id="zip"] {
+    width: calc(33.33% - 10px);
+    display: inline-block;
+    margin-right: 10px;
+}
+
+.donatorInputContainer input[id="zip"] {
+    margin-right: 0;
+}
+
+.cityZipContainer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.stateSelect {
+    width: 100%;
+    padding: 12px;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #fff;
+    cursor: pointer;
+}
+
+.stateSelect:focus {
+    border-color: #007bff;
+    outline: none;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+.required {
+    color: red;
+}
+
+
+@media (max-width: 600px) {
+    .donatorInfo {
+        gap: 15px;
+    }
+
+    .donatorInputContainer input {
+        font-size: 0.9rem;
+        padding: 10px;
+    }
+}
+
+@media (max-width: 768px) {
+    .checkoutDescription {
+        margin-bottom: 100px;
+        text-align: center;
+        max-width: 500px;
+        margin: 0 auto;
+    }
+
+    .customAmountInput {
+        width: 60%;
+    }
+
+    .donateBannerTitle {
+        font-size: 2rem;
+    }
+}
