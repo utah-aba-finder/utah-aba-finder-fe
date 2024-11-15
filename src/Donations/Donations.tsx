@@ -1,21 +1,31 @@
-import React from 'react'
-import donateBanner from '../Assets/donate.jpg'
-import '../Donations/Donations.css'
+import React from 'react';
+import donateBanner from '../Assets/donate.jpg';
+import '../Donations/Donations.css';
+import { Elements } from '@stripe/react-stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
+import CheckoutForm from './CheckoutForm'
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+const stripePromise = loadStripe('pk_live_51QIvIqP3ILzRu6hwdkygmm4Mob9eFQ6LkOdWJWSX6yqwKv7jqZ92vKE3kZGchkjHME4oLHxMQ6pDDCuG4YvbpHxh004XhCi7RQ');
 
 const Donations = () => {
     return (
         <div>
             <div className='donateBannerContainer'>
-                <img src={donateBanner} alt="Login Banner" className='loginBanner' />
+                <img src={donateBanner} alt="Donate Banner" className='loginBanner' />
                 <h1 className='donateBannerTitle'>Donate</h1>
             </div>
             <div className='donateContainer'>
-                <p>Thank you for your interest in donating to Utah ABA Locator! <br /> We are a non-profit organization that relies on the generosity of people like you to continue our work.</p>
 
-                <p>If you have any questions about donating, please contact us at <a href="mailto:utahabalocator@gmail.com">utahabalocator@gmail.com</a>.</p>
+
+                <Elements stripe={stripePromise}>
+                    <CheckoutForm />
+                </Elements>
+                <ToastContainer />
             </div>
         </div>
-    )
-}
+    );
+};
 
-export default Donations
+export default Donations;
