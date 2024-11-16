@@ -24,13 +24,13 @@
 }
 
 .icon {
-    color: #ff5722;
+    color: #4A6FA5;
     cursor: pointer;
     transition: color 0.2s ease;
 }
 
 .icon:hover {
-    color: #d84315;
+    color: #A54A4A;
 }
 
 .copyright {

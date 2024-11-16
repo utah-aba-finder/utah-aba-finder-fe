@@ -1,14 +1,11 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
-import utah from '../Assets/Utah-Background.jpg';
-import mapIcon from '../Assets/map-icon.png';
-import puzzleIcon from '../Assets/puzzle-icon.png';
-import insuranceIcon from '../Assets/insurance-icon.png';
-import familyIcon from '../Assets/family-icon.png';
+import utah from '../Assets/williamsonFamily.jpeg';
 import spanishPic from '../Assets/spanish-pic.jpg';
+import wansutter from '../Assets/wansutter.png';
 import './Homepage.css';
 import Joyride, { Step } from 'react-joyride';
-import studyIcon from '../Assets/material.png';
+import heart from '../Assets/flourHeart.jpg';
 
 type Props = {}
 
@@ -18,6 +15,10 @@ interface State {
     showModal: boolean;
     dontShowAgain: boolean;
 }
+
+const sponsors = [
+    { name: 'Wansutter HR Consulting', image: wansutter }
+];
 
 class Homepage extends Component<Props, State> {
     state: State = {
@@ -29,20 +30,16 @@ class Homepage extends Component<Props, State> {
                 disableBeacon: true
             },
             {
-                target: '.county-section',
-                content: 'Check out the counties we cover for ABA therapy in Utah.',
+                target: '.sponsor-section',
+                content: 'See our sponsors who help make this website possible!',
             },
             {
                 target: '.begin-section-button-container',
                 content: 'Click to view providers, take M-CHAT or CAST, or contact us for any questions.',
             },
             {
-                target: '.icons-section',
-                content: 'Here, you can locate providers, educate yourself with autism, get insurance info, get resources, and take the M-CHAT or the CAST test.',
-            },
-            {
-                target: '.spanish-section-button',
-                content: 'You can search for Spanish-speaking providers as well.',
+                target: '.what-we-are-about',
+                content: 'Learn more about what we are all about!',
             },
             {
                 target: '#menu-button',
@@ -103,19 +100,23 @@ class Homepage extends Component<Props, State> {
                 {showModal && (
                     <div className="homepage-modal-overlay">
                         <div className="homepage-modal">
-                            <h2>Upcoming Changes!</h2>
+                            <h2>Recent Changes!</h2>
                             <div className="homepage-modal-content">
-                                <p>We're excited to announce some amazing new features coming soon to improve your experience and better support families seeking care:</p>
+                                <p>If you have been to our website before, you may have noticed some changes! 
+                                We have changed our name from Utah ABA Locator to Autism Services Locator and we are now a 501(c)(3) organization.</p>
 
                                 <ul>
-                                    <li><strong>Sponsorship Opportunities:</strong> Become a sponsor and support our mission! Sponsors will be featured in a special <strong>Sponsors Section</strong> on our website and receive a <strong>special badge</strong> recognizing their contributions to the autism care community.</li>
+                                    <li><strong>Sponsorship Opportunities:</strong> Become a sponsor and support our mission! Sponsors will be featured in a special <strong>Sponsors Section</strong> on our site recognizing their contributions to the autism care community.</li>
                                     <br />
-                                    <li><strong>Donation Feature:</strong> You'll be able to contribute and support autism care providers and families in need. Every donation makes a difference!</li>
+                                    <li><strong>Donation Feature:</strong> You'll be able to donate to our organization to help support our mission and help support families in need.</li>
                                     <br />
-                                    <li><strong>Expanding Services:</strong> We're adding <strong>occupational</strong> and <strong>speech therapy</strong> , and <strong>diagnosis providers</strong> to our platform, making it easier for you to find comprehensive care options for your child all in one place.</li>
+                                    <li><strong>Expanding Services:</strong> We're currently adding <strong>Occupational</strong> and <strong>Speech Therapy</strong> , and <strong>Autism Evaluation Providers</strong> to our platform, making it easier for you to find comprehensive care options for your child all in one place.</li>
                                     <br />
-                                    <li><strong>Nationwide Coverage:</strong> Our website is expanding to cover the entire <strong>United States</strong>! No matter where you are, you'll soon be able to find the right ABA providers, therapists, and resources near you.</li>
                                 </ul>
+                                    <h2 className='text-center'>Upcoming Changes!</h2>
+                                    <ul>
+                                    <li><strong>Nationwide Coverage:</strong> Our website is expanding to cover the entire <strong>United States</strong>! No matter where you are, you'll soon be able to find the right ABA providers, therapists, and resources near you.</li>
+                                    </ul>
                             </div>
                             <div>
                                 <label>
@@ -146,10 +147,10 @@ class Homepage extends Component<Props, State> {
                 <div className="discover-section">
                     <img src={utah} alt="background-image" className="discover-section-backgroundImage" />
                     <div className="discover-section-container">
-                        <h1 className="discover-section-title">Find The Best Fit ABA Provider For You</h1>
+                        <h1 className="discover-section-title">Find The Best Providers For Your Child</h1>
                         <div className="discover-section-content">
                             <p className="discover-section-description">
-                                We’re here to guide you every step of the way in finding the best ABA provider for you. <br />Start your journey with confidence today.
+                                We’re here to guide you every step of the way in finding the best providers for you and your family. Start your journey with a bit of ease.
                             </p>
                         </div>
                         <div className="discover-section-button-container">
@@ -159,56 +160,16 @@ class Homepage extends Component<Props, State> {
                 </div>
 
                 {/* Counties Section */}
-                <div className="county-section">
-                    <h2 className="county-section-title">Counties Covered</h2>
-                    <div className="county-section-list-wrapper">
-                        <div className="county-section-list">
-                            <p>Salt Lake <br /> County</p>
-                            <p>Utah <br /> County</p>
-                            <p>Davis <br /> County</p>
-                            <p>Weber <br /> County</p>
-                            <p>Iron <br /> County</p>
-                            <p>Cache <br /> County</p>
-                            <p>Box Elder <br /> County</p>
-                            <p>Washington <br /> County</p>
-                            <p>Morgan <br /> County</p>
-                            <p>Summit <br /> County</p>
-                            <p>Tooele <br /> County</p>
-                            <p>Duchesne <br /> County</p>
-                            <p>Uintah <br /> County</p>
-                            <p>Sanpete <br /> County</p>
-                            <p>Wayne <br /> County</p>
-                            <p>Salt Lake <br /> County</p>
-                            <p>Utah <br /> County</p>
-                            <p>Davis <br /> County</p>
-                            <p>Weber <br /> County</p>
-                            <p>Iron <br /> County</p>
-                            <p>Cache <br /> County</p>
-                            <p>Box Elder <br /> County</p>
-                            <p>Washington <br /> County</p>
-                            <p>Morgan <br /> County</p>
-                            <p>Summit <br /> County</p>
-                            <p>Tooele <br /> County</p>
-                            <p>Duchesne <br /> County</p>
-                            <p>Uintah <br /> County</p>
-                            <p>Sanpete <br /> County</p>
-                            <p>Wayne <br /> County</p>
-                            <p>Salt Lake <br /> County</p>
-                            <p>Utah <br /> County</p>
-                            <p>Davis <br /> County</p>
-                            <p>Weber <br /> County</p>
-                            <p>Iron <br /> County</p>
-                            <p>Cache <br /> County</p>
-                            <p>Box Elder <br /> County</p>
-                            <p>Washington <br /> County</p>
-                            <p>Morgan <br /> County</p>
-                            <p>Summit <br /> County</p>
-                            <p>Tooele <br /> County</p>
-                            <p>Duchesne <br /> County</p>
-                            <p>Uintah <br /> County</p>
-                            <p>Sanpete <br /> County</p>
-                            <p>Wayne <br /> County</p>
-                        </div>
+                <div className="sponsor-section">
+                    <div className="sponsor-section-title-container">
+                        <h2 className="sponsor-section-title">Our <br/> Proud <br/> Sponsors</h2>
+                    </div>
+                    <div className="sponsor-section-list-wrapper">
+                        {sponsors.map((sponsor, index) => (
+                            <div className="sponsor-section-list" key={index}>
+                                <img src={sponsor.image} alt={sponsor.name} />
+                            </div>
+                        ))}
                     </div>
                 </div>
 
@@ -217,7 +178,7 @@ class Homepage extends Component<Props, State> {
                     <h2 className="begin-section-title">Begin Your Journey with Essential Information</h2>
                     <p className="begin-section-description">
                         Not sure about your child's condition or haven't received a diagnosis yet? <br />
-                        We're here for you. Start by taking a simple screening test to see if your child meets the criteria.
+                        Start by taking a simple screening test to see if your child or yourself meet the criteria.
                     </p>
                     <div className="begin-section-button-container">
                         <Link to="/providers" className="begin-section-button1"> VIEW PROVIDERS</Link>
@@ -227,40 +188,15 @@ class Homepage extends Component<Props, State> {
                 </div>
 
                 {/* Icons Section */}
-                <div className="icons-section" id="view">
-                    <div className="icons-section-icon" id="block">
-                        <Link className="homeIcons" to="/providers"><img src={mapIcon} alt="Map Icon" /></Link>
-                        <p>Locate the Providers</p>
+                <div className="what-we-are-about" id="view">
+                    <div className="what-we-are-about-container">
+                        <img src={heart} alt="heart" className="what-we-are-about-image" />
                     </div>
-                    <div className="icons-section-icon" id="block">
-                        <Link className="homeIcons" to="/information"><img src={puzzleIcon} alt="Puzzle Icon" /></Link>
-                        <p>Educate Yourself with Autism</p>
-                    </div>
-                    <div className="icons-section-icon" id="block">
-                        <Link className="homeIcons" to="/providers"><img src={insuranceIcon} alt="Insurance Icon" /></Link>
-                        <p>Verify Insurance Coverage</p>
-                    </div>
-                    <div className="icons-section-icon" id="block">
-                        <Link className="homeIcons" to="/resources"><img src={studyIcon} alt="Resources Icon" /></Link>
-                        <p>Get helpful Resources</p>
-                    </div>
-                    <div className="icons-section-icon" id="block">
-                        <Link to="/screening"><img src={familyIcon} alt="Family Icon" /></Link>
-                        <p>Rest Assured <br /> We got you!</p>
-                    </div>
-                </div>
-
-                {/* Spanish-Speaking Providers Section */}
-                <div className="spanish-section">
-                    <div className="spanish-section-texts">
-                        <h2 className="spanish-section-title">Now Available: Spanish-Speaking Providers</h2>
-                        <p className="spanish-section-description">
-                            We know how important it is to communicate in your language. We have Spanish-speaking providers available to assist with your ABA needs in Utah.
-                        </p>
-                        <Link to="/providers" className="spanish-section-button">Learn More</Link>
-                    </div>
-                    <div className="spanish-section-image">
-                        <img src={spanishPic} alt="Spanish" className="spanish-section-pic" />
+                    <div className="what-we-are-about-text-container">
+                        <h1 className="what-we-are-about-title">What We're All About</h1>
+                        <h2 className="what-we-are-about-subtitle">Made for Everyone</h2>
+                        <p className="what-we-are-about-description">We founded Autism Services with one goal in mind: to provide high-quality support and resources for families seeking different types of providers. Our mission is to ensure that families have access to the best possible care for their children, regardless of their location. We strive to make the process of finding and connecting with autism services simple, reliable, and accessible for everyone.</p>
+                        <button className="max-w-fit bg-[#4A6FA5] text-white rounded-md px-4 py-2 hover:bg-[#A54A4A] border-none">Learn More About Us</button>
                     </div>
                 </div>
             </div>

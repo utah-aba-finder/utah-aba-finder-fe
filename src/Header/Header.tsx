@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { ChevronDown } from "lucide-react";
-import Logo from "../Assets/NewLogo3.png";
+import Logo from "../Assets/autismserviceslocator_logo.png";
 
 const navigationItems = [
   { name: "Home", href: "/" },
@@ -43,14 +43,14 @@ const Header = () => {
   
     return (
       <header className="fixed w-full top-0 z-50 max-w-[100vw]">
-        <div className="bg-white border-b shadow-sm relative">
-          <div className="max-w-7xl mx-auto px-4 w-full box-border">
-            <div className="flex justify-between items-center h-22 w-full">
+        <div className="bg-white border-b shadow-sm relative px-1">
+          <div className="w-full box-border justify-evenly">
+            <div className="flex justify-between items-center h-24 w-full">
               <Link to="/" className="flex-shrink-0">
                 <img
                   src={Logo}
                   alt="Utah ABA Locator"
-                  className="h-[5.6rem] w-auto max-w-[300px] object-contain"
+                  className="h-[4.8rem] w-auto max-w-[330px] object-fit p-2"
                 />
               </Link>
   
@@ -61,15 +61,15 @@ const Header = () => {
                     <li key={item.name} className="group relative">
                       {item.dropdown ? (
                         <div className="inline-flex items-center cursor-pointer">
-                          <span className="text-[#ff6a00] hover:text-[#d84315] xl:text-lg lg:text-base font-semibold">
+                          <span className="text-[#332d29] hover:text-[#4A6FA5] xl:text-lg lg:text-base font-semibold">
                             {item.name}
                           </span>
-                          <ChevronDown className="ml-1 h-5 w-5 text-[#ff6a00]" />
+                          <ChevronDown className="ml-1 h-5 w-5 text-[#332d29]" />
                         </div>
                       ) : (
                         <Link
                           to={item.href}
-                          className="text-[#ff6a00] hover:text-[#d84315] xl:text-lg lg:text-base font-semibold no-underline"
+                          className="text-[#332d29] hover:text-[#4A6FA5] xl:text-lg lg:text-base font-semibold no-underline"
                         >
                           {item.name}
                         </Link>
@@ -89,7 +89,7 @@ const Header = () => {
                             <Link
                               key={dropdownItem.name}
                               to={dropdownItem.href}
-                              className="block px-4 py-2 text-[#ff5722] hover:text-[#d84315] 
+                              className="block px-4 py-2 text-[#332d29] hover:text-[#4A6FA5] 
                                   hover:bg-gray-50 xl:text-base lg:text-sm font-medium whitespace-nowrap no-underline"
                             >
                               {dropdownItem.name}
@@ -115,15 +115,15 @@ const Header = () => {
                     }`}
                   >
                     <div
-                      className={`absolute w-full h-0.5 bg-[#ff6a00] transition-all duration-300 
+                      className={`absolute w-full h-0.5 bg-[#332d29] transition-all duration-300 
                       ${isMobileMenuOpen ? "rotate-45 top-1/2" : "rotate-0 top-0"}`}
                     />
                     <div
-                      className={`absolute w-full h-0.5 bg-[#ff6a00] top-1/2 transition-all duration-300 
+                      className={`absolute w-full h-0.5 bg-[#332d29] top-1/2 transition-all duration-300 
                       ${isMobileMenuOpen ? "opacity-0" : "opacity-100"}`}
                     />
                     <div
-                      className={`absolute w-full h-0.5 bg-[#ff6a00] transition-all duration-300 
+                      className={`absolute w-full h-0.5 bg-[#332d29] transition-all duration-300 
                       ${isMobileMenuOpen ? "-rotate-45 top-1/2" : "rotate-0 top-full"}`}
                     />
                   </div>
@@ -132,7 +132,7 @@ const Header = () => {
             </div>
           </div>
         </div>
-        <div className="w-full h-[.2em] bg-[#ff6a00]" />
+        <div className="w-full h-[.2em] bg-[#544d49]" />
   
         {/* Mobile Menu */}
         <div
@@ -150,7 +150,7 @@ const Header = () => {
                         setExpandedItem(expandedItem === item.name ? null : item.name)
                       }
                       className="w-full flex items-center justify-between py-4 px-6
-                          text-[#ff6a00] text-xl font-bold bg-transparent border-0"
+                          text-[#332d29] text-xl font-bold bg-transparent border-0"
                     >
                       <span>{item.name}</span>
                       <ChevronDown
@@ -166,7 +166,7 @@ const Header = () => {
                         <Link
                           key={dropdownItem.name}
                           to={dropdownItem.href}
-                          className="block py-3 px-12 text-[#ff6a00] hover:text-[#d84315]
+                          className="block py-3 px-12 text-[#332d29] hover:text-[#4A6FA5]
                               text-lg font-semibold no-underline"
                           onClick={() => setIsMobileMenuOpen(false)}
                         >
@@ -178,7 +178,7 @@ const Header = () => {
                 ) : (
                   <Link
                     to={item.href}
-                    className="block py-4 px-6 text-[#ff6a00] hover:text-[#d84315] 
+                    className="block py-4 px-6 text-[#332d29] hover:text-[#4A6FA5] 
                         text-xl font-bold no-underline"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >

@@ -20,7 +20,7 @@
     min-width: 300px;
 }
 
-
+.provider-type-select,
 .provider-map-searchbar input[type="text"] {
     color: #ffffff;
     text-align: center;
@@ -55,7 +55,7 @@
 }
 
 
-
+.provider-type-select,
 .provider-map-searchbar input[type="text"] {
     width: 99.5%;
     border: none;
@@ -97,6 +97,7 @@
 .provider-spanish-select,
 .provider-service-select,
 .provider-age-select,
+.provider-type-select,
 .provider-waitlist-select {
     background-color: #555555;
     color: #ffffff;
@@ -173,6 +174,9 @@
 @media (max-width: 431px) {
     .provider-map-searchbar input[type="text"] {
         width: 96%;
+    }
+    .provider-type-select {
+        width: 50%;
     }
 }
 

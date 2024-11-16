@@ -44,6 +44,8 @@ const ProvidersPage: React.FC = () => {
   >([]);
   const [favoriteDates, setFavoriteDates] = useState<FavoriteDate>({});
   const [selectedAge, setSelectedAge] = useState<string>("");
+  const [selectedProviderName, setSelectedProviderName] = useState<string>("");
+  const [selectedProviderType, setSelectedProviderType] = useState<string>("");
   const providersPerPage = 8;
   const [pageTransition, setPageTransition] = useState<"next" | "prev" | null>(
     null
@@ -225,6 +227,7 @@ const ProvidersPage: React.FC = () => {
       service,
       waitlist,
       age,
+      providerType,
     }: {
       query: string;
       county: string;
@@ -233,6 +236,7 @@ const ProvidersPage: React.FC = () => {
       service: string;
       waitlist: string;
       age: string;
+      providerType: string;
     }) => {
       const normalizedCounty = county.toLowerCase();
       const normalizedInsurance = insurance.toLowerCase();
@@ -258,6 +262,22 @@ const ProvidersPage: React.FC = () => {
               provider.in_clinic_services === null ||
               provider.in_clinic_services.toLowerCase() === "limited"
             );
+          default:
+            return true;
+        }
+      };
+
+      const providerTypeServiceFilter = (provider: ProviderAttributes) => {
+        if (!providerType) return true;
+        switch (providerType) {
+          case "aba":
+            return provider.provider_type === "aba_therapy";
+          case "evaluation":
+            return provider.provider_type === "autism_evaluation";
+          // case "speech":
+          //   return provider.provider_type === "speech";
+          // case "occupational":
+          //   return provider.provider_type === "occupational";
           default:
             return true;
         }
@@ -293,6 +313,11 @@ const ProvidersPage: React.FC = () => {
         return selectedAgeNum >= minAge && selectedAgeNum <= maxAge;
       };
 
+      const providerTypeFilter = (provider: ProviderAttributes) => {
+        if (!providerType) return false;
+        return provider.provider_type?.toLowerCase() === providerType.toLowerCase();
+      };
+
       const filtered = allProviders.filter(
         (provider) =>
           provider.name?.toLowerCase().includes(query.toLowerCase()) &&
@@ -314,7 +339,9 @@ const ProvidersPage: React.FC = () => {
                 provider.spanish_speakers.toLowerCase() === "limited"))) &&
           serviceFilter(provider) &&
           waitlistFilter(provider) &&
-          ageFilter(provider)
+          ageFilter(provider) &&
+          providerTypeServiceFilter(provider)  && 
+          providerTypeFilter(provider)
       );
 
       const sortedFilteredProviders = filtered.sort((a, b) => {
@@ -325,6 +352,7 @@ const ProvidersPage: React.FC = () => {
 
       setFilteredProviders(sortedFilteredProviders);
       setSelectedAge(age);
+      setSelectedProviderType(providerType);
       setIsFiltered(true);
       setCurrentPage(1);
     },
@@ -340,6 +368,7 @@ const ProvidersPage: React.FC = () => {
       service: "",
       waitlist: "",
       age: "",
+      providerType: "",
     });
   }, [handleSearch]);
 
@@ -375,6 +404,7 @@ const ProvidersPage: React.FC = () => {
     setSelectedService("");
     setSelectedWaitList("");
     setSelectedAge("");
+    setSelectedProviderType("");
     setIsFiltered(false);
     setMapAddress("Utah");
     setCurrentPage(1);
@@ -398,6 +428,10 @@ const ProvidersPage: React.FC = () => {
 
   const handleWaitListChange = (waitlist: string) => {
     setSelectedWaitList(waitlist);
+  };
+
+  const handleProviderTypeChange = (type: string) => {
+    setSelectedProviderType(type);
   };
 
   const handleResults = (results: MockProviders) => {
@@ -565,11 +599,15 @@ const ProvidersPage: React.FC = () => {
       </section>
       <div className="glass-container">
         <div className="glass-two">
-          <h2 className="searched-provider-number-status title">
-            {isFiltered
-              ? `Showing ${paginatedProviders.length} of ${combinedProviders.length} Providers`
-              : `Showing ${allProviders.length} Providers`}
-          </h2>
+        <h2 className="searched-provider-number-status title">
+        {selectedProviderType === 'none' ? (
+        'Please select a provider type to get started with your search'
+      ) : isFiltered ? (
+        `Showing ${paginatedProviders.length} of ${combinedProviders.length} Providers`
+      ) : (
+        `Showing ${allProviders.length} Providers`
+      )}
+    </h2>
         </div>
       </div>
       <main>
@@ -586,86 +624,92 @@ const ProvidersPage: React.FC = () => {
             onServiceChange={handleServiceChange}
             onWaitListChange={handleWaitListChange}
             onAgeChange={handleAgeChange}
+            onProviderTypeChange={handleProviderTypeChange}
             onReset={handleResetSearch}
           />
-          <section className="glass">
-            <section className="searched-provider-map-locations-list-section">
-              {isLoading && (
-                <div className="loading-container">
-                  <img
-                    src={gearImage}
-                    alt="Loading..."
-                    className="loading-gear"
-                  />
-                  <p>Loading providers...</p>
-                </div>
-              )}
-              {!isLoading && showError && (
-                <div className="error-message">{showError}</div>
-              )}
-              {!isLoading && !showError && (
-                <div className="card-container">
-                  <div
-                    className={`provider-cards-grid ${
-                      pageTransition ? `page-${pageTransition}` : ""
-                    }`}
-                  >
-                    {paginatedProviders.map((provider) => (
-                      <div
-                        key={provider.id}
-                        className={`provider-card-wrapper ${
-                          pageTransition ? `animate-${pageTransition}` : ""
-                        }`}
-                      >
-                        <ProviderCard
-                          provider={provider}
-                          onViewDetails={handleProviderCardClick}
-                          renderViewOnMapButton={renderViewOnMapButton}
-                          onToggleFavorite={toggleFavorite}
-                          isFavorited={favoriteProviders.some(
-                            (fav) => fav.id === provider.id
-                          )}
-                          favoritedDate={favoriteDates[provider.id]}
-                        />
-                      </div>
-                    ))}
+          {selectedProviderType && selectedProviderType !== 'none' && (
+            <section className="glass">
+              <section className="searched-provider-map-locations-list-section">
+                {isLoading && (
+                  <div className="loading-container">
+                    <img
+                      src={gearImage}
+                      alt="Loading..."
+                      className="loading-gear"
+                    />
+                    <p>Loading providers...</p>
                   </div>
-                  <div className="pagination-section">
-                    <p className="pagination-info">
-                      Page {currentPage} of {totalPages}
-                    </p>
-                    <div className="pagination-controls">
-                      {currentPage > 1 && (
-                        <button
+                )}
+                {!isLoading && showError && (
+                  <div className="error-message">{showError}</div>
+                )}
+                {!isLoading && !showError && (
+                  <div className="card-container">
+                    
+                    <div
+                      className={`provider-cards-grid ${
+                        pageTransition ? `page-${pageTransition}` : ""
+                      }`}
+                    >
+                      {paginatedProviders.map((provider) => (
+                        <div
+                          key={provider.id}
+                          className={`provider-card-wrapper ${
+                            pageTransition ? `animate-${pageTransition}` : ""
+                          }`}
+                        >
+                          <ProviderCard
+                            provider={provider}
+                            onViewDetails={handleProviderCardClick}
+                            renderViewOnMapButton={renderViewOnMapButton}
+                            onToggleFavorite={toggleFavorite}
+                            isFavorited={favoriteProviders.some(
+                              (fav) => fav.id === provider.id
+                            )}
+                            favoritedDate={favoriteDates[provider.id]}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                    {combinedProviders.length > 0 && (
+                    <div className="pagination-section">
+                      <p className="pagination-info">
+                        Page {currentPage} of {totalPages}
+                      </p>
+                      <div className="pagination-controls">
+                        {currentPage > 1 && (
+                          <button
                           className="pagination-button"
                           onClick={handlePreviousPage}
-                        >
-                          &lt; Previous
-                        </button>
-                      )}
-                      {currentPage < totalPages && (
-                        <button
+                          >
+                            &lt; Previous
+                          </button>
+                        )}
+                        {currentPage < totalPages && (
+                          <button
                           className="pagination-button"
                           onClick={handleNextPage}
-                        >
-                          Next &gt;
-                        </button>
-                      )}
+                          >
+                            Next &gt;
+                          </button>
+                        )}
+                      </div>
                     </div>
+                    )}
                   </div>
-                </div>
-              )}
+                )}
+              </section>
             </section>
-          </section>
+          )}
         </div>
 
         {selectedProvider && (
           <ProviderModal
-            provider={selectedProvider}
-            address={selectedAddress || "Address not available"}
-            mapAddress={mapAddress}
-            onClose={handleCloseModal}
-            onViewOnMapClick={handleViewOnMapClick}
+          provider={selectedProvider}
+          address={selectedAddress || "Address not available"}
+          mapAddress={mapAddress}
+          onClose={handleCloseModal}
+          onViewOnMapClick={handleViewOnMapClick}
           />
         )}
       </main>
