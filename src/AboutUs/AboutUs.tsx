@@ -34,13 +34,13 @@ const AboutUs: React.FC = () => {
 
       <div className="about-us-text-content">
         <div className="about-us-content">
-          <h1>About Utah ABA Locator</h1>
+          <h1>About Autism Services Locator</h1>
           <p>
-            Utah ABA Locator is an innovative application designed to connect
-            parents with Applied Behavior Analysis (ABA) providers tailored to
+            Autism Services Locator is an innovative application designed to connect
+            parents with Applied Behavior Analysis (ABA), Speech Therapy, Occupational Therapy, and Autism Evaluation providers tailored to
             their unique needs and goals. Our team of passionate full-stack
             developers created this platform with a deep understanding of the
-            challenges faced by families seeking ABA services in Utah.
+            challenges faced by families seeking different types of services.
           </p>
 
           <h1>Our Story</h1>
@@ -48,23 +48,23 @@ const AboutUs: React.FC = () => {
             One of our team members, a parent of Autistic children, experienced
             firsthand the frustration of navigating complex healthcare systems
             to find suitable ABA providers. This personal journey sparked our
-            mission to simplify the process for families across Utah.
+            mission to simplify the process for families across Utah, and beyond.
           </p>
 
           <h1>Our Purpose</h1>
           <p>
             We aim to empower parents by providing a comprehensive directory of
-            ABA providers, searchable through various criteria. Our platform
+           providers, searchable through various criteria. Our platform
             allows users to connect directly with providers via contact
             information or website links, bypassing the often time-consuming
             process of relying solely on insurance recommendations.
           </p>
 
-          <h1>Why Choose Utah ABA Locator?</h1>
+          <h1>Why Choose Autism Services Locator?</h1>
           <p>
             While Google searches can be helpful, they may not always yield the
             most relevant local results. Our application is specifically
-            designed to streamline your search for ABA services in Utah, saving
+            designed to streamline your search for different types of services, saving
             you valuable time and effort.
           </p>
 

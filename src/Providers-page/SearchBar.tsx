@@ -43,7 +43,8 @@ const SearchBar: React.FC<SearchBarProps> = ({
   const [selectedAge, setSelectedAge] = useState<string>('');
   const [showNotification, setShowNotification] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
-  const [selectedProviderType, setSelectedProviderType] = useState<string>('');
+  const [selectedProviderType, setSelectedProviderType] = useState<string>('none');
+
   const handleSearch = useCallback(() => {
     onSearch({
       query: searchQuery,
@@ -82,7 +83,27 @@ const SearchBar: React.FC<SearchBarProps> = ({
     setSelectedService('');
     setSelectedWaitList('');
     setSelectedAge('');
+    setSelectedProviderType('none');
     onReset();
+    // Trigger search with reset values to clear results
+    onSearch({
+      query: '',
+      county: '',
+      insurance: '',
+      spanish: '',
+      service: '',
+      waitlist: '',
+      age: '',
+      providerType: 'none'
+    });
+    // Reset all callback handlers
+    onCountyChange('');
+    onInsuranceChange('');
+    onSpanishChange('');
+    onServiceChange('');
+    onWaitListChange('');
+    onAgeChange('');
+    onProviderTypeChange('none');
   };
 
   const ageOptions = [
@@ -113,8 +134,8 @@ const SearchBar: React.FC<SearchBarProps> = ({
             value={selectedProviderType}
             onChange={(e) => {
               const newValue = e.target.value;
-              setSelectedProviderType(e.target.value);
-              onProviderTypeChange(e.target.value);
+              setSelectedProviderType(newValue);
+              onProviderTypeChange(newValue);
               onSearch({
                 query: searchQuery,
                 county: selectedCounty,
@@ -123,7 +144,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
                 service: selectedService,
                 waitlist: selectedWaitList,
                 age: selectedAge,
-                providerType: newValue,  // Use the new value here
+                providerType: newValue,
               });
             }}
             aria-label="Select Provider Type"
@@ -301,9 +322,3 @@ const SearchBar: React.FC<SearchBarProps> = ({
 };
 
 export default SearchBar;
-
-
-
-
-
-
