@@ -450,7 +450,8 @@
     opacity: 1;
     color: white;
     font-size: 1rem;
-
+    overflow: auto;
+    height: 90%;
 }
 
 .homepage-container {
