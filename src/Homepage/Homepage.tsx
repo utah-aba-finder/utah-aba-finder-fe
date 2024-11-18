@@ -1,11 +1,14 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import utah from '../Assets/williamsonFamily.jpeg';
-import spanishPic from '../Assets/spanish-pic.jpg';
 import wansutter from '../Assets/wansutter.png';
 import './Homepage.css';
-import Joyride, { Step } from 'react-joyride';
+import Joyride from 'react-joyride';
 import heart from '../Assets/flourHeart.jpg';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import emailjs from 'emailjs-com';
+
 
 type Props = {}
 
@@ -14,6 +17,9 @@ interface State {
     steps: Array<{ target: string; content: string; disableBeacon?: boolean }>;
     showModal: boolean;
     dontShowAgain: boolean;
+    name: string;
+    email: string;
+    message: string;
 }
 
 const sponsors = [
@@ -21,6 +27,8 @@ const sponsors = [
 ];
 
 class Homepage extends Component<Props, State> {
+    private form = React.createRef<HTMLFormElement>();  
+
     state: State = {
         run: false,
         steps: [
@@ -47,8 +55,43 @@ class Homepage extends Component<Props, State> {
             },
         ],
         showModal: false,
-        dontShowAgain: false
+        dontShowAgain: false,
+        name: '',
+        email: '',
+        message: ''
     }
+
+    handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const { name, value } = e.target;
+        this.setState({ [name]: value } as unknown as Pick<State, keyof State>);
+    };
+
+    handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+
+        if (!this.state.email.includes('@') || !this.state.email.includes('.com')) {
+            toast.error('Please enter a valid email address with "@" and ".com"');
+            return;
+        }
+
+        const templateParams = {
+            user_name: this.state.name,
+            user_email: this.state.email,
+            message: this.state.message
+        };
+
+        emailjs.send('service_d6byt4s', 'template_sbg2v56', templateParams, 'YtcUeRrOLBFogwZI7')
+            .then((result) => {
+                toast.success('Email sent successfully');
+                this.setState({
+                    name: '',
+                    email: '',
+                    message: ''
+                });
+            }, (error) => {
+                toast.error('Error sending email');
+            });
+    };      
 
     componentDidMount() {
         const lastVisit = localStorage.getItem('lastVisit');
@@ -90,12 +133,13 @@ class Homepage extends Component<Props, State> {
     }
 
     render() {
-        const { run, steps, showModal, dontShowAgain } = this.state;
+        const { run, steps, showModal, dontShowAgain, name, email, message } = this.state;
 
         // console.log('is modal showing', showModal);
 
         return (
             <div className="homepage-container">
+                <ToastContainer />
                 {/* Modal */}
                 {showModal && (
                     <div className="homepage-modal-overlay">
@@ -151,7 +195,7 @@ class Homepage extends Component<Props, State> {
                         <h1 className="discover-section-title">Find The Best Providers For Your Child</h1>
                         <div className="discover-section-content">
                             <p className="discover-section-description">
-                                We’re here to guide you every step of the way in finding the best providers for you and your family. Start your journey with a bit of ease.
+                                We're here to guide you every step of the way in finding the best providers for you and your family. Start your journey with a bit of ease.
                             </p>
                         </div>
                         <div className="discover-section-button-container">
@@ -168,7 +212,7 @@ class Homepage extends Component<Props, State> {
                     <div className="sponsor-section-list-wrapper">
                         {sponsors.map((sponsor, index) => (
                             <div className="sponsor-section-list" key={index}>
-                                <img src={sponsor.image} alt={sponsor.name} />
+                                <img className='sponsor-section-list-image' src={sponsor.image} alt={sponsor.name} />
                             </div>
                         ))}
                     </div>
@@ -199,6 +243,35 @@ class Homepage extends Component<Props, State> {
                         <p className="what-we-are-about-description">We founded Autism Services with one goal in mind: to provide high-quality support and resources for families seeking different types of providers. Our mission is to ensure that families have access to the best possible care for their children, regardless of their location. We strive to make the process of finding and connecting with autism services simple, reliable, and accessible for everyone.</p>
                         <button className="max-w-fit bg-[#4A6FA5] text-white rounded-md px-4 py-2 hover:bg-[#A54A4A] border-none">Learn More About Us</button>
                     </div>
+                </div>
+                <div className='contact-form-container'>
+                    <h2 className='contact-form-title'>Any Feedback? We'd Love to Hear From You!</h2>
+                    <form className='contact-form' onSubmit={this.handleSubmit}>
+                        <input 
+                            type="text" 
+                            name="name"
+                            value={name}
+                            onChange={this.handleInputChange}
+                            placeholder='Name'
+                            required 
+                        />
+                        <input 
+                            type="email"
+                            name="email" 
+                            value={email}
+                            onChange={this.handleInputChange}
+                            placeholder='Email'
+                            required
+                        />
+                        <textarea 
+                            name="message"
+                            value={message}
+                            onChange={this.handleInputChange}
+                            placeholder='Message'
+                            required
+                        />
+                        <button type='submit'>Submit</button>
+                    </form>
                 </div>
             </div>
         );
