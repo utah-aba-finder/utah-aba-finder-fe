@@ -80,7 +80,7 @@ class Homepage extends Component<Props, State> {
             message: this.state.message
         };
 
-        emailjs.send('service_d6byt4s', 'template_sbg2v56', templateParams, 'YtcUeRrOLBFogwZI7')
+        emailjs.send('service_b9y8kte', 'template_a2x7i2h', templateParams, '1FQP_qM9qMVxNGTmi')
             .then((result) => {
                 toast.success('Email sent successfully');
                 this.setState({

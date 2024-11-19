@@ -17,7 +17,7 @@ const ContactUs: React.FC = () => {
             return;
         }
 
-        emailjs.sendForm('service_d6byt4s', 'template_sbg2v56', form.current!, 'YtcUeRrOLBFogwZI7')
+        emailjs.sendForm('service_b9y8kte', 'template_a2x7i2h', form.current!, '1FQP_qM9qMVxNGTmi')
             .then((result) => {
                 toast.success('Email sent successfully');
             }, (error) => {
