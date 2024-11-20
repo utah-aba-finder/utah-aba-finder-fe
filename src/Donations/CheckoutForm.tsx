@@ -1,38 +1,85 @@
-import React, { useState, useRef } from 'react';
-import { useStripe, useElements, CardElement, CardElementComponent } from '@stripe/react-stripe-js';
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-
+import React, { useState } from 'react';
+import { useStripe, useElements, CardElement } from '@stripe/react-stripe-js';
 
 const CheckoutForm: React.FC = () => {
     const stripe = useStripe();
     const elements = useElements();
-    const [paymentType, setPaymentType] = useState<'one-time' | 'recurring' | 'quarterly' | 'yearly'>('one-time');
-    const [donationAmount, setDonationAmount] = useState<number>(50);
+    const [donationAmount, setDonationAmount] = useState<number | null>(50);
     const [customAmount, setCustomAmount] = useState<string>('');
-    const customAmountInputRef = useRef<HTMLInputElement>(null);
+    const [isCustomAmount, setIsCustomAmount] = useState<boolean>(false);
+    const [frequency, setFrequency] = useState<'one-time' | 'recurring'>('one-time');
     const [firstName, setFirstName] = useState<string>('');
     const [lastName, setLastName] = useState<string>('');
+    const [email, setEmail] = useState<string>('');
     const [address1, setAddress1] = useState<string>('');
     const [address2, setAddress2] = useState<string>('');
     const [city, setCity] = useState<string>('');
     const [state, setState] = useState<string>('');
     const [zip, setZip] = useState<string>('');
+    const [isPolicyChecked, setIsPolicyChecked] = useState<boolean>(false);
 
-    const handlePaymentTypeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setPaymentType(event.target.value as 'one-time' | 'recurring' | 'quarterly' | 'yearly');
-    };
+    const states = [
+        { code: 'AL', name: 'Alabama' },
+        { code: 'AK', name: 'Alaska' },
+        { code: 'AZ', name: 'Arizona' },
+        { code: 'AR', name: 'Arkansas' },
+        { code: 'CA', name: 'California' },
+        { code: 'CO', name: 'Colorado' },
+        { code: 'CT', name: 'Connecticut' },
+        { code: 'DE', name: 'Delaware' },
+        { code: 'FL', name: 'Florida' },
+        { code: 'GA', name: 'Georgia' },
+        { code: 'HI', name: 'Hawaii' },
+        { code: 'ID', name: 'Idaho' },
+        { code: 'IL', name: 'Illinois' },
+        { code: 'IN', name: 'Indiana' },
+        { code: 'IA', name: 'Iowa' },
+        { code: 'KS', name: 'Kansas' },
+        { code: 'KY', name: 'Kentucky' },
+        { code: 'LA', name: 'Louisiana' },
+        { code: 'ME', name: 'Maine' },
+        { code: 'MD', name: 'Maryland' },
+        { code: 'MA', name: 'Massachusetts' },
+        { code: 'MI', name: 'Michigan' },
+        { code: 'MN', name: 'Minnesota' },
+        { code: 'MS', name: 'Mississippi' },
+        { code: 'MO', name: 'Missouri' },
+        { code: 'MT', name: 'Montana' },
+        { code: 'NE', name: 'Nebraska' },
+        { code: 'NV', name: 'Nevada' },
+        { code: 'NH', name: 'New Hampshire' },
+        { code: 'NJ', name: 'New Jersey' },
+        { code: 'NM', name: 'New Mexico' },
+        { code: 'NY', name: 'New York' },
+        { code: 'NC', name: 'North Carolina' },
+        { code: 'ND', name: 'North Dakota' },
+        { code: 'OH', name: 'Ohio' },
+        { code: 'OK', name: 'Oklahoma' },
+        { code: 'OR', name: 'Oregon' },
+        { code: 'PA', name: 'Pennsylvania' },
+        { code: 'RI', name: 'Rhode Island' },
+        { code: 'SC', name: 'South Carolina' },
+        { code: 'SD', name: 'South Dakota' },
+        { code: 'TN', name: 'Tennessee' },
+        { code: 'TX', name: 'Texas' },
+        { code: 'UT', name: 'Utah' },
+        { code: 'VT', name: 'Vermont' },
+        { code: 'VA', name: 'Virginia' },
+        { code: 'WA', name: 'Washington' },
+        { code: 'WV', name: 'West Virginia' },
+        { code: 'WI', name: 'Wisconsin' },
+        { code: 'WY', name: 'Wyoming' },
+    ];
 
-    const handleAmountChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const value = event.target.value;
-
-        if (value === 'custom') {
+    const handleAmountChange = (amount: number | 'custom') => {
+        if (amount === 'custom') {
             setCustomAmount('');
-            setDonationAmount(0);
-            customAmountInputRef.current?.focus();
+            setDonationAmount(null);
+            setIsCustomAmount(true);
         } else {
-            setDonationAmount(Number(value));
             setCustomAmount('');
+            setDonationAmount(amount);
+            setIsCustomAmount(false);
         }
     };
 
@@ -40,7 +87,7 @@ const CheckoutForm: React.FC = () => {
         const value = event.target.value;
         if (/^\d*\.?\d{0,2}$/.test(value)) {
             setCustomAmount(value);
-            setDonationAmount(Number(value) || 0);
+            setDonationAmount(Number(value) || null);
         }
     };
 
@@ -49,253 +96,243 @@ const CheckoutForm: React.FC = () => {
 
         if (!stripe || !elements) return;
 
-        const cardElement = elements.getElement(CardElement);
-
-        if (!cardElement) {
-            toast.error('Card element not found. Please try again.');
+        if (!donationAmount || donationAmount <= 0) {
+            alert('Please enter a valid donation amount.');
             return;
         }
 
-        const { error, paymentMethod } = await stripe.createPaymentMethod({
-            type: 'card',
-            card: cardElement,
-        });
+        const cardElement = elements.getElement(CardElement);
 
-        if (error) {
-            console.error(error);
-            toast.error('Payment failed. Please try again.');
-        } else {
-            console.log('Payment successful!', paymentMethod);
-            toast.success(`Thank you for your ${paymentType} donation of $${donationAmount}!`);
+        if (!cardElement) {
+            alert('Card element not found!');
+            return;
+        }
+
+        try {
+            const response = await fetch('https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/payments/create_payment_intent', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    amount: donationAmount,
+                    frequency,
+                    first_name: firstName,
+                    last_name: lastName,
+                    email,
+                    address1,
+                    address2,
+                    city,
+                    state,
+                    zip,
+                }),
+            });
+
+            const { clientSecret, error } = await response.json();
+
+            if (error) {
+                alert(`Error: ${error}`);
+                return;
+            }
+
+            const { error: confirmError } = await stripe.confirmCardPayment(clientSecret, {
+                payment_method: {
+                    card: cardElement,
+                    billing_details: {
+                        name: `${firstName} ${lastName}`,
+                        email,
+                        address: {
+                            line1: address1,
+                            line2: address2,
+                            city,
+                            state,
+                            postal_code: zip,
+                            country: 'US',
+                        },
+                    },
+                },
+            });
+
+            if (confirmError) {
+                alert(`Payment failed: ${confirmError.message}`);
+            } else {
+                alert('Thank you for your donation!');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Something went wrong. Please try again.');
         }
     };
 
-
     return (
-        <form onSubmit={handleSubmit} className="checkoutForm">
-            <h2 className="checkoutTitle">Support Our Mission</h2>
-            <div className='checkoutDescription'>
-                <p>
-                    Thank you for your interest in donation! <br />
-                    We are a non-profit organization that relies on the generosity and kindnessof people like you to continue our work.
-                </p>
-                <p>
-                    If you have any questions about donating, please contact us at{' '}
-                    <a href="mailto:utahabalocator@gmail.com">utahabalocator@gmail.com</a>.
-                </p>
-            </div>
+        <form onSubmit={handleSubmit} style={{ maxWidth: '400px', margin: '0 auto', padding: '20px', border: '1px solid #ccc', borderRadius: '5px', marginTop: '2rem', marginBottom: '2rem' }} className="checkout-form">
 
+            <h3>Donation Frequency</h3>
 
-            <div className="paymentTypeContainer">
-                <h3>Select Donation Type</h3>
+            <select
+                id="frequency"
+                value={frequency}
+                onChange={(e) => setFrequency(e.target.value as 'one-time' | 'recurring')}
 
-                <div className="paymentTypeContainer">
-                    <select
-                        id="paymentType"
-                        value={paymentType}
-                        onChange={(event) => setPaymentType(event.target.value as 'one-time' | 'recurring' | 'yearly')}
-                        className="paymentTypeSelect"
+                style={{ display: 'block', margin: '10px 0', padding: '8px', width: '100%' }}
+            >
+                <option value="one-time">One-Time</option>
+                <option value="recurring">Recurring</option>
+            </select>
+
+            <h3>Donation Amount</h3>
+
+            <div style={{ marginBottom: '10px' }}>
+                {[25, 50, 100, 200].map((amount) => (
+                    <button
+                        key={amount}
+                        type="button"
+                        onClick={() => handleAmountChange(amount)}
+                        style={{
+                            padding: '10px',
+                            margin: '5px',
+                            border: donationAmount === amount ? '2px solid #28a745' : '1px solid #ccc',
+                            borderRadius: '5px',
+                            cursor: 'pointer',
+                            backgroundColor: '#f8f9fa',
+                        }}
                     >
-                        <option value="one-time">One-Time Donation</option>
-                        <option value="recurring">Monthly Donation</option>
-                        <option value="yearly">Yearly Donation</option>
-                    </select>
-                </div>
+                        ${amount}
+                    </button>
+                ))}
+                <button
+                    type="button"
+                    onClick={() => handleAmountChange('custom')}
+                    style={{
+                        padding: '10px',
+                        margin: '5px',
+                        border: isCustomAmount ? '2px solid #28a745' : '1px solid #ccc',
+                        borderRadius: '5px',
+                        cursor: 'pointer',
+                        backgroundColor: '#f8f9fa',
+                    }}
+                >
+                    Custom
+                </button>
+            </div>
+            {isCustomAmount && (
+                <input
+                    type="number"
+                    placeholder="Enter custom amount"
+                    value={customAmount}
+                    onChange={handleCustomAmountChange}
+                    style={{ display: 'block', margin: '10px 0', padding: '8px', width: '95%' }}
+                />
+            )}
+
+            <h3>Billing Information</h3>
+
+            <div className="demographics">
+
+                <label htmlFor="firstName">First Name</label>
+                <input
+                    type="text"
+                    id="firstName"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    required
+                // style={{ display: 'block', margin: '10px 0', padding: '8px', width: '100%' }}
+                />
+
+                <label htmlFor="lastName">Last Name</label>
+                <input
+                    type="text"
+                    id="lastName"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    required
+                // style={{ display: 'block', margin: '10px 0', padding: '8px', width: '100%' }}
+                />
+
+                <label htmlFor="email">Email</label>
+                <input
+                    type="email"
+                    id="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                // style={{ display: 'block', margin: '10px 0', padding: '8px', width: '100%' }}
+                />
+
+                <label htmlFor="address1">Address 1</label>
+                <input
+                    type="text"
+                    id="address1"
+                    value={address1}
+                    onChange={(e) => setAddress1(e.target.value)}
+                    required
+                // style={{ display: 'block', margin: '10px 0', padding: '8px', width: '100%' }}
+                />
+
+                <label htmlFor="address2">Address 2</label>
+                <input
+                    type="text"
+                    id="address2"
+                    value={address2}
+                    onChange={(e) => setAddress2(e.target.value)}
+                // style={{ display: 'block', margin: '10px 0', padding: '8px', width: '100%' }}
+                />
+
+                <label htmlFor="city">City</label>
+                <input
+                    type="text"
+                    id="city"
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    required
+                // style={{ display: 'block', margin: '10px 0', padding: '8px', width: '100%' }}
+                />
+                <label htmlFor="state" className="select-state">State</label>
+                <select
+                    id="state"
+                    value={state}
+                    onChange={(e) => setState(e.target.value)}
+                    required
+                // style={{ display: 'block', margin: '10px 0', padding: '8px', width: '100%' }}
+                >
+                    <option value="">Select your state</option>
+                    {states.map((state) => (
+                        <option key={state.code} value={state.code}>
+                            {state.name}
+                        </option>
+                    ))}
+                </select>
+
+                <label htmlFor="zip">Zip Code</label>
+                <input
+                    type="text"
+                    id="zip"
+                    value={zip}
+                    onChange={(e) => setZip(e.target.value)}
+                    required
+                // style={{ display: 'block', margin: '10px 0', padding: '8px', width: '100%' }}
+                />
             </div>
 
-            <div className="amountSelectionContainer">
-                <h3>Select Donation Amount</h3>
-                <div className="amountOptions">
-                    <label>
-                        <input
-                            type="radio"
-                            value="25"
-                            checked={donationAmount === 25}
-                            onChange={handleAmountChange}
-                        />
-                        $25
-                    </label>
-                    <label>
-                        <input
-                            type="radio"
-                            value="50"
-                            checked={donationAmount === 50}
-                            onChange={handleAmountChange}
-                        />
-                        $50
-                    </label>
-                    <label>
-                        <input
-                            type="radio"
-                            value="100"
-                            checked={donationAmount === 100}
-                            onChange={handleAmountChange}
-                        />
-                        $100
-                    </label>
-                    <label>
-                        <input
-                            type="radio"
-                            value="250"
-                            checked={donationAmount === 250}
-                            onChange={handleAmountChange}
-                        />
-                        $250
-                    </label>
-                    <label>
-                        <input
-                            type="radio"
-                            value="custom"
-                            checked={customAmount !== '' || donationAmount === 0}
-                            onChange={handleAmountChange}
-                        />
-                        Custom Amount
-                    </label>
-                    <input
-                        type="number"
-                        placeholder="Enter custom amount (ex. 10.99)"
-                        value={customAmount}
-                        onChange={handleCustomAmountChange}
-                        ref={customAmountInputRef}
-                        className="customAmountInput"
-                    />
-                </div>
+            <h3>Payment Information</h3>
+
+            <div style={{ marginBottom: '20px' }}>
+                <CardElement options={{ style: { base: { color: '#333', fontSize: '16px' } } }} className="stripe-info" />
             </div>
 
-
-            <CardElement className="cardElement" />
-
-
-            <div className='donatorInfo'>
-                <div className="donatorInputContainer">
-                    <h3>Your Information</h3>
-
-                    <label htmlFor="name">First Name<span className="required">*</span></label>
-                    <input
-                        type="text"
-                        id="firstName"
-                        value={firstName}
-                        onChange={(e) => setFirstName(e.target.value)}
-                        placeholder="Enter your first name"
-                        required
-                    />
-                    <label htmlFor="name">Last Name<span className="required">*</span></label>
-                    <input
-                        type="text"
-                        id="lastName"
-                        value={lastName}
-                        onChange={(e) => setLastName(e.target.value)}
-                        placeholder="Enter your last name"
-                        required
-                    />
-                </div>
-
-                <div className="donatorInputContainer">
-                    <h3>Billing Address</h3>
-                    <label htmlFor="address">Address<span className="required">*</span></label>
-                    <input
-                        type="text"
-                        id="address1"
-                        value={address1}
-                        onChange={(e) => setAddress1(e.target.value)}
-                        placeholder="Enter your billing address"
-                        required
-                    />
-                    <label htmlFor="address2">Address 2</label>
-                    <input
-                        type="text"
-                        id="address2"
-                        value={address2}
-                        onChange={(e) => setAddress2(e.target.value)}
-                        placeholder="Enter your address 2"
-                    />
-                    <div className='cityZipContainer'>
-                        <label htmlFor="city">City<span className="required">*</span></label>
-                        <input
-                            type="text"
-                            id="city"
-                            value={city}
-                            onChange={(e) => setCity(e.target.value)}
-                            placeholder="Enter your city"
-                            required
-                        />
-                        <label htmlFor="zip">Zip Code<span className="required">*</span></label>
-                        <input
-                            type="text"
-                            id="zip"
-                            value={zip}
-                            onChange={(e) => setZip(e.target.value)}
-                            placeholder="Enter your zip code"
-                            required
-                        />
-                    </div>
-
-                    <label htmlFor="state">State<span className="required">*</span></label>
-                    <select
-                        id="state"
-                        value={state}
-                        onChange={(e) => setState(e.target.value)}
-                        className="stateSelect"
-                        required
-                    >
-                        <option value="">Select your state</option>
-                        <option value="AL">Alabama</option>
-                        <option value="AK">Alaska</option>
-                        <option value="AZ">Arizona</option>
-                        <option value="AR">Arkansas</option>
-                        <option value="CA">California</option>
-                        <option value="CO">Colorado</option>
-                        <option value="CT">Connecticut</option>
-                        <option value="DE">Delaware</option>
-                        <option value="FL">Florida</option>
-                        <option value="GA">Georgia</option>
-                        <option value="HI">Hawaii</option>
-                        <option value="ID">Idaho</option>
-                        <option value="IL">Illinois</option>
-                        <option value="IN">Indiana</option>
-                        <option value="IA">Iowa</option>
-                        <option value="KS">Kansas</option>
-                        <option value="KY">Kentucky</option>
-                        <option value="LA">Louisiana</option>
-                        <option value="ME">Maine</option>
-                        <option value="MD">Maryland</option>
-                        <option value="MA">Massachusetts</option>
-                        <option value="MI">Michigan</option>
-                        <option value="MN">Minnesota</option>
-                        <option value="MS">Mississippi</option>
-                        <option value="MO">Missouri</option>
-                        <option value="MT">Montana</option>
-                        <option value="NE">Nebraska</option>
-                        <option value="NV">Nevada</option>
-                        <option value="NH">New Hampshire</option>
-                        <option value="NJ">New Jersey</option>
-                        <option value="NM">New Mexico</option>
-                        <option value="NY">New York</option>
-                        <option value="NC">North Carolina</option>
-                        <option value="ND">North Dakota</option>
-                        <option value="OH">Ohio</option>
-                        <option value="OK">Oklahoma</option>
-                        <option value="OR">Oregon</option>
-                        <option value="PA">Pennsylvania</option>
-                        <option value="RI">Rhode Island</option>
-                        <option value="SC">South Carolina</option>
-                        <option value="SD">South Dakota</option>
-                        <option value="TN">Tennessee</option>
-                        <option value="TX">Texas</option>
-                        <option value="UT">Utah</option>
-                        <option value="VT">Vermont</option>
-                        <option value="VA">Virginia</option>
-                        <option value="WA">Washington</option>
-                        <option value="WV">West Virginia</option>
-                        <option value="WI">Wisconsin</option>
-                        <option value="WY">Wyoming</option>
-                    </select>
-
-
-                </div>
+            <div style={{ marginTop: '20px', marginBottom: '20px' }}>
+                <input
+                    type="checkbox"
+                    id="nonRefundablePolicy"
+                    checked={isPolicyChecked}
+                    onChange={(e) => setIsPolicyChecked(e.target.checked)}
+                />
+                <label htmlFor="nonRefundablePolicy" style={{ marginLeft: '10px' }}>
+                    I understand that this donation is <strong>non-refundable</strong> as per the organization's policy.
+                </label>
             </div>
 
-            <button type="submit" disabled={!stripe} className="donateButton">
+            <button type="submit" disabled={!stripe} style={{ padding: '10px 20px', backgroundColor: '#28a745', color: '#fff', border: 'none', borderRadius: '5px', cursor: 'pointer', fontSize: '1.1rem' }}>
                 Donate Now
             </button>
         </form>
