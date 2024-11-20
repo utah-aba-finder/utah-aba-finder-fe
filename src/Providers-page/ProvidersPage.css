@@ -72,6 +72,11 @@
   display: flex;
   justify-content: center;
 }
+
+.searched-provider-number-status-title {
+  padding: 1rem;
+}
+
 .card-container {
   width: 100%;
 }
@@ -153,6 +158,15 @@
 
 @media (max-width: 540px) {
   .providers-banner-title {
-    font-size: 2rem;
+    font-size: 1.6rem;
+  }
+
+
+  .searched-provider-number-status-title {
+    font-size: 1rem;
+  }
+
+  .provider-type-select {
+    font-size: 0.5rem;
   }
 }
