@@ -7,7 +7,7 @@ import CheckoutForm from './CheckoutForm'
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const stripePromise = loadStripe('pk_live_51QIvIqP3ILzRu6hwdkygmm4Mob9eFQ6LkOdWJWSX6yqwKv7jqZ92vKE3kZGchkjHME4oLHxMQ6pDDCuG4YvbpHxh004XhCi7RQ');
+const stripePromise = loadStripe('pk_live_51QLVtXJCAzcIvuNOwz9neiT1W3VFBfhOO1XwhxF44UsatLhu6ksdsuMqDjIbpnvzV89gidl2qWVbZRTEKxmBZDJE009Ya5sRCx');
 
 const Donations = () => {
     return (
