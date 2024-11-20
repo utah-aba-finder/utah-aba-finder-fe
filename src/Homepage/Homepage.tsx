@@ -27,7 +27,7 @@ const sponsors = [
 ];
 
 class Homepage extends Component<Props, State> {
-    private form = React.createRef<HTMLFormElement>();  
+    private form = React.createRef<HTMLFormElement>();
 
     state: State = {
         run: false,
@@ -91,7 +91,7 @@ class Homepage extends Component<Props, State> {
             }, (error) => {
                 toast.error('Error sending email');
             });
-    };      
+    };
 
     componentDidMount() {
         const lastVisit = localStorage.getItem('lastVisit');
@@ -146,8 +146,8 @@ class Homepage extends Component<Props, State> {
                         <div className="homepage-modal">
                             <h2>Recent Changes!</h2>
                             <div className="homepage-modal-content">
-                                <p>If you have been to our website before, you may have noticed some changes! 
-                                We have changed our name from Utah ABA Locator to Autism Services Locator and we are now a 501(c)(3) organization.</p>
+                                <p>If you have been to our website before, you may have noticed some changes!
+                                    We have changed our name from Utah ABA Locator to Autism Services Locator and we are now a 501(c)(3) organization.</p>
 
                                 <ul>
                                     <li><strong>Sponsorship Opportunities:</strong> Become a sponsor and support our mission! Sponsors will be featured in a special <strong>Sponsors Section</strong> on our site recognizing their contributions to the autism care community.</li>
@@ -158,10 +158,10 @@ class Homepage extends Component<Props, State> {
                                     <h3>** If you're a provider and would like to be added to our platform, please <Link to="/contact" className='text-[#4A6FA5]'>contact us</Link>.</h3>
                                     <br />
                                 </ul>
-                                    <h2 className='text-center'>Upcoming Changes!</h2>
-                                    <ul>
+                                <h2 className='text-center'>Upcoming Changes!</h2>
+                                <ul>
                                     <li><strong>Nationwide Coverage:</strong> Our website is expanding to cover the entire <strong>United States</strong>! No matter where you are, you'll soon be able to find the right ABA providers, therapists, and resources near you.</li>
-                                    </ul>
+                                </ul>
                             </div>
                             <div>
                                 <label>
@@ -207,7 +207,7 @@ class Homepage extends Component<Props, State> {
                 {/* Counties Section */}
                 <div className="sponsor-section">
                     <div className="sponsor-section-title-container">
-                        <h2 className="sponsor-section-title">Our <br/> Proud <br/> Sponsors</h2>
+                        <h2 className="sponsor-section-title">Our <br /> Proud <br /> Sponsors</h2>
                     </div>
                     <div className="sponsor-section-list-wrapper">
                         {sponsors.map((sponsor, index) => (
@@ -241,29 +241,29 @@ class Homepage extends Component<Props, State> {
                         <h1 className="what-we-are-about-title">What We're All About</h1>
                         <h2 className="what-we-are-about-subtitle">Made for Everyone</h2>
                         <p className="what-we-are-about-description">We founded Autism Services with one goal in mind: to provide high-quality support and resources for families seeking different types of providers. Our mission is to ensure that families have access to the best possible care for their children, regardless of their location. We strive to make the process of finding and connecting with autism services simple, reliable, and accessible for everyone.</p>
-                        <button className="max-w-fit bg-[#4A6FA5] text-white rounded-md px-4 py-2 hover:bg-[#A54A4A] border-none">Learn More About Us</button>
+                        {/* <button className="max-w-fit bg-[#4A6FA5] text-white rounded-md px-4 py-2 hover:bg-[#A54A4A] border-none">Learn More About Us</button> */}
                     </div>
                 </div>
                 <div className='contact-form-container'>
                     <h2 className='contact-form-title'>Any Feedback? We'd Love to Hear From You!</h2>
                     <form className='contact-form' onSubmit={this.handleSubmit}>
-                        <input 
-                            type="text" 
+                        <input
+                            type="text"
                             name="name"
                             value={name}
                             onChange={this.handleInputChange}
                             placeholder='Name'
-                            required 
+                            required
                         />
-                        <input 
+                        <input
                             type="email"
-                            name="email" 
+                            name="email"
                             value={email}
                             onChange={this.handleInputChange}
                             placeholder='Email'
                             required
                         />
-                        <textarea 
+                        <textarea
                             name="message"
                             value={message}
                             onChange={this.handleInputChange}

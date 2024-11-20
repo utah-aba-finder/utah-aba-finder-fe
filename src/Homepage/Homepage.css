@@ -47,7 +47,7 @@
 
 .discover-section-description {
     font-size: 1.2rem;
-    color:  whitesmoke;
+    color: whitesmoke;
     text-align: center;
     max-width: 50rem;
     border-radius: 20px;
@@ -157,6 +157,7 @@
     width: 20%;
     justify-content: center;
     align-items: center;
+    text-align: left;
 }
 
 .sponsor-section-title {
@@ -235,8 +236,8 @@
     border-radius: 10px;
     border: none;
     color: white;
-    font-weight: 600;
-    font-size: 1.3rem;
+    font-weight: 450;
+    font-size: 1.1rem;
     background-color: rgb(10, 150, 94);
     cursor: pointer;
     align-content: center;
@@ -266,15 +267,16 @@
     }
 
     .begin-section-title {
-        font-size: 1.1rem;
+        font-size: 1rem;
         margin: 0.3rem;
         max-width: 100%;
+        margin-bottom: 0.5rem;
     }
 
     .begin-section-description {
         font-size: 0.7rem;
-        margin-bottom: 0.5rem;
-        max-width: 100%;
+        margin-bottom: 1rem;
+        max-width: 80%;
     }
 
     .begin-section-button1,
@@ -321,6 +323,7 @@
     width: 100%;
     height: 100%;
 }
+
 .what-we-are-about-title {
     font-family: 'Oswald', serif;
 }
@@ -350,6 +353,18 @@
 
 
 @media (max-width: 820px) {
+    .discover-section-title {
+        max-width: 70%;
+    }
+
+    .what-we-are-about-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: 85% 50%;
+        transform: scale(0.99);
+    }
+
     .what-we-are-about-description {
         font-weight: 500;
         font-size: .8rem;
@@ -358,15 +373,23 @@
     .what-we-are-about-title {
         font-size: 1.2rem;
     }
+
     .what-we-are-about-subtitle {
         font-size: 1rem;
     }
+
     .what-we-are-about-text-container {
         padding: 0;
     }
+
+    .what-we-are-about-text-container p {
+        margin-top: 0.5rem;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
 }
 
-@media (max-width: 1066px) and (orientation: landscape) {
+@media (max-width: 1166px) and (orientation: landscape) {
     .what-we-are-about {
         gap: 0;
         display: flex;
@@ -389,10 +412,12 @@
 }
 
 @media (max-width: 1180px) and (orientation: landscape) {
+
     .what-we-are-about-title,
     .what-we-are-about-subtitle {
         font-size: 1.5rem;
     }
+
     .what-we-are-about-text-container {
         width: 50%;
     }
@@ -413,6 +438,7 @@
     .icons-section-icon img {
         width: 80%;
     }
+
 
 }
 
@@ -452,7 +478,7 @@
     cursor: pointer;
 }
 
-@media (max-width: 820px){
+@media (max-width: 820px) {
     .contact-form-container {
         padding: 1rem;
     }
@@ -460,9 +486,11 @@
     .contact-form-title {
         font-size: 1rem;
     }
+
     .contact-form {
         flex-direction: column;
     }
+
     .contact-form input,
     .contact-form textarea {
         margin: 0.5rem;
@@ -501,7 +529,6 @@
     color: white;
     font-size: 1rem;
     overflow: auto;
-    height: 90%;
 }
 
 .homepage-container {
