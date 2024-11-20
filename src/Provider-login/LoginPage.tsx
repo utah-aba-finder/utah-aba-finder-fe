@@ -62,10 +62,10 @@ export const LoginPage: React.FC = () => {
                 }
                 throw new Error(errorMessage);
             }
-    
 
-           
-            
+
+
+
 
             const authHeader = response.headers.get('Authorization');
             if (!authHeader) {
@@ -85,7 +85,7 @@ export const LoginPage: React.FC = () => {
                     const providerDetails = await fetchSingleProvider(providerId);
                     setLoggedInProvider({
                         ...providerDetails,
-                        role: 'provider_admin' 
+                        role: 'provider_admin'
                     });
                     toast.info('You are logged in as ' + providerDetails.attributes.name)
                     navigate(`/providerEdit/${providerId}`);
@@ -136,10 +136,10 @@ export const LoginPage: React.FC = () => {
     }
     return (
         <div className='loginWrapper'>
-            <div className='loginBannerContainer'>
+            {/* <div className='loginBannerContainer'>
             <img src={loginBanner} alt="Login Banner" className='loginBanner' />
                 <h1 className='loginImageText'>Provider Login</h1>
-            </div>
+            </div> */}
             <ToastContainer />
             <div className='loginContainer'>
                 <form className='loginForm' onSubmit={handleLogin}>
