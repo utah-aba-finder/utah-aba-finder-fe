@@ -119,7 +119,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
   ];
 
   const providerTypeOptions = [
-    { label: 'Select Provider Type', value: 'none' },
+    { label: 'Select Type', value: 'none' },
     { label: 'ABA Therapy', value: 'aba_therapy' },
     { label: 'Autism Evaluation', value: 'autism_evaluation' },
   ];

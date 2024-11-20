@@ -4,7 +4,7 @@ import utah from '../Assets/williamsonFamily.jpeg';
 import wansutter from '../Assets/wansutter.png';
 import './Homepage.css';
 import Joyride from 'react-joyride';
-import heart from '../Assets/flourHeart.jpg';
+import love from '../Assets/love.jpg';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import emailjs from 'emailjs-com';
@@ -235,7 +235,7 @@ class Homepage extends Component<Props, State> {
                 {/* Icons Section */}
                 <div className="what-we-are-about" id="view">
                     <div className="what-we-are-about-container">
-                        <img src={heart} alt="heart" className="what-we-are-about-image" />
+                        <img src={love} alt="heart" className="what-we-are-about-image" />
                     </div>
                     <div className="what-we-are-about-text-container">
                         <h1 className="what-we-are-about-title">What We're All About</h1>
@@ -245,10 +245,11 @@ class Homepage extends Component<Props, State> {
                     </div>
                 </div>
                 <div className='contact-form-container'>
-                    <h2 className='contact-form-title'>Any Feedback? We'd Love to Hear From You!</h2>
+                    <h2 className='contact-form-title'>We'd Love to Hear From You</h2>
                     <form className='contact-form' onSubmit={this.handleSubmit}>
                         <input
                             type="text"
+                            className='contact-form-input'
                             name="name"
                             value={name}
                             onChange={this.handleInputChange}
@@ -257,6 +258,7 @@ class Homepage extends Component<Props, State> {
                         />
                         <input
                             type="email"
+                            className='contact-form-input'
                             name="email"
                             value={email}
                             onChange={this.handleInputChange}
@@ -264,6 +266,7 @@ class Homepage extends Component<Props, State> {
                             required
                         />
                         <textarea
+                            className='contact-form-textarea'
                             name="message"
                             value={message}
                             onChange={this.handleInputChange}

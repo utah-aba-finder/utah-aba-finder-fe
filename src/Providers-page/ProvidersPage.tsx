@@ -340,7 +340,7 @@ const ProvidersPage: React.FC = () => {
           serviceFilter(provider) &&
           waitlistFilter(provider) &&
           ageFilter(provider) &&
-          providerTypeServiceFilter(provider)  && 
+          providerTypeServiceFilter(provider) &&
           providerTypeFilter(provider)
       );
 
@@ -377,10 +377,8 @@ const ProvidersPage: React.FC = () => {
 
     const address =
       provider.locations.length > 0
-        ? `${provider.locations[0].address_1 || ""} ${
-            provider.locations[0].address_2 || ""
-          }, ${provider.locations[0].city || ""}, ${
-            provider.locations[0].state || ""
+        ? `${provider.locations[0].address_1 || ""} ${provider.locations[0].address_2 || ""
+          }, ${provider.locations[0].city || ""}, ${provider.locations[0].state || ""
           } ${provider.locations[0].zip || ""}`.trim()
         : "Address not available";
 
@@ -527,7 +525,7 @@ const ProvidersPage: React.FC = () => {
       setTimeout(() => {
         setCurrentPage(prevPage => prevPage + 1);
         setIsAnimating(false);
-      }, 300); 
+      }, 300);
     }
   };
 
@@ -537,7 +535,7 @@ const ProvidersPage: React.FC = () => {
       setTimeout(() => {
         setCurrentPage(prevPage => prevPage - 1);
         setIsAnimating(false);
-      }, 300); 
+      }, 300);
     }
   };
 
@@ -550,16 +548,13 @@ const ProvidersPage: React.FC = () => {
 
     return (
       <button
-        className={`view-on-map-button ${
-          !isAddressAvailable ? "disabled" : ""
-        }`}
+        className={`view-on-map-button ${!isAddressAvailable ? "disabled" : ""
+          }`}
         onClick={() => {
           const location = provider.locations[0];
-          const fullAddress = `${location.address_1 || ""} ${
-            location.address_2 || ""
-          }, ${location.city || ""}, ${location.state || ""} ${
-            location.zip || ""
-          }`.trim();
+          const fullAddress = `${location.address_1 || ""} ${location.address_2 || ""
+            }, ${location.city || ""}, ${location.state || ""} ${location.zip || ""
+            }`.trim();
           handleViewOnMapClick(fullAddress);
         }}
         disabled={!isAddressAvailable}
@@ -599,15 +594,15 @@ const ProvidersPage: React.FC = () => {
       </section>
       <div className="glass-container">
         <div className="glass-two">
-        <h2 className="searched-provider-number-status title">
-        {selectedProviderType === 'none' ? (
-        'Please select a provider type to get started with your search'
-      ) : isFiltered ? (
-        `Showing ${paginatedProviders.length} of ${combinedProviders.length} Providers`
-      ) : (
-        `Showing ${allProviders.length} Providers`
-      )}
-    </h2>
+          <h2 className="searched-provider-number-status-title">
+            {selectedProviderType === 'none' ? (
+              'Please select a provider type to get started with your search'
+            ) : isFiltered ? (
+              `Showing ${paginatedProviders.length} of ${combinedProviders.length} Providers`
+            ) : (
+              `Showing ${allProviders.length} Providers`
+            )}
+          </h2>
         </div>
       </div>
       <main>
@@ -645,18 +640,16 @@ const ProvidersPage: React.FC = () => {
                 )}
                 {!isLoading && !showError && (
                   <div className="card-container">
-                    
+
                     <div
-                      className={`provider-cards-grid ${
-                        pageTransition ? `page-${pageTransition}` : ""
-                      }`}
+                      className={`provider-cards-grid ${pageTransition ? `page-${pageTransition}` : ""
+                        }`}
                     >
                       {paginatedProviders.map((provider) => (
                         <div
                           key={provider.id}
-                          className={`provider-card-wrapper ${
-                            pageTransition ? `animate-${pageTransition}` : ""
-                          }`}
+                          className={`provider-card-wrapper ${pageTransition ? `animate-${pageTransition}` : ""
+                            }`}
                         >
                           <ProviderCard
                             provider={provider}
@@ -672,29 +665,29 @@ const ProvidersPage: React.FC = () => {
                       ))}
                     </div>
                     {combinedProviders.length > 0 && (
-                    <div className="pagination-section">
-                      <p className="pagination-info">
-                        Page {currentPage} of {totalPages}
-                      </p>
-                      <div className="pagination-controls">
-                        {currentPage > 1 && (
-                          <button
-                          className="pagination-button"
-                          onClick={handlePreviousPage}
-                          >
-                            &lt; Previous
-                          </button>
-                        )}
-                        {currentPage < totalPages && (
-                          <button
-                          className="pagination-button"
-                          onClick={handleNextPage}
-                          >
-                            Next &gt;
-                          </button>
-                        )}
+                      <div className="pagination-section">
+                        <p className="pagination-info">
+                          Page {currentPage} of {totalPages}
+                        </p>
+                        <div className="pagination-controls">
+                          {currentPage > 1 && (
+                            <button
+                              className="pagination-button"
+                              onClick={handlePreviousPage}
+                            >
+                              &lt; Previous
+                            </button>
+                          )}
+                          {currentPage < totalPages && (
+                            <button
+                              className="pagination-button"
+                              onClick={handleNextPage}
+                            >
+                              Next &gt;
+                            </button>
+                          )}
+                        </div>
                       </div>
-                    </div>
                     )}
                   </div>
                 )}
@@ -705,11 +698,11 @@ const ProvidersPage: React.FC = () => {
 
         {selectedProvider && (
           <ProviderModal
-          provider={selectedProvider}
-          address={selectedAddress || "Address not available"}
-          mapAddress={mapAddress}
-          onClose={handleCloseModal}
-          onViewOnMapClick={handleViewOnMapClick}
+            provider={selectedProvider}
+            address={selectedAddress || "Address not available"}
+            mapAddress={mapAddress}
+            onClose={handleCloseModal}
+            onViewOnMapClick={handleViewOnMapClick}
           />
         )}
       </main>
