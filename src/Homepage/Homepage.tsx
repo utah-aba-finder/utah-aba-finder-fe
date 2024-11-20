@@ -204,6 +204,11 @@ class Homepage extends Component<Props, State> {
                     </div>
                 </div>
 
+                {/* Donate Button */}
+                <Link to="/donate" className="floating-donate-button">
+                    Donate
+                </Link>
+
                 {/* Counties Section */}
                 <div className="sponsor-section">
                     <div className="sponsor-section-title-container">

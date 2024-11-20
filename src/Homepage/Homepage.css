@@ -589,7 +589,8 @@
 
 /* Modal container */
 .homepage-modal {
-    background-color: rgb(218, 57, 57);
+    background-color: rgba(255, 255, 255);
+    border: 1px solid rgb(255, 0, 0);
     padding: 2rem;
     border-radius: 8px;
     width: 400px;
@@ -599,7 +600,7 @@
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
     z-index: 10000;
     opacity: 1;
-    color: white;
+    color: rgb(0, 0, 0);
     font-size: 1rem;
     overflow: auto;
 }
@@ -620,7 +621,7 @@
 /* Modal button */
 .homepage-modal-button {
     color: rgb(223, 39, 39);
-    border: none;
+    border: 1px solid rgb(223, 39, 39);
     cursor: pointer;
     margin-top: 10px;
     border-radius: 10px;
@@ -650,5 +651,43 @@
         font-size: 0.8rem;
         max-height: 80%;
         overflow: auto;
+    }
+}
+
+
+.floating-donate-button {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #f60808;
+    color: white;
+    padding: 30px;
+    border: none;
+    border-radius: 50px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    font-size: 1.5rem;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    z-index: 1000;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+    font-family: 'Oswald', sans-serif;
+    font-weight: 500;
+    animation: pulse 2s infinite;
+
+}
+
+.floating-donate-button:hover {
+    background-color: #fe1717;
+    transform: scale(1.1);
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+
+    70% {
+        transform: scale(1.1);
     }
 }
