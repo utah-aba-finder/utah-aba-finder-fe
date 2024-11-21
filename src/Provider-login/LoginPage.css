@@ -225,10 +225,11 @@ input:-webkit-autofill {
     font-size: 1.4rem;
     padding: 1rem;
     border-radius: 30px;
-    cursor: pointer;
+    cursor: not-allowed;
     margin-top: 1rem;
     border: 1px solid rgb(255, 182, 156);
     width: 40%;
+
 }
 
 .signupButton:hover {
