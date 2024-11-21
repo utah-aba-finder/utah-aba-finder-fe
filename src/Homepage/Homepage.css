@@ -86,12 +86,60 @@
     box-shadow: 0px 5px 15px rgb(99, 99, 99);
 }
 
+
+.floating-donate-button {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #f60808;
+    color: white;
+    padding: 30px;
+    border: none;
+    border-radius: 50px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    font-size: 1.5rem;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    z-index: 1000;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+    font-family: 'Oswald', sans-serif;
+    font-weight: 500;
+    animation: pulse 2s infinite;
+
+}
+
+.floating-donate-button:hover {
+    background-color: #fe1717;
+    transform: scale(1.1);
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+
+    70% {
+        transform: scale(1.1);
+    }
+}
+
+
 @media (max-width: 540px) {
     .discover-section {
         margin: 0;
         padding-bottom: 0;
         height: 60vh;
     }
+
+    .discover-section-subtitle {
+        font-size: 0.8rem;
+        color: whitesmoke;
+        text-align: center;
+        font-weight: 600;
+        max-width: 80%;
+    }
+
 
     .discover-section-backgroundImage {
         height: 100%;
@@ -119,6 +167,12 @@
         font-size: 0.8rem;
         margin-top: 1rem;
         text-decoration: none;
+    }
+
+    .floating-donate-button {
+        font-size: 1rem;
+        padding: 20px;
+
     }
 
 }
@@ -659,43 +713,5 @@
         font-size: 0.8rem;
         max-height: 80%;
         overflow: auto;
-    }
-}
-
-
-.floating-donate-button {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background-color: #f60808;
-    color: white;
-    padding: 30px;
-    border: none;
-    border-radius: 50px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    font-size: 1.5rem;
-    text-align: center;
-    text-decoration: none;
-    cursor: pointer;
-    z-index: 1000;
-    transition: transform 0.2s ease, background-color 0.2s ease;
-    font-family: 'Oswald', sans-serif;
-    font-weight: 500;
-    animation: pulse 2s infinite;
-
-}
-
-.floating-donate-button:hover {
-    background-color: #fe1717;
-    transform: scale(1.1);
-}
-
-@keyframes pulse {
-    0% {
-        transform: scale(1);
-    }
-
-    70% {
-        transform: scale(1.1);
     }
 }
