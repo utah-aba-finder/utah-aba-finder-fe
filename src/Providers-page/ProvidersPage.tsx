@@ -8,7 +8,7 @@ import ProviderCard from "./ProviderCard";
 import { fetchProviders } from "../Utility/ApiCall";
 import { MockProviders, ProviderAttributes } from "../Utility/Types";
 import gearImage from "../Assets/Gear@1x-0.5s-200px-200px.svg";
-import Joyride, { Step } from "react-joyride";
+import Joyride, { Step, STATUS } from "react-joyride";
 
 interface FavoriteDate {
   [providerId: number]: string;
@@ -53,22 +53,31 @@ const ProvidersPage: React.FC = () => {
   const [isAnimating, setIsAnimating] = useState(false);
 
   const [run, setRun] = useState(false);
+  const [stepIndex, setStepIndex] = useState(0);
   const [steps] = useState<Step[]>([
+    {
+      target: ".provider-type-select",
+      content: "First select the type of provider you are looking for.",
+      disableBeacon: true,
+      placement: "bottom",
+    },
     {
       target: ".provider-map-searchbar",
       content:
         "Use this search section to find providers by name, county, insurance, spanish speaking, services and waitlist status.",
-      disableBeacon: true,
+      placement: "bottom",
     },
     {
       target: ".provider-cards-grid",
       content:
         "Here you can see the available providers. Click on a provider to see more details, and to add them to your favorites.",
+      placement: "top",
     },
     {
       target: ".pagination-controls",
       content:
         "Use these buttons to navigate between different pages of providers.",
+      placement: "top",
     },
   ]);
 
@@ -80,14 +89,29 @@ const ProvidersPage: React.FC = () => {
   }, []);
 
   const handleJoyrideCallback = (data: any) => {
-    const { status } = data;
-    const finishedStatuses = ["finished", "skipped"];
+    const { action, index, status, type } = data;
 
-    if (finishedStatuses.includes(status)) {
+    if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status)) {
       localStorage.setItem("providersPageVisited", "true");
       setRun(false);
+    } else if (type === "step:after" && index === 0) {
+      // After first step, wait for provider type selection
+      if (selectedProviderType && selectedProviderType !== 'none') {
+        setStepIndex(index + 1);
+      }
+    } else if (action === "next" && type === "step:after") {
+      setStepIndex(index + 1);
+    } else if (action === "prev" && type === "step:after") {
+      setStepIndex(index - 1);
     }
   };
+
+  // Update Joyride when provider type is selected
+  useEffect(() => {
+    if (selectedProviderType && selectedProviderType !== 'none' && stepIndex === 0) {
+      setStepIndex(1);
+    }
+  }, [selectedProviderType, stepIndex]);
 
   useEffect(() => {
     const storedFavorites = localStorage.getItem("favoriteProviders");
@@ -567,6 +591,7 @@ const ProvidersPage: React.FC = () => {
   const handleResetTutorial = () => {
     localStorage.removeItem("providersPageVisited");
     setRun(true);
+    setStepIndex(0);
   };
 
   return (
@@ -580,10 +605,14 @@ const ProvidersPage: React.FC = () => {
         <Joyride
           run={run}
           steps={steps}
+          stepIndex={stepIndex}
           continuous={true}
           showSkipButton={true}
           showProgress={true}
           callback={handleJoyrideCallback}
+          disableOverlayClose={true}
+          disableCloseOnEsc={true}
+          spotlightClicks={true}
         />
         <img
           src={childrenBanner}
@@ -595,7 +624,7 @@ const ProvidersPage: React.FC = () => {
       <div className="glass-container">
         <div className="glass-two">
           <h2 className="searched-provider-number-status-title">
-            {selectedProviderType === 'none' ? (
+            {!selectedProviderType || selectedProviderType === 'none' ? (
               'Please select a provider type to get started with your search'
             ) : isFiltered ? (
               `Showing ${paginatedProviders.length} of ${combinedProviders.length} Providers`

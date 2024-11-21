@@ -33,8 +33,8 @@ class Homepage extends Component<Props, State> {
         run: false,
         steps: [
             {
-                target: '.discover-section-title',
-                content: 'Welcome to our website! Start your journey by a quick tour.',
+                target: '.discover-section-button',
+                content: 'Welcome to our website! Start your journey by a quick tour. Here you can find you desired providers.',
                 disableBeacon: true
             },
             {
@@ -42,17 +42,17 @@ class Homepage extends Component<Props, State> {
                 content: 'See our sponsors who help make this website possible!',
             },
             {
-                target: '.begin-section-button-container',
-                content: 'Click to view providers, take M-CHAT or CAST, or contact us for any questions.',
+                target: '.begin-section',
+                content: 'Here you can find providers, screening tools, and contact us for any questions.',
             },
             {
                 target: '.what-we-are-about',
                 content: 'Learn more about what we are all about!',
             },
             {
-                target: '#menu-button',
-                content: 'Click menu button to view the contents and explore our website!',
-            },
+                target: 'header nav',
+                content: 'Click to view providers, Conduct Screening Tests, Donate, or contact us for any questions.',
+            }
         ],
         showModal: false,
         dontShowAgain: false,
@@ -99,7 +99,10 @@ class Homepage extends Component<Props, State> {
 
         const now = new Date().getTime();
         const twentyFourHours = 24 * 60 * 60 * 1000;
-
+        const hasVisited = localStorage.getItem('hasVisited');
+        if (!hasVisited) {
+            this.setState({ run: true });
+        }
         if (!dontShow && (!lastVisit || now - parseInt(lastVisit) > twentyFourHours)) {
             this.setState({ showModal: true });
         }
@@ -190,7 +193,8 @@ class Homepage extends Component<Props, State> {
                 <div className="discover-section">
                     <img src={utah} alt="background-image" className="discover-section-backgroundImage" />
                     <div className="discover-section-container">
-                        <h1 className="discover-section-title">Find The Best Providers For Your Child</h1>
+                        <h1 className="discover-section-title">Find The Best Providers For Your Child</h1> <br/>
+                        <h2 className="discover-section-subtitle">Autism Evaluations | ABA Therapy | Speech Therapy | Occupational Therapy</h2>
                         <div className="discover-section-content">
                             <p className="discover-section-description">
                                 We're here to guide you every step of the way in finding the best providers for you and your family. Start your journey with a bit of ease.

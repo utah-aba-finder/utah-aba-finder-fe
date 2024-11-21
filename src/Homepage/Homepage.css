@@ -46,6 +46,13 @@
     font-family: 'Oswald', sans-serif;
 }
 
+.discover-section-subtitle {
+    font-size: 1.5rem;
+    color: whitesmoke;
+    text-align: center;
+    font-weight: 600;
+}
+
 .discover-section-description {
     font-size: 1.2rem;
     color: whitesmoke;
