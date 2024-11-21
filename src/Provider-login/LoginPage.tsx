@@ -8,7 +8,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import gearImage from '../Assets/Gear@1x-0.5s-200px-200px.svg';
 import { fetchSingleProvider } from '../Utility/ApiCall';
-import loginBanner from '../Assets/behaviorPlan.jpg'
+import loginBanner from '../Assets/loginBanner.jpg'
 import { useNavigate } from 'react-router-dom';
 
 export const LoginPage: React.FC = () => {
@@ -137,13 +137,14 @@ export const LoginPage: React.FC = () => {
     return (
         <div className='loginWrapper'>
             {/* <div className='loginBannerContainer'>
-            <img src={loginBanner} alt="Login Banner" className='loginBanner' />
+                <img src={loginBanner} alt="Login Banner" className='loginBanner' />
                 <h1 className='loginImageText'>Provider Login</h1>
             </div> */}
             <ToastContainer />
             <div className='loginContainer'>
                 <form className='loginForm' onSubmit={handleLogin}>
-                    <div className='input'>
+                    <h2 className='loginFormTitle'>Provider Login</h2>
+                    <div className='login-input'>
                         <User className='userIcon' />
                         <input
                             type='email'
@@ -155,7 +156,7 @@ export const LoginPage: React.FC = () => {
                             required
                         />
                     </div>
-                    <div className='input'>
+                    <div className='login-input'>
                         <Lock className='lockIcon' />
                         <input
                             type={showPassword ? 'text' : 'password'}

@@ -13,10 +13,7 @@ const navigationItems = [
       { name: "Favorite Providers", href: "/favoriteproviders" },
     ],
   },
-  {
-    name: "Donate",
-    href: "/donate",
-  },
+  { name: "Donate", href: "/donate" },
   {
     name: "Resources",
     dropdown: [
@@ -54,7 +51,7 @@ const Header = () => {
               <img
                 src={Logo}
                 alt="Utah ABA Locator"
-                className="h-[4.8rem] w-300px max-w-[30px] lg:max-w-[330px] object-contain p-2"
+                className="h-[4rem] lg:h-[4.8rem] w-500px max-w-[280px] lg:max-w-[500px]  object-contain"
               />
             </Link>
 
