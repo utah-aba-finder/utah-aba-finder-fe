@@ -23,6 +23,14 @@
     border-radius: 10px;
 }
 
+.donation-message {
+    margin: 2rem;
+    font-size: 1.2rem;
+    width: 50%;
+    text-align: start;
+    margin: 0 auto;
+}
+
 /* checkout Form Section */
 
 

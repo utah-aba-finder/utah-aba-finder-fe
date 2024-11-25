@@ -16,6 +16,9 @@ const Donations = () => {
                 <img src={donateBanner} alt="Donate Banner" className='loginBanner' />
                 <h1 className='donateBannerTitle'>Donate</h1>
             </div>
+            <div className='donation-message'>
+                <p>Thank you for your interest in donating to Autism Services Locator. We are a 501(c)(3) non-profit organization and all donations are tax-deductible and you will recieve a email receipt upon donation. Please note that we are not a licensed medical provider and cannot provide medical advice or services. We are a resource for parents or individuals seeking information about autism services. Your donations help us maintain our site and reach out to different providers to make sure we have the most up to date information.</p>
+            </div>
             <div className='donateContainer'>
 
 
