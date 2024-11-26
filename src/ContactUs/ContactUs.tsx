@@ -39,6 +39,7 @@ const ContactUs: React.FC = () => {
                 <div className='contact-us-text'>
                     <p>If you have any questions or feedback, please feel free to contact us using the form below.</p>
                     <p>Or feel free to call us at <a href="tel:1(385)560-4481" className='contact-us-phone-number'>(385) 560-4481</a></p>
+                    <p>Our email is also: <a href="mailto:info@autismserviceslocator.com" className='contact-us-email'>info@autismserviceslocator.com</a></p>
                 </div>
                 <form ref={form} className='contact-input-container' onSubmit={handleSubmit}>
                     <input name="user_name" placeholder='Your name' className='contact-input-name' required />
