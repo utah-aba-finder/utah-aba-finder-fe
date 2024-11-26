@@ -1,12 +1,9 @@
 .loginWrapper {
-    background-size: cover;
-    background-position: center;
     display: flex;
     flex-direction: column;
     width: auto;
     height: 100%;
-    justify-content: center;
-    align-items: center;
+    padding: 2.5rem;
 }
 
 .loginBannerContainer {
@@ -31,11 +28,6 @@
     margin-top: 1rem;
 }
 
-.loginImage {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
 
 .loginImageText {
     position: absolute;
@@ -55,7 +47,7 @@
     margin: 5px;
     height: fit-content;
     width: 100%;
-    padding: 20px 0;
+    /* padding: 20px 0; */
     background-color: #f7eee4;
 }
 
@@ -69,10 +61,9 @@
     border-radius: .5rem;
     display: flex;
     flex-direction: column;
-    width: 30%;
+    width: 50%;
     height: 30rem;
     align-items: center;
-    margin-top: 5rem;
     justify-content: center;
 }
 
@@ -331,10 +322,6 @@ input:-webkit-autofill {
     .loginButton {
         font-size: 1.2rem;
     }
-
-    .loginContainer {
-        height: 5rem;
-    }
 }
 
 
@@ -375,3 +362,13 @@ input:-webkit-autofill {
     }
 
 }
+
+@media (max-width: 975px) and (max-height: 1558px) {
+    .loginContainer {
+        height: fit-content;
+    }
+    .loginForm {
+        width: 80%;
+    }
+}
+
