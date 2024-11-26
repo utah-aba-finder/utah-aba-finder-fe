@@ -1,8 +1,8 @@
 import React from 'react';
 import './Resources.css';
-import behaviorImage from '../Assets/behavior-image.png';
-import socialImage from '../Assets/social-image.png';
-import detailImage from '../Assets/detail-image.png';
+import behaviorImage from '../Assets/behavior-Image.png'
+import socialImage from '../Assets/social-Image.png'
+import detailImage from '../Assets/detail-Image.png'
 
 const resourceBannerVideo = require('../Assets/resource-banner.mp4');
 
