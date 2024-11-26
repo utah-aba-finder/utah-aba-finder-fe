@@ -1,12 +1,9 @@
 .loginWrapper {
-    background-size: cover;
-    background-position: center;
     display: flex;
     flex-direction: column;
     width: auto;
     height: 100%;
-    justify-content: center;
-    align-items: center;
+    padding: 2.5rem;
 }
 
 .loginBannerContainer {
@@ -31,11 +28,6 @@
     margin-top: 1rem;
 }
 
-.loginImage {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
 
 .loginImageText {
     position: absolute;
@@ -55,7 +47,7 @@
     margin: 5px;
     height: fit-content;
     width: 100%;
-    padding: 20px 0;
+    /* padding: 20px 0; */
     background-color: #f7eee4;
 }
 
@@ -72,7 +64,6 @@
     width: 30%;
     height: 30rem;
     align-items: center;
-    margin-top: 5rem;
     justify-content: center;
 }
 
