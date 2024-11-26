@@ -61,7 +61,7 @@
     border-radius: .5rem;
     display: flex;
     flex-direction: column;
-    width: 30%;
+    width: 50%;
     height: 30rem;
     align-items: center;
     justify-content: center;
@@ -322,10 +322,6 @@ input:-webkit-autofill {
     .loginButton {
         font-size: 1.2rem;
     }
-
-    .loginContainer {
-        height: 5rem;
-    }
 }
 
 
@@ -366,3 +362,13 @@ input:-webkit-autofill {
     }
 
 }
+
+@media (max-width: 975px) and (max-height: 1558px) {
+    .loginContainer {
+        height: fit-content;
+    }
+    .loginForm {
+        width: 80%;
+    }
+}
+

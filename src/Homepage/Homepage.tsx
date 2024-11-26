@@ -156,7 +156,7 @@ class Homepage extends Component<Props, State> {
                                     <li><strong>Sponsorship Opportunities:</strong> Become a sponsor and support our mission! Sponsors will be featured in a special <strong>Sponsors Section</strong> on our site recognizing their contributions to the autism care community.</li>
                                     <br />
                                     <li><strong>Expanding Services:</strong> We're currently adding <strong>Occupational</strong> and <strong>Speech Therapy</strong> , and <strong>Autism Evaluation Providers</strong> to our platform, making it easier for you to find comprehensive care options for your child all in one place.</li>
-                                    <h3>** If you're a provider and would like to be added to our platform, please <Link to="/contact" className='text-[#4A6FA5]'>contact us</Link>.</h3>
+                                    <h3>** If you're a provider and would like to be added to our platform, please <Link to="/contact" className='text-[#4A6FA5]'>contact us</Link>, it's completely free!</h3>
                                     <br />
                                 </ul>
                                 <h2 className='text-center'>Upcoming Changes!</h2>
@@ -193,7 +193,7 @@ class Homepage extends Component<Props, State> {
                 <div className="discover-section">
                     <img src={utah} alt="background-image" className="discover-section-backgroundImage" />
                     <div className="discover-section-container">
-                        <h1 className="discover-section-title">Find The Best Providers For Your Child</h1> <br/>
+                        <h1 className="discover-section-title">Find The Best Providers For You or Your Child</h1> <br/>
                         <h2 className="discover-section-subtitle">Autism Evaluations | ABA Therapy | Speech Therapy | Occupational Therapy</h2>
                         <div className="discover-section-content">
                             <p className="discover-section-description">

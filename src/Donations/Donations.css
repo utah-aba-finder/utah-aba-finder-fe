@@ -71,8 +71,25 @@
     width: 92%;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 820px) {
     .donateBannerTitle {
         font-size: 2rem;
+    }
+    .donation-message {
+        width: 90%;
+    }
+    .donation-message p,
+    .donation-message ul {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 1066px) and (orientation: landscape) {
+    .donation-message {
+        width: 90%;
+    }
+    .donation-message p,
+    .donation-message ul {
+        font-size: 1rem;
     }
 }
