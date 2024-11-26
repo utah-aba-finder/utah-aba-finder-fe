@@ -25,21 +25,21 @@ const Resources = () => {
                 <div className="resource-links-container">
                     <div className="resource-image-container">
                         <h3>Behavior Tracking Worksheet</h3>
-                        <a href="https://drive.google.com/file/d/1YEPVaHlG-VyF9x7ozMIJ9x-5IUOEYr0t/view" target="_blank" rel="noopener noreferrer">
+                        <a href="https://docs.google.com/document/d/1k9adZvc0qy_hpwxb-odU-OtGWjBiD4BifIObdskplwQ/edit?usp=sharing" target="_blank" rel="noopener noreferrer">
                             <img src={behaviorImage} alt="Behavior Tracking Sheet" />
                         </a>
                     </div>
 
                     <div className="resource-image-container">
                         <h3>Detailed Goal Setting Worksheet</h3>
-                        <a href="https://drive.google.com/file/d/1bXL18Q_RiE80pi3cjdtd8Cda0il7PTOx/view?usp=sharing" target="_blank" rel="noopener noreferrer">
+                        <a href="https://docs.google.com/document/d/1Bg_EzRx8ozIHrDDpkkcv6cHZTtONIxhTgYPNzqIf-Co/edit?usp=sharing" target="_blank" rel="noopener noreferrer">
                             <img src={detailImage} alt="Detailed Goal Setting Worksheet" />
                         </a>
                     </div>
 
                     <div className="resource-image-container">
                         <h3>Social Stories and Scripts Worksheet</h3>
-                        <a href="https://drive.google.com/file/d/1R9Bh0O5yW4H6j6NwhbHD6NZALBu4GeDw/view?usp=sharing" target="_blank" rel="noopener noreferrer">
+                        <a href="https://docs.google.com/document/d/1UrYopDLjw0OXp-58D6HeYbGtGd1CSQ7Eo_j9HZUWi4Y/edit?usp=sharing" target="_blank" rel="noopener noreferrer">
                             <img src={socialImage} alt="Social Stories and Scripts Worksheet" />
                         </a>
                     </div>

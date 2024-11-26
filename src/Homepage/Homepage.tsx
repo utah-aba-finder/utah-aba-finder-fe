@@ -193,7 +193,7 @@ class Homepage extends Component<Props, State> {
                 <div className="discover-section">
                     <img src={utah} alt="background-image" className="discover-section-backgroundImage" />
                     <div className="discover-section-container">
-                        <h1 className="discover-section-title">Find The Best Providers For You or Your Child</h1> <br/>
+                        <h1 className="discover-section-title">Get The Care You Deserve</h1> <br />
                         <h2 className="discover-section-subtitle">Autism Evaluations | ABA Therapy | Speech Therapy | Occupational Therapy</h2>
                         <div className="discover-section-content">
                             <p className="discover-section-description">
