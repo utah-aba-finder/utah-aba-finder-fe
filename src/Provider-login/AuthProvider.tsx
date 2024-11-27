@@ -99,11 +99,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       const expirationTime = decoded.exp * 1000;
       sessionStorage.setItem("tokenExpiry", expirationTime.toString());
 
-      const timeoutDuration = Math.max(0, expirationTime - Date.now() - 300000);
-      setTimeout(() => {
-        toast.warning("Your session will expire soon. Please save your work.");
-      }, timeoutDuration);
-
       setToken(newToken);
     },
     [setToken, logout]
@@ -115,34 +110,86 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         const decoded = jwtDecode<TokenPayload>(token);
         const expirationTime = decoded.exp * 1000;
         const currentTime = Date.now();
-
+        const timeUntilExpiration = expirationTime - currentTime;
+  
+        console.log('Token Expiration Details:', {
+          currentTime: new Date(currentTime).toLocaleTimeString(),
+          expirationTime: new Date(expirationTime).toLocaleTimeString(),
+          timeUntilExpiration: Math.floor(timeUntilExpiration / 1000 / 60) + ' minutes',
+        });
+  
         if (currentTime > expirationTime) {
+          console.log('Token already expired');
           logout();
-        } else {
-          // Set timeout for expiration
-          const timeUntilExpiration = expirationTime - currentTime;
-          setTimeout(() => {
-            toast.error("Session expired. Please log in again.");
-            logout();
-          }, timeUntilExpiration);
-
-          // Set warning 5 minutes before expiration
-          const warningTime = timeUntilExpiration - 5 * 60 * 1000; // 5 minutes warning
-          if (warningTime > 0) {
-            setTimeout(() => {
-              toast.warning(
-                "Your session will expire in 5 minutes. Please save your work.",
-                {
-                  autoClose: false,
-                  closeOnClick: false,
-                  closeButton: true,
-                  draggable: false,
-                  position: "top-center",
-                }
-              );
-            }, warningTime);
-          }
+          return;
         }
+  
+        const clearExistingTimeouts = () => {
+          toast.dismiss("session-warning-five-min");
+          toast.dismiss("session-warning-one-min");
+          toast.dismiss("session-expired");
+        };
+  
+        clearExistingTimeouts();
+  
+        const timeouts: NodeJS.Timeout[] = [];
+  
+        timeouts.push(setTimeout(() => {
+          clearExistingTimeouts();
+          toast.error("Session expired. Please log in again.", {
+            toastId: "session-expired",
+            position: "top-center",
+            autoClose: 2000,
+          });
+          logout();
+        }, timeUntilExpiration));
+  
+        // 5-minute warning
+        const fiveMinWarning = timeUntilExpiration - 5 * 60 * 1000;
+        if (fiveMinWarning > 0) {
+          timeouts.push(setTimeout(() => {
+            if (!token) return; // Check if still logged in
+            console.log('Showing 5-minute warning');
+            toast.warning(
+              "Your session will expire in 5 minutes. Please save your work.",
+              {
+                toastId: "session-warning-five-min",
+                position: "top-center",
+                autoClose: false,
+                closeOnClick: false,
+                closeButton: true,
+                draggable: false,
+              }
+            );
+          }, fiveMinWarning));
+        }
+  
+        // 60-second warning
+        const oneMinWarning = timeUntilExpiration - 60 * 1000;
+        if (oneMinWarning > 0) {
+          timeouts.push(setTimeout(() => {
+            if (!token) return; // Check if still logged in
+            console.log('Showing 1-minute warning');
+            toast.dismiss("session-warning-five-min");
+            toast.warning(
+              "Your session will expire in 60 seconds. Please save your work.",
+              {
+                toastId: "session-warning-one-min",
+                position: "top-center",
+                autoClose: false,
+                closeOnClick: false,
+                closeButton: true,
+                draggable: false,
+              }
+            );
+          }, oneMinWarning));
+        }
+  
+        return () => {
+          timeouts.forEach((timeout: NodeJS.Timeout) => clearTimeout(timeout));
+          clearExistingTimeouts();
+        };
+  
       } catch (error) {
         console.error("Error decoding token:", error);
         logout();
@@ -159,28 +206,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     let warningTimeout: NodeJS.Timeout;
 
     const resetInactivityTimer = () => {
-      // Clear existing timeouts
       clearTimeout(inactivityTimeout);
       clearTimeout(warningTimeout);
 
-      // Dismiss any existing warnings
       toast.dismiss("inactivity-warning");
 
-      // Set warning to show 30 seconds before logout
       warningTimeout = setTimeout(() => {
-        toast.warning("Your session will end in 30 seconds due to inactivity", {
-          toastId: "inactivity-warning",
-          position: "top-center",
-          autoClose: false,
-          closeOnClick: false,
-          closeButton: true,
-          draggable: false,
-        });
-      }, 30 * 1000); // Show warning after 30 seconds of inactivity
+        toast.warning(
+          "You will be logged out in 60 seconds due to inactivity",
+          {
+            toastId: "inactivity-warning",
+            position: "top-center",
+            autoClose: false,
+            closeOnClick: false,
+            closeButton: true,
+            draggable: false,
+          }
+        );
+      }, 4 * 60 * 1000); 
 
-      // Set actual logout timeout
       inactivityTimeout = setTimeout(() => {
-        toast.dismiss("inactivity-warning"); // Clear the warning toast
+        toast.dismiss("inactivity-warning"); 
         toast.error("Logging out due to inactivity", {
           toastId: "inactivity-logout",
           position: "top-center",
@@ -188,8 +234,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         });
         setTimeout(() => {
           logout();
-        }, 1000); // Small delay to ensure the message is seen
-      }, 60 * 1000); // Logout after 60 seconds of inactivity
+        }, 1000); 
+      }, 5 * 60 * 1000); 
     };
 
     const events = [
@@ -203,10 +249,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       window.addEventListener(event, resetInactivityTimer);
     });
 
-    // Initial timer setup
     resetInactivityTimer();
 
-    // Cleanup
     return () => {
       events.forEach((event) => {
         window.removeEventListener(event, resetInactivityTimer);
@@ -217,13 +261,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     };
   }, [token, logout]);
 
-  // Token effect
   useEffect(() => {
     if (token) {
       sessionStorage.setItem("authToken", token);
-      checkTokenExpiration(token);
+      const cleanup = checkTokenExpiration(token);
+      return cleanup;
     } else {
       sessionStorage.removeItem("authToken");
+      toast.dismiss("session-warning-five-min");
+      toast.dismiss("session-warning-one-min");
+      toast.dismiss("session-expired");
     }
   }, [token, checkTokenExpiration]);
 
