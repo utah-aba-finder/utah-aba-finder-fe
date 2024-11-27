@@ -23,7 +23,7 @@ import moment from "moment";
 import { MockProviderData, ProviderAttributes } from "../Utility/Types";
 
 const SuperAdmin = () => {
-  const { setToken } = useAuth();
+  const { setToken, loggedInProvider } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [selectedTab, setSelectedTab] = useState("view");
   const [providers, setProviders] = useState<MockProviderData[]>([]);
@@ -357,16 +357,16 @@ const SuperAdmin = () => {
                       null}
 
                       {/* User Profile */}
-                      <div className="hidden lg:block">
-                        <div className="text-right">
-                          <div className="text-sm font-medium text-gray-700">
-                            Admin User
-                          </div>
-                          <div className="text-xs text-gray-500">
-                            admin@example.com
-                          </div>
-                        </div>
-                      </div>
+<div className="hidden lg:block">
+  <div className="text-right">
+    <div className="text-sm font-medium text-gray-700">
+      Admin User
+    </div>
+    <div className="text-xs text-gray-500">
+      {loggedInProvider?.email || 'admin@example.com'}
+    </div>
+  </div>
+</div>
                     </div>
                   </div>
                 </div>
