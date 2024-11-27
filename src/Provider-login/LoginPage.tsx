@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import './LoginPage.css'
 import { User, Lock, Eye, EyeOff } from 'lucide-react';
-import { MockProviderData, ProviderAttributes } from '../Utility/Types';
 import { useAuth } from './AuthProvider';
 import { toast } from 'react-toastify';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import gearImage from '../Assets/Gear@1x-0.5s-200px-200px.svg';
 import { fetchSingleProvider } from '../Utility/ApiCall';
-import loginBanner from '../Assets/loginBanner.jpg'
 import { useNavigate } from 'react-router-dom';
 
 export const LoginPage: React.FC = () => {
@@ -17,11 +15,7 @@ export const LoginPage: React.FC = () => {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false)
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [currentProvider, setCurrentProvider] = useState<MockProviderData | undefined>();
-    const { setToken, setLoggedInProvider, logout } = useAuth();
+    const { initializeSession, setLoggedInProvider } = useAuth();
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -30,7 +24,6 @@ export const LoginPage: React.FC = () => {
             return () => clearTimeout(timer);
         }
     }, [error]);
-
 
     const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -52,7 +45,6 @@ export const LoginPage: React.FC = () => {
             });
             const data = await response.json();
 
-
             if (!response.ok) {
                 let errorMessage = 'Login failed';
                 if (response.status === 401) {
@@ -63,18 +55,13 @@ export const LoginPage: React.FC = () => {
                 throw new Error(errorMessage);
             }
 
-
-
-
-
             const authHeader = response.headers.get('Authorization');
             if (!authHeader) {
                 throw new Error('No Authorization header found in response');
             }
 
             const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : authHeader;
-            sessionStorage.setItem('authToken', token);
-            setToken(token);
+            initializeSession(token);
 
             if (data.data.role === 'super_admin') {
                 setLoggedInProvider(data.data);
@@ -112,16 +99,6 @@ export const LoginPage: React.FC = () => {
         }
     };
 
-    const handleProviderUpdate = (updatedProvider: ProviderAttributes) => {
-        setCurrentProvider((prevProvider) => {
-            if (!prevProvider) return undefined;
-            return {
-                ...prevProvider,
-                ...updatedProvider,
-            };
-        });
-    };
-
     const handleShowPassword = () => {
         setShowPassword(!showPassword);
     }
@@ -134,12 +111,9 @@ export const LoginPage: React.FC = () => {
             </div>
         );
     }
+
     return (
         <div className='loginWrapper'>
-            {/* <div className='loginBannerContainer'>
-                <img src={loginBanner} alt="Login Banner" className='loginBanner' />
-                <h1 className='loginImageText'>Provider Login</h1>
-            </div> */}
             <ToastContainer />
             <div className='loginContainer'>
                 <form className='loginForm' onSubmit={handleLogin}>

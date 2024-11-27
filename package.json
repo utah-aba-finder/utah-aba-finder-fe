@@ -39,6 +39,7 @@
     "react-scripts": "5.0.1",
     "react-toastify": "^10.0.5",
     "react-tooltip": "^5.28.0",
+    "recharts": "^2.13.3",
     "tailwindcss": "^3.4.14",
     "toastify": "^2.0.1",
     "toasty": "^6.0.3",
