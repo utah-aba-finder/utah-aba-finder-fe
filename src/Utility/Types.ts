@@ -53,3 +53,8 @@ export interface MockProviderData {
 export interface MockProviders {
     data: MockProviderData[];
 }
+
+interface SuperAdminEditProps {
+    provider: MockProviderData;
+    onUpdate: (updatedProvider: ProviderAttributes) => void;
+  }

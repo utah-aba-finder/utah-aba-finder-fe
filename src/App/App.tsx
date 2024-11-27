@@ -22,7 +22,7 @@ import {
   MockProviders,
   ProviderAttributes,
 } from "../Utility/Types";
-import { SuperAdmin } from "../SuperAdmin/SuperAdmin";
+import SuperAdmin from "../SuperAdmin/SuperAdmin";
 import Resources from "../Resources/Resources";
 import { fetchProviders } from "../Utility/ApiCall";
 import { SuperAdminEdit } from "../SuperAdmin/SuperAdminEdit";
