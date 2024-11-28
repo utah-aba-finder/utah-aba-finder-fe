@@ -315,7 +315,18 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
                     }));
                   }
                 }}
-                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-600 mb-2">
+                Logo
+              </label>
+              <input
+                type="text"
+                name="logo"
+                className="w-[95%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                value={formData.logo}
+                onChange={handleChange}
               />
             </div>
           </div>
@@ -478,7 +489,6 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
                     placeholder="0"
                     min="0"
                     step="0.5"
-                    required
                   />
                 </div>
                 <div>
@@ -494,7 +504,6 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
                     placeholder="99"
                     min="0"
                     step="0.5"
-                    required
                   />
                 </div>
               </div>
@@ -570,6 +579,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
                     <option value="">Select an option</option>
                     <option value="yes">Yes</option>
                     <option value="no">No</option>
+                    <option value="contact us">Contact Us</option>
                   </select>
                 </div>
               </div>
