@@ -28,6 +28,7 @@ interface ProviderAttributes {
   cost?: string | null;
   min_age?: number | null;
   max_age?: number | null;
+  provider_type?: string | null;
   waitlist?: string | null;
   telehealth_services?: string | null;
   spanish_speakers?: string | null;
@@ -127,13 +128,32 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ provider, address, mapAdd
               </p>
             </div>
             <div className="provider-details text">
-              <p><strong>Counties Served:</strong> {provider.counties_served[0]?.county || 'Contact us'}
-              </p>
+            {provider.provider_type === 'aba_therapy' ? (
+              <p><strong>Counties Served:</strong> {
+                provider.counties_served?.[0]?.county && 
+                provider.counties_served[0].county !== '' && 
+                !provider.counties_served[0].county.includes('[]') 
+                  ? (provider.counties_served[0].county.includes('ActionController') 
+                      ? provider.counties_served[0].county.match(/county"=>"([^"]+)"/)?.[1] 
+                      : provider.counties_served[0].county)
+                  : 'Not applicable for this provider'
+              }</p>
+            ) : provider.provider_type === 'autism_evaluation' ? (
+              <p><strong>Counties Served:</strong> {
+                provider.counties_served?.[0]?.county && 
+                provider.counties_served[0].county !== '' && 
+                !provider.counties_served[0].county.includes('[]') 
+                  ? (provider.counties_served[0].county.includes('ActionController') 
+                      ? provider.counties_served[0].county.match(/county"=>"([^"]+)"/)?.[1] 
+                      : provider.counties_served[0].county)
+                  : 'Not applicable for this provider'
+              }</p>
+            ) : null}
               <p><strong>Ages Served:</strong> {provider.min_age} - {provider.max_age} years</p>
               <p><strong>Waitlist:</strong> {provider.waitlist || 'Contact us'}</p>
               <p><strong>Telehealth Services:</strong> {provider.telehealth_services || 'Contact us'}</p>
-              <p><strong>At Home Services:</strong> {provider.at_home_services || 'Contact us'}</p>
-              <p><strong>In-Clinic Services:</strong> {provider.in_clinic_services || 'Contact us'}</p>
+              <p><strong>At Home Services:</strong> {provider.provider_type === 'aba_therapy' ? (provider.at_home_services || 'Contact us') : provider.provider_type === 'autism_evaluation' ? (provider.at_home_services || 'Not applicable') : null}</p>
+              <p><strong>In-Clinic Services:</strong> {provider.provider_type === 'aba_therapy' ? (provider.in_clinic_services || 'Contact us') : provider.provider_type === 'autism_evaluation' && provider.locations?.some(location => location.address_1 && location.city && location.state && location.zip) ? 'Yes' : 'Not applicable'}</p>
               <p><strong>Spanish Speakers:</strong> {provider.spanish_speakers || 'Contact us'}</p>
               <p><strong>Cost:</strong> {provider.cost || 'Contact us'}</p>
               <p><strong>Insurance:</strong> {provider.insurance.map(i => i.name).join(', ') || 'Contact us'}</p>
