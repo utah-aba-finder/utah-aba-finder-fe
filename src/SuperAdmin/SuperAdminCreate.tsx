@@ -27,6 +27,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
         id: null,
         name: "",
         address_1: "",
+        address_2: "",
         city: "",
         state: "",
         zip: "",
@@ -84,6 +85,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
           id: null,
           name: "",
           address_1: "",
+          address_2: "",
           city: "",
           state: "",
           zip: "",
@@ -137,6 +139,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
                     id: location.id,
                     name: location.name,
                     address_1: location.address_1,
+                    address_2: location.address_2,
                     city: location.city,
                     state: location.state,
                     zip: location.zip,
@@ -181,6 +184,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
             id: null,
             name: "",
             address_1: "",
+            address_2: "",
             city: "",
             state: "",
             zip: "",
@@ -391,6 +395,17 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
                     className="w-[95%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm"
                   />
                 </div>
+                <div className="md:col-span-2">
+                    <input 
+                    type='text'
+                    placeholder='Address Line 2'
+                    value={location.address_2}
+                    onChange={(e) =>
+                      handleLocationChange(index, "address_2", e.target.value)
+                    }
+                    className="w-[95%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm"
+                    />
+                </div>
                 <input
                   type="text"
                   placeholder="City"
@@ -561,8 +576,9 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
                     className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm"
                   >
                     <option value="">Select an option</option>
-                    <option value="yes">Yes</option>
-                    <option value="no">No</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                    <option value="Contact us">Contact us</option>
                   </select>
                 </div>
 
