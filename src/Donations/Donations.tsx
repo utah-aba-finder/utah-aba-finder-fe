@@ -2,12 +2,26 @@ import React from 'react';
 import donateBanner from '../Assets/donate.jpg';
 import '../Donations/Donations.css';
 import { Elements } from '@stripe/react-stripe-js';
-import { loadStripe } from '@stripe/stripe-js';
+import { Appearance, loadStripe, StripeElementsOptions } from '@stripe/stripe-js';
 import CheckoutForm from './CheckoutForm'
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const stripePromise = loadStripe('pk_live_51QLVtXJCAzcIvuNOwz9neiT1W3VFBfhOO1XwhxF44UsatLhu6ksdsuMqDjIbpnvzV89gidl2qWVbZRTEKxmBZDJE009Ya5sRCx');
+const stripePromise = loadStripe('pk_live_51QLVtXJCAzcIvuNOwz9neiT1W3VFBfhOO1XwhxF44UsatLhu6ksdsuMqDjIbpnvzV89gidl2qWVbZRTEKxmBZDJE009Ya5sRCx', {
+    apiVersion: '2020-08-27',
+});
+
+const appearance: Appearance = {
+    theme: 'stripe',
+    variables: {
+        colorPrimary: '#28a745',
+    },
+};
+
+const options: StripeElementsOptions = {
+    appearance,
+    paymentMethodCreation: 'manual' as const,
+};
 
 const Donations = () => {
     return (
@@ -25,7 +39,7 @@ const Donations = () => {
             <div className='donateContainer'>
 
 
-                <Elements stripe={stripePromise}>
+                <Elements stripe={stripePromise} options={options}>
                     <CheckoutForm />
                 </Elements>
                 <ToastContainer />
