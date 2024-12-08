@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useStripe, useElements, CardElement } from '@stripe/react-stripe-js';
+import React, { useState, useEffect } from 'react';
+import { useStripe, useElements, CardElement, PaymentRequestButtonElement } from '@stripe/react-stripe-js';
 
 const CheckoutForm: React.FC = () => {
     const stripe = useStripe();
@@ -17,6 +17,8 @@ const CheckoutForm: React.FC = () => {
     const [state, setState] = useState<string>('');
     const [zip, setZip] = useState<string>('');
     const [isPolicyChecked, setIsPolicyChecked] = useState<boolean>(false);
+    const [paymentRequest, setPaymentRequest] = useState<any>(null);
+    const [canMakePayment, setCanMakePayment] = useState(false);
 
     const states = [
         { code: 'AL', name: 'Alabama' },
@@ -163,6 +165,65 @@ const CheckoutForm: React.FC = () => {
             alert('Something went wrong. Please try again.');
         }
     };
+
+    useEffect(() => {
+        if (stripe) {
+            const pr = stripe.paymentRequest({
+                country: 'US',
+                currency: 'usd',
+                total: {
+                    label: 'Donation to Autism Services Locator',
+                    amount: (donationAmount || 0) * 100, // Convert to cents
+                },
+                requestPayerName: true,
+                requestPayerEmail: true,
+            });
+
+            pr.on('paymentmethod', async (e) => {
+                // Handle the payment here similar to your existing handleSubmit logic
+                // You'll need to adapt this to work with your backend
+                try {
+                    const response = await fetch('https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/payments/create_payment_intent', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            amount: donationAmount,
+                            frequency,
+                            // ... other fields
+                        }),
+                    });
+
+                    const { clientSecret, error } = await response.json();
+                    if (error) {
+                        e.complete('fail');
+                        return;
+                    }
+
+                    const { error: confirmError } = await stripe.confirmCardPayment(
+                        clientSecret,
+                        { payment_method: e.paymentMethod.id },
+                        { handleActions: false }
+                    );
+
+                    if (confirmError) {
+                        e.complete('fail');
+                    } else {
+                        e.complete('success');
+                        alert('Thank you for your donation!');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    e.complete('fail');
+                }
+            });
+
+            pr.canMakePayment().then(result => {
+                setCanMakePayment(!!result);
+            });
+
+            setPaymentRequest(pr);
+        }
+    }, [stripe, donationAmount, frequency]);
 
     return (
         <form onSubmit={handleSubmit} style={{ maxWidth: '400px', margin: '0 auto', padding: '20px', border: '1px solid #ccc', borderRadius: '5px', marginTop: '2rem', marginBottom: '2rem' }} className="checkout-form">
@@ -315,6 +376,18 @@ const CheckoutForm: React.FC = () => {
             </div>
 
             <h3>Payment Information</h3>
+
+            {canMakePayment && (
+                <div style={{ marginBottom: '20px' }}>
+                    <PaymentRequestButtonElement 
+                        options={{ paymentRequest }}
+                        className="PaymentRequestButton"
+                    />
+                    <div style={{ textAlign: 'center', margin: '10px 0' }}>
+                        - OR -
+                    </div>
+                </div>
+            )}
 
             <div style={{ marginBottom: '20px' }}>
                 <CardElement options={{ style: { base: { color: '#333', fontSize: '16px' } } }} className="stripe-info" />
