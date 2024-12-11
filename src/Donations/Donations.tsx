@@ -6,6 +6,7 @@ import { Appearance, loadStripe, StripeElementsOptions } from '@stripe/stripe-js
 import CheckoutForm from './CheckoutForm'
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import PayPallLink from 'src/Assets/qrcode.png'
 
 const stripePromise = loadStripe('pk_live_51QLVtXJCAzcIvuNOwz9neiT1W3VFBfhOO1XwhxF44UsatLhu6ksdsuMqDjIbpnvzV89gidl2qWVbZRTEKxmBZDJE009Ya5sRCx', {
     apiVersion: '2020-08-27',
@@ -35,14 +36,19 @@ const Donations = () => {
                 <p>Donations are tax-deductible and you will receive an email receipt upon completion. Please note that we are not a licensed medical provider and cannot offer direct medical advice or services.</p>
                 <p>By supporting us, you're helping families navigate the complex world of autism resources more easily. Your contribution allows us to:</p> <ul> <li>Maintain our comprehensive database of local providers</li> <li>Continuously update information to reflect current best practices</li> <li>Expand our reach to support even more families</li> </ul>
                 <p><strong>Donate Now</strong> and join us in making a difference in the autism community.</p>
+                <p>You can also donate via PayPal by scanning the QR code below or by clicking the link below if you have any issues with the other options.</p>
             </div>
             <div className='donateContainer'>
-
-
                 <Elements stripe={stripePromise} options={options}>
                     <CheckoutForm />
                 </Elements>
                 <ToastContainer />
+                <div className='paypalContainer'>
+                    <img src={PayPallLink} alt="PayPal QR Code" className='paypalLink' />
+                    <a href='https://paypal.me/asl2024' target="_blank" rel="noopener noreferrer">
+                        Click here to donate via PayPal
+                    </a>
+                </div>
             </div>
         </div>
     );

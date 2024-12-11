@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useStripe, useElements, CardElement, PaymentRequestButtonElement } from '@stripe/react-stripe-js';
 
+
 const CheckoutForm: React.FC = () => {
     const stripe = useStripe();
     const elements = useElements();
@@ -173,15 +174,13 @@ const CheckoutForm: React.FC = () => {
                 currency: 'usd',
                 total: {
                     label: 'Donation to Autism Services Locator',
-                    amount: (donationAmount || 0) * 100, // Convert to cents
+                    amount: (donationAmount || 0) * 100, 
                 },
                 requestPayerName: true,
                 requestPayerEmail: true,
             });
 
             pr.on('paymentmethod', async (e) => {
-                // Handle the payment here similar to your existing handleSubmit logic
-                // You'll need to adapt this to work with your backend
                 try {
                     const response = await fetch('https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/payments/create_payment_intent', {
                         method: 'POST',
@@ -409,6 +408,7 @@ const CheckoutForm: React.FC = () => {
                 Donate Now
             </button>
         </form>
+        
     );
 };
 
