@@ -1,9 +1,9 @@
 {
-  "short_name": "UAL",
-  "name": "Utah ABA Finder",
+  "short_name": "ASL",
+  "name": "Autism Services Locator",
   "icons": [
     {
-      "src": "UAL_logo.png"
+      "src": "ASL.png"
     }
   ]
 }
