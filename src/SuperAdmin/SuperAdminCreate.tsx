@@ -134,7 +134,11 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
                 type: "provider",
                 attributes: {
                   name: formData.name,
-                  provider_type: formData.provider_type,
+                  provider_type: [
+                    {
+                      name: formData.provider_type,
+                    },
+                  ],
                   locations: formData.locations.map((location) => ({
                     id: location.id,
                     name: location.name,
@@ -262,8 +266,10 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
                 <option value="" disabled>
                   Select Provider Type
                 </option>
-                <option value="aba_therapy">ABA Therapy</option>
-                <option value="autism_evaluation">Autism Evaluation</option>
+                <option value="Aba Therapy">ABA Therapy</option>
+                <option value="Autism Evaluation">Autism Evaluation</option>
+                <option value="Speech Therapy">Speech Therapy</option>
+                <option value="Occupational Therapy">Occupational Therapy</option>
               </select>
             </div>
 

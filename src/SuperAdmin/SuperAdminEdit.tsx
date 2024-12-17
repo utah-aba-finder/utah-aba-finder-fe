@@ -66,14 +66,29 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
     >
   ) => {
     const { name, value } = e.target;
-    setEditedProvider((prev) =>
-      prev
-        ? {
-            ...prev,
-            [name]: value,
-          }
-        : null
-    );
+    
+    if (name === "provider_type") {
+      setEditedProvider((prev) =>
+        prev
+          ? {
+              ...prev,
+              provider_type: [{ 
+                id: prev.provider_type?.[0]?.id || 0,
+                name: value 
+              }],
+            }
+          : null
+      );
+    } else {
+      setEditedProvider((prev) =>
+        prev
+          ? {
+              ...prev,
+              [name]: value,
+            }
+          : null
+      );
+    }
   };
 
   const handleLocationChange = (
@@ -174,6 +189,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
   return (
     <div className="w-full overflow-x-hidden">
       {" "}
+      <ToastContainer />
       <div className="px-2 sm:px-4 py-6">
         {" "}
         {/* Header */}
@@ -279,14 +295,14 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                     </label>
                     <select
                       name="provider_type"
-                      value={editedProvider.provider_type || ""}
+                      value={editedProvider.provider_type?.[0]?.name || ""}
                       onChange={handleInputChange}
                       className="block w-[95%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                     >
-                      <option value="aba_therapy">ABA Therapy</option>
-                      <option value="autism_evaluation">
-                        Autism Evaluation
-                      </option>
+                      <option value="ABA Therapy">ABA Therapy</option>
+                      <option value="Autism Evaluation">Autism Evaluation</option>
+                      <option value="Speech Therapy">Speech Therapy</option>
+                      <option value="Occupational Therapy">Occupational Therapy</option>
                     </select>
                   </div>
 
@@ -620,7 +636,9 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                     </div>
 
                     {/* Service Delivery Options */}
-                    {editedProvider.provider_type === "aba_therapy" && (
+                    {editedProvider.provider_type?.some((type: { name: string }) =>
+                      type.name?.toLowerCase() === "ABA Therapy"
+                    ) && (
                       <div>
                         <label className="block text-sm text-gray-600 mb-2">
                           Service Delivery Options

@@ -32,7 +32,7 @@ const SuperAdmin = () => {
   const [openNewProviderForm, setOpenNewProviderForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [providerTypeFilter, setProviderTypeFilter] = useState<
-    "all" | "aba" | "eval"
+    "all" | "ABA Therapy" | "Autism Evaluation" | "Speech Therapy" | "Occupational Therapy"
   >("all");
   const [statusFilter, setStatusFilter] = useState<
     "all" | "approved" | "pending" | "denied"
@@ -89,12 +89,15 @@ const SuperAdmin = () => {
     const nameMatch = provider.attributes.name
       ?.toLowerCase()
       .includes(searchTerm.toLowerCase());
+    
     const typeMatch =
       providerTypeFilter === "all"
         ? true
-        : providerTypeFilter === "aba"
-        ? provider.attributes.provider_type === "aba_therapy"
-        : provider.attributes.provider_type === "autism_evaluation";
+        : provider.attributes.provider_type?.some(
+            (type: { name: string }) =>
+              type.name === providerTypeFilter
+          );
+
     const statusMatch =
       statusFilter === "all"
         ? true
@@ -311,7 +314,7 @@ const SuperAdmin = () => {
                                 value={providerTypeFilter}
                                 onChange={(e) =>
                                   setProviderTypeFilter(
-                                    e.target.value as "all" | "aba" | "eval"
+                                    e.target.value as "all" | "ABA Therapy" | "Autism Evaluation" | "Speech Therapy" | "Occupational Therapy"
                                   )
                                 }
                                 className="w-full pl-2.5 pr-8 py-1.5 rounded-lg border border-gray-300 bg-white 
@@ -319,8 +322,10 @@ const SuperAdmin = () => {
                                appearance-none cursor-pointer text-gray-700 text-sm"
                               >
                                 <option value="all">All Providers</option>
-                                <option value="aba">ABA Therapy</option>
-                                <option value="eval">Evaluation</option>
+                                <option value="ABA Therapy">ABA Therapy</option>
+                                <option value="Autism Evaluation">Autism Evaluation</option>
+                                <option value="Speech Therapy">Speech Therapy</option>
+                                <option value="Occupational Therapy">Occupational Therapy</option>
                               </select>
                               <ChevronDown className="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 transform -translate-y-1/2 pointer-events-none" />
                             </div>
@@ -384,9 +389,13 @@ const SuperAdmin = () => {
                     <p className="text-gray-600">
                       {providerTypeFilter === "all"
                         ? `Total Providers: ${filteredProviders.length}`
-                        : providerTypeFilter === "aba"
+                        : providerTypeFilter === "ABA Therapy"
                         ? `ABA Therapy Providers: ${filteredProviders.length}`
-                        : `Evaluation Providers: ${filteredProviders.length}`}
+                        : providerTypeFilter === "Autism Evaluation"
+                        ? `Autism Evaluation Providers: ${filteredProviders.length}`
+                        : providerTypeFilter === "Speech Therapy"
+                        ? `Speech Therapy Providers: ${filteredProviders.length}`
+                        : `Occupational Therapy Providers: ${filteredProviders.length}`}
                       {searchTerm && ` (Filtered)`}
                     </p>
                   </div>
@@ -430,10 +439,7 @@ const SuperAdmin = () => {
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
                                 <div className="text-sm text-gray-500">
-                                  {provider.attributes.provider_type ===
-                                  "aba_therapy"
-                                    ? "ABA Therapy"
-                                    : "Autism Evaluation"}
+                                  {provider.attributes.provider_type?.map(type => type.name).join(", ") || "Unknown"}
                                 </div>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">

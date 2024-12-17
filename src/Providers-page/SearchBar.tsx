@@ -119,9 +119,11 @@ const SearchBar: React.FC<SearchBarProps> = ({
   ];
 
   const providerTypeOptions = [
-    { label: 'Select Type', value: 'none' },
-    { label: 'ABA Therapy', value: 'aba_therapy' },
-    { label: 'Autism Evaluation', value: 'autism_evaluation' },
+    { label: 'Select Type', value: 'none', id: 0 },
+    { label: 'Autism Evaluation', value: 'Autism Evaluation', id: 1 },
+    { label: 'ABA Therapy', value: 'ABA Therapy', id: 2 },
+    { label: 'Speech Therapy', value: 'Speech Therapy', id: 3 },
+    { label: 'Occupational Therapy', value: 'Occupational Therapy', id: 4 },
   ];
 
 
@@ -149,8 +151,8 @@ const SearchBar: React.FC<SearchBarProps> = ({
             }}
             aria-label="Select Provider Type"
           >
-            {providerTypeOptions.map((option, index) => (
-              <option key={index} value={option.value}>
+            {providerTypeOptions.map((option) => (
+              <option key={option.id} value={option.value}>
                 {option.label}
               </option>
             ))}
