@@ -39,11 +39,16 @@ const Analytics: React.FC<AnalyticsProps> = ({ providers }) => {
 
   const stats = useMemo(() => {
     const totalProviders = approvedProviders.length;
-    const abaProviders = approvedProviders.filter(
-      (p) => p.attributes.provider_type === "aba_therapy"
+    const abaProviders = approvedProviders.filter((p) =>
+      p.attributes.provider_type?.some(
+        (type: { name: string }) => type.name?.toLowerCase() === "aba_therapy"
+      )
     ).length;
-    const evalProviders = approvedProviders.filter(
-      (p) => p.attributes.provider_type === "autism_evaluation"
+    const evalProviders = approvedProviders.filter((p) =>
+      p.attributes.provider_type?.some(
+        (type: { name: string }) =>
+          type.name?.toLowerCase() === "autism_evaluation"
+      )
     ).length;
 
     const telehealth = approvedProviders.filter(

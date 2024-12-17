@@ -235,7 +235,7 @@ const ProvidersPage: React.FC = () => {
         if (sortedProviders.length === 0) {
           errorTimeoutRef.current = setTimeout(() => {
             setShowError(
-              "We are currently experiencing issues displaying ABA Providers. Please try again later."
+              "We are currently experiencing issues displaying Providers. Please try again later."
             );
           }, 5000);
         }
@@ -244,7 +244,7 @@ const ProvidersPage: React.FC = () => {
         setIsLoading(false);
         errorTimeoutRef.current = setTimeout(() => {
           setShowError(
-            "We are currently experiencing issues displaying ABA Providers. Please try again later."
+            "We are currently experiencing issues displaying Providers. Please try again later."
           );
         }, 5000);
       }
@@ -310,9 +310,21 @@ const ProvidersPage: React.FC = () => {
         if (!providerType) return true;
         switch (providerType) {
           case "aba":
-            return provider.provider_type === "aba_therapy";
+            return provider.provider_type?.some((type: { name: string }) =>
+              type.name?.toLowerCase() === "ABA Therapy"
+            );
           case "evaluation":
-            return provider.provider_type === "autism_evaluation";
+            return provider.provider_type?.some((type: { name: string }) =>
+              type.name?.toLowerCase() === "Autism Evaluation"
+            );
+          case "speech":
+            return provider.provider_type?.some((type: { name: string }) =>
+              type.name?.toLowerCase() === "Speech Therapy"
+            );
+          case "occupational":
+            return provider.provider_type?.some((type: { name: string }) =>
+              type.name?.toLowerCase() === "Occupational Therapy"
+            );
           default:
             return true;
         }
@@ -349,8 +361,10 @@ const ProvidersPage: React.FC = () => {
       };
 
       const providerTypeFilter = (provider: ProviderAttributes) => {
-        if (!providerType) return false;
-        return provider.provider_type?.toLowerCase() === providerType.toLowerCase();
+        if (!providerType || providerType === 'none') return false;
+        return provider.provider_type?.some((type: { name: string }) =>
+          type.name?.toLowerCase() === providerType.toLowerCase()
+        );
       };
 
       const filtered = allProviders.filter(
