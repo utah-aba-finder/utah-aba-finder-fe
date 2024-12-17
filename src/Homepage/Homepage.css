@@ -256,16 +256,40 @@
     justify-self: center;
     max-height: 10rem;
     max-width: 35rem;
+    margin: 1rem;
 }
 
 
 @media(max-width:820px) {
     .sponsor-section {
-        height: 4.5rem;
+        height: auto;
+        /* display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center; */
     }
 
     .sponsor-section-title {
         font-size: 1rem;
+    }
+
+
+    .sponsor-section-list-wrapper {
+        display: flex;
+        width: 80%;
+        max-width: 80%;
+        justify-content: center;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .sponsor-section-list-image {
+        width: 100%;
+        height: auto;
+        justify-self: center;
+        max-height: 5rem;
+        max-width: 15rem;
+        margin: 1rem;
     }
 
 }

@@ -3,12 +3,24 @@ import "./ProvidersPage.css";
 import childrenBanner from "../Assets/children-banner-2.jpg";
 import ProviderModal from "./ProviderModal";
 import SearchBar from "./SearchBar";
-// import GoogleMap from './GoogleMap';
 import ProviderCard from "./ProviderCard";
 import { fetchProviders } from "../Utility/ApiCall";
 import { MockProviders, ProviderAttributes } from "../Utility/Types";
 import gearImage from "../Assets/Gear@1x-0.5s-200px-200px.svg";
 import Joyride, { Step, STATUS } from "react-joyride";
+
+// Add a simple maintenance modal component
+const MaintenanceModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+  return (
+    <div className="maintenance-modal-backdrop">
+      <div className="maintenance-modal">
+        <h2>Scheduled Maintenance</h2>
+        <p>Our website will undergo scheduled maintenance on Sunday, December 15, 2024, from 9:00 PM to 9:00 AM the following day.</p>
+        <button onClick={onClose} className="maintenance-close">Close</button>
+      </div>
+    </div>
+  );
+};
 
 interface FavoriteDate {
   [providerId: number]: string;
@@ -80,6 +92,9 @@ const ProvidersPage: React.FC = () => {
       placement: "top",
     },
   ]);
+
+  // New state for showing the scheduled maintenance modal
+  const [showMaintenanceModal, setShowMaintenanceModal] = useState(true);
 
   useEffect(() => {
     const hasVisited = localStorage.getItem("providersPageVisited");
@@ -576,6 +591,7 @@ const ProvidersPage: React.FC = () => {
   const handleAgeChange = (age: string) => {
     setSelectedAge(age);
   };
+
   const renderViewOnMapButton = (provider: ProviderAttributes) => {
     const isAddressAvailable =
       provider.locations.length > 0 && provider.locations[0]?.address_1;
@@ -606,6 +622,11 @@ const ProvidersPage: React.FC = () => {
 
   return (
     <div className="providers-page">
+      {/* Show maintenance modal if showMaintenanceModal is true */}
+      {showMaintenanceModal && (
+        <MaintenanceModal onClose={() => setShowMaintenanceModal(false)} />
+      )}
+
       {/* 
       <button onClick={handleResetTutorial} className="reset-tutorial-button">
       Reset Tutorial
@@ -679,7 +700,6 @@ const ProvidersPage: React.FC = () => {
                 )}
                 {!isLoading && !showError && (
                   <div className="card-container">
-
                     <div
                       className={`provider-cards-grid ${pageTransition ? `page-${pageTransition}` : ""
                         }`}

@@ -1,13 +1,16 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import utah from '../Assets/williamsonFamily.jpeg';
-import wansutter from '../Assets/wansutter.png';
 import './Homepage.css';
 import Joyride from 'react-joyride';
 import love from '../Assets/love.jpg';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import emailjs from 'emailjs-com';
+//sponsor images
+import wansutter from '../Assets/sponsor-images/wansutter.png';
+import ACU from '../Assets/sponsor-images/ACU.png'
+
 
 
 type Props = {}
@@ -23,7 +26,8 @@ interface State {
 }
 
 const sponsors = [
-    { name: 'Wansutter HR Consulting', image: wansutter }
+    { name: 'Wansutter HR Consulting', image: wansutter, website: 'https://www.linkedin.com/company/wansutter-hr-consulting' },
+    { name: 'ACU', image: ACU, website: 'https://www.autismcouncilofutah.org/' }
 ];
 
 class Homepage extends Component<Props, State> {
@@ -147,9 +151,14 @@ class Homepage extends Component<Props, State> {
                 {showModal && (
                     <div className="homepage-modal-overlay">
                         <div className="homepage-modal">
-                            <h2>Recent Changes!</h2>
+                            <h2>Scheduled Maintenance!</h2>
                             <div className="homepage-modal-content">
-                                <p>If you have been to our website before, you may have noticed some changes!
+                                <p>
+                                    <p>Our website will undergo scheduled maintenance on Sunday, December 15, 2024, from 9:00 PM to 9:00 AM the following day.</p>
+                                    <br />
+                                    <h3>** If you're a provider and would like to be added to our platform, please <Link to="/contact" className='text-[#4A6FA5]'>contact us</Link>, it's completely free!</h3>
+                                </p>
+                                {/* <p>If you have been to our website before, you may have noticed some changes!
                                     We have changed our name from Utah ABA Locator to Autism Services Locator and we are now a 501(c)(3) organization.</p>
 
                                 <ul>
@@ -158,7 +167,7 @@ class Homepage extends Component<Props, State> {
                                     <li><strong>Expanding Services:</strong> We're currently adding <strong>Occupational</strong> and <strong>Speech Therapy</strong> , and <strong>Autism Evaluation Providers</strong> to our platform, making it easier for you to find comprehensive care options for your child all in one place.</li>
                                     <h3>** If you're a provider and would like to be added to our platform, please <Link to="/contact" className='text-[#4A6FA5]'>contact us</Link>, it's completely free!</h3>
                                     <br />
-                                </ul>
+                                </ul> */}
                                 <h2 className='text-center'>Upcoming Changes!</h2>
                                 <ul>
                                     <li><strong>Nationwide Coverage:</strong> Our website is expanding to cover the entire <strong>United States</strong>! No matter where you are, you'll soon be able to find the right ABA providers, therapists, and resources near you.</li>
@@ -193,7 +202,7 @@ class Homepage extends Component<Props, State> {
                 <div className="discover-section">
                     <img src={utah} alt="background-image" className="discover-section-backgroundImage" />
                     <div className="discover-section-container">
-                        <h1 className="discover-section-title">Find The Best Providers For You or Your Child</h1> <br/>
+                        <h1 className="discover-section-title">Get The Care You Deserve</h1> <br />
                         <h2 className="discover-section-subtitle">Autism Evaluations | ABA Therapy | Speech Therapy | Occupational Therapy</h2>
                         <div className="discover-section-content">
                             <p className="discover-section-description">
@@ -211,16 +220,16 @@ class Homepage extends Component<Props, State> {
                     Donate
                 </Link>
 
-                {/* Counties Section */}
+                {/* Sponsors Section */}
                 <div className="sponsor-section">
                     <div className="sponsor-section-title-container">
                         <h2 className="sponsor-section-title">Our <br /> Proud <br /> Sponsors</h2>
                     </div>
                     <div className="sponsor-section-list-wrapper">
                         {sponsors.map((sponsor, index) => (
-                            <div className="sponsor-section-list" key={index}>
-                                <img className='sponsor-section-list-image' src={sponsor.image} alt={sponsor.name} />
-                            </div>
+                            <a href={sponsor.website} target="_blank" rel="noopener noreferrer">
+                                <img className="sponsor-section-list-image" src={sponsor.image} alt={sponsor.name} />
+                            </a>
                         ))}
                     </div>
                 </div>
