@@ -15,7 +15,7 @@ const MaintenanceModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     <div className="maintenance-modal-backdrop">
       <div className="maintenance-modal">
         <h2>Scheduled Maintenance</h2>
-        <p>Our website will undergo scheduled maintenance on Sunday, December 15, 2024, from 9:00 PM to 9:00 AM the following day.</p>
+        <p>Our website will undergo scheduled maintenance nightly from 9:00 PM MST to 9:00 AM MST, starting Tuesday, December 17, 2024, through Sunday, December 22, 2024. During these times, you may experience limited access or temporary interruptions. We appreciate your understanding and patience.</p>
         <button onClick={onClose} className="maintenance-close">Close</button>
       </div>
     </div>
