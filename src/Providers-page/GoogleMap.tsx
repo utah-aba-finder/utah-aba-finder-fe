@@ -5,25 +5,28 @@ interface GoogleMapProps {
 }
 
 const GoogleMap: React.FC<GoogleMapProps> = ({ address }) => {
-  const defaultAddress = 'Utah';
-  const encodedAddress = encodeURIComponent(address || defaultAddress);
-  
-  const [borderRadius, setBorderRadius] = useState('8px 0px 0px 8px'); 
+  const usaCoordinates = { lat: 37.0902, lng: -95.7129 };
+  const isAddressValid = Boolean(address && address.trim());
+  const encodedAddress = isAddressValid
+    ? encodeURIComponent(address!)
+    : `${usaCoordinates.lat},${usaCoordinates.lng}`;
+
+  const [borderRadius, setBorderRadius] = useState('8px 0px 0px 8px');
 
   useEffect(() => {
     const updateBorderRadius = () => {
       if (window.innerWidth > 1024) {
-        setBorderRadius('8px 0px 0px 8px'); 
+        setBorderRadius('8px 0px 0px 8px');
       } else {
-        setBorderRadius('8px 8px 0px 0px'); 
+        setBorderRadius('8px 8px 0px 0px');
       }
     };
 
-    updateBorderRadius(); 
-    window.addEventListener('resize', updateBorderRadius); 
+    updateBorderRadius();
+    window.addEventListener('resize', updateBorderRadius);
 
     return () => {
-      window.removeEventListener('resize', updateBorderRadius); 
+      window.removeEventListener('resize', updateBorderRadius);
     };
   }, []);
 
@@ -36,7 +39,11 @@ const GoogleMap: React.FC<GoogleMapProps> = ({ address }) => {
       loading="lazy"
       allowFullScreen
       referrerPolicy="no-referrer-when-downgrade"
-      src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyC1h7w0gjR4gdkVEdxlfFiKjRaHKPqzXE4&q=${encodedAddress}`}
+      src={`https://www.google.com/maps/embed/v1/${isAddressValid ? 'place' : 'view'
+        }?key=AIzaSyC1h7w0gjR4gdkVEdxlfFiKjRaHKPqzXE4${isAddressValid
+          ? `&q=${encodedAddress}`
+          : `&center=${usaCoordinates.lat},${usaCoordinates.lng}&zoom=4`
+        }`}
     ></iframe>
   );
 };

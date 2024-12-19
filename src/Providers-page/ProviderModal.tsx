@@ -132,17 +132,17 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ provider, address, mapAdd
               </p>
             </div>
             <div className="provider-details text">
-            {provider.provider_type.length > 0 ? (
-              <p><strong>Counties Served:</strong> {
-                provider.counties_served?.[0]?.county && 
-                provider.counties_served[0].county !== '' && 
-                !provider.counties_served[0].county.includes('[]') 
-                  ? (provider.counties_served[0].county.includes('ActionController') 
-                      ? provider.counties_served[0].county.match(/county"=>"([^"]+)"/)?.[1] 
+              {provider.provider_type.length > 0 ? (
+                <p><strong>Counties Served:</strong> {
+                  provider.counties_served?.[0]?.county &&
+                    provider.counties_served[0].county !== '' &&
+                    !provider.counties_served[0].county.includes('[]')
+                    ? (provider.counties_served[0].county.includes('ActionController')
+                      ? provider.counties_served[0].county.match(/county"=>"([^"]+)"/)?.[1]
                       : provider.counties_served[0].county)
-                  : 'Not applicable for this provider'
-              }</p>
-            ) : null}
+                    : 'Not applicable for this provider'
+                }</p>
+              ) : null}
               <p><strong>Ages Served:</strong> {provider.min_age} - {provider.max_age} years</p>
               <p><strong>Waitlist:</strong> {provider.waitlist || 'Contact us'}</p>
               <p><strong>Telehealth Services:</strong> {provider.telehealth_services || 'Contact us'}</p>
@@ -171,7 +171,10 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ provider, address, mapAdd
         </button>
         <div className="modal-grid">
           <div className="modal-grid-map">
-            <GoogleMap address={mapAddress} />
+            <GoogleMap address={provider.locations.some((location) => location.address_1)
+              ? mapAddress
+              : undefined}
+            />
           </div>
           <div className="modal-grid-text">
             <section className="modal-logo">
