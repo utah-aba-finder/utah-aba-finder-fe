@@ -174,7 +174,10 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ provider, address, mapAdd
         </button>
         <div className="modal-grid">
           <div className="modal-grid-map">
-            <GoogleMap address={mapAddress} />
+            <GoogleMap address={provider.locations.some((location) => location.address_1)
+              ? mapAddress
+              : undefined}
+            />
           </div>
           <div className="modal-grid-text">
             <section className="modal-logo">
