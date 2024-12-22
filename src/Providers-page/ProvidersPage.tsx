@@ -260,7 +260,7 @@ const ProvidersPage: React.FC = () => {
   const handleSearch = useCallback(
     ({
       query,
-      county,
+      county_name,
       insurance,
       spanish,
       service,
@@ -269,7 +269,7 @@ const ProvidersPage: React.FC = () => {
       providerType,
     }: {
       query: string;
-      county: string;
+      county_name: string;
       insurance: string;
       spanish: string;
       service: string;
@@ -277,7 +277,7 @@ const ProvidersPage: React.FC = () => {
       age: string;
       providerType: string;
     }) => {
-      const normalizedCounty = county.toLowerCase();
+      const normalizedCounty = county_name.toLowerCase();
       const normalizedInsurance = insurance.toLowerCase();
 
       const serviceFilter = (provider: ProviderAttributes) => {
@@ -370,9 +370,9 @@ const ProvidersPage: React.FC = () => {
       const filtered = allProviders.filter(
         (provider) =>
           provider.name?.toLowerCase().includes(query.toLowerCase()) &&
-          (!county ||
+          (!county_name ||
             provider.counties_served.some((c) =>
-              c.county?.toLowerCase().includes(normalizedCounty)
+              c.county_name?.toLowerCase().includes(normalizedCounty)
             )) &&
           (!insurance ||
             provider.insurance.some((i) =>
@@ -411,7 +411,7 @@ const ProvidersPage: React.FC = () => {
   useEffect(() => {
     handleSearch({
       query: "",
-      county: "",
+      county_name: "",
       insurance: "",
       spanish: "",
       service: "",

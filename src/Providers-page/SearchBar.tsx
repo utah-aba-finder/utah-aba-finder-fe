@@ -6,8 +6,8 @@ import { MockProviders, ProviderAttributes } from '../Utility/Types';
 
 interface SearchBarProps {
   onResults: (results: MockProviders) => void;
-  onSearch: (params: { query: string; county: string; insurance: string; spanish: string; service: string; waitlist: string; age: string; providerType: string; }) => void;
-  onCountyChange: (county: string) => void;
+  onSearch: (params: { query: string; county_name: string; insurance: string; spanish: string; service: string; waitlist: string; age: string; providerType: string; }) => void;
+  onCountyChange: (county_name: string) => void;
   insuranceOptions: string[];
   onInsuranceChange: (insurance: string) => void;
   onSpanishChange: (spanish: string) => void;
@@ -48,7 +48,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
   const handleSearch = useCallback(() => {
     onSearch({
       query: searchQuery,
-      county: selectedCounty,
+      county_name: selectedCounty,
       insurance: selectedInsurance,
       spanish: selectedSpanish,
       service: selectedService,
@@ -88,7 +88,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
     // Trigger search with reset values to clear results
     onSearch({
       query: '',
-      county: '',
+      county_name: '',
       insurance: '',
       spanish: '',
       service: '',
@@ -140,7 +140,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
               onProviderTypeChange(newValue);
               onSearch({
                 query: searchQuery,
-                county: selectedCounty,
+                county_name: selectedCounty,
                 insurance: selectedInsurance,
                 spanish: selectedSpanish,
                 service: selectedService,

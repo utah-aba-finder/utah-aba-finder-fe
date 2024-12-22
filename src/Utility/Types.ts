@@ -16,7 +16,8 @@ export interface Location {
 }
 
 export interface CountiesServed {
-    county: string | null;
+    county_id: number | null;
+    county_name: string | null;
 }
 
 
@@ -48,7 +49,7 @@ interface ProviderType {
     id: number;
     name: string;
   }
-  
+
 export interface MockProviderData {
     id: number;
     type: string;
