@@ -647,6 +647,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                                 <option value="yes">Yes</option>
                                 <option value="no">No</option>
                                 <option value="limited">Limited</option>
+                                <option value="contact us">Contact Us</option>
                               </select>
                             </div>
                           </div>
@@ -666,6 +667,8 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                                 <option value="">Select...</option>
                                 <option value="yes">Yes</option>
                                 <option value="no">No</option>
+                                <option value="limited">Limited</option>
+                                <option value="contact us">Contact Us</option>
                               </select>
                             </div>
                           </div>
