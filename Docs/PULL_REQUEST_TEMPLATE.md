@@ -3,20 +3,16 @@
 1. 
 2. 
 
-**Where should the reviewer start?**
+**Did you complete the following?**
 
-### To start the app
-
-- [ ]  Clone down the repository onto your local machine using `git clone <https://github.com/utah-aba-finder/utah-aba-finder-fe`>
-- [ ]  Once cloned down, cd into the direction and install dependencies by running `npm install`
-- [ ]  Run `npm start` then visit the local host to view the application in your browser.
-
-### To test with Cypress
-
-- [ ]  Type `npm install cypress --save-dev` into your terminal
-- [ ]  Type `npx cypress open` in your terminal then visit the local host to view the application in your browser.
-- [ ]  Click E2E testing
-- [ ]  Click Start E2E Testing in Chrome
+- [ ] Pull down recent changes from the main branch?
+- [ ] Ensure you added all files you changed to the PR?
+- [ ] Took screenshots of changes that can be seen in the browser?
+- [ ] Notified the team in the Slack channel?
+- [ ] Tested the changes in the browser?
+- [ ] Requested a review from a team member?
+- [ ] Added a description of the changes you made?
+- [ ] Added a screenshot of the changes you made?
 
 **Screenshots**
 
