@@ -15,7 +15,8 @@ const Footer = () => {
                     </Link>
                 </div>
                 <div className="copyright">
-                    Copyright © 2024 Autism Services Locator. All Rights Reserved.
+                    Copyright © 2024 Autism Services Locator. All Rights Reserved. <br/>
+                    A 501(c)3 Non-Profit Organization
                 </div>
             </div>
         </footer>
