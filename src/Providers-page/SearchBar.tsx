@@ -120,10 +120,10 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
   const providerTypeOptions = [
     { label: 'Select Type', value: 'none', id: 0 },
-    { label: 'Autism Evaluation', value: 'Autism Evaluation', id: 1 },
-    { label: 'ABA Therapy', value: 'ABA Therapy', id: 2 },
-    { label: 'Speech Therapy', value: 'Speech Therapy', id: 3 },
-    { label: 'Occupational Therapy', value: 'Occupational Therapy', id: 4 },
+    { label: 'ABA Therapy', value: 'ABA Therapy', id: 1 },
+    { label: 'Autism Evaluation', value: 'Autism Evaluation', id: 2 },
+    { label: 'Occupational Therapy', value: 'Occupational Therapy', id: 3 },
+    { label: 'Speech Therapy', value: 'Speech Therapy', id: 4 },
   ];
 
 
