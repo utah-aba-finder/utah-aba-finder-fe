@@ -24,6 +24,7 @@ export interface CountiesServed {
 export interface ProviderAttributes {
     id: number;
     name: string | null;
+    state: string[] | null;
     provider_type: ProviderType[];
     locations: Location[];
     insurance: Insurance[];

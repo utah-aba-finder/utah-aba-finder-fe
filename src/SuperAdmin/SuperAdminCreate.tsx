@@ -18,6 +18,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
   const [formData, setFormData] = useState({
     id: null,
     name: "",
+    state: "",
     provider_type: "",
     email: "",
     password: "",
@@ -132,6 +133,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
             data: [
               {
                 type: "provider",
+                state: formData.state,
                 attributes: {
                   name: formData.name,
                   provider_type: [
@@ -179,6 +181,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
       setFormData({
         id: null,
         name: "",
+        state: "",
         provider_type: "",
         email: "",
         password: "",
@@ -254,6 +257,70 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm text-gray-600 mb-2">
+                State
+              </label>
+              <select
+                name="state"
+                value={formData.state}
+                onChange={handleChange}
+                className="w-[95%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                required
+              >
+                <option value="">Select a state</option>
+                <option value="Alabama">Alabama</option>
+                <option value="Alaska">Alaska</option>
+                <option value="Arizona">Arizona</option>
+                <option value="Arkansas">Arkansas</option>
+                <option value="California">California</option>
+                <option value="Colorado">Colorado</option>
+                <option value="Connecticut">Connecticut</option>
+                <option value="Delaware">Delaware</option>
+                <option value="Florida">Florida</option>
+                <option value="Georgia">Georgia</option>
+                <option value="Hawaii">Hawaii</option>
+                <option value="Idaho">Idaho</option>
+                <option value="Illinois">Illinois</option>
+                <option value="Indiana">Indiana</option>
+                <option value="Iowa">Iowa</option>
+                <option value="Kansas">Kansas</option>
+                <option value="Kentucky">Kentucky</option>
+                <option value="Louisiana">Louisiana</option>
+                <option value="Maine">Maine</option>
+                <option value="Maryland">Maryland</option>
+                <option value="Massachusetts">Massachusetts</option>
+                <option value="Michigan">Michigan</option>
+                <option value="Minnesota">Minnesota</option>
+                <option value="Mississippi">Mississippi</option>
+                <option value="Missouri">Missouri</option>
+                <option value="Montana">Montana</option>
+                <option value="Nebraska">Nebraska</option>
+                <option value="Nevada">Nevada</option>
+                <option value="New Hampshire">New Hampshire</option>
+                <option value="New Jersey">New Jersey</option>
+                <option value="New Mexico">New Mexico</option>
+                <option value="New York">New York</option>
+                <option value="North Carolina">North Carolina</option>
+                <option value="North Dakota">North Dakota</option>
+                <option value="Ohio">Ohio</option>
+                <option value="Oklahoma">Oklahoma</option>
+                <option value="Oregon">Oregon</option>
+                <option value="Pennsylvania">Pennsylvania</option>
+                <option value="Rhode Island">Rhode Island</option>
+                <option value="South Carolina">South Carolina</option>
+                <option value="South Dakota">South Dakota</option>
+                <option value="Tennessee">Tennessee</option>
+                <option value="Texas">Texas</option>
+                <option value="Utah">Utah</option>
+                <option value="Vermont">Vermont</option>
+                <option value="Virginia">Virginia</option>
+                <option value="Washington">Washington</option>
+                <option value="West Virginia">West Virginia</option>
+                <option value="Wisconsin">Wisconsin</option>
+                <option value="Wyoming">Wyoming</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm text-gray-600 mb-2">
                 Provider Type
               </label>
               <select
@@ -266,7 +333,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
                 <option value="" disabled>
                   Select Provider Type
                 </option>
-                <option value="Aba Therapy">ABA Therapy</option>
+                <option value="ABA Therapy">ABA Therapy</option>
                 <option value="Autism Evaluation">Autism Evaluation</option>
                 <option value="Speech Therapy">Speech Therapy</option>
                 <option value="Occupational Therapy">Occupational Therapy</option>
@@ -568,6 +635,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
                     <option value="yes">Yes</option>
                     <option value="no">No</option>
                     <option value="limited">Limited</option>
+                    <option value="contact us">Contact Us</option>
                   </select>
                 </div>
 
@@ -584,6 +652,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
                     <option value="">Select an option</option>
                     <option value="Yes">Yes</option>
                     <option value="No">No</option>
+                    <option value="Limited">Limited</option>
                     <option value="Contact us">Contact us</option>
                   </select>
                 </div>
@@ -601,6 +670,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
                     <option value="">Select an option</option>
                     <option value="yes">Yes</option>
                     <option value="no">No</option>
+                    <option value="limited">Limited</option>
                     <option value="contact us">Contact Us</option>
                   </select>
                 </div>
@@ -619,7 +689,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
                   <option value="">Select an option</option>
                   <option value="yes">Yes</option>
                   <option value="no">No</option>
-                  <option value="contact-us">Contact Us</option>
+                  <option value="contact us">Contact Us</option>
                 </select>
               </div>
             </div>
