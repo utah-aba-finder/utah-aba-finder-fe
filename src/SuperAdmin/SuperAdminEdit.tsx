@@ -28,7 +28,7 @@ import {
 interface SuperAdminEditProps {
   provider: MockProviderData;
   onUpdate: (updatedProvider: ProviderAttributes) => void;
-  setSelectedTab?: Dispatch<SetStateAction<string>>; 
+  setSelectedTab?: Dispatch<SetStateAction<string>>;
 }
 
 export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
@@ -40,9 +40,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
     useState<ProviderAttributes | null>(null);
   const [isInsuranceModalOpen, setIsInsuranceModalOpen] = useState(false);
   const [isCountiesModalOpen, setIsCountiesModalOpen] = useState(false);
-  const [selectedCounties, setSelectedCounties] = useState<CountiesServed[]>(
-    []
-  );
+  const [selectedCounties, setSelectedCounties] = useState<CountiesServed[]>([]);
   const [selectedInsurances, setSelectedInsurances] = useState<Insurance[]>([]);
   const [locations, setLocations] = useState<ProviderLocation[]>([]);
   const [isSaving, setIsSaving] = useState(false);
@@ -59,23 +57,22 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
     }
   }, [provider]);
 
-
   const handleInputChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    
+
     if (name === "provider_type") {
       setEditedProvider((prev) =>
         prev
           ? {
               ...prev,
-              provider_type: [{ 
-                id: prev.provider_type?.[0]?.id || 0,
-                name: value 
-              }],
+              provider_type: [
+                {
+                  id: prev.provider_type?.[0]?.id || 0,
+                  name: value,
+                },
+              ],
             }
           : null
       );
@@ -186,17 +183,15 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
       </div>
     );
   }
+
   return (
     <div className="w-full overflow-x-hidden">
-      {" "}
       <ToastContainer />
       <div className="px-2 sm:px-4 py-6">
-        {" "}
         {/* Header */}
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            Editing:{" "}
-            <span className="text-blue-600">{editedProvider.name}</span>
+            Editing: <span className="text-blue-600">{editedProvider.name}</span>
           </h1>
           <p className="text-sm text-gray-500">
             Last updated:{" "}
@@ -205,9 +200,10 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
               : "N/A"}
           </p>
         </div>
+
+        {/* Tab Navigation */}
         <div className="flex justify-center mb-6">
           <div className="inline-flex space-x-2 bg-gray-100 p-1 rounded-lg">
-            {/* Back Button */}
             <button
               onClick={() => setSelectedTab?.("view")}
               className={`px-4 py-2 rounded-lg transition-colors duration-200 text-gray-600 hover:text-gray-900 flex items-center space-x-2`}
@@ -228,7 +224,6 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
               <span>Back to List</span>
             </button>
 
-            {/* Tab Navigation Buttons */}
             <button
               onClick={() => setActiveTab("basic")}
               className={`px-4 py-2 rounded-lg transition-colors duration-200 ${
@@ -261,6 +256,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
             </button>
           </div>
         </div>
+
         <form onSubmit={handleSubmit} className="space-y-6">
           {activeTab === "basic" && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-[1200px] mx-auto px-4">
@@ -302,7 +298,9 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                       <option value="ABA Therapy">ABA Therapy</option>
                       <option value="Autism Evaluation">Autism Evaluation</option>
                       <option value="Speech Therapy">Speech Therapy</option>
-                      <option value="Occupational Therapy">Occupational Therapy</option>
+                      <option value="Occupational Therapy">
+                        Occupational Therapy
+                      </option>
                     </select>
                   </div>
 
@@ -367,6 +365,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                       />
                     </div>
                   </div>
+
                   <div>
                     <label className="block text-sm text-gray-600 mb-2">
                       Logo URL
@@ -387,7 +386,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
           {activeTab === "locations" && (
             <div className="max-w-[1200px] mx-auto px-4 space-y-6">
               <div className="flex justify-between items-center bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-3">
                   <div className="p-2 bg-blue-100 rounded-lg">
                     <MapPin className="w-5 h-5 text-blue-600" />
                   </div>
@@ -465,11 +464,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                         type="text"
                         value={location.address_1 || ""}
                         onChange={(e) =>
-                          handleLocationChange(
-                            index,
-                            "address_1",
-                            e.target.value
-                          )
+                          handleLocationChange(index, "address_1", e.target.value)
                         }
                         className="w-[95%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                       />
@@ -483,11 +478,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                         type="text"
                         value={location.address_2 || ""}
                         onChange={(e) =>
-                          handleLocationChange(
-                            index,
-                            "address_2",
-                            e.target.value
-                          )
+                          handleLocationChange(index, "address_2", e.target.value)
                         }
                         className="w-[95%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                       />
@@ -590,12 +581,8 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                         >
                           <option value="contact us">Contact Us</option>
                           <option value="no wait list">No wait list</option>
-                          <option value="6 months or less">
-                            6 months or less
-                          </option>
-                          <option value="6 months or more">
-                            6 months or more
-                          </option>
+                          <option value="6 months or less">6 months or less</option>
+                          <option value="6 months or more">6 months or more</option>
                         </select>
                       </div>
                     </div>
@@ -608,7 +595,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                       <label className="block text-sm text-gray-600 mb-2">
                         Age Range
                       </label>
-                      <div className=" gap-2 w-[95%] items-center">
+                      <div className="gap-2 w-[95%] items-center">
                         <div>
                           <input
                             type="number"
@@ -637,54 +624,69 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
 
                     {/* Service Delivery Options */}
                     {editedProvider.provider_type?.some((type: { name: string }) =>
-                      type.name?.toLowerCase() === "ABA Therapy"
+                      type.name?.toLowerCase() === "aba therapy"
                     ) && (
-                      <div>
-                        <label className="block text-sm text-gray-600 mb-2">
+                      <div className="mt-8">
+                        <label className="block text-sm font-medium text-gray-600 mb-4">
                           Service Delivery Options
                         </label>
-                        <div className="space-y-3 w-[95%]">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                           <div className="relative">
-                            <Video className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                            <select
-                              name="telehealth_services"
-                              value={editedProvider.telehealth_services || ""}
-                              onChange={handleInputChange}
-                              className="w-full pl-10 pr-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                            >
-                              <option value="">Telehealth Services</option>
-                              <option value="yes">Yes</option>
-                              <option value="no">No</option>
-                              <option value="limited">Limited</option>
-                            </select>
+                            <label className="block text-sm text-gray-600 mb-2">Telehealth Services</label>
+                            <div className="relative">
+                              <div className="p-1.5 bg-blue-50 rounded absolute left-3 top-1/2 transform -translate-y-1/2">
+                                <Video className="w-3.5 h-3.5 text-blue-600" />
+                              </div>
+                              <select
+                                name="telehealth_services"
+                                value={editedProvider.telehealth_services || ""}
+                                onChange={handleInputChange}
+                                className="w-full pl-11 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white"
+                              >
+                                <option value="">Select...</option>
+                                <option value="yes">Yes</option>
+                                <option value="no">No</option>
+                                <option value="limited">Limited</option>
+                              </select>
+                            </div>
                           </div>
 
                           <div className="relative">
-                            <Home className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                            <select
-                              name="at_home_services"
-                              value={editedProvider.at_home_services || ""}
-                              onChange={handleInputChange}
-                              className="w-full pl-10 pr-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                            >
-                              <option value="">At-Home Services</option>
-                              <option value="yes">Yes</option>
-                              <option value="no">No</option>
-                            </select>
+                            <label className="block text-sm text-gray-600 mb-2">In-Clinic Services</label>
+                            <div className="relative">
+                              <div className="p-1.5 bg-blue-50 rounded absolute left-3 top-1/2 transform -translate-y-1/2">
+                                <Building2 className="w-3.5 h-3.5 text-blue-600" />
+                              </div>
+                              <select
+                                name="in_clinic_services"
+                                value={editedProvider.in_clinic_services || ""}
+                                onChange={handleInputChange}
+                                className="w-full pl-11 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white"
+                              >
+                                <option value="">Select...</option>
+                                <option value="yes">Yes</option>
+                                <option value="no">No</option>
+                              </select>
+                            </div>
                           </div>
 
                           <div className="relative">
-                            <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                            <select
-                              name="in_clinic_services"
-                              value={editedProvider.in_clinic_services || ""}
-                              onChange={handleInputChange}
-                              className="w-full pl-10 pr-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                            >
-                              <option value="">In-Clinic Services</option>
-                              <option value="yes">Yes</option>
-                              <option value="no">No</option>
-                            </select>
+                            <label className="block text-sm text-gray-600 mb-2">At-Home Services</label>
+                            <div className="relative">
+                              <div className="p-1.5 bg-blue-50 rounded absolute left-3 top-1/2 transform -translate-y-1/2">
+                                <Home className="w-3.5 h-3.5 text-blue-600" />
+                              </div>
+                              <select
+                                name="at_home_services"
+                                value={editedProvider.at_home_services || ""}
+                                onChange={handleInputChange}
+                                className="w-full pl-11 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white"
+                              >
+                                <option value="">Select...</option>
+                                <option value="yes">Yes</option>
+                                <option value="no">No</option>
+                              </select>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -759,9 +761,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                 onClick={() => {
                   if (provider?.attributes) {
                     setEditedProvider(provider.attributes);
-                    setSelectedCounties(
-                      provider.attributes.counties_served || []
-                    );
+                    setSelectedCounties(provider.attributes.counties_served || []);
                     setSelectedInsurances(provider.attributes.insurance || []);
                     setLocations(provider.attributes.locations || []);
                   }
