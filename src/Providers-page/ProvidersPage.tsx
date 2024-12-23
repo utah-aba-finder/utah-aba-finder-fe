@@ -9,18 +9,6 @@ import { MockProviders, ProviderAttributes } from "../Utility/Types";
 import gearImage from "../Assets/Gear@1x-0.5s-200px-200px.svg";
 import Joyride, { Step, STATUS } from "react-joyride";
 
-// Add a simple maintenance modal component
-const MaintenanceModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
-  return (
-    <div className="maintenance-modal-backdrop">
-      <div className="maintenance-modal">
-        <h2>Scheduled Maintenance</h2>
-        <p>Our website will undergo scheduled maintenance nightly from 9:00 PM MST to 9:00 AM MST, starting Tuesday, December 17, 2024, through Sunday, December 22, 2024. During these times, you may experience limited access or temporary interruptions. We appreciate your understanding and patience.</p>
-        <button onClick={onClose} className="maintenance-close">Close</button>
-      </div>
-    </div>
-  );
-};
 
 interface FavoriteDate {
   [providerId: number]: string;
@@ -92,9 +80,6 @@ const ProvidersPage: React.FC = () => {
       placement: "top",
     },
   ]);
-
-  // New state for showing the scheduled maintenance modal
-  const [showMaintenanceModal, setShowMaintenanceModal] = useState(true);
 
   useEffect(() => {
     const hasVisited = localStorage.getItem("providersPageVisited");
@@ -622,10 +607,6 @@ const ProvidersPage: React.FC = () => {
 
   return (
     <div className="providers-page">
-      {/* Show maintenance modal if showMaintenanceModal is true */}
-      {showMaintenanceModal && (
-        <MaintenanceModal onClose={() => setShowMaintenanceModal(false)} />
-      )}
 
       {/* 
       <button onClick={handleResetTutorial} className="reset-tutorial-button">

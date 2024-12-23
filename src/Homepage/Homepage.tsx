@@ -153,12 +153,8 @@ class Homepage extends Component<Props, State> {
                         <div className="homepage-modal">
                             <h2>Scheduled Maintenance!</h2>
                             <div className="homepage-modal-content">
-                                <p>
-                                    <p>Our website will undergo scheduled maintenance nightly from 9:00 PM MST to 9:00 AM MST, starting Tuesday, December 17, 2024, through Sunday, December 22, 2024. During these times, you may experience limited access or temporary interruptions. We appreciate your understanding and patience.</p>
-                                    <br />
-                                    <h3>** If you're a provider and would like to be added to our platform, please <Link to="/contact" className='text-[#4A6FA5]'>contact us</Link>, it's completely free!</h3>
-                                </p>
-                                {/* <p>If you have been to our website before, you may have noticed some changes!
+
+                                <p>If you have been to our website before, you may have noticed some changes!
                                     We have changed our name from Utah ABA Locator to Autism Services Locator and we are now a 501(c)(3) organization.</p>
 
                                 <ul>
@@ -167,7 +163,7 @@ class Homepage extends Component<Props, State> {
                                     <li><strong>Expanding Services:</strong> We're currently adding <strong>Occupational</strong> and <strong>Speech Therapy</strong> , and <strong>Autism Evaluation Providers</strong> to our platform, making it easier for you to find comprehensive care options for your child all in one place.</li>
                                     <h3>** If you're a provider and would like to be added to our platform, please <Link to="/contact" className='text-[#4A6FA5]'>contact us</Link>, it's completely free!</h3>
                                     <br />
-                                </ul> */}
+                                </ul>
                                 <h2 className='text-center'>Upcoming Changes!</h2>
                                 <ul>
                                     <li><strong>Nationwide Coverage:</strong> Our website is expanding to cover the entire <strong>United States</strong>! No matter where you are, you'll soon be able to find the right ABA providers, therapists, and resources near you.</li>
