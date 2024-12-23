@@ -63,6 +63,7 @@ export const InsuranceModal: React.FC<InsuranceModalProps> = ({ isOpen, onClose,
         e.stopPropagation();
         onClose();
     };
+    
 
     return (
         <div className="insuranceModal-overlay" onClick={handleClose}>

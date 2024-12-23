@@ -17,48 +17,70 @@ const CountiesModal: React.FC<CountiesModalProps> = ({
     onCountiesChange,
     providerCounties
 }) => {
-    const [localCheckedCounties, setLocalCheckedCounties] = useState<String[]>([]);
+    const [localCheckedCounties, setLocalCheckedCounties] = useState<CountiesServed[]>([]);
 
     const countiesOptions = [
-        'Beaver', 'Box Elder', 'Cache', 'Carbon', 'Daggett',
-        'Davis', 'Duchesne', 'Emery', 'Garfield', 'Grand',
-        'Iron', 'Juab', 'Kane', 'Millard', 'Morgan',
-        'Piute', 'Rich', 'Salt Lake', 'San Juan', 'Sanpete',
-        'Sevier', 'Summit', 'Tooele', 'Uintah', 'Utah',
-        'Wasatch', 'Washington', 'Wayne', 'Weber'
+        { id: 1, name: 'Beaver' },
+        { id: 2, name: 'Box Elder' }, 
+        { id: 3, name: 'Cache' },
+        { id: 4, name: 'Carbon' },
+        { id: 5, name: 'Daggett' },
+        { id: 6, name: 'Davis' },
+        { id: 7, name: 'Duchesne' },
+        { id: 8, name: 'Emery' },
+        { id: 9, name: 'Garfield' },
+        { id: 10, name: 'Grand' },
+        { id: 11, name: 'Iron' },
+        { id: 12, name: 'Juab' },
+        { id: 13, name: 'Kane' },
+        { id: 14, name: 'Millard' },
+        { id: 15, name: 'Morgan' },
+        { id: 16, name: 'Piute' },
+        { id: 17, name: 'Rich' },
+        { id: 18, name: 'Salt Lake' },
+        { id: 19, name: 'San Juan' },
+        { id: 20, name: 'Sanpete' },
+        { id: 21, name: 'Sevier' },
+        { id: 22, name: 'Summit' },
+        { id: 23, name: 'Tooele' },
+        { id: 24, name: 'Uintah' },
+        { id: 25, name: 'Utah' },
+        { id: 26, name: 'Wasatch' },
+        { id: 27, name: 'Washington' },
+        { id: 28, name: 'Wayne' },
+        { id: 29, name: 'Weber' }
     ];
 
     useEffect(() => {
-        if (selectedCounties.length > 0 && selectedCounties[0].county) {
-            setLocalCheckedCounties(selectedCounties[0].county.split(', '));
+        if (selectedCounties.length > 0) {
+            setLocalCheckedCounties(selectedCounties);
         } else {
             setLocalCheckedCounties([]);
         }
     }, [selectedCounties, isOpen]);
 
-    const handleSelect = (county: string) => {
+    const handleSelect = (county_id: number, county_name: string) => {
         setLocalCheckedCounties(prev => {
-            if (prev.includes(county)) {
-                return prev.filter(c => c !== county);
+            if (prev.some(c => c.county_id === county_id)) {
+                return prev.filter(c => c.county_id !== county_id);
             } else {
-                return [...prev, county];
+                return [...prev, { county_id, county_name }];
             }
         });
     };
 
     const isCountyChecked = useCallback(
-        (value: string) => localCheckedCounties.includes(value),
+        (id: number) => localCheckedCounties.some(county => county.county_id === id),
         [localCheckedCounties]
     );
 
     const handleSubmit = () => {
-        const selectedCountiesString = localCheckedCounties.join(', ');
-        onCountiesChange([{ county: selectedCountiesString }]);
+        onCountiesChange(localCheckedCounties);
         onClose();
     };
 
     const handleCancel = () => {
-        setLocalCheckedCounties(selectedCounties[0]?.county?.split(', ') || []);
+        setLocalCheckedCounties(selectedCounties);
         onClose();
     };
 
@@ -71,21 +93,19 @@ const CountiesModal: React.FC<CountiesModalProps> = ({
             <div className="counties-modal">
                 <h2>Select Counties</h2>
 
-
                 <div className="counties-options">
                     {countiesOptions.map(option => (
-                        <div key={option} className="county-option">
+                        <div key={option.id} className="county-option">
                             <input
                                 type="checkbox"
-                                checked={isCountyChecked(option)}
-                                onChange={() => handleSelect(option)}
-                                id={`county-${option}`}
+                                checked={isCountyChecked(option.id)}
+                                onChange={() => handleSelect(option.id, option.name)}
+                                id={`county-${option.id}`}
                             />
-                            <label htmlFor={`county-${option}`}>{option}</label>
+                            <label htmlFor={`county-${option.id}`}>{option.name}</label>
                         </div>
                     ))}
                 </div>
-
 
                 <div className='countyModalButtonSection'>
                     <button className="counties-options-button" onClick={handleCancel}>
@@ -95,7 +115,6 @@ const CountiesModal: React.FC<CountiesModalProps> = ({
                         Save
                     </button>
                 </div>
-
 
             </div>
         </>

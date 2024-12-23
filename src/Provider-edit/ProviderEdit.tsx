@@ -251,7 +251,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                     `}
                   >
                     <Building2 className="w-4 h-4" />
-                    <span className="text-sm">Edit Location</span>
+                    <span className="text-sm">Edit Details</span>
                   </button>
                 </li>
                 <li>

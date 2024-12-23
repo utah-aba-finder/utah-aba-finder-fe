@@ -16,13 +16,15 @@ export interface Location {
 }
 
 export interface CountiesServed {
-    county: string | null;
+    county_id: number | null;
+    county_name: string | null;
 }
 
 
 export interface ProviderAttributes {
     id: number;
     name: string | null;
+    state: string[] | null;
     provider_type: ProviderType[];
     locations: Location[];
     insurance: Insurance[];
@@ -48,7 +50,7 @@ interface ProviderType {
     id: number;
     name: string;
   }
-  
+
 export interface MockProviderData {
     id: number;
     type: string;

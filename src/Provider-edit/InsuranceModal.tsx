@@ -18,7 +18,8 @@ const InsuranceModal: React.FC<InsuranceModalProps> = ({
     providerInsurances
 }) => {
     const [localSelectedInsurances, setLocalSelectedInsurances] = useState<Insurance[]>([]);
-
+    const [searchTerm, setSearchTerm] = useState('');
+    
     const insuranceOptions = [
         { id: 1, name: "Contact us" },
         { id: 2, name: "Administrator Benefits" },
@@ -50,11 +51,12 @@ const InsuranceModal: React.FC<InsuranceModalProps> = ({
         { id: 28, name: "United Behavioral Health (UBH)" },
         { id: 29, name: "United HealthCare (UHC)" },
         { id: 30, name: "University of Utah Health Plans" },
-        { id: 31, name: "Utah’s Children’s Health Insurance Program (CHIP)" },
+        { id: 31, name: "Utah's Children's Health Insurance Program (CHIP)" },
         { id: 32, name: "Utah Services for People with Disabilities (DSPD)" },
         { id: 33, name: "Wise Imagine" }
-      ];
-      useEffect(() => {
+    ];
+
+    useEffect(() => {
         setLocalSelectedInsurances(selectedInsurances);
     }, [selectedInsurances, isOpen]);
 
@@ -69,7 +71,6 @@ const InsuranceModal: React.FC<InsuranceModalProps> = ({
         });
     }, []);
     
-    
     const isInsuranceSelected = useCallback(
         (id: number) => localSelectedInsurances.some(i => i.id === id),
         [localSelectedInsurances]
@@ -79,21 +80,33 @@ const InsuranceModal: React.FC<InsuranceModalProps> = ({
         onInsurancesChange(localSelectedInsurances);
         onClose();
     };
+
     if (!isOpen) return null;
+
+    const filteredInsurances = insuranceOptions.filter(insurance => 
+        insurance.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     return (
         <>
             <div className="modal-backdrop" onClick={onClose}></div>
             <div className="insurance-modal">
                 <h2>Select Insurance Coverage</h2>
+                <input
+                    type="text"
+                    placeholder="Search insurances..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-80 p-2 mb-4 border rounded mx-auto block"
+                />
                 <div className="modal-insurance-container">
-                    {insuranceOptions.map(option => (
+                    {filteredInsurances.map(option => (
                         <div key={option.id} className='modal-insurance'>
                             <input
                                 type="checkbox"
                                 checked={isInsuranceSelected(option.id)}
                                 onChange={() => handleSelect(option)}
-                                />
+                            />
                             {option.name}
                         </div>
                     ))}

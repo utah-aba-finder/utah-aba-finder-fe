@@ -24,7 +24,8 @@ interface Location {
 }
 
 interface County {
-  county: string;
+  county_id: number;
+  county_name: string;
 }
 
 interface Insurance {
@@ -264,7 +265,7 @@ export const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose }) => 
 
           {selectedCounties.length > 0 && (
             <div className="selected-counties">
-              <p>Selected Counties: </p> {selectedCounties[0].county}
+              <p>Selected Counties: </p> {selectedCounties[0].county_name}
             </div>
           )}
 
