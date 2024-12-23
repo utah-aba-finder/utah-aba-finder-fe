@@ -88,35 +88,6 @@
   padding: 20px;
 }
 
-.maintenance-modal-backdrop {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
-}
-
-.maintenance-modal {
-  background: white;
-  padding: 20px;
-  border-radius: 8px;
-  max-width: 400px;
-  width: 80%;
-  text-align: center;
-}
-
-.maintenance-close {
-  border-radius: 10px;
-  border: 0.5px solid black;
-  padding: 6px;
-  background-color: whitesmoke;
-}
-
 /* Providers Page Responsiveness */
 
 @media (min-width: 1150px) {
