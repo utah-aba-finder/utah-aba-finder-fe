@@ -21,7 +21,7 @@ export interface CountiesServed {
 }
 
 export interface StatesServed {
-    states: string[],
+    state: string[],
 }
 
 export interface ProviderAttributes {
