@@ -54,6 +54,7 @@ interface ProviderType {
 export interface MockProviderData {
     id: number;
     type: string;
+    state: string[];
     attributes: ProviderAttributes;
 }
 
