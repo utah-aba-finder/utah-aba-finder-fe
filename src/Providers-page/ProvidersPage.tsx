@@ -9,7 +9,6 @@ import { MockProviders, ProviderAttributes } from "../Utility/Types";
 import gearImage from "../Assets/Gear@1x-0.5s-200px-200px.svg";
 import Joyride, { Step, STATUS } from "react-joyride";
 
-
 interface FavoriteDate {
   [providerId: number]: string;
 }
@@ -105,7 +104,7 @@ const ProvidersPage: React.FC = () => {
       setStepIndex(index - 1);
     }
   };
-
+  
   // Update Joyride when provider type is selected
   useEffect(() => {
     if (selectedProviderType && selectedProviderType !== 'none' && stepIndex === 0) {
@@ -194,6 +193,7 @@ const ProvidersPage: React.FC = () => {
         const mappedProviders = providersList.data.map((provider) => ({
           ...provider.attributes,
           id: provider.id,
+          state: provider.state, 
         }));
 
         const sortedProviders = mappedProviders.sort((a, b) => {
@@ -290,6 +290,10 @@ const ProvidersPage: React.FC = () => {
             return true;
         }
       };
+
+      // providersList.data.states will return an array with the states that the provider is located in 
+
+      // const providerStateFilter = 
 
       const providerTypeServiceFilter = (provider: ProviderAttributes) => {
         if (!providerType) return true;
