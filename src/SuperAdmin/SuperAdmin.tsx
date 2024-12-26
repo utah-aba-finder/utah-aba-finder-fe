@@ -147,7 +147,7 @@ const SuperAdmin = () => {
         theme="light"
         className="z-50"
       />
-      <div className="h-screen bg-gray-100 flex flex-col">
+      <div className="h-screen bg-gray-100 flex lg:flex-col">
         <div className="flex min-h-screen overflow-hidden">
           {/* Sidebar */}
           <aside
