@@ -147,7 +147,7 @@ const SuperAdmin = () => {
         theme="light"
         className="z-50"
       />
-      <div className="h-screen bg-gray-100 flex flex-col">
+      <div className="h-screen bg-gray-100 flex lg:flex-col">
         <div className="flex min-h-screen overflow-hidden">
           {/* Sidebar */}
           <aside
@@ -182,7 +182,7 @@ const SuperAdmin = () => {
                     onClick={() => setSelectedTab("view")}
                     className={`
             w-full flex items-center space-x-3 px-3 py-2 rounded-lg
-            transition-colors duration-200
+            transition-colors hover:cursor-pointer duration-200
             ${
               selectedTab === "view"
                 ? "bg-[#4A6FA5] text-white"
@@ -199,7 +199,7 @@ const SuperAdmin = () => {
                     onClick={() => setSelectedTab("analytics")}
                     className={`
             w-full flex items-center space-x-3 px-3 py-2 rounded-lg
-            transition-colors duration-200
+            transition-colors hover:cursor-pointer duration-200
             ${
               selectedTab === "analytics"
                 ? "bg-[#4A6FA5] text-white"
@@ -219,7 +219,7 @@ const SuperAdmin = () => {
                     }}
                     className={`
             w-full flex items-center space-x-3 px-3 py-2 rounded-lg
-            transition-colors duration-200
+            transition-colors hover:cursor-pointer duration-200
             ${
               selectedTab === "create"
                 ? "bg-[#4A6FA5] text-white"
@@ -236,7 +236,7 @@ const SuperAdmin = () => {
                     onClick={() => setSelectedTab("billing")}
                     className={`
             w-full flex items-center space-x-3 px-3 py-2 rounded-lg
-            transition-colors duration-200
+            transition-colors hover:cursor-pointer duration-200
             ${
               selectedTab === "billing"
                 ? "bg-[#4A6FA5] text-white"
@@ -255,7 +255,7 @@ const SuperAdmin = () => {
             <div className="p-3 border-t">
               <button
                 onClick={handleLogout}
-                className="flex items-center space-x-3 text-gray-700 hover:text-gray-900 w-full px-3 py-2 text-sm"
+                className="flex items-center space-x-3 text-gray-700 hover:text-gray-900 hover:cursor-pointer w-full px-3 py-2 text-sm"
               >
                 <LogOut className="w-4 h-4" />
                 <span>Sign Out</span>

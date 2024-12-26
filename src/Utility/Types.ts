@@ -51,11 +51,12 @@ interface ProviderType {
     name: string;
   }
 
-export interface MockProviderData {
+  export interface MockProviderData {
     id: number;
     type: string;
+    state: string[]; 
     attributes: ProviderAttributes;
-}
+  }
 
 export interface MockProviders {
     data: MockProviderData[];

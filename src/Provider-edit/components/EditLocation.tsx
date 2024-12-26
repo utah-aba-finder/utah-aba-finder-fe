@@ -166,7 +166,7 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
           <div className="inline-flex space-x-2 bg-gray-100 p-1 rounded-lg">
             <button
               onClick={() => setActiveTab("basic")}
-              className={`px-4 py-2 rounded-lg transition-colors duration-200 ${
+              className={`px-4 py-2 rounded-lg transition-colors duration-200 cursor-pointer ${
                 activeTab === "basic"
                   ? "bg-white text-blue-600 shadow-sm"
                   : "text-gray-600 hover:text-gray-900"
@@ -176,7 +176,7 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
             </button>
             <button
               onClick={() => setActiveTab("locations")}
-              className={`px-4 py-2 rounded-lg transition-colors duration-200 ${
+              className={`px-4 py-2 rounded-lg transition-colors duration-200 cursor-pointer ${
                 activeTab === "locations"
                   ? "bg-white text-blue-600 shadow-sm"
                   : "text-gray-600 hover:text-gray-900"
@@ -186,7 +186,7 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
             </button>
             <button
               onClick={() => setActiveTab("services")}
-              className={`px-4 py-2 rounded-lg transition-colors duration-200 ${
+              className={`px-4 py-2 rounded-lg transition-colors duration-200 cursor-pointer ${
                 activeTab === "services"
                   ? "bg-white text-blue-600 shadow-sm"
                   : "text-gray-600 hover:text-gray-900"
@@ -223,7 +223,7 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
                       onChange={(e) =>
                         setFormData({ ...formData, name: e.target.value })
                       }
-                      className="block w-[95%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                      className="block w-[95%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm cursor-text"
                     />
                   </div>
 
@@ -244,7 +244,7 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
                           ],
                         })
                       }
-                      className="block w-[95%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                      className="block w-[95%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm cursor-pointer"
                     >
                       <option value="ABA Therapy">ABA Therapy</option>
                       <option value="Autism Evaluation">
@@ -283,7 +283,7 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
                         onChange={(e) =>
                           setFormData({ ...formData, website: e.target.value })
                         }
-                        className="block w-full px-10 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                        className="block w-full px-10 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm cursor-text"
                       />
                     </div>
                   </div>
@@ -300,7 +300,7 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
                         onChange={(e) =>
                           setFormData({ ...formData, email: e.target.value })
                         }
-                        className="block w-full px-10 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                        className="block w-full px-10 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm cursor-text"
                       />
                     </div>
                   </div>
@@ -315,7 +315,7 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
                       onChange={(e) =>
                         setFormData({ ...formData, logo: e.target.value })
                       }
-                      className="block w-[95%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                      className="block w-[95%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm cursor-text"
                     />
                   </div>
                 </div>
@@ -368,7 +368,7 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
                           };
                           setLocations(newLocations);
                         }}
-                        className="w-[95%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                        className="w-[95%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm cursor-text"
                       />
                     </div>
 
@@ -387,7 +387,7 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
                           };
                           setLocations(newLocations);
                         }}
-                        className="w-[95%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                        className="w-[95%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm cursor-text"
                       />
                     </div>
 
@@ -406,7 +406,7 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
                           };
                           setLocations(newLocations);
                         }}
-                        className="w-[95%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                        className="w-[95%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm cursor-text"
                       />
                     </div>
 
@@ -425,7 +425,7 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
                           };
                           setLocations(newLocations);
                         }}
-                        className="w-[95%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                        className="w-[95%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm cursor-text"
                       />
                     </div>
 
@@ -444,7 +444,7 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
                           };
                           setLocations(newLocations);
                         }}
-                        className="w-[95%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                        className="w-[95%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm cursor-text"
                       />
                     </div>
 
@@ -463,7 +463,7 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
                           };
                           setLocations(newLocations);
                         }}
-                        className="w-[95%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                        className="w-[95%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm cursor-text"
                       />
                     </div>
                   </div>
@@ -502,7 +502,7 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
                           }
                           rows={2}
                           style={{ textIndent: "2rem" }}
-                          className="block w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                          className="block w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm cursor-text"
                           placeholder="Enter cost details..."
                         />
                       </div>
@@ -523,7 +523,7 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
                               waitlist: e.target.value,
                             })
                           }
-                          className="w-full pl-10 pr-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                          className="w-full pl-10 pr-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm cursor-pointer"
                         >
                           <option value="no wait list">No wait list</option>
                           <option value="6 months or less">
@@ -559,7 +559,7 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
                             placeholder="Min Age"
                             min="0"
                             step="0.5"
-                            className="w-20 px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                            className="w-20 px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm cursor-text"
                           />
                           <span className="mx-2 text-gray-500">to</span>
                           <input
@@ -574,7 +574,7 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
                             placeholder="Max Age"
                             min="0"
                             step="0.5"
-                            className="w-20 px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                            className="w-20 px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm cursor-text"
                           />
                         </div>
                       </div>
@@ -595,7 +595,7 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
                               spanish_speakers: e.target.value,
                             })
                           }
-                          className="w-full pl-10 pr-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                          className="w-full pl-10 pr-3 py-2 rounded-lg border cursor-pointer border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                         >
                           <option value="">Select Option</option>
                           <option value="yes">Yes</option>
@@ -630,7 +630,7 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
                                 telehealth_services: e.target.value,
                               })
                             }
-                            className="w-full pl-11 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white"
+                            className="w-full pl-11 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white cursor-pointer"
                           >
                             <option value="">Select...</option>
                             <option value="yes">Yes</option>
@@ -656,7 +656,7 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
                                 in_clinic_services: e.target.value,
                               })
                             }
-                            className="w-full pl-11 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white"
+                            className="w-full pl-11 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white cursor-pointer"
                           >
                             <option value="">Select...</option>
                             <option value="yes">Yes</option>
@@ -681,7 +681,7 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
                                 at_home_services: e.target.value,
                               })
                             }
-                            className="w-full pl-11 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white"
+                            className="w-full pl-11 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white cursor-pointer"
                           >
                             <option value="">Select...</option>
                             <option value="yes">Yes</option>
@@ -707,7 +707,7 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
                   <button
                     type="button"
                     onClick={() => setIsInsuranceModalOpen(true)}
-                    className="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    className="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer"
                   >
                     <DollarSign className="w-5 h-5 mr-2" />
                     Edit Insurance Coverage

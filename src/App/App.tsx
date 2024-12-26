@@ -55,7 +55,11 @@ function App() {
     setAllProviders((prevProviders) =>
       prevProviders.map((provider) =>
         provider.id === updatedProvider.id
-          ? { ...provider, ...updatedProvider }
+          ? {
+              ...provider,
+              attributes: updatedProvider,
+              state: provider.state
+            }
           : provider
       )
     );

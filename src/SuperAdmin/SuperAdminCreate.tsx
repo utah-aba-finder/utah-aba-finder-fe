@@ -133,7 +133,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
             data: [
               {
                 type: "provider",
-                state: formData.state,
+                state: [formData.state],
                 attributes: {
                   name: formData.name,
                   provider_type: [
@@ -255,7 +255,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
+            <div >
               <label className="block text-sm text-gray-600 mb-2">
                 State
               </label>
@@ -263,9 +263,10 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
                 name="state"
                 value={formData.state}
                 onChange={handleChange}
-                className="w-[95%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                required
-              >
+                className="hover:cursor-pointer w-[95%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                disabled
+                title="This feature is not ready yet"
+                >
                 <option value="">Select a state</option>
                 <option value="Alabama">Alabama</option>
                 <option value="Alaska">Alaska</option>
@@ -327,7 +328,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
                 name="provider_type"
                 value={formData.provider_type}
                 onChange={handleChange}
-                className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                className="hover:cursor-pointer w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                 required
               >
                 <option value="" disabled>
@@ -349,7 +350,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                className="w-[95%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                className="hover:cursor-text w-[95%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                 placeholder="Provider Name"
                 required
               />
@@ -364,7 +365,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                className="w-[95%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                className="w-[95%] px-3 py-2 rounded-lg border border-gray-300 hover:cursor-text focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                 placeholder="Email Address"
               />
             </div>
@@ -378,7 +379,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
                 name="website"
                 value={formData.website}
                 onChange={handleChange}
-                className="w-[95%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                className="w-[95%] px-3 py-2 rounded-lg border border-gray-300 hover:cursor-text focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                 placeholder="https://"
                 onBlur={(e) => {
                   if (
@@ -401,7 +402,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
               <input
                 type="text"
                 name="logo"
-                className="w-[95%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                className="w-[95%] px-3 py-2 rounded-lg border border-gray-300 hover:cursor-text focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                 value={formData.logo}
                 onChange={handleChange}
               />
@@ -423,7 +424,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
             <button
               type="button"
               onClick={addNewLocation}
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-[#4A6FA5] hover:bg-blue-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-[#4A6FA5] hover:bg-blue-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 hover:cursor-pointer"
             >
               <Plus className="w-5 h-5 mr-2" />
               Add Location
@@ -446,7 +447,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
                   onChange={(e) =>
                     handleLocationChange(index, "name", e.target.value)
                   }
-                  className="w-[95%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm"
+                  className="w-[95%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 hover:cursor-text focus:ring-blue-400 focus:border-transparent text-sm"
                 />
                 <input
                   type="text"
@@ -455,7 +456,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
                   onChange={(e) =>
                     handleLocationChange(index, "phone", e.target.value)
                   }
-                  className="w-[95%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                  className="w-[95%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 hover:cursor-text focus:ring-blue-500 focus:border-transparent text-sm"
                 />
                 <div className="md:col-span-2">
                   <input
@@ -465,7 +466,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
                     onChange={(e) =>
                       handleLocationChange(index, "address_1", e.target.value)
                     }
-                    className="w-[95%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm"
+                    className="w-[95%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 hover:cursor-text focus:ring-blue-400 focus:border-transparent text-sm"
                   />
                 </div>
                 <div className="md:col-span-2">
@@ -476,7 +477,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
                     onChange={(e) =>
                       handleLocationChange(index, "address_2", e.target.value)
                     }
-                    className="w-[95%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm"
+                    className="w-[95%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 hover:cursor-text focus:ring-blue-400 focus:border-transparent text-sm"
                     />
                 </div>
                 <input
@@ -486,7 +487,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
                   onChange={(e) =>
                     handleLocationChange(index, "city", e.target.value)
                   }
-                  className="w-[95%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm"
+                  className="w-[95%] px-3 py-2 rounded-lg border border-gray-300 hover:cursor-text focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm"
                 />
                 <div className="grid grid-cols-2 gap-4">
                   <input
@@ -496,7 +497,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
                     onChange={(e) =>
                       handleLocationChange(index, "state", e.target.value)
                     }
-                    className="w-[90%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm"
+                    className="w-[90%] px-3 py-2 rounded-lg border border-gray-300 hover:cursor-text focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm"
                   />
                   <input
                     type="text"
@@ -505,7 +506,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
                     onChange={(e) =>
                       handleLocationChange(index, "zip", e.target.value)
                     }
-                    className="w-[90%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm"
+                    className="w-[90%] px-3 py-2 rounded-lg border border-gray-300 hover:cursor-text focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm"
                   />
                 </div>
               </div>
@@ -530,7 +531,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
               <button
                 type="button"
                 onClick={handleOpenCountiesModal}
-                className="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:ring-blue-400"
+                className="w-full inline-flex items-center justify-center px-4 py-2 border hover:cursor-pointer border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:ring-blue-400"
               >
                 <MapPin className="w-5 h-5 mr-2" />
                 Select Counties
@@ -539,7 +540,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
               <button
                 type="button"
                 onClick={handleOpenInsuranceModal}
-                className="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:ring-blue-400"
+                className="w-full inline-flex items-center justify-center px-4 py-2 border hover:cursor-pointer border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:ring-blue-400"
               >
                 <DollarSign className="w-5 h-5 mr-2" />
                 Select Insurances
@@ -557,7 +558,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
                   name="cost"
                   value={formData.cost}
                   onChange={handleChange}
-                  className="w-[95%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm"
+                  className="w-[95%] px-3 py-2 rounded-lg border border-gray-300 hover:cursor-text focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm"
                   placeholder="Enter cost details"
                   required
                 />
@@ -573,7 +574,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
                     name="min_age"
                     value={formData.min_age}
                     onChange={handleChange}
-                    className="w-[90%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm"
+                    className="w-[90%] px-3 py-2 rounded-lg border border-gray-300 hover:cursor-text focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm"
                     placeholder="0"
                     min="0"
                     step="0.5"
@@ -588,7 +589,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
                     name="max_age"
                     value={formData.max_age}
                     onChange={handleChange}
-                    className="w-[90%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm"
+                    className="w-[90%] px-3 py-2 rounded-lg border border-gray-300 hover:cursor-text focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm"
                     placeholder="99"
                     min="0"
                     step="0.5"
@@ -607,7 +608,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
                   name="waitlist"
                   value={formData.waitlist}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm"
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 hover:cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm"
                   required
                 >
                   <option value="" disabled>
@@ -629,7 +630,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
                     name="telehealth_services"
                     value={formData.telehealth_services}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm"
+                    className="w-full px-3 py-2 rounded-lg border border-gray-300 hover:cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm"
                   >
                     <option value="">Select an option</option>
                     <option value="yes">Yes</option>
@@ -647,7 +648,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
                     name="at_home_services"
                     value={formData.at_home_services}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm"
+                    className="w-full px-3 py-2 rounded-lg border border-gray-300 hover:cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm"
                   >
                     <option value="">Select an option</option>
                     <option value="Yes">Yes</option>
@@ -665,7 +666,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
                     name="in_clinic_services"
                     value={formData.in_clinic_services}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm"
+                    className="w-full px-3 py-2 rounded-lg border border-gray-300 hover:cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm"
                   >
                     <option value="">Select an option</option>
                     <option value="yes">Yes</option>
@@ -684,7 +685,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
                   name="spanish_speakers"
                   value={formData.spanish_speakers}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm"
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 hover:cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm"
                 >
                   <option value="">Select an option</option>
                   <option value="yes">Yes</option>
@@ -701,14 +702,14 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
           <button
             type="button"
             onClick={handleCloseForm}
-            className="px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400"
+            className="px-4 py-2 border border-gray-300 rounded-lg shadow-sm hover:cursor-pointer text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={isSaving}
-            className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-[#4A6FA5] hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400 disabled:opacity-50"
+            className="inline-flex items-center px-4 py-2 border border-transparent hover:cursor-pointer rounded-lg shadow-sm text-sm font-medium text-white bg-[#4A6FA5] hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400 disabled:opacity-50"
           >
             {isSaving ? (
               <>
