@@ -44,7 +44,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
   const [showNotification, setShowNotification] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [selectedProviderType, setSelectedProviderType] = useState<string>('none');
-  const [selectedState, setSelectedState] = useState<string>('');
+  const [selectedState, setSelectedState] = useState<string>('none');
 
   const handleSearch = useCallback(() => {
     onSearch({
@@ -85,6 +85,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
     setSelectedWaitList('');
     setSelectedAge('');
     setSelectedProviderType('none');
+    setSelectedState('none');
     onReset();
     // Trigger search with reset values to clear results
     onSearch({
