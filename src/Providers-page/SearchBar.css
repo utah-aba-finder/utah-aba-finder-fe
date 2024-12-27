@@ -20,6 +20,7 @@
     min-width: 300px;
 }
 
+.provider-state-select,
 .provider-type-select,
 .provider-map-searchbar input[type="text"] {
     color: #ffffff;
@@ -54,7 +55,7 @@
     max-width: 100%;
 }
 
-
+.provider-state-select,
 .provider-type-select,
 .provider-map-searchbar input[type="text"] {
     width: 99.5%;
@@ -97,6 +98,7 @@
 .provider-spanish-select,
 .provider-service-select,
 .provider-age-select,
+.provider-state-select,
 .provider-type-select,
 .provider-waitlist-select {
     background-color: #555555;
@@ -175,7 +177,8 @@
     .provider-map-searchbar input[type="text"] {
         width: 96%;
     }
-    .provider-type-select {
+    .provider-type-select,
+    .provider-state-select {
         width: 50%;
     }
 }
