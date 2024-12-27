@@ -121,6 +121,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
   ];
 
   const states = [
+    { label: 'Select a State', value: 'none' },
     { label: 'Alabama', value: 'Alabama' },
     { label: 'Alaska', value: 'Alaska' },
     { label: 'Arizona', value: 'Arizona' },
@@ -181,11 +182,20 @@ const SearchBar: React.FC<SearchBarProps> = ({
     { label: 'Speech Therapy', value: 'Speech Therapy', id: 4 },
   ];
 
-
   return (
     <section className="provider-map-search-section">
       <div className="provider-map-searchbar">
         <div className="search-group">
+          <select
+            className="provider-state-select"
+            value={selectedState}
+          >
+            {states.map((state) => (
+              <option value={state.value}>
+                {state.label}
+              </option>
+            ))}
+          </select>
           <select
             className="provider-type-select"
             value={selectedProviderType}
