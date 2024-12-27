@@ -45,6 +45,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
   const [isVisible, setIsVisible] = useState(false);
   const [selectedProviderType, setSelectedProviderType] = useState<string>('none');
   const [selectedState, setSelectedState] = useState<string>('none');
+  console.log("selectedState:", selectedState)
 
   const handleSearch = useCallback(() => {
     onSearch({
@@ -190,7 +191,9 @@ const SearchBar: React.FC<SearchBarProps> = ({
             className="provider-state-select"
             value={selectedState}
             onChange={(e) => {
-
+              const newValue = e.target.value;
+              setSelectedState(newValue);
+              
             }}
             aria-label="Select State"
           >
