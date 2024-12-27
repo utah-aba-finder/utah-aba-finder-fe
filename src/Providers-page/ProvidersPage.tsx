@@ -641,7 +641,7 @@ const ProvidersPage: React.FC = () => {
         <div className="glass-two">
           <h2 className="searched-provider-number-status-title">
             {!selectedProviderType || selectedProviderType === 'none' ? (
-              'Please select a provider type to get started with your search'
+              'Please select a state and provider type to get started with your search'
             ) : isFiltered ? (
               `Showing ${paginatedProviders.length} of ${combinedProviders.length} Providers`
             ) : (
