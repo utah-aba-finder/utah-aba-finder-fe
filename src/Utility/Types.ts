@@ -55,12 +55,12 @@ interface ProviderType {
   }
 
 // should we remove the word "mock" from this interface??
-export interface MockProviderData {
+  export interface MockProviderData {
     id: number;
     type: string;
-    state: string[];
+    state: string[]; 
     attributes: ProviderAttributes;
-}
+  }
 
 // same question as above
 export interface MockProviders {

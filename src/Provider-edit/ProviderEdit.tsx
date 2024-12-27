@@ -224,7 +224,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                   <button
                     onClick={() => setSelectedTab("dashboard")}
                     className={`
-                      w-full flex items-center space-x-3 px-3 py-2 rounded-lg
+                      w-full flex items-center hover:cursor-pointer space-x-3 px-3 py-2 rounded-lg
                       transition-colors duration-200
                       ${
                         selectedTab === "dashboard"
@@ -241,7 +241,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                   <button
                     onClick={() => setSelectedTab("edit")}
                     className={`
-                      w-full flex items-center space-x-3 px-3 py-2 rounded-lg
+                      w-full flex items-center hover:cursor-pointer space-x-3 px-3 py-2 rounded-lg
                       transition-colors duration-200
                       ${
                         selectedTab === "edit"
@@ -258,7 +258,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                   <button
                     onClick={() => setSelectedTab("create")}
                     className={`
-                      w-full flex items-center space-x-3 px-3 py-2 rounded-lg
+                      w-full flex items-center hover:cursor-pointer space-x-3 px-3 py-2 rounded-lg
                       transition-colors duration-200
                       ${
                         selectedTab === "create"
@@ -278,7 +278,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
             <div className="p-3 border-t">
               <button
                 onClick={handleLogout}
-                className="flex items-center space-x-3 text-gray-700 hover:text-gray-900 w-full px-3 py-2 text-sm"
+                className="flex items-center space-x-3 text-gray-700 hover:cursor-pointer hover:text-gray-900 w-full px-3 py-2 text-sm"
               >
                 <LogOut className="w-4 h-4" />
                 <span>Sign Out</span>
@@ -295,7 +295,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                   <div className="flex justify-between items-center">
                     <div className="flex items-center space-x-3">
                       <button
-                        className="md:hidden p-1.5 hover:bg-gray-100 rounded-lg"
+                        className="md:hidden p-1.5 hover:bg-gray-100 hover:cursor-pointerrounded-lg hover:cursor-pointer"
                         onClick={() => setIsOpen(true)}
                       >
                         <Menu className="w-5 h-5" />

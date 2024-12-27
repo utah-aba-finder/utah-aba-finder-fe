@@ -37,6 +37,7 @@ const Donations = () => {
                 <p>By supporting us, you're helping families navigate the complex world of autism resources more easily. Your contribution allows us to:</p> <ul> <li>Maintain our comprehensive database of local providers</li> <li>Continuously update information to reflect current best practices</li> <li>Expand our reach to support even more families</li> </ul>
                 <p><strong>Donate Now</strong> and join us in making a difference in the autism community.</p>
                 <p>You can also donate via PayPal by scanning the QR code below or by clicking the link below if you have any issues with the other options.</p>
+                <p>If you'd like to send it by mail you can send it to our P.O. Box: <br/> <strong>Autism Services Locator, 521929, Salt Lake City, UT, 84152</strong></p>
             </div>
             <div className='donateContainer'>
                 <Elements stripe={stripePromise} options={options}>
