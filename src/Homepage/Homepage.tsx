@@ -151,7 +151,7 @@ class Homepage extends Component<Props, State> {
                 {showModal && (
                     <div className="homepage-modal-overlay">
                         <div className="homepage-modal">
-                            <h2>Scheduled Maintenance!</h2>
+                            {/* <h2>Scheduled Maintenance!</h2> */}
                             <div className="homepage-modal-content">
 
                                 <p>If you have been to our website before, you may have noticed some changes!
