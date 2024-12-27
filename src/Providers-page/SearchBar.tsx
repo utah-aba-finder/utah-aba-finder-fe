@@ -44,6 +44,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
   const [showNotification, setShowNotification] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [selectedProviderType, setSelectedProviderType] = useState<string>('none');
+  const [selectedState, setSelectedState] = useState<string>('');
 
   const handleSearch = useCallback(() => {
     onSearch({
