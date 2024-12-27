@@ -6,7 +6,7 @@ import { MockProviders, ProviderAttributes } from '../Utility/Types';
 
 interface SearchBarProps {
   onResults: (results: MockProviders) => void;
-  onSearch: (params: { query: string; county_name: string; insurance: string; spanish: string; service: string; waitlist: string; age: string; providerType: string; }) => void;
+  onSearch: (params: { query: string; county_name: string; insurance: string; spanish: string; service: string; waitlist: string; age: string; providerType: string; }) => void; // add state?? 
   onCountyChange: (county_name: string) => void;
   insuranceOptions: string[];
   onInsuranceChange: (insurance: string) => void;
@@ -17,6 +17,7 @@ interface SearchBarProps {
   onReset: () => void;
   providers: ProviderAttributes[];
   onProviderTypeChange: (providerType: string) => void;
+  // onStateChange: (state: string) => void; // or is it an array of strings?
   totalProviders: number;
 }
 
@@ -60,7 +61,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
     });
     setShowNotification(true);
     setIsVisible(true);
-  }, [searchQuery, selectedCounty, selectedInsurance, selectedSpanish, selectedService, selectedWaitList, selectedAge, onSearch, selectedProviderType]);
+  }, [searchQuery, selectedCounty, selectedInsurance, selectedSpanish, selectedService, selectedWaitList, selectedAge, onSearch, selectedProviderType, selectedState]);
 
 
   useEffect(() => {
@@ -107,6 +108,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
     onWaitListChange('');
     onAgeChange('');
     onProviderTypeChange('none');
+    // onStateChange('none');
   };
 
   const ageOptions = [
@@ -191,9 +193,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
             className="provider-state-select"
             value={selectedState}
             onChange={(e) => {
-              const newValue = e.target.value;
-              setSelectedState(newValue);
-              
+              setSelectedState(e.target.value);
             }}
             aria-label="Select State"
           >
