@@ -189,6 +189,10 @@ const SearchBar: React.FC<SearchBarProps> = ({
           <select
             className="provider-state-select"
             value={selectedState}
+            onChange={(e) => {
+
+            }}
+            aria-label="Select State"
           >
             {states.map((state) => (
               <option value={state.value}>
