@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { MockProviders } from './Types';
+import { MockProviders, StateData, CountyData } from './Types';
 
 const API_URL = 'https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/providers';
 
@@ -35,6 +35,34 @@ export const fetchSingleProvider = async (providerId: number) => {
     throw error;
   }
 }
+
+export const fetchStates = async (): Promise<StateData[]> => {
+  const response = await fetch(
+    "https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/states",
+    {
+      headers: {
+        Authorization: `Bearer ${sessionStorage.getItem("authToken")}`,
+      },
+    }
+  );
+  if (!response.ok) throw new Error("Failed to fetch states");
+  const data = await response.json();
+  return data.data;
+};
+
+export const fetchCountiesByState = async (stateId: number): Promise<CountyData[]> => {
+  const response = await fetch(
+    `https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/states/${stateId}/counties`,
+    {
+      headers: {
+        Authorization: `Bearer ${sessionStorage.getItem("authToken")}`,
+      },
+    }
+  );
+  if (!response.ok) throw new Error("Failed to fetch counties");
+  const data = await response.json();
+  return data.data;
+};
 
 
 

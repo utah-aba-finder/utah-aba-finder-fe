@@ -57,8 +57,7 @@ function App() {
         provider.id === updatedProvider.id
           ? {
               ...provider,
-              attributes: updatedProvider,
-              state: provider.state
+              attributes: updatedProvider
             }
           : provider
       )

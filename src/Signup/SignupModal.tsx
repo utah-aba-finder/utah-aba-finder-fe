@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@chakra-ui/react';
 import { InsuranceModal } from './InsuranceModal';
 import { X } from 'lucide-react';
 import './Signup.css';
 import './SignupModal.css';
-import { CountiesServed } from '../Utility/Types';
+import { CountiesServed, StateData, CountyData } from '../Utility/Types';
 import CountiesModal from '../Provider-edit/CountiesModal';
 import { toast, ToastContainer } from 'react-toastify';
+import { fetchStates, fetchCountiesByState } from '../Utility/ApiCall';
 
 interface EmailJSResponse {
   text: string;
@@ -77,6 +78,24 @@ export const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose }) => 
     in_clinic_services: '',
     logo: '',
   });
+  const [availableStates, setAvailableStates] = useState<StateData[]>([]);
+  const [availableCounties, setAvailableCounties] = useState<CountyData[]>([]);
+
+  useEffect(() => {
+    const loadStates = async () => {
+      try {
+        const states = await fetchStates();
+        setAvailableStates(states);
+        // For now, just fetch Utah counties (id: 1)
+        const counties = await fetchCountiesByState(1);
+        setAvailableCounties(counties);
+      } catch (error) {
+        console.error("Failed to load states/counties:", error);
+        toast.error("Failed to load location data");
+      }
+    };
+    loadStates();
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -442,7 +461,7 @@ export const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose }) => 
           onClose={() => setIsCountiesModalOpen(false)}
           selectedCounties={selectedCounties}
           onCountiesChange={(counties) => setSelectedCounties(counties)}
-          providerCounties={providerData.counties_served}
+          availableCounties={availableCounties}
         />
 
       </div>

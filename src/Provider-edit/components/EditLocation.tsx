@@ -19,7 +19,10 @@ import {
   Location,
   Insurance,
   CountiesServed,
+  StateData,
+  CountyData,
 } from "../../Utility/Types";
+import { fetchStates, fetchCountiesByState } from "../../Utility/ApiCall";
 
 interface EditLocationProps {
   provider: MockProviderData;
@@ -48,6 +51,8 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
   );
   const [isSaving, setIsSaving] = useState(false);
   const [activeTab, setActiveTab] = useState("basic");
+  const [availableStates, setAvailableStates] = useState<StateData[]>([]);
+  const [availableCounties, setAvailableCounties] = useState<CountyData[]>([]);
 
   const handleCancel = () => {
     setFormData(provider.attributes);
@@ -148,6 +153,29 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
     setSelectedInsurances(provider.attributes.insurance || []);
     setSelectedCounties(provider.attributes.counties_served || []);
   }, [provider.attributes]);
+
+  useEffect(() => {
+    const loadStatesAndCounties = async () => {
+      try {
+        const states = await fetchStates();
+        setAvailableStates(states);
+        if (provider.states[0]) {
+          const selectedState = states.find(
+            state => state.attributes.name === provider.states[0]
+          );
+          if (selectedState) {
+            const counties = await fetchCountiesByState(selectedState.id);
+            setAvailableCounties(counties);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to load states/counties:", error);
+        toast.error("Failed to load location data");
+      }
+    };
+    loadStatesAndCounties();
+  }, [provider.states]);
+
   return (
     <div className="w-full overflow-x-hidden">
       <div className="px-2 sm:px-4 py-6">
@@ -765,7 +793,7 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
             onClose={() => setIsCountiesModalOpen(false)}
             selectedCounties={selectedCounties}
             onCountiesChange={setSelectedCounties}
-            providerCounties={provider.attributes.counties_served || []}
+            availableCounties={availableCounties}
           />
         )}
       </div>

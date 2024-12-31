@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import InsuranceModal from "../InsuranceModal";
 import CountiesModal from "../CountiesModal";
@@ -9,7 +9,10 @@ import {
   CountiesServed,
   ProviderAttributes,
   MockProviderData,
+  StateData,
+  CountyData,
 } from "../../Utility/Types";
+import { fetchStates, fetchCountiesByState } from "../../Utility/ApiCall";
 
 interface CreateLocationProps {
   provider: MockProviderData;
@@ -40,6 +43,30 @@ const CreateLocation: React.FC<CreateLocationProps> = ({
     []
   );
   const [isSaving, setIsSaving] = useState(false);
+  const [availableStates, setAvailableStates] = useState<StateData[]>([]);
+  const [availableCounties, setAvailableCounties] = useState<CountyData[]>([]);
+
+  useEffect(() => {
+    const loadStatesAndCounties = async () => {
+      try {
+        const states = await fetchStates();
+        setAvailableStates(states);
+        if (provider.states[0]) {
+          const selectedState = states.find(
+            state => state.attributes.name === provider.states[0]
+          );
+          if (selectedState) {
+            const counties = await fetchCountiesByState(selectedState.id);
+            setAvailableCounties(counties);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to load states/counties:", error);
+        toast.error("Failed to load location data");
+      }
+    };
+    loadStatesAndCounties();
+  }, [provider.states]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -246,7 +273,7 @@ const CreateLocation: React.FC<CreateLocationProps> = ({
           onClose={() => setIsCountiesModalOpen(false)}
           selectedCounties={selectedCounties}
           onCountiesChange={setSelectedCounties}
-          providerCounties={[]}
+          availableCounties={availableCounties}
         />
       )}
     </div>
