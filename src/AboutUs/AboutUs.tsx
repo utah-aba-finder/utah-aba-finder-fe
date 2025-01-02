@@ -8,6 +8,9 @@ import jordanPic from "../Assets/jordan-pic.jpg";
 import kevinPic from "../Assets/kevin-pic.png";
 import cheePic from "../Assets/chee-pic.png";
 import austinPic from "../Assets/austin-pic.png";
+import intern1 from "../Assets/GarrettBowman.jpeg";
+import intern2 from "../Assets/KimEwing.jpeg";
+import intern3 from "../Assets/JarvisBailey.jpeg";
 
 import "./AboutUs.css";
 
@@ -47,8 +50,8 @@ const AboutUs: React.FC = () => {
           <p>
             One of our team members, a parent of Autistic children, experienced
             firsthand the frustration of navigating complex healthcare systems
-            to find suitable ABA providers. This personal journey sparked our
-            mission to simplify the process for families across Utah, and beyond.
+            to find suitable providers. This personal journey sparked our
+            mission to simplify the process for families starting in Utah and expanding to other states.
           </p>
 
           <h1>Our Purpose</h1>
@@ -178,7 +181,31 @@ const AboutUs: React.FC = () => {
                 </div>
               </div>
             </div>
-          </div>
+              <div className='intern-section'>
+                <div className='intern-content-container'>
+                      <div className='intern-title-container'>
+                        <h2 className='intern-title'>Our Amazing Interns</h2>
+                      </div>
+                      <div className='intern-cards-container'>
+                        <div className='intern-card'>
+                          <img src={intern1} alt="intern1" className="intern-icon" />
+                          <h3>Garrett Bowman</h3>
+                          <p>Backend Developer Intern.</p>
+                        </div>
+                      <div className='intern-card'>
+                        <img src={intern2} alt="intern2" className="intern-icon" />
+                        <h3>Kim Ewing</h3>
+                        <p>Frontend Developer Intern.</p>
+                      </div>
+                    <div className='intern-card'>
+                      <img src={intern3} alt="intern3" className="intern-icon" />
+                      <h3>Jarvis Bailey</h3>
+                      <p>Directory expansion and Outreach Assistant.</p>
+                    </div>
+                    </div>
+                </div>
+                  </div>
+              </div>
         </div>
       </div>
     </div>
