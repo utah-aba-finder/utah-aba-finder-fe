@@ -64,5 +64,19 @@ export const fetchCountiesByState = async (stateId: number): Promise<CountyData[
   return data.data;
 };
 
+export const fetchProvidersByStateIdAndProviderType = async(stateId: number, providerType: string) => {
+  const response = await fetch(
+    `https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/states/${stateId}/providers?${providerType}`,
+    {
+      headers: {
+        Authorization: `Bearer ${sessionStorage.getItem("authToken")}`,
+      },
+    }
+  )
+  if(!response.ok) throw new Error("Failed to fetch providers by state and provider type")
+  const data = await response.json()
+  return data.data
+}
+
 
 

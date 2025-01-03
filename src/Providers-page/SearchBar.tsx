@@ -6,7 +6,7 @@ import { MockProviders, ProviderAttributes } from '../Utility/Types';
 
 interface SearchBarProps {
   onResults: (results: MockProviders) => void;
-  onSearch: (params: { query: string; county_name: string; insurance: string; spanish: string; service: string; waitlist: string; age: string; providerType: string; }) => void; // add state?? 
+  onSearch: (params: { query: string; county_name: string; insurance: string; spanish: string; service: string; waitlist: string; age: string; providerType: string; }) => void;
   onCountyChange: (county_name: string) => void;
   insuranceOptions: string[];
   onInsuranceChange: (insurance: string) => void;
@@ -123,6 +123,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
     { label: '19+ years', value: '19+' },
   ];
 
+  
   const states = [
     { label: 'Select a State', value: 'none' },
     { label: 'Alabama', value: 'Alabama' },
