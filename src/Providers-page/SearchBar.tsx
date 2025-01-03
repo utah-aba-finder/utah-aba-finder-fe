@@ -196,7 +196,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
               </option>
             ))}
           </select>
-          <button>SEARCH</button>
+          <button onClick={() => handleSearch()}>SEARCH</button>
         </div>
 
         {selectedProviderType !== 'none' && (
