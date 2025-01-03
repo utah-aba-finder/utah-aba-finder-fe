@@ -87,7 +87,18 @@
     margin-top: 2rem;
 }
 
-.team-title {
+.intern-content-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    text-align: center;
+    width: 100%;
+    margin-top: 2rem;
+}
+
+
+.team-title,
+.intern-title {
     color: #4A6FA5;
     text-align: center;
     margin: 0 auto;
@@ -106,7 +117,23 @@
     text-align: left;
 }
 
+.intern-card {
+    display: flex;
+    flex-direction: row;
+    background-color: rgb(255, 255, 255);
+    margin: 10px;
+    border-radius: 50px;
+    text-align: left;
+}
+
 .profile-cards-container {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+    width: 100%;
+}
+.intern-cards-container {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
@@ -121,7 +148,15 @@
     width: 50%;
 }
 
-.profile-icon {
+.intern-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 4rem;
+}
+
+.profile-icon,
+.intern-icon {
     width: 5rem;
     height: auto;
     margin-right: 15px;
@@ -131,31 +166,36 @@
     object-fit: cover;
 }
 
-.profile-info {
+.profile-info,
+.intern-info {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
 }
 
-.profile-info h3 {
+.profile-info h3,
+.intern-info h3 {
     font-size: 1.2rem;
     margin: 0;
     color: #333;
 }
 
-.profile-info p {
+.profile-info p,
+.intern-info p {
     font-size: 1rem;
     color: #555;
     margin: 5px 0 10px 0;
 }
 
-.icon-container {
+.icon-container,
+.intern-icon-container {
     display: flex;
     gap: 10px;
 }
 
 .linkedin-icon,
-.github-icon {
+.github-icon,
+.intern-icon-container {
     width: 30px;
     height: 30px;
 }

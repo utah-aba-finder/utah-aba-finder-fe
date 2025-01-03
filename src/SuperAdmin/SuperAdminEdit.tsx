@@ -23,7 +23,10 @@ import {
   Insurance,
   CountiesServed,
   Location as ProviderLocation,
+  StateData,
+  CountyData,
 } from "../Utility/Types";
+import { fetchStates, fetchCountiesByState } from "../Utility/ApiCall";
 
 interface SuperAdminEditProps {
   provider: MockProviderData;
@@ -47,11 +50,13 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("basic");
   const [providerState, setProviderState] = useState<string[]>([]);
+  const [availableStates, setAvailableStates] = useState<StateData[]>([]);
+  const [availableCounties, setAvailableCounties] = useState<CountyData[]>([]);
 
   useEffect(() => {
     if (provider) {
       setEditedProvider(provider.attributes);
-      setProviderState(provider.state || []);
+      setProviderState(provider.states || []);
       setSelectedCounties(provider.attributes.counties_served || []);
       setSelectedInsurances(provider.attributes.insurance || []);
       setLocations(provider.attributes.locations || []);
@@ -59,42 +64,61 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
     }
   }, [provider]);
 
+  useEffect(() => {
+    const loadInitialData = async () => {
+      try {
+        // Load states
+        const states = await fetchStates();
+        setAvailableStates(states);
+
+        // If provider has a state, fetch its counties
+        if (provider.states?.[0]) { // Assuming state is an array with one value
+          const selectedState = states.find(
+            (state) => state.attributes.name === provider.states[0]
+          );
+
+          if (selectedState) {
+            const counties = await fetchCountiesByState(selectedState.id);
+            setAvailableCounties(counties);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to load initial data:", error);
+        toast.error("Failed to load states and counties");
+      }
+    };
+
+    loadInitialData();
+  }, [provider.states]); // Add provider.state as dependency
+
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
 
     if (name === "state") {
-      setEditedProvider((prev) =>
-        prev
-          ? {
-              ...prev,
-              state: [value],
-            }
-          : null
+      const selectedState = availableStates.find(
+        state => state.attributes.name === value
       );
-    } else if (name === "provider_type") {
-      setEditedProvider((prev) =>
-        prev
-          ? {
-              ...prev,
-              provider_type: [
-                {
-                  id: prev.provider_type?.[0]?.id || 0,
-                  name: value,
-                },
-              ],
-            }
-          : null
-      );
+      
+      if (selectedState) {
+        setProviderState([value]); // Update providerState when state is selected
+        setEditedProvider(prev => 
+          prev ? { ...prev, state: [value] } : null
+        );
+        
+        fetchCountiesByState(selectedState.id)
+          .then(counties => {
+            setAvailableCounties(counties);
+          })
+          .catch(error => {
+            console.error("Failed to load counties:", error);
+            toast.error("Failed to load counties");
+          });
+      }
     } else {
-      setEditedProvider((prev) =>
-        prev
-          ? {
-              ...prev,
-              [name]: value,
-            }
-          : null
+      setEditedProvider(prev =>
+        prev ? { ...prev, [name]: value } : null
       );
     }
   };
@@ -141,6 +165,24 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
     setIsSaving(true);
 
     try {
+      const requestBody = {
+        data: [
+          {
+          id: provider.id,
+          type: "provider",
+          attributes: {
+            ...editedProvider,
+            insurance: selectedInsurances,
+            counties_served: selectedCounties,
+            locations: locations,
+            state: providerState, // Include the state in the request
+          },
+          },
+        ],
+      };
+
+      console.log('Sending request:', JSON.stringify(requestBody, null, 2));
+
       const response = await fetch(
         `https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/admin/providers/${provider.id}`,
         {
@@ -149,31 +191,30 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
             "Content-Type": "application/json",
             Authorization: `Bearer ${sessionStorage.getItem("authToken")}`,
           },
-          body: JSON.stringify({
-            data: [
-              {
-                id: provider.id,
-                type: "provider",
-                state: providerState,
-                attributes: {
-                  ...editedProvider,
-                  insurance: selectedInsurances,
-                  counties_served: selectedCounties,
-                  locations: locations,
-                },
-              },
-            ],
-          }),
+          body: JSON.stringify(requestBody),
         }
       );
 
-      if (!response.ok) throw new Error("Failed to update provider");
+      const responseText = await response.text();
+      console.log('Raw response:', responseText);
 
-      const updatedProvider = await response.json();
-      onUpdate(updatedProvider.data[0].attributes);
-      toast.success("Provider updated successfully");
+      if (!response.ok) {
+        console.error('Response status:', response.status);
+        throw new Error(`Failed to update provider: ${response.status}`);
+      }
+
+      const updatedProvider = responseText ? JSON.parse(responseText) : null;
+      console.log('Parsed response:', updatedProvider);
+
+      if (updatedProvider) {
+        onUpdate(updatedProvider.data.attributes);
+        toast.success("Provider updated successfully");
+      }
     } catch (error) {
       console.error("Error updating provider:", error);
+      if (error && typeof error === 'object' && 'response' in error) {
+        console.error("Response data:", await (error as any).response.text());
+      }
       toast.error("Failed to update provider");
     } finally {
       setIsSaving(false);
@@ -284,70 +325,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                 </div>
 
                 <div className="space-y-6">
-                  <div>
-                    <label className="block text-sm text-gray-600 mb-2">
-                      Provider State
-                    </label>
-                    <select
-                      name="state"
-                      value={editedProvider.state?.[0] || ""}
-                      onChange={handleInputChange}
-                      className="block w-[95%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                      disabled
-                    >
-                        <option value="">Select a State</option>
-                        <option value="Alaska">Alaska</option>
-                        <option value="Alabama">Alabama</option>
-                        <option value="Arkansas">Arkansas</option>
-                        <option value="Arizona">Arizona</option>
-                        <option value="California">California</option>
-                        <option value="Colorado">Colorado</option>
-                        <option value="Connecticut">Connecticut</option>
-                        <option value="Delaware">Delaware</option>
-                        <option value="Florida">Florida</option>
-                        <option value="Georgia">Georgia</option>
-                        <option value="Hawaii">Hawaii</option>
-                        <option value="Idaho">Idaho</option>
-                        <option value="Illinois">Illinois</option>
-                        <option value="Indiana">Indiana</option>
-                        <option value="Iowa">Iowa</option>
-                        <option value="Kansas">Kansas</option>
-                        <option value="Kentucky">Kentucky</option>
-                        <option value="Louisiana">Louisiana</option>
-                        <option value="Maine">Maine</option>
-                        <option value="Maryland">Maryland</option>
-                        <option value="Massachusetts">Massachusetts</option>
-                        <option value="Michigan">Michigan</option>
-                        <option value="Minnesota">Minnesota</option>
-                        <option value="Mississippi">Mississippi</option>
-                        <option value="Missouri">Missouri</option>
-                        <option value="Montana">Montana</option>
-                        <option value="Nebraska">Nebraska</option>
-                        <option value="Nevada">Nevada</option>
-                        <option value="New Hampshire">New Hampshire</option>
-                        <option value="New Jersey">New Jersey</option>
-                        <option value="New Mexico">New Mexico</option>
-                        <option value="New York">New York</option>
-                        <option value="North Carolina">North Carolina</option>
-                        <option value="North Dakota">North Dakota</option>
-                        <option value="Ohio">Ohio</option>
-                        <option value="Oklahoma">Oklahoma</option>
-                        <option value="Oregon">Oregon</option>
-                        <option value="Pennsylvania">Pennsylvania</option>
-                        <option value="Rhode Island">Rhode Island</option>
-                        <option value="South Carolina">South Carolina</option>
-                        <option value="South Dakota">South Dakota</option>
-                        <option value="Tennessee">Tennessee</option>
-                        <option value="Texas">Texas</option>
-                        <option value="Utah">Utah</option>
-                        <option value="Vermont">Vermont</option>
-                        <option value="Virginia">Virginia</option>
-                        <option value="Washington">Washington</option>
-                        <option value="West Virginia">West Virginia</option>
-                        <option value="Wisconsin">Wisconsin</option>
-                        <option value="Wyoming">Wyoming</option>
-                    </select>
-                  </div>
+                  
                   <div>
                     <label className="block text-sm text-gray-600 mb-2">
                       Provider Name
@@ -720,10 +698,10 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                                 className="w-full pl-11 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white"
                               >
                                 <option value="">Select...</option>
-                                <option value="yes">Yes</option>
-                                <option value="no">No</option>
-                                <option value="limited">Limited</option>
-                                <option value="contact us">Contact Us</option>
+                                <option value="Yes">Yes</option>
+                                <option value="No">No</option>
+                                <option value="Limited">Limited</option>
+                                <option value="Contact Us">Contact Us</option>
                               </select>
                             </div>
                           </div>
@@ -741,10 +719,10 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                                 className="w-full pl-11 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white"
                               >
                                 <option value="">Select...</option>
-                                <option value="yes">Yes</option>
-                                <option value="no">No</option>
-                                <option value="limited">Limited</option>
-                                <option value="contact us">Contact Us</option>
+                                <option value="Yes">Yes</option>
+                                <option value="No">No</option>
+                                <option value="Limited">Limited</option>
+                                <option value="Contact Us">Contact Us</option>
                               </select>
                             </div>
                           </div>
@@ -762,8 +740,9 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                                 className="w-full pl-11 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white"
                               >
                                 <option value="">Select...</option>
-                                <option value="yes">Yes</option>
-                                <option value="no">No</option>
+                                <option value="Yes">Yes</option>
+                                <option value="No">No</option>
+                                <option value="Contact Us">Contact Us</option>
                               </select>
                             </div>
                           </div>
@@ -800,11 +779,32 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                         className="w-full pl-10 pr-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                       >
                         <option value="">Select Option</option>
-                        <option value="yes">Yes</option>
-                        <option value="no">No</option>
-                        <option value="contact-us">Contact Us</option>
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                        <option value="Contact Us">Contact Us</option>
                       </select>
                     </div>
+                    <div>
+                    <label className="block text-sm text-gray-600 mb-2">
+                      Provider State
+                    </label>
+                    <select
+                      name="state"
+                      value={provider.states?.[0] || ""}
+                      onChange={handleInputChange}
+                      className="block w-[95%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                    >
+                      <option value="">{provider.states?.[0] || "Select a State"}</option>
+                      {availableStates.map((state) => (
+                        <option 
+                          key={state.id} 
+                          value={state.attributes.name}
+                        >
+                          {state.attributes.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                   </div>
 
                   {/* Coverage Buttons */}
@@ -876,7 +876,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
               onClose={() => setIsCountiesModalOpen(false)}
               selectedCounties={selectedCounties}
               onCountiesChange={handleCountiesChange}
-              providerCounties={provider.attributes.counties_served || []}
+              availableCounties={availableCounties}
             />
           )}
         </form>

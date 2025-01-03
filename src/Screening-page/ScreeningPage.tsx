@@ -28,7 +28,7 @@ export const ScreeningPage: React.FC = () => {
                     <h2 className='buttonText'>For Children 4 and Up:</h2>
                     <Link to='/screening/cast' aria-label='cast test button' className='ScreeningButton2'>TAKE THE CAST</Link>
                     <h2 className='buttonText'>Adult Screening Tests:</h2>
-                    <a href='https://embrace-autism.com/autism-tests/' aria-label='additional screening tests button' className='ScreeningButton3'>VIEW ADULT TESTS</a>
+                    <a target='blank' href='https://embrace-autism.com/autism-tests/' aria-label='additional screening tests button' className='ScreeningButton3'>VIEW ADULT TESTS</a>
                 </div>
             </div>
         </div>

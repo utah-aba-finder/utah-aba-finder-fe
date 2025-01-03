@@ -77,18 +77,49 @@ const SuperAdmin = () => {
     fetchAllProviders();
   }, []);
 
-  const handleProviderUpdate = (updatedProvider: ProviderAttributes) => {
-    setProviders((prevProviders) =>
-      prevProviders.map((p) =>
-        p.id === updatedProvider.id ? { ...p, attributes: updatedProvider } : p
-      )
-    );
+  const handleProviderUpdate = async (updatedProvider: ProviderAttributes) => {
+    try {
+      if (!updatedProvider) {
+        console.error("Received undefined updatedProvider");
+        return;
+      }
+
+      console.log("Received updatedProvider:", updatedProvider); // Debug log
+
+      setProviders((prevProviders) => {
+        if (!selectedProvider?.id) {
+          console.error("No selected provider ID");
+          return prevProviders;
+        }
+
+        return prevProviders.map((p) => {
+          if (!p) return p;
+          return p.id === selectedProvider.id
+            ? {
+                ...p,
+                attributes: updatedProvider,
+                state: p.states || []
+              }
+            : p
+        });
+      });
+
+      await fetchAllProviders();
+    } catch (error) {
+      console.error("Error in handleProviderUpdate:", error);
+      toast.error("Failed to update provider");
+    }
   };
 
   const filteredProviders = providers.filter((provider) => {
+    if (!provider?.attributes) {
+      console.log("Filtering out invalid provider:", provider); // Debug log
+      return false;
+    }
+
     const nameMatch = provider.attributes.name
-      ?.toLowerCase()
-      .includes(searchTerm.toLowerCase());
+      ? provider.attributes.name.toLowerCase().includes(searchTerm.toLowerCase())
+      : false;
     
     const typeMatch =
       providerTypeFilter === "all"

@@ -18,6 +18,16 @@ export interface Location {
 export interface CountiesServed {
     county_id: number | null;
     county_name: string | null;
+    state?: string;
+}
+
+export interface StateData {
+    id: number;
+    type: string;
+    attributes: {
+        name: string;
+        abbreviation: string;
+    };
 }
 
 export interface StatesServed {
@@ -27,7 +37,7 @@ export interface StatesServed {
 export interface ProviderAttributes {
     id: number;
     name: string | null;
-    state: string[] | null;
+    states: string[] | null;
     provider_type: ProviderType[];
     locations: Location[];
     insurance: Insurance[];
@@ -58,7 +68,7 @@ interface ProviderType {
   export interface MockProviderData {
     id: number;
     type: string;
-    state: string[]; 
+    states: string[]; 
     attributes: ProviderAttributes;
   }
 
@@ -71,3 +81,12 @@ interface SuperAdminEditProps {
     provider: MockProviderData;
     onUpdate: (updatedProvider: ProviderAttributes) => void;
   }
+
+export interface CountyData {
+  id: number;
+  type: string;
+  attributes: {
+    name: string;
+    state: string;
+  };
+}
