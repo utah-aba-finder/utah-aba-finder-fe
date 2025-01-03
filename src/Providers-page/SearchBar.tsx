@@ -47,12 +47,13 @@ const SearchBar: React.FC<SearchBarProps> = ({
   const [isVisible, setIsVisible] = useState(false);
   const [selectedProviderType, setSelectedProviderType] = useState<string>('none');
   const [providerStates, setProviderStates] = useState<any[]>([]) // need to update type from any
-  const [error, setError] = useState<string>("")
+  const [error, setError] = useState<string>("") // need to create space for error message, if applicable
   const [selectedState, setSelectedState] = useState<string>('none');
 
   console.log("selectedState:", selectedState)
 
   const handleSearch = useCallback(() => {
+    // if provider and state are true, then execute onSearch, otherwise display message
     onSearch({
       query: searchQuery,
       county_name: selectedCounty,
@@ -62,10 +63,11 @@ const SearchBar: React.FC<SearchBarProps> = ({
       waitlist: selectedWaitList,
       age: selectedAge,
       providerType: selectedProviderType,
+      // state ID
     });
     setShowNotification(true);
     setIsVisible(true);
-  }, [searchQuery, selectedCounty, selectedInsurance, selectedSpanish, selectedService, selectedWaitList, selectedAge, onSearch, selectedProviderType]);
+  }, [searchQuery, selectedCounty, selectedInsurance, selectedSpanish, selectedService, selectedWaitList, selectedAge, onSearch, selectedProviderType]); // selectedState??
 
   useEffect(() => {
     const getStates = async () => {
@@ -105,6 +107,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
     setSelectedState('none');
     onReset();
     // Trigger search with reset values to clear results
+    // if provider and state are true, then execute onSearch, otherwise display message
     onSearch({
       query: '',
       county_name: '',
@@ -114,6 +117,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
       waitlist: '',
       age: '',
       providerType: 'none'
+      // add state
     });
     // Reset all callback handlers
     onCountyChange('');
@@ -192,6 +196,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
               </option>
             ))}
           </select>
+          <button>SEARCH</button>
         </div>
 
         {selectedProviderType !== 'none' && (
