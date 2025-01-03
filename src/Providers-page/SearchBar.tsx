@@ -53,7 +53,6 @@ const SearchBar: React.FC<SearchBarProps> = ({
   console.log("selectedState:", selectedState)
 
   const handleSearch = useCallback(() => {
-    // if provider and state are true, then execute onSearch, otherwise display message
     onSearch({
       query: searchQuery,
       county_name: selectedCounty,
@@ -63,7 +62,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
       waitlist: selectedWaitList,
       age: selectedAge,
       providerType: selectedProviderType,
-      // state ID
+      // state ID??
     });
     setShowNotification(true);
     setIsVisible(true);
@@ -129,8 +128,6 @@ const SearchBar: React.FC<SearchBarProps> = ({
     onProviderTypeChange('none');
     // onStateChange('none');
   };
-
-
 
   const ageOptions = [
     { label: 'All Ages', value: '' },
