@@ -46,8 +46,11 @@ const SearchBar: React.FC<SearchBarProps> = ({
   const [showNotification, setShowNotification] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [selectedProviderType, setSelectedProviderType] = useState<string>('none');
+  const [providerStates, setProviderStates] = useState<any[]>([]) // need to update type from any
+  const [error, setError] = useState<string>("")
   const [selectedState, setSelectedState] = useState<string>('none');
-  console.log("selectedState:", selectedState)
+
+  console.log("providerStates:", providerStates)
 
   const handleSearch = useCallback(() => {
     onSearch({
@@ -65,8 +68,15 @@ const SearchBar: React.FC<SearchBarProps> = ({
   }, [searchQuery, selectedCounty, selectedInsurance, selectedSpanish, selectedService, selectedWaitList, selectedAge, onSearch, selectedProviderType]);
 
   useEffect(() => {
-    const states = fetchStates()
-    
+    const getStates = async () => {
+      try {
+        const statesData = await fetchStates()
+        setProviderStates(statesData)
+      } catch {
+        setError("Failed to fetch states")
+      }
+    }
+    getStates()
   }, [])
 
   useEffect(() => {
@@ -131,59 +141,59 @@ const SearchBar: React.FC<SearchBarProps> = ({
   ];
 
   
-  const states = [
-    { label: 'Select a State', value: 'none' },
-    { label: 'Alabama', value: 'Alabama' },
-    { label: 'Alaska', value: 'Alaska' },
-    { label: 'Arizona', value: 'Arizona' },
-    { label: 'Arkansas', value: 'Arkansas' },
-    { label: 'California', value: 'California' },
-    { label: 'Colorado', value: 'Colorado' },
-    { label: 'Connecticut', value: 'Connecticut' },
-    { label: 'Delaware', value: 'Delaware' },
-    { label: 'Florida', value: 'Florida' },
-    { label: 'Georgia', value: 'Georgia' },
-    { label: 'Hawaii', value: 'Hawaii' },
-    { label: 'Idaho', value: 'Idaho' },
-    { label: 'Illinois', value: 'Illinois' },
-    { label: 'Indiana', value: 'Indiana' },
-    { label: 'Iowa', value: 'Iowa' },
-    { label: 'Kansas', value: 'Kansas' },
-    { label: 'Kentucky', value: 'Kentucky' },
-    { label: 'Louisiana', value: 'Louisiana' },
-    { label: 'Maine', value: 'Maine' },
-    { label: 'Maryland', value: 'Maryland' },
-    { label: 'Massachusetts', value: 'Massachusetts' },
-    { label: 'Michigan', value: 'Michigan' },
-    { label: 'Minnesota', value: 'Minnesota' },
-    { label: 'Mississippi', value: 'Mississippi' },
-    { label: 'Missouri', value: 'Missouri' },
-    { label: 'Montana', value: 'Montana' },
-    { label: 'Nebraska', value: 'Nebraska' },
-    { label: 'Nevada', value: 'Nevada' },
-    { label: 'New Hampshire', value: 'New Hampshire' },
-    { label: 'New Jersey', value: 'New Jersey' },
-    { label: 'New Mexico', value: 'New Mexico' },
-    { label: 'New York', value: 'New York' },
-    { label: 'North Carolina', value: 'North Carolina' },
-    { label: 'North Dakota', value: 'North Dakota' },
-    { label: 'Ohio', value: 'Ohio' },
-    { label: 'Oklahoma', value: 'Oklahoma' },
-    { label: 'Oregon', value: 'Oregon' },
-    { label: 'Pennsylvania', value: 'Pennsylvania' },
-    { label: 'Rhode Island', value: 'Rhode Island' },
-    { label: 'South Carolina', value: 'South Carolina' },
-    { label: 'South Dakota', value: 'South Dakota' },
-    { label: 'Tennessee', value: 'Tennessee' },
-    { label: 'Texas', value: 'Texas' },
-    { label: 'Utah', value: 'Utah' },
-    { label: 'Vermont', value: 'Vermont' },
-    { label: 'Virginia', value: 'Virginia' },
-    { label: 'Washington', value: 'Washington' },
-    { label: 'West Virginia', value: 'West Virginia' },
-    { label: 'Wisconsin', value: 'Wisconsin' },
-    { label: 'Wyoming', value: 'Wyoming' }
-  ];
+  // const states = [
+  //   { label: 'Select a State', value: 'none' },
+  //   { label: 'Alabama', value: 'Alabama' },
+  //   { label: 'Alaska', value: 'Alaska' },
+  //   { label: 'Arizona', value: 'Arizona' },
+  //   { label: 'Arkansas', value: 'Arkansas' },
+  //   { label: 'California', value: 'California' },
+  //   { label: 'Colorado', value: 'Colorado' },
+  //   { label: 'Connecticut', value: 'Connecticut' },
+  //   { label: 'Delaware', value: 'Delaware' },
+  //   { label: 'Florida', value: 'Florida' },
+  //   { label: 'Georgia', value: 'Georgia' },
+  //   { label: 'Hawaii', value: 'Hawaii' },
+  //   { label: 'Idaho', value: 'Idaho' },
+  //   { label: 'Illinois', value: 'Illinois' },
+  //   { label: 'Indiana', value: 'Indiana' },
+  //   { label: 'Iowa', value: 'Iowa' },
+  //   { label: 'Kansas', value: 'Kansas' },
+  //   { label: 'Kentucky', value: 'Kentucky' },
+  //   { label: 'Louisiana', value: 'Louisiana' },
+  //   { label: 'Maine', value: 'Maine' },
+  //   { label: 'Maryland', value: 'Maryland' },
+  //   { label: 'Massachusetts', value: 'Massachusetts' },
+  //   { label: 'Michigan', value: 'Michigan' },
+  //   { label: 'Minnesota', value: 'Minnesota' },
+  //   { label: 'Mississippi', value: 'Mississippi' },
+  //   { label: 'Missouri', value: 'Missouri' },
+  //   { label: 'Montana', value: 'Montana' },
+  //   { label: 'Nebraska', value: 'Nebraska' },
+  //   { label: 'Nevada', value: 'Nevada' },
+  //   { label: 'New Hampshire', value: 'New Hampshire' },
+  //   { label: 'New Jersey', value: 'New Jersey' },
+  //   { label: 'New Mexico', value: 'New Mexico' },
+  //   { label: 'New York', value: 'New York' },
+  //   { label: 'North Carolina', value: 'North Carolina' },
+  //   { label: 'North Dakota', value: 'North Dakota' },
+  //   { label: 'Ohio', value: 'Ohio' },
+  //   { label: 'Oklahoma', value: 'Oklahoma' },
+  //   { label: 'Oregon', value: 'Oregon' },
+  //   { label: 'Pennsylvania', value: 'Pennsylvania' },
+  //   { label: 'Rhode Island', value: 'Rhode Island' },
+  //   { label: 'South Carolina', value: 'South Carolina' },
+  //   { label: 'South Dakota', value: 'South Dakota' },
+  //   { label: 'Tennessee', value: 'Tennessee' },
+  //   { label: 'Texas', value: 'Texas' },
+  //   { label: 'Utah', value: 'Utah' },
+  //   { label: 'Vermont', value: 'Vermont' },
+  //   { label: 'Virginia', value: 'Virginia' },
+  //   { label: 'Washington', value: 'Washington' },
+  //   { label: 'West Virginia', value: 'West Virginia' },
+  //   { label: 'Wisconsin', value: 'Wisconsin' },
+  //   { label: 'Wyoming', value: 'Wyoming' }
+  // ];
 
   const providerTypeOptions = [
     { label: 'Select Type', value: 'none', id: 0 },
@@ -205,9 +215,9 @@ const SearchBar: React.FC<SearchBarProps> = ({
             }}
             aria-label="Select State"
           >
-            {states.map((state) => (
-              <option value={state.value}>
-                {state.label}
+            {providerStates.map((providerState) => (
+              <option key={providerState.id} value={providerState.attributes.name}>
+                {providerState.attributes.name}
               </option>
             ))}
           </select>
