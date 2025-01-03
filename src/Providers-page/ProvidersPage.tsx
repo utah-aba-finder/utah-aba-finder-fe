@@ -193,7 +193,7 @@ const ProvidersPage: React.FC = () => {
         const mappedProviders = providersList.data.map((provider) => ({
           ...provider.attributes,
           id: provider.id,
-          state: provider.state, 
+          state: provider.states, 
         }));
 
         const sortedProviders = mappedProviders.sort((a, b) => {

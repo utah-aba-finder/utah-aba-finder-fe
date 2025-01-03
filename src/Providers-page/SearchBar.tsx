@@ -3,6 +3,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './SearchBar.css';
 import { MockProviders, ProviderAttributes } from '../Utility/Types';
+import { fetchStates, fetchProvidersByStateIdAndProviderType } from '../Utility/ApiCall'
 
 interface SearchBarProps {
   onResults: (results: MockProviders) => void;
@@ -61,8 +62,12 @@ const SearchBar: React.FC<SearchBarProps> = ({
     });
     setShowNotification(true);
     setIsVisible(true);
-  }, [searchQuery, selectedCounty, selectedInsurance, selectedSpanish, selectedService, selectedWaitList, selectedAge, onSearch, selectedProviderType, selectedState]);
+  }, [searchQuery, selectedCounty, selectedInsurance, selectedSpanish, selectedService, selectedWaitList, selectedAge, onSearch, selectedProviderType]);
 
+  useEffect(() => {
+    const states = fetchStates()
+    
+  }, [])
 
   useEffect(() => {
     if (showNotification) {
@@ -110,6 +115,8 @@ const SearchBar: React.FC<SearchBarProps> = ({
     onProviderTypeChange('none');
     // onStateChange('none');
   };
+
+
 
   const ageOptions = [
     { label: 'All Ages', value: '' },
