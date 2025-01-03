@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { MockProviders, StateData, CountyData } from './Types';
+import { MockProviders, StateData, CountyData, InsuranceData } from './Types';
 
 const API_URL = 'https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/providers';
 
@@ -60,6 +60,19 @@ export const fetchCountiesByState = async (stateId: number): Promise<CountyData[
     }
   );
   if (!response.ok) throw new Error("Failed to fetch counties");
+  const data = await response.json();
+  return data.data;
+};
+
+export const fetchInsurance = async (): Promise<InsuranceData[]> => {
+  const response = await fetch(
+    "https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/insurances",
+    {
+      headers: {
+        Authorization: `Bearer ${sessionStorage.getItem("authToken")}`,
+      },
+    }
+  );
   const data = await response.json();
   return data.data;
 };

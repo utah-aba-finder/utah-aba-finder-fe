@@ -56,6 +56,14 @@ export interface ProviderAttributes {
     status: string | null;
 }
 
+export interface InsuranceData {
+    id: number;
+    type: string;
+    attributes: {
+        name: string;
+    };
+}
+
 interface ProviderType {
     id: number;
     name: string;
