@@ -137,15 +137,23 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ provider, address, mapAdd
               </p>
             </div>
             <div className="provider-details text">
-            {provider.provider_type.length > 0 ? (
-              <p><strong>Counties Served:</strong> {
-                provider.provider_type.some(type => type.name === "ABA Therapy") || provider.at_home_services === "yes"
-                  ? "Contact us"
-                  : provider.counties_served?.length === 0 && provider.provider_type.some(type => type.name !== "ABA Therapy")
-                  ? provider.counties_served.map(county => county.county_name).join(', ')
+            <p><strong>Counties Served:</strong> {
+              provider.provider_type.length > 0 && provider.provider_type[0].name === "ABA Therapy"
+                ? provider.counties_served?.length === 1 && provider.counties_served[0].county_name === "Contact Us"
+                  ? 'Contact us'
+                  : provider.counties_served?.length > 0
+                    ? provider.counties_served
+                        .filter(county => county.county_name !== "Contact Us")
+                        .map(county => county.county_name)
+                        .join(', ')
+                    : 'Not applicable for this provider'
+                : provider.counties_served?.length > 1 || (provider.counties_served?.length === 1 && provider.counties_served[0].county_name !== "Contact Us")
+                  ? provider.counties_served
+                      .filter(county => county.county_name !== "Contact Us")
+                      .map(county => county.county_name)
+                      .join(', ')
                   : 'Not applicable for this provider'
-              }</p>
-            ) : null}
+            }</p>
               <p><strong>Ages Served:</strong> {provider.min_age} - {provider.max_age} years</p>
               <p><strong>Waitlist:</strong> {provider.waitlist || 'Contact us'}</p>
               <p><strong>Telehealth Services:</strong> {provider.telehealth_services || 'Contact us'}</p>

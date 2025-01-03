@@ -19,6 +19,28 @@ const Resources = () => {
                 </div>
             </div>
             <div className="resources-content">
+                <div className="resources-content-container">
+                    <h1>Printable Information for Providers</h1>
+                    <hr className="divider" />
+                    <p className="resources-content-description">Click below to download/print the document to handout</p>
+                    <div className="provider-info-container">
+                        <a 
+                            href={require('../Assets/provider_handout.pdf')}
+                            download="provider_handout.pdf"
+                            className="provider-info-link"
+                        >
+                            <object
+                                data={require('../Assets/provider_handout.pdf')}
+                                type="application/pdf"
+                                width="100%"
+                                height="500px"
+                                className="pdf-preview"
+                            >
+                                <p>Your browser does not support PDF preview. Click here to download.</p>
+                            </object>
+                        </a>
+                    </div>
+                </div>
                 <h1>Useful Forms</h1>
                 <hr className="divider" />
                 <p className="resources-content-description">Click the image to download/print the worksheets</p>
