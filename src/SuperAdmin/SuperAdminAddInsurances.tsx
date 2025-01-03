@@ -25,8 +25,28 @@ const SuperAdminAddInsurances = ({handleCloseForm}: {handleCloseForm: () => void
     const addInsurance = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         
-        if (!insuranceName.trim()) {
+        const trimmedName = insuranceName.trim();
+        
+        if (!trimmedName) {
             toast.error("Insurance name cannot be empty");
+            return;
+        }
+
+        // Check if insurance name already exists (exact match)
+        const insuranceExists = insurance.some(ins => 
+            ins.attributes.name.toLowerCase() === trimmedName.toLowerCase()
+        );
+
+        if (insuranceExists && !editingInsurance) {
+            toast.error("This insurance name already exists");
+            return;
+        }
+
+        // When editing, check if new name conflicts with any existing insurance except the one being edited
+        if (editingInsurance && insuranceExists && 
+            insurance.some(ins => ins.attributes.name.toLowerCase() === trimmedName.toLowerCase() && 
+            ins.attributes.name.toLowerCase() !== editingInsurance.attributes.name.toLowerCase())) {
+            toast.error("This insurance name already exists");
             return;
         }
 
@@ -34,8 +54,8 @@ const SuperAdminAddInsurances = ({handleCloseForm}: {handleCloseForm: () => void
         
         try {
             const endpoint = editingInsurance 
-                ? `${API_BASE_URL}/api/v1/insurances/${editingInsurance.id}`
-                : `${API_BASE_URL}/api/v1/insurances`;
+                ? `${API_BASE_URL}/api/v1/admin/insurances/${editingInsurance.id}`
+                : `${API_BASE_URL}/api/v1/admin/insurances`;
             
             const method = editingInsurance ? "PATCH" : "POST";
             
@@ -44,7 +64,7 @@ const SuperAdminAddInsurances = ({handleCloseForm}: {handleCloseForm: () => void
                     ...(editingInsurance && { id: editingInsurance.id }),
                     ...(editingInsurance && { type: "insurance" }),
                     attributes: {
-                        name: insuranceName.trim()
+                        name: trimmedName
                     }
                 }]
             };
@@ -82,7 +102,7 @@ const SuperAdminAddInsurances = ({handleCloseForm}: {handleCloseForm: () => void
     }
 
     const handleDelete = async (insurance: InsuranceData) => {
-        if (!window.confirm(`Are you sure you want to delete ${insurance.attributes.name}?`)) {
+        if (!window.confirm(`Are you sure you want to delete ${insurance.attributes.name}? This action cannot be undone.`)) {
             return;
         }
 
@@ -90,7 +110,7 @@ const SuperAdminAddInsurances = ({handleCloseForm}: {handleCloseForm: () => void
         
         try {
             const response = await fetch(
-                `${API_BASE_URL}/api/v1/insurances/${insurance.id}`,
+                `${API_BASE_URL}/api/v1/admin/insurances/${insurance.id}`,
                 {
                     method: "DELETE",
                     headers: {
