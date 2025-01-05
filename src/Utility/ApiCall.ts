@@ -64,9 +64,9 @@ export const fetchCountiesByState = async (stateId: number): Promise<CountyData[
   return data.data;
 };
 
-export const fetchProvidersByStateIdAndProviderType = async(stateId: number, providerType: string) => {
+export const fetchProvidersByStateIdAndProviderType = async(stateId: string, providerType: string): Promise<MockProviders[]> => {
   const response = await fetch(
-    `https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/states/${stateId}/providers?${providerType}`,
+    `https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/states/${stateId}/providers?provider_type=${providerType}`,
     {
       headers: {
         Authorization: `Bearer ${sessionStorage.getItem("authToken")}`,
@@ -77,6 +77,3 @@ export const fetchProvidersByStateIdAndProviderType = async(stateId: number, pro
   const data = await response.json()
   return data.data
 }
-
-
-
