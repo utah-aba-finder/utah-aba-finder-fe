@@ -4,7 +4,7 @@ import childrenBanner from "../Assets/children-banner-2.jpg";
 import ProviderModal from "./ProviderModal";
 import SearchBar from "./SearchBar";
 import ProviderCard from "./ProviderCard";
-import { fetchProviders } from "../Utility/ApiCall";
+import { fetchProviders, fetchProvidersByStateIdAndProviderType } from "../Utility/ApiCall";
 import { MockProviders, ProviderAttributes } from "../Utility/Types";
 import gearImage from "../Assets/Gear@1x-0.5s-200px-200px.svg";
 import Joyride, { Step, STATUS } from "react-joyride";
@@ -20,6 +20,7 @@ const ProvidersPage: React.FC = () => {
   const [filteredProviders, setFilteredProviders] = useState<
     ProviderAttributes[]
   >([]);
+  const [providersByTypeAndState, setProvidersByTypeAndState]= useState<any[]>([]) //update
   const [uniqueInsuranceOptions, setUniqueInsuranceOptions] = useState<
     string[]
   >([]);
@@ -50,7 +51,6 @@ const ProvidersPage: React.FC = () => {
     null
   );
   const [isAnimating, setIsAnimating] = useState(false);
-
   const [run, setRun] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
   const [steps] = useState<Step[]>([
@@ -242,6 +242,19 @@ const ProvidersPage: React.FC = () => {
     };
   }, []);
 
+  const handlePreFilter = (selectedStateId: string, selectedProviderType: string) => {
+    const getProvidersByTypeandState = async () => {
+      try {
+        const providers = await fetchProvidersByStateIdAndProviderType(selectedStateId, selectedProviderType)
+        setProvidersByTypeAndState(providers)
+        console.log(providersByTypeAndState)
+      } catch {
+        console.log("FAIL") // update this error message 
+      }
+    }
+    getProvidersByTypeandState()
+  }
+
   const handleSearch = useCallback(
     ({
       query,
@@ -264,7 +277,6 @@ const ProvidersPage: React.FC = () => {
     }) => {
       const normalizedCounty = county_name.toLowerCase();
       const normalizedInsurance = insurance.toLowerCase();
-
       const serviceFilter = (provider: ProviderAttributes) => {
         if (!service) return true;
         switch (service) {
@@ -290,10 +302,6 @@ const ProvidersPage: React.FC = () => {
             return true;
         }
       };
-
-      // providersList.data.states will return an array with the states that the provider is located in 
-
-      // const providerStateFilter = 
 
       const providerTypeServiceFilter = (provider: ProviderAttributes) => {
         if (!providerType) return true;
@@ -381,13 +389,12 @@ const ProvidersPage: React.FC = () => {
           providerTypeServiceFilter(provider) &&
           providerTypeFilter(provider)
       );
-
+      
       const sortedFilteredProviders = filtered.sort((a, b) => {
         const nameA = a.name || "";
         const nameB = b.name || "";
         return nameA.localeCompare(nameB);
       });
-
       setFilteredProviders(sortedFilteredProviders);
       setSelectedAge(age);
       setSelectedProviderType(providerType);
@@ -409,7 +416,6 @@ const ProvidersPage: React.FC = () => {
       providerType: "",
     });
   }, [handleSearch]);
-
   const handleProviderCardClick = (provider: ProviderAttributes) => {
     setSelectedProvider(provider);
 
@@ -666,6 +672,7 @@ const ProvidersPage: React.FC = () => {
             onAgeChange={handleAgeChange}
             onProviderTypeChange={handleProviderTypeChange}
             onReset={handleResetSearch}
+            onPreFilter={handlePreFilter}
           />
           {selectedProviderType && selectedProviderType !== 'none' && (
             <section className="glass">
