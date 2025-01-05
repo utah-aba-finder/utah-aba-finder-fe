@@ -3,11 +3,11 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './SearchBar.css';
 import { MockProviders, ProviderAttributes } from '../Utility/Types';
-import { fetchStates, fetchProvidersByStateIdAndProviderType } from '../Utility/ApiCall'
+import { fetchStates } from '../Utility/ApiCall'
 
 interface SearchBarProps {
   onResults: (results: MockProviders) => void;
-  onSearch: (params: { query: string; county_name: string; insurance: string; spanish: string; service: string; waitlist: string; age: string; providerType: string; }) => void;
+  onSearch: (params: { query: string; county_name: string; insurance: string; spanish: string; service: string; waitlist: string; age: string; providerType: string;}) => void;
   onCountyChange: (county_name: string) => void;
   insuranceOptions: string[];
   onInsuranceChange: (insurance: string) => void;
@@ -18,8 +18,8 @@ interface SearchBarProps {
   onReset: () => void;
   providers: ProviderAttributes[];
   onProviderTypeChange: (providerType: string) => void;
-  // onStateChange: (state: string) => void; // or is it an array of strings?
   totalProviders: number;
+  onPreFilter: (selectedProviderType: string, selectedStateId: string) => void;
 }
 
 const SearchBar: React.FC<SearchBarProps> = ({
@@ -35,6 +35,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
   providers,
   totalProviders,
   onProviderTypeChange,
+  onPreFilter,
 }) => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedCounty, setSelectedCounty] = useState<string>('');
@@ -48,9 +49,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
   const [selectedProviderType, setSelectedProviderType] = useState<string>('none');
   const [providerStates, setProviderStates] = useState<any[]>([]) // need to update type from any
   const [error, setError] = useState<string>("") // need to create space for error message, if applicable
-  const [selectedState, setSelectedState] = useState<string>('none');
-
-  console.log("selectedState:", selectedState)
+  const [selectedStateId, setSelectedStateId] = useState<string>('none');
 
   const handleSearch = useCallback(() => {
     onSearch({
@@ -62,11 +61,10 @@ const SearchBar: React.FC<SearchBarProps> = ({
       waitlist: selectedWaitList,
       age: selectedAge,
       providerType: selectedProviderType,
-      // state ID??
     });
     setShowNotification(true);
     setIsVisible(true);
-  }, [searchQuery, selectedCounty, selectedInsurance, selectedSpanish, selectedService, selectedWaitList, selectedAge, onSearch, selectedProviderType]); // selectedState??
+  }, [searchQuery, selectedCounty, selectedInsurance, selectedSpanish, selectedService, selectedWaitList, selectedAge, onSearch, selectedProviderType]);
 
   useEffect(() => {
     const getStates = async () => {
@@ -74,7 +72,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
         const statesData = await fetchStates()
         setProviderStates(statesData)
       } catch {
-        setError("Failed to fetch states")
+        setError("We are currently experience issues displaying states. Please try again later.")
       }
     }
     getStates()
@@ -103,10 +101,9 @@ const SearchBar: React.FC<SearchBarProps> = ({
     setSelectedWaitList('');
     setSelectedAge('');
     setSelectedProviderType('none');
-    setSelectedState('none');
+    setSelectedStateId('none');
     onReset();
     // Trigger search with reset values to clear results
-    // if provider and state are true, then execute onSearch, otherwise display message
     onSearch({
       query: '',
       county_name: '',
@@ -115,8 +112,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
       service: '',
       waitlist: '',
       age: '',
-      providerType: 'none'
-      // add state
+      providerType: 'none',
     });
     // Reset all callback handlers
     onCountyChange('');
@@ -155,14 +151,14 @@ const SearchBar: React.FC<SearchBarProps> = ({
         <div className="search-group">
           <select
             className="provider-state-select"
-            value={selectedState}
+            value={selectedStateId}
             onChange={(e) => {
-              setSelectedState(e.target.value);
+              setSelectedStateId(e.target.value);
             }}
             aria-label="Select State"
           >
             {providerStates.map((providerState) => (
-              <option key={providerState.id} value={providerState.attributes.name}>
+              <option key={providerState.id} value={providerState.id}>
                 {providerState.attributes.name}
               </option>
             ))}
@@ -193,7 +189,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
               </option>
             ))}
           </select>
-          <button onClick={() => handleSearch()}>SEARCH</button>
+          <button onClick={() => onPreFilter(selectedStateId, selectedProviderType)}>SEARCH</button>
         </div>
 
         {selectedProviderType !== 'none' && (
