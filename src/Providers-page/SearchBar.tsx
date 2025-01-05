@@ -22,6 +22,7 @@ interface SearchBarProps {
   onPreFilter: (selectedProviderType: string, selectedStateId: string) => void;
 }
 
+
 const SearchBar: React.FC<SearchBarProps> = ({
   onSearch,
   onCountyChange,
@@ -35,7 +36,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
   providers,
   totalProviders,
   onProviderTypeChange,
-  onPreFilter,
+  onPreFilter
 }) => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedCounty, setSelectedCounty] = useState<string>('');
@@ -49,22 +50,23 @@ const SearchBar: React.FC<SearchBarProps> = ({
   const [selectedProviderType, setSelectedProviderType] = useState<string>('none');
   const [providerStates, setProviderStates] = useState<any[]>([]) // need to update type from any
   const [error, setError] = useState<string>("") // need to create space for error message, if applicable
-  const [selectedStateId, setSelectedStateId] = useState<string>('none');
+  const [selectedStateId, setSelectedStateId] = useState<string>('1');
+  const [preFilterExecuted, setPreFilterExecuted] = useState<boolean>(false)
 
-  const handleSearch = useCallback(() => {
-    onSearch({
-      query: searchQuery,
-      county_name: selectedCounty,
-      insurance: selectedInsurance,
-      spanish: selectedSpanish,
-      service: selectedService,
-      waitlist: selectedWaitList,
-      age: selectedAge,
-      providerType: selectedProviderType,
-    });
-    setShowNotification(true);
-    setIsVisible(true);
-  }, [searchQuery, selectedCounty, selectedInsurance, selectedSpanish, selectedService, selectedWaitList, selectedAge, onSearch, selectedProviderType]);
+  // const handleSearch = useCallback(() => {
+  //   onSearch({
+  //     query: searchQuery,
+  //     county_name: selectedCounty,
+  //     insurance: selectedInsurance,
+  //     spanish: selectedSpanish,
+  //     service: selectedService,
+  //     waitlist: selectedWaitList,
+  //     age: selectedAge,
+  //     providerType: selectedProviderType,
+  //   });
+  //   setShowNotification(true);
+  //   setIsVisible(true);
+  // },[]);
 
   useEffect(() => {
     const getStates = async () => {
@@ -104,16 +106,16 @@ const SearchBar: React.FC<SearchBarProps> = ({
     setSelectedStateId('none');
     onReset();
     // Trigger search with reset values to clear results
-    onSearch({
-      query: '',
-      county_name: '',
-      insurance: '',
-      spanish: '',
-      service: '',
-      waitlist: '',
-      age: '',
-      providerType: 'none',
-    });
+    // onSearch({
+    //   query: '',
+    //   county_name: '',
+    //   insurance: '',
+    //   spanish: '',
+    //   service: '',
+    //   waitlist: '',
+    //   age: '',
+    //   providerType: 'none',
+    // });
     // Reset all callback handlers
     onCountyChange('');
     onInsuranceChange('');
@@ -170,16 +172,6 @@ const SearchBar: React.FC<SearchBarProps> = ({
               const newValue = e.target.value;
               setSelectedProviderType(newValue);
               onProviderTypeChange(newValue);
-              onSearch({
-                query: searchQuery,
-                county_name: selectedCounty,
-                insurance: selectedInsurance,
-                spanish: selectedSpanish,
-                service: selectedService,
-                waitlist: selectedWaitList,
-                age: selectedAge,
-                providerType: newValue,
-              });
             }}
             aria-label="Select Provider Type"
           >
@@ -189,10 +181,15 @@ const SearchBar: React.FC<SearchBarProps> = ({
               </option>
             ))}
           </select>
-          <button onClick={() => onPreFilter(selectedStateId, selectedProviderType)}>SEARCH</button>
+          <button onClick={() => {
+            onPreFilter(selectedStateId, selectedProviderType);
+            setPreFilterExecuted(true);
+          }}
+          >
+          SEARCH
+          </button>
         </div>
-
-        {selectedProviderType !== 'none' && (
+        {preFilterExecuted && (
           <>
             <div className="search-group">
               <div className="search-input">
@@ -332,7 +329,20 @@ const SearchBar: React.FC<SearchBarProps> = ({
             </div>
 
             <div className="button-group">
-              <button className="provider-search-button" onClick={handleSearch}>
+              <button className="provider-search-button" onClick={() => {
+                onSearch({
+                query: searchQuery,
+                county_name: selectedCounty,
+                insurance: selectedInsurance,
+                spanish: selectedSpanish,
+                service: selectedService,
+                waitlist: selectedWaitList,
+                age: selectedAge,
+                providerType: selectedProviderType
+              })
+              setShowNotification(true);
+              setIsVisible(true);
+              }}>
                 Search
               </button>
               <button className="provider-reset-button" onClick={handleReset}>
