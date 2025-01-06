@@ -1,3 +1,7 @@
 # https://www.robotstxt.org/robotstxt.html
 User-agent: *
-Disallow:
+Allow: /
+Disallow: /admin/
+Disallow: /private/
+Host: https://autismserviceslocator.com
+Sitemap: https://autismserviceslocator.com/sitemap.xml

@@ -2,13 +2,13 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './SearchBar.css';
-import { MockProviders, ProviderAttributes } from '../Utility/Types';
+import { MockProviders, ProviderAttributes, InsuranceData } from '../Utility/Types';
 
 interface SearchBarProps {
   onResults: (results: MockProviders) => void;
   onSearch: (params: { query: string; county_name: string; insurance: string; spanish: string; service: string; waitlist: string; age: string; providerType: string; }) => void;
   onCountyChange: (county_name: string) => void;
-  insuranceOptions: string[];
+  insuranceOptions: InsuranceData[];
   onInsuranceChange: (insurance: string) => void;
   onSpanishChange: (spanish: string) => void;
   onServiceChange: (service: string) => void;
@@ -248,13 +248,11 @@ const SearchBar: React.FC<SearchBarProps> = ({
                   aria-label="Select Insurance"
                 >
                   <option value="">All Insurances</option>
-                  {insuranceOptions
-                    .filter(insurance => insurance !== 'Contact us')
-                    .map((insurance, index) => (
-                      <option key={index} value={insurance}>
-                        {insurance}
-                      </option>
-                    ))}
+                  {insuranceOptions.sort((a, b) => a.attributes.name.localeCompare(b.attributes.name)).map((insurance, index) => (
+                    <option key={index} value={insurance.attributes.name}>
+                      {insurance.attributes.name}
+                    </option>
+                  ))}
                 </select>
               </div>
 
