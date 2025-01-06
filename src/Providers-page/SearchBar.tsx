@@ -22,7 +22,6 @@ interface SearchBarProps {
   onPreFilter: (selectedProviderType: string, selectedStateId: string) => void;
 }
 
-
 const SearchBar: React.FC<SearchBarProps> = ({
   onSearch,
   onCountyChange,
