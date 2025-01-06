@@ -241,11 +241,11 @@ const ProvidersPage: React.FC = () => {
     };
   }, []);
   
-  const handlePreFilter = (selectedStateId: string, selectedProviderType: string) => {
+  const handlePreFilter = (selectedStateId: string, selectedProviderType: string, providers: MockProviders) => {
     const getProvidersByTypeandState = async () => {
       try {
         const providers = await fetchProvidersByStateIdAndProviderType(selectedStateId, selectedProviderType)
-        setAllProviders(providers)
+        setFilteredProviders(providers)
       } catch {
         setShowError("We are currently experiencing issues displaying Providers. Please try again later.")
       }
@@ -276,7 +276,6 @@ const ProvidersPage: React.FC = () => {
       age: string;
       providerType: string;
     }) => {
-      console.log('allProviders below:', allProviders)
       const normalizedCounty = county_name.toLowerCase();
       const normalizedInsurance = insurance.toLowerCase();
       const serviceFilter = (provider: ProviderAttributes) => {
@@ -646,13 +645,13 @@ const ProvidersPage: React.FC = () => {
       <div className="glass-container">
         <div className="glass-two">
           <h2 className="searched-provider-number-status-title">
-            {!preFilterExecuted ? (
+            {/* {!preFilterExecuted ? (
               'Please select a state and provider type to get started with your search'
             ) : preFilterExecuted ? (
               `Showing ${paginatedProviders.length} of ${combinedProviders.length} Providers`
             ) : (
               `Showing ${allProviders.length} Providers`
-            )}
+            )} */}
           </h2>
         </div>
       </div>
