@@ -17,6 +17,7 @@ const ProvidersPage: React.FC = () => {
   const [selectedProvider, setSelectedProvider] =
     useState<ProviderAttributes | null>(null);
   const [allProviders, setAllProviders] = useState<ProviderAttributes[]>([]);
+  // const [providersByTypeandState, setProvidersByTypeAndState] = useState<any[]>([])
   const [filteredProviders, setFilteredProviders] = useState<
     ProviderAttributes[]
   >([]);
@@ -200,7 +201,6 @@ const ProvidersPage: React.FC = () => {
           const nameB = b.name ?? "";
           return nameA.localeCompare(nameB);
         });
-
         setAllProviders(sortedProviders);
         setFilteredProviders(sortedProviders);
 
@@ -245,7 +245,7 @@ const ProvidersPage: React.FC = () => {
     const getProvidersByTypeandState = async () => {
       try {
         const providers = await fetchProvidersByStateIdAndProviderType(selectedStateId, selectedProviderType)
-        setAllProviders(providers)  
+        setAllProviders(providers)
       } catch {
         setShowError("We are currently experiencing issues displaying Providers. Please try again later.")
       }
@@ -276,6 +276,7 @@ const ProvidersPage: React.FC = () => {
       age: string;
       providerType: string;
     }) => {
+      console.log('allProviders below:', allProviders)
       const normalizedCounty = county_name.toLowerCase();
       const normalizedInsurance = insurance.toLowerCase();
       const serviceFilter = (provider: ProviderAttributes) => {
@@ -403,155 +404,6 @@ const ProvidersPage: React.FC = () => {
     },
     [allProviders]
   );
-
-  // const handleSearch = useCallback(
-  //   ({
-  //     query,
-  //     county_name,
-  //     insurance,
-  //     spanish,
-  //     service,
-  //     waitlist,
-  //     age,
-  //     providerType,
-  //   }: {
-  //     query: string;
-  //     county_name: string;
-  //     insurance: string;
-  //     spanish: string;
-  //     service: string;
-  //     waitlist: string;
-  //     age: string;
-  //     providerType: string;
-  //   }) => {
-  //     const normalizedCounty = county_name.toLowerCase();
-  //     const normalizedInsurance = insurance.toLowerCase();
-  //     const serviceFilter = (provider: ProviderAttributes) => {
-  //       if (!service) return true;
-  //       switch (service) {
-  //         case "telehealth":
-  //           return (
-  //             provider.telehealth_services?.toLowerCase() === "yes" ||
-  //             provider.telehealth_services === null ||
-  //             provider.telehealth_services.toLowerCase() === "limited"
-  //           );
-  //         case "at_home":
-  //           return (
-  //             provider.at_home_services?.toLowerCase() === "yes" ||
-  //             provider.at_home_services === null ||
-  //             provider.at_home_services.toLowerCase() === "limited"
-  //           );
-  //         case "in_clinic":
-  //           return (
-  //             provider.in_clinic_services?.toLowerCase() === "yes" ||
-  //             provider.in_clinic_services === null ||
-  //             provider.in_clinic_services.toLowerCase() === "limited"
-  //           );
-  //         default:
-  //           return true;
-  //       }
-  //     };
-
-  //     const providerTypeServiceFilter = (provider: ProviderAttributes) => {
-  //       if (!providerType) return true;
-  //       switch (providerType) {
-  //         case "aba":
-  //           return provider.provider_type?.some((type: { name: string }) =>
-  //             type.name?.toLowerCase() === "ABA Therapy"
-  //           );
-  //         case "evaluation":
-  //           return provider.provider_type?.some((type: { name: string }) =>
-  //             type.name?.toLowerCase() === "Autism Evaluation"
-  //           );
-  //         case "speech":
-  //           return provider.provider_type?.some((type: { name: string }) =>
-  //             type.name?.toLowerCase() === "Speech Therapy"
-  //           );
-  //         case "occupational":
-  //           return provider.provider_type?.some((type: { name: string }) =>
-  //             type.name?.toLowerCase() === "Occupational Therapy"
-  //           );
-  //         default:
-  //           return true;
-  //       }
-  //     };
-
-  //     const waitlistFilter = (provider: ProviderAttributes) => {
-  //       if (waitlist === "6 Months or Less") {
-  //         const waitlistTime = provider.waitlist
-  //           ? parseInt(provider.waitlist, 10)
-  //           : null;
-  //         return waitlistTime !== null && waitlistTime <= 6;
-  //       } else if (!waitlist) {
-  //         return true;
-  //       }
-  //       return waitlist === "yes"
-  //         ? provider.waitlist?.toLowerCase() !== "no"
-  //         : provider.waitlist?.toLowerCase() === "no";
-  //     };
-
-  //     const ageFilter = (provider: ProviderAttributes) => {
-  //       if (!age) return true;
-  //       const selectedAgeNum = parseInt(age, 10);
-
-  //       const minAge =
-  //         typeof provider.min_age === "string" && provider.min_age === "- years"
-  //           ? 0
-  //           : parseInt(String(provider.min_age || "0"), 10);
-  //       const maxAge =
-  //         typeof provider.max_age === "string" && provider.max_age === "- years"
-  //           ? 99
-  //           : parseInt(String(provider.max_age || "99"), 10);
-
-  //       return selectedAgeNum >= minAge && selectedAgeNum <= maxAge;
-  //     };
-
-  //     const providerTypeFilter = (provider: ProviderAttributes) => {
-  //       if (!providerType || providerType === 'none') return false;
-  //       return provider.provider_type?.some((type: { name: string }) =>
-  //         type.name?.toLowerCase() === providerType.toLowerCase()
-  //       );
-  //     };
-
-  //     const filtered = allProviders.filter(
-  //       (provider) =>
-  //         provider.name?.toLowerCase().includes(query.toLowerCase()) &&
-  //         (!county_name ||
-  //           provider.counties_served.some((c) =>
-  //             c.county_name?.toLowerCase().includes(normalizedCounty)
-  //           )) &&
-  //         (!insurance ||
-  //           provider.insurance.some((i) =>
-  //             i.name?.toLowerCase().includes(normalizedInsurance)
-  //           )) &&
-  //         (spanish === "" ||
-  //           (spanish === "no" &&
-  //             (!provider.spanish_speakers ||
-  //               provider.spanish_speakers.toLowerCase() === "no")) ||
-  //           (spanish === "yes" &&
-  //             (provider.spanish_speakers?.toLowerCase() === "yes" ||
-  //               provider.spanish_speakers === null ||
-  //               provider.spanish_speakers.toLowerCase() === "limited"))) &&
-  //         serviceFilter(provider) &&
-  //         waitlistFilter(provider) &&
-  //         ageFilter(provider) &&
-  //         providerTypeServiceFilter(provider) &&
-  //         providerTypeFilter(provider)
-  //     );
-      
-  //     const sortedFilteredProviders = filtered.sort((a, b) => {
-  //       const nameA = a.name || "";
-  //       const nameB = b.name || "";
-  //       return nameA.localeCompare(nameB);
-  //     });
-  //     setFilteredProviders(sortedFilteredProviders);
-  //     setSelectedAge(age);
-  //     setSelectedProviderType(providerType);
-  //     setIsFiltered(true);
-  //     setCurrentPage(1);
-  //   },
-  //   [allProviders]
-  // );
 
   // useEffect(() => {
   //   handleSearch({
@@ -701,7 +553,6 @@ const ProvidersPage: React.FC = () => {
         return false;
     }
   });
-
   const combinedProviders = [...filteredWithService, ...filteredWithoutService];
   const indexOfLastProvider = currentPage * providersPerPage;
   const indexOfFirstProvider = indexOfLastProvider - providersPerPage;

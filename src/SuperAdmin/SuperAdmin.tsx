@@ -19,6 +19,7 @@ import { useAuth } from "../Provider-login/AuthProvider";
 import { SuperAdminEdit } from "./SuperAdminEdit";
 import Analytics from "./Analytics";
 import SuperAdminCreate from "./SuperAdminCreate";
+import SuperAdminAddInsurances from "./SuperAdminAddInsurances";
 import moment from "moment";
 import { MockProviderData, ProviderAttributes } from "../Utility/Types";
 
@@ -30,6 +31,7 @@ const SuperAdmin = () => {
   const [selectedProvider, setSelectedProvider] =
     useState<MockProviderData | null>(null);
   const [openNewProviderForm, setOpenNewProviderForm] = useState(false);
+  const [openNewInsuranceForm, setOpenNewInsuranceForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [providerTypeFilter, setProviderTypeFilter] = useState<
     "all" | "ABA Therapy" | "Autism Evaluation" | "Speech Therapy" | "Occupational Therapy"
@@ -163,6 +165,7 @@ const SuperAdmin = () => {
     }
   };
 
+
   return (
     <>
       <ToastContainer
@@ -264,6 +267,26 @@ const SuperAdmin = () => {
                 </li>
                 <li>
                   <button
+                    onClick={() => {
+                      setSelectedTab("createInsurance");
+                      setOpenNewInsuranceForm(true);
+                    }}
+                    className={`
+            w-full flex items-center space-x-3 px-3 py-2 rounded-lg
+            transition-colors hover:cursor-pointer duration-200
+            ${
+              selectedTab === "createInsurance"
+                ? "bg-[#4A6FA5] text-white"
+                : "text-gray-700 hover:bg-gray-100"
+            }
+          `}
+                  >
+                    <PlusCircle className="w-4 h-4" />
+                    <span className="text-sm">Add Insurance</span>
+                  </button>
+                </li>
+                <li>
+                  <button
                     onClick={() => setSelectedTab("billing")}
                     className={`
             w-full flex items-center space-x-3 px-3 py-2 rounded-lg
@@ -328,6 +351,7 @@ const SuperAdmin = () => {
                         <div className="text-lg font-semibold">
                           {selectedTab === "analytics" && "Analytics Dashboard"}
                           {selectedTab === "create" && "Create New Provider"}
+                          {selectedTab === "createInsurance" && "Add Insurance"}
                           {selectedTab === "billing" && "Billing Management"}
                           {selectedTab === "edit" && "Edit Provider"}
                         </div>
@@ -522,6 +546,15 @@ const SuperAdmin = () => {
                     setSelectedTab("view");
                   }}
                   onProviderCreated={fetchAllProviders}
+                />
+              )}
+
+              {selectedTab === "createInsurance" && openNewInsuranceForm && (
+                <SuperAdminAddInsurances
+                  handleCloseForm={() => {
+                    setOpenNewInsuranceForm(false);
+                    setSelectedTab("view");
+                  }}
                 />
               )}
 
