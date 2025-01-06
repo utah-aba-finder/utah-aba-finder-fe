@@ -4,8 +4,8 @@ import childrenBanner from "../Assets/children-banner-2.jpg";
 import ProviderModal from "./ProviderModal";
 import SearchBar from "./SearchBar";
 import ProviderCard from "./ProviderCard";
-import { fetchProviders } from "../Utility/ApiCall";
-import { MockProviders, ProviderAttributes } from "../Utility/Types";
+import { fetchInsurance, fetchProviders } from "../Utility/ApiCall";
+import { MockProviders, ProviderAttributes, InsuranceData } from "../Utility/Types";
 import gearImage from "../Assets/Gear@1x-0.5s-200px-200px.svg";
 import Joyride, { Step, STATUS } from "react-joyride";
 
@@ -22,7 +22,7 @@ const ProvidersPage: React.FC = () => {
     ProviderAttributes[]
   >([]);
   const [uniqueInsuranceOptions, setUniqueInsuranceOptions] = useState<
-    string[]
+    InsuranceData[]
   >([]);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedCounty, setSelectedCounty] = useState<string>("");
@@ -205,16 +205,16 @@ const ProvidersPage: React.FC = () => {
         setAllProviders(sortedProviders);
         setFilteredProviders(sortedProviders);
 
-        const uniqueInsurances = Array.from(
-          new Set(
-            sortedProviders
-              .flatMap((provider) =>
-                provider.insurance.map((ins) => ins.name || "")
-              )
-              .sort() as string[]
-          )
-        );
-        setUniqueInsuranceOptions(uniqueInsurances);
+        // const uniqueInsurances = Array.from(
+        //   new Set(
+        //     sortedProviders
+        //       .flatMap((provider) =>
+        //         provider.insurance.map((ins) => ins.name || "")
+        //       )
+        //       .sort() as string[]
+        //   )
+        // );
+        // setUniqueInsuranceOptions(uniqueInsurances);
         setMapAddress("Utah");
         setIsLoading(false);
         if (sortedProviders.length === 0) {
@@ -240,6 +240,14 @@ const ProvidersPage: React.FC = () => {
         clearTimeout(errorTimeoutRef.current);
       }
     };
+  }, []);
+
+  useEffect(() => {
+    const loadInsurance = async () => {
+      const uniqueInsurances = await fetchInsurance();
+      setUniqueInsuranceOptions(uniqueInsurances);
+    }
+    loadInsurance();
   }, []);
 
   const handleSearch = useCallback(
