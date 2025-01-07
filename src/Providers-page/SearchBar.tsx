@@ -331,13 +331,13 @@ const SearchBar: React.FC<SearchBarProps> = ({
         </div>
 
         <div className="button-group">
-          <button 
+          {/* <button 
             className="provider-search-button" 
             onClick={handleSearch}
             disabled={selectedStateId === '' || selectedProviderType === ''}
           >
             Search
-          </button>
+          </button> */}
           <button className="provider-reset-button" onClick={handleReset}>
             Reset
           </button>
