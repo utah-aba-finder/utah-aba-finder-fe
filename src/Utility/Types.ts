@@ -30,6 +30,9 @@ export interface StateData {
     };
 }
 
+export interface StatesServed {
+    state: string[],
+}
 
 export interface ProviderAttributes {
     id: number;
@@ -64,11 +67,12 @@ export interface InsuranceData {
     };
 }
 
-interface ProviderType {
-    id: number;
-    name: string;
-  }
+export interface ProviderType {
+  id: number;
+  name: string;
+}
 
+// should we remove the word "mock" from this interface??
   export interface MockProviderData {
     id: number;
     type: string;
@@ -76,6 +80,7 @@ interface ProviderType {
     attributes: ProviderAttributes;
   }
 
+// same question as above
 export interface MockProviders {
     data: MockProviderData[];
 }

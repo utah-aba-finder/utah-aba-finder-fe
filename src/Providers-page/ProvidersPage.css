@@ -60,6 +60,11 @@
   box-shadow: 6px 6px 20px rgba(122, 122, 122, 0.212);
   flex-direction: column;
   align-items: center;
+  padding: 0.5rem 2rem;
+}
+
+.glass {
+  height: 100%;
 }
 
 .glass-container {
@@ -68,9 +73,11 @@
   align-items: center;
 }
 
+
 .searched-provider-number-status {
   display: flex;
   justify-content: center;
+  padding: 1rem;
 }
 
 .searched-provider-number-status-title {
@@ -169,4 +176,15 @@
   .provider-type-select {
     font-size: 0.5rem;
   }
+}
+
+.error-message-container {
+  text-align: center;
+  padding: 1.5rem 2rem;
+  margin: 1rem;
+  color: #4A6FA5;
+  font-weight: 500;
+  border-radius: 1rem;
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }

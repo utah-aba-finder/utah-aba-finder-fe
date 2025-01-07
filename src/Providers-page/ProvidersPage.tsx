@@ -4,11 +4,10 @@ import childrenBanner from "../Assets/children-banner-2.jpg";
 import ProviderModal from "./ProviderModal";
 import SearchBar from "./SearchBar";
 import ProviderCard from "./ProviderCard";
-import { fetchInsurance, fetchProviders } from "../Utility/ApiCall";
-import { MockProviders, ProviderAttributes, InsuranceData } from "../Utility/Types";
+import { MockProviders, ProviderAttributes, InsuranceData, Insurance, CountiesServed as County, ProviderType as ProviderTypeInterface } from "../Utility/Types";
 import gearImage from "../Assets/Gear@1x-0.5s-200px-200px.svg";
 import Joyride, { Step, STATUS } from "react-joyride";
-
+import { fetchProviders, fetchProvidersByStateIdAndProviderType, fetchInsurance } from "../Utility/ApiCall";
 
 interface FavoriteDate {
   [providerId: number]: string;
@@ -18,11 +17,9 @@ const ProvidersPage: React.FC = () => {
   const [selectedProvider, setSelectedProvider] =
     useState<ProviderAttributes | null>(null);
   const [allProviders, setAllProviders] = useState<ProviderAttributes[]>([]);
+  // const [providersByTypeandState, setProvidersByTypeAndState] = useState<any[]>([])
   const [filteredProviders, setFilteredProviders] = useState<
     ProviderAttributes[]
-  >([]);
-  const [uniqueInsuranceOptions, setUniqueInsuranceOptions] = useState<
-    InsuranceData[]
   >([]);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedCounty, setSelectedCounty] = useState<string>("");
@@ -34,6 +31,7 @@ const ProvidersPage: React.FC = () => {
   const [selectedWaitList, setSelectedWaitList] = useState<string>("");
   const [selectedAddress, setSelectedAddress] = useState<string>("");
   const [mapAddress, setMapAddress] = useState<string>("");
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isFiltered, setIsFiltered] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [showError, setShowError] = useState("");
@@ -43,24 +41,33 @@ const ProvidersPage: React.FC = () => {
     ProviderAttributes[]
   >([]);
   const [favoriteDates, setFavoriteDates] = useState<FavoriteDate>({});
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedAge, setSelectedAge] = useState<string>("");
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedProviderName, setSelectedProviderName] = useState<string>("");
   const [selectedProviderType, setSelectedProviderType] = useState<string>("");
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [selectedStateId, setSelectedStateId] = useState<string>("");
   const providersPerPage = 8;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [pageTransition, setPageTransition] = useState<"next" | "prev" | null>(
     null
   );
   const [isAnimating, setIsAnimating] = useState(false);
-
   const [run, setRun] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
   const [steps] = useState<Step[]>([
     {
-      target: ".provider-type-select",
-      content: "First select the type of provider you are looking for.",
+      target: ".provider-state-select",
+      content: "First select the state you are looking for.",
       disableBeacon: true,
       placement: "bottom",
     },
+    {
+      target: ".provider-type-select",
+      content: "Then select the type of provider you are looking for.",
+      placement: "bottom",
+    }, 
     {
       target: ".provider-map-searchbar",
       content:
@@ -80,6 +87,7 @@ const ProvidersPage: React.FC = () => {
       placement: "top",
     },
   ]);
+  const [insuranceOptions, setInsuranceOptions] = useState<InsuranceData[]>([]);
 
   useEffect(() => {
     const hasVisited = localStorage.getItem("providersPageVisited");
@@ -89,29 +97,15 @@ const ProvidersPage: React.FC = () => {
   }, []);
 
   const handleJoyrideCallback = (data: any) => {
-    const { action, index, status, type } = data;
+    const { status, type, index } = data;
 
     if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status)) {
       localStorage.setItem("providersPageVisited", "true");
       setRun(false);
-    } else if (type === "step:after" && index === 0) {
-      // After first step, wait for provider type selection
-      if (selectedProviderType && selectedProviderType !== 'none') {
-        setStepIndex(index + 1);
-      }
-    } else if (action === "next" && type === "step:after") {
+    } else if (type === "step:after") {
       setStepIndex(index + 1);
-    } else if (action === "prev" && type === "step:after") {
-      setStepIndex(index - 1);
     }
   };
-
-  // Update Joyride when provider type is selected
-  useEffect(() => {
-    if (selectedProviderType && selectedProviderType !== 'none' && stepIndex === 0) {
-      setStepIndex(1);
-    }
-  }, [selectedProviderType, stepIndex]);
 
   useEffect(() => {
     const storedFavorites = localStorage.getItem("favoriteProviders");
@@ -201,20 +195,9 @@ const ProvidersPage: React.FC = () => {
           const nameB = b.name ?? "";
           return nameA.localeCompare(nameB);
         });
-
         setAllProviders(sortedProviders);
         setFilteredProviders(sortedProviders);
 
-        // const uniqueInsurances = Array.from(
-        //   new Set(
-        //     sortedProviders
-        //       .flatMap((provider) =>
-        //         provider.insurance.map((ins) => ins.name || "")
-        //       )
-        //       .sort() as string[]
-        //   )
-        // );
-        // setUniqueInsuranceOptions(uniqueInsurances);
         setMapAddress("Utah");
         setIsLoading(false);
         if (sortedProviders.length === 0) {
@@ -242,24 +225,17 @@ const ProvidersPage: React.FC = () => {
     };
   }, []);
 
-  useEffect(() => {
-    const loadInsurance = async () => {
-      const uniqueInsurances = await fetchInsurance();
-      setUniqueInsuranceOptions(uniqueInsurances);
-    }
-    loadInsurance();
-  }, []);
-
   const handleSearch = useCallback(
-    ({
-      query,
-      county_name,
-      insurance,
-      spanish,
-      service,
-      waitlist,
-      age,
-      providerType,
+    async ({ 
+      query, 
+      county_name, 
+      insurance, 
+      spanish, 
+      service, 
+      waitlist, 
+      age, 
+      providerType, 
+      stateId 
     }: {
       query: string;
       county_name: string;
@@ -269,151 +245,126 @@ const ProvidersPage: React.FC = () => {
       waitlist: string;
       age: string;
       providerType: string;
+      stateId: string;
     }) => {
-      const normalizedCounty = county_name.toLowerCase();
-      const normalizedInsurance = insurance.toLowerCase();
-
-      const serviceFilter = (provider: ProviderAttributes) => {
-        if (!service) return true;
-        switch (service) {
-          case "telehealth":
-            return (
-              provider.telehealth_services?.toLowerCase() === "yes" ||
-              provider.telehealth_services === null ||
-              provider.telehealth_services.toLowerCase() === "limited"
-            );
-          case "at_home":
-            return (
-              provider.at_home_services?.toLowerCase() === "yes" ||
-              provider.at_home_services === null ||
-              provider.at_home_services.toLowerCase() === "limited"
-            );
-          case "in_clinic":
-            return (
-              provider.in_clinic_services?.toLowerCase() === "yes" ||
-              provider.in_clinic_services === null ||
-              provider.in_clinic_services.toLowerCase() === "limited"
-            );
-          default:
-            return true;
+      try {
+        setIsLoading(true);
+        setFilteredProviders([]); // Reset filtered providers before new search
+        
+        // If both state and provider type are selected, use the specific API endpoint
+        if (stateId !== 'none' && providerType !== 'none') {
+          const response = await fetchProvidersByStateIdAndProviderType(stateId, providerType);
+          const providersToFilter = response.data.map(provider => ({
+            ...provider.attributes,
+            id: provider.id,
+          }));
+          
+          // Show message if no providers found
+          if (providersToFilter.length === 0) {
+            setShowError(`We currently don't have any ${providerType} providers for this state, please check back periodically! Also ensure you have selected a state and provider type to see results!`);
+            setIsLoading(false);
+            return;
+          }
+          
+          // Apply additional filters and sort the results
+          const filtered = providersToFilter
+            .filter((provider: ProviderAttributes) => 
+              provider.name?.toLowerCase().includes(query.toLowerCase()) &&
+              (!county_name ||
+                provider.counties_served.some((c: County) =>
+                  c.county_name?.toLowerCase().includes(county_name.toLowerCase())
+                )) &&
+              (!insurance ||
+                provider.insurance.some((i: Insurance) =>
+                  i.name?.toLowerCase().includes(insurance.toLowerCase())
+                )) &&
+              (spanish === "" ||
+                (spanish === "no" &&
+                  (!provider.spanish_speakers ||
+                    provider.spanish_speakers.toLowerCase() === "no")) ||
+                (spanish === "yes" &&
+                  (provider.spanish_speakers?.toLowerCase() === "yes" ||
+                    provider.spanish_speakers === null ||
+                    provider.spanish_speakers.toLowerCase() === "limited"))) &&
+              (!service ||
+                (service === "telehealth" &&
+                  provider.telehealth_services?.toLowerCase() === "yes") ||
+                (service === "at_home" &&
+                  provider.at_home_services?.toLowerCase() === "yes") ||
+                (service === "in_clinic" &&
+                  provider.in_clinic_services?.toLowerCase() === "yes")) &&
+              (!waitlist ||
+                (waitlist === "6 Months or Less" &&
+                  (provider.waitlist
+                    ? parseInt(provider.waitlist, 10) <= 6
+                    : false)) ||
+                (waitlist.includes("no") &&
+                  provider.waitlist?.toLowerCase() === "no")) &&
+              (!age ||
+                (provider.min_age !== null &&
+                  provider.max_age !== null &&
+                  ((age === "0-2" &&
+                    provider.min_age <= 0 &&
+                    provider.max_age >= 2) ||
+                  (age === "3-5" &&
+                    provider.min_age <= 3 &&
+                    provider.max_age >= 5) ||
+                  (age === "5-7" &&
+                    provider.min_age <= 5 &&
+                    provider.max_age >= 7) ||
+                  (age === "8-10" &&
+                    provider.min_age <= 8 &&
+                    provider.max_age >= 10) ||
+                  (age === "11-13" &&
+                    provider.min_age <= 11 &&
+                    provider.max_age >= 13) ||
+                  (age === "13-15" &&
+                    provider.min_age <= 13 &&
+                    provider.max_age >= 15) ||
+                  (age === "16-18" &&
+                    provider.max_age <= 16 &&
+                    provider.min_age >= 18) ||
+                  (age === "19+" &&
+                    provider.max_age <= 19)))) &&
+              (!providerType ||
+                provider.provider_type.some((type: ProviderTypeInterface) => 
+                  type.name.toLowerCase() === providerType.toLowerCase()
+                ))
+            )
+            .sort((a: ProviderAttributes, b: ProviderAttributes) => {
+              const nameA = a.name || "";
+              const nameB = b.name || "";
+              return nameA.localeCompare(nameB);
+            });
+          
+          setFilteredProviders(filtered);
+          setCurrentPage(1);
+          setShowError(""); // Clear error if providers found
         }
-      };
-
-      const providerTypeServiceFilter = (provider: ProviderAttributes) => {
-        if (!providerType) return true;
-        switch (providerType) {
-          case "aba":
-            return provider.provider_type?.some((type: { name: string }) =>
-              type.name?.toLowerCase() === "ABA Therapy"
-            );
-          case "evaluation":
-            return provider.provider_type?.some((type: { name: string }) =>
-              type.name?.toLowerCase() === "Autism Evaluation"
-            );
-          case "speech":
-            return provider.provider_type?.some((type: { name: string }) =>
-              type.name?.toLowerCase() === "Speech Therapy"
-            );
-          case "occupational":
-            return provider.provider_type?.some((type: { name: string }) =>
-              type.name?.toLowerCase() === "Occupational Therapy"
-            );
-          default:
-            return true;
-        }
-      };
-
-      const waitlistFilter = (provider: ProviderAttributes) => {
-        if (waitlist === "6 Months or Less") {
-          const waitlistTime = provider.waitlist
-            ? parseInt(provider.waitlist, 10)
-            : null;
-          return waitlistTime !== null && waitlistTime <= 6;
-        } else if (!waitlist) {
-          return true;
-        }
-        return waitlist === "yes"
-          ? provider.waitlist?.toLowerCase() !== "no"
-          : provider.waitlist?.toLowerCase() === "no";
-      };
-
-      const ageFilter = (provider: ProviderAttributes) => {
-        if (!age) return true;
-        const selectedAgeNum = parseInt(age, 10);
-
-        const minAge =
-          typeof provider.min_age === "string" && provider.min_age === "- years"
-            ? 0
-            : parseInt(String(provider.min_age || "0"), 10);
-        const maxAge =
-          typeof provider.max_age === "string" && provider.max_age === "- years"
-            ? 99
-            : parseInt(String(provider.max_age || "99"), 10);
-
-        return selectedAgeNum >= minAge && selectedAgeNum <= maxAge;
-      };
-
-      const providerTypeFilter = (provider: ProviderAttributes) => {
-        if (!providerType || providerType === 'none') return false;
-        return provider.provider_type?.some((type: { name: string }) =>
-          type.name?.toLowerCase() === providerType.toLowerCase()
-        );
-      };
-
-      const filtered = allProviders.filter(
-        (provider) =>
-          provider.name?.toLowerCase().includes(query.toLowerCase()) &&
-          (!county_name ||
-            provider.counties_served.some((c) =>
-              c.county_name?.toLowerCase().includes(normalizedCounty)
-            )) &&
-          (!insurance ||
-            provider.insurance.some((i) =>
-              i.name?.toLowerCase().includes(normalizedInsurance)
-            )) &&
-          (spanish === "" ||
-            (spanish === "no" &&
-              (!provider.spanish_speakers ||
-                provider.spanish_speakers.toLowerCase() === "no")) ||
-            (spanish === "yes" &&
-              (provider.spanish_speakers?.toLowerCase() === "yes" ||
-                provider.spanish_speakers === null ||
-                provider.spanish_speakers.toLowerCase() === "limited"))) &&
-          serviceFilter(provider) &&
-          waitlistFilter(provider) &&
-          ageFilter(provider) &&
-          providerTypeServiceFilter(provider) &&
-          providerTypeFilter(provider)
-      );
-
-      const sortedFilteredProviders = filtered.sort((a, b) => {
-        const nameA = a.name || "";
-        const nameB = b.name || "";
-        return nameA.localeCompare(nameB);
-      });
-
-      setFilteredProviders(sortedFilteredProviders);
-      setSelectedAge(age);
-      setSelectedProviderType(providerType);
-      setIsFiltered(true);
-      setCurrentPage(1);
+        
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Error during search:', error);
+        setShowError('Error filtering providers. Please try again.');
+        setIsLoading(false);
+      }
     },
     [allProviders]
   );
 
-  useEffect(() => {
-    handleSearch({
-      query: "",
-      county_name: "",
-      insurance: "",
-      spanish: "",
-      service: "",
-      waitlist: "",
-      age: "",
-      providerType: "",
-    });
-  }, [handleSearch]);
-
+  // useEffect(() => {
+  //   handleSearch({
+  //     query: "",
+  //     county_name: "",
+  //     insurance: "",
+  //     spanish: "",
+  //     service: "",
+  //     waitlist: "",
+  //     age: "",
+  //     providerType: "",
+  //   });
+  // }, [handleSearch]);
+  
   const handleProviderCardClick = (provider: ProviderAttributes) => {
     setSelectedProvider(provider);
 
@@ -521,7 +472,6 @@ const ProvidersPage: React.FC = () => {
     });
 
     setFilteredProviders(sortedFilteredResults as ProviderAttributes[]);
-
     setCurrentPage(1);
   };
 
@@ -550,7 +500,6 @@ const ProvidersPage: React.FC = () => {
         return false;
     }
   });
-
   const combinedProviders = [...filteredWithService, ...filteredWithoutService];
   const indexOfLastProvider = currentPage * providersPerPage;
   const indexOfFirstProvider = indexOfLastProvider - providersPerPage;
@@ -613,6 +562,18 @@ const ProvidersPage: React.FC = () => {
     setStepIndex(0);
   };
 
+  useEffect(() => {
+    const getInsuranceOptions = async () => {
+      try {
+        const insuranceData = await fetchInsurance();
+        setInsuranceOptions(insuranceData);
+      } catch (error) {
+        console.error('Error fetching insurance options:', error);
+      }
+    };
+    getInsuranceOptions();
+  }, []);
+
   return (
     <div className="providers-page">
 
@@ -642,17 +603,13 @@ const ProvidersPage: React.FC = () => {
         <h1 className="providers-banner-title">Find Your Provider</h1>
       </section>
       <div className="glass-container">
-        <div className="glass-two">
-          <h2 className="searched-provider-number-status-title">
-            {!selectedProviderType || selectedProviderType === 'none' ? (
-              'Please select a provider type to get started with your search'
-            ) : isFiltered ? (
-              `Showing ${paginatedProviders.length} of ${combinedProviders.length} Providers`
-            ) : (
-              `Showing ${allProviders.length} Providers`
-            )}
-          </h2>
-        </div>
+        {selectedStateId === '' && selectedProviderType === '' ? (
+          <div className="glass-two">
+            <h2 className="searched-provider-number-status-title">
+              Please select a state and provider type to get started with your search
+            </h2>
+          </div>
+        ) : null}
       </div>
       <main>
         <div className="provider-page-search-cards-section">
@@ -663,7 +620,7 @@ const ProvidersPage: React.FC = () => {
             onSearch={handleSearch}
             onCountyChange={handleCountyChange}
             onInsuranceChange={handleInsuranceChange}
-            insuranceOptions={uniqueInsuranceOptions}
+            insuranceOptions={insuranceOptions}
             onSpanishChange={handleSpanishChange}
             onServiceChange={handleServiceChange}
             onWaitListChange={handleWaitListChange}
@@ -671,77 +628,75 @@ const ProvidersPage: React.FC = () => {
             onProviderTypeChange={handleProviderTypeChange}
             onReset={handleResetSearch}
           />
-          {selectedProviderType && selectedProviderType !== 'none' && (
-            <section className="glass">
-              <section className="searched-provider-map-locations-list-section">
-                {isLoading && (
-                  <div className="loading-container">
-                    <img
-                      src={gearImage}
-                      alt="Loading..."
-                      className="loading-gear"
-                    />
-                    <p>Loading providers...</p>
-                  </div>
-                )}
-                {!isLoading && showError && (
-                  <div className="error-message">{showError}</div>
-                )}
-                {!isLoading && !showError && (
-                  <div className="card-container">
-                    <div
-                      className={`provider-cards-grid ${pageTransition ? `page-${pageTransition}` : ""
-                        }`}
-                    >
-                      {paginatedProviders.map((provider) => (
-                        <div
-                          key={provider.id}
-                          className={`provider-card-wrapper ${pageTransition ? `animate-${pageTransition}` : ""
-                            }`}
-                        >
-                          <ProviderCard
-                            provider={provider}
-                            onViewDetails={handleProviderCardClick}
-                            renderViewOnMapButton={renderViewOnMapButton}
-                            onToggleFavorite={toggleFavorite}
-                            isFavorited={favoriteProviders.some(
-                              (fav) => fav.id === provider.id
-                            )}
-                            favoritedDate={favoriteDates[provider.id]}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                    {combinedProviders.length > 0 && (
-                      <div className="pagination-section">
-                        <p className="pagination-info">
-                          Page {currentPage} of {totalPages}
-                        </p>
-                        <div className="pagination-controls">
-                          {currentPage > 1 && (
-                            <button
-                              className="pagination-button"
-                              onClick={handlePreviousPage}
-                            >
-                              &lt; Previous
-                            </button>
+          <section className="glass">
+            <section className="searched-provider-map-locations-list-section">
+              {isLoading && (
+                <div className="loading-container">
+                  <img
+                    src={gearImage}
+                    alt="Loading..."
+                    className="loading-gear"
+                  />
+                  <p>Loading providers...</p>
+                </div>
+              )}
+              {!isLoading && showError && (
+                <div className="error-message-container">{showError}</div>
+              )}
+              {!isLoading && !showError && (
+                <div className="card-container">
+                  <div
+                    className={`provider-cards-grid ${pageTransition ? `page-${pageTransition}` : ""
+                      }`}
+                  >
+                    {paginatedProviders.map((provider) => (
+                      <div
+                        key={provider.id}
+                        className={`provider-card-wrapper ${pageTransition ? `animate-${pageTransition}` : ""
+                          }`}
+                      >
+                        <ProviderCard
+                          provider={provider}
+                          onViewDetails={handleProviderCardClick}
+                          renderViewOnMapButton={renderViewOnMapButton}
+                          onToggleFavorite={toggleFavorite}
+                          isFavorited={favoriteProviders.some(
+                            (fav) => fav.id === provider.id
                           )}
-                          {currentPage < totalPages && (
-                            <button
-                              className="pagination-button"
-                              onClick={handleNextPage}
-                            >
-                              Next &gt;
-                            </button>
-                          )}
-                        </div>
+                          favoritedDate={favoriteDates[provider.id]}
+                        />
                       </div>
-                    )}
+                    ))}
                   </div>
-                )}
-              </section>
+                  {combinedProviders.length > 0 && (
+                    <div className="pagination-section">
+                      <p className="pagination-info">
+                        Page {currentPage} of {totalPages}
+                      </p>
+                      <div className="pagination-controls">
+                        {currentPage > 1 && (
+                          <button
+                            className="pagination-button"
+                            onClick={handlePreviousPage}
+                          >
+                            &lt; Previous
+                          </button>
+                        )}
+                        {currentPage < totalPages && (
+                          <button
+                            className="pagination-button"
+                            onClick={handleNextPage}
+                          >
+                            Next &gt;
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </section>
-          )}
+          </section>
         </div>
 
         {selectedProvider && (
