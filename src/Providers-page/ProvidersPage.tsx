@@ -4,13 +4,21 @@ import childrenBanner from "../Assets/children-banner-2.jpg";
 import ProviderModal from "./ProviderModal";
 import SearchBar from "./SearchBar";
 import ProviderCard from "./ProviderCard";
-import { fetchProviders, fetchProvidersByStateIdAndProviderType } from "../Utility/ApiCall";
-import { MockProviders, ProviderAttributes } from "../Utility/Types";
+import { MockProviders, ProviderAttributes, InsuranceData, Insurance, CountiesServed as County, ProviderType as ProviderTypeInterface } from "../Utility/Types";
 import gearImage from "../Assets/Gear@1x-0.5s-200px-200px.svg";
 import Joyride, { Step, STATUS } from "react-joyride";
+import { fetchProviders, fetchProvidersByStateIdAndProviderType } from "../Utility/ApiCall";
 
 interface FavoriteDate {
   [providerId: number]: string;
+}
+
+// Add type interfaces for the filter functions
+interface ProviderResponse {
+  data: {
+    id: number;
+    attributes: ProviderAttributes;
+  }[];
 }
 
 const ProvidersPage: React.FC = () => {
@@ -23,7 +31,7 @@ const ProvidersPage: React.FC = () => {
   >([]);
   const [preFilterExecuted, setPreFilterExecuted] = useState<boolean>(false)
   const [uniqueInsuranceOptions, setUniqueInsuranceOptions] = useState<
-    string[]
+    InsuranceData[]
   >([]);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedCounty, setSelectedCounty] = useState<string>("");
@@ -205,16 +213,16 @@ const ProvidersPage: React.FC = () => {
         setAllProviders(sortedProviders);
         setFilteredProviders(sortedProviders);
 
-        const uniqueInsurances = Array.from(
-          new Set(
-            sortedProviders
-              .flatMap((provider) =>
-                provider.insurance.map((ins) => ins.name || "")
-              )
-              .sort() as string[]
-          )
-        );
-        setUniqueInsuranceOptions(uniqueInsurances);
+        // const uniqueInsurances = Array.from(
+        //   new Set(
+        //     sortedProviders
+        //       .flatMap((provider) =>
+        //         provider.insurance.map((ins) => ins.name || "")
+        //       )
+        //       .sort() as string[]
+        //   )
+        // );
+        // setUniqueInsuranceOptions(uniqueInsurances);
         setMapAddress("Utah");
         setIsLoading(false);
         if (sortedProviders.length === 0) {
@@ -241,33 +249,7 @@ const ProvidersPage: React.FC = () => {
       }
     };
   }, []);
-  
-  const handlePreFilter = (selectedStateId: string, selectedProviderType: string) => {
-    const getProvidersByTypeandState = async () => {
-      try {
-        const response = await fetchProvidersByStateIdAndProviderType(selectedStateId, selectedProviderType);
-        const mappedProviders = response.data.map(provider => ({
-          ...provider.attributes,
-          id: provider.id
-        }));
-        setFilteredProviders(mappedProviders);
-        
-        // Show message if no providers found for selected state and type
-        if (mappedProviders.length === 0) {
-          setShowError(`We currently don't have any ${selectedProviderType} for this state please check back periodically!`);
-        } else {
-          setShowError("");
-        }
-      } catch {
-        setShowError("We are currently experiencing issues displaying Providers. Please try again later.");
-      }
-    }
-    if(selectedStateId !== 'none' && selectedProviderType !== 'none') {
-      getProvidersByTypeandState()
-      setPreFilterExecuted(true)
-    }
-  }
-  
+
   const handleSearch = useCallback(
     async ({ 
       query, 
@@ -311,14 +293,14 @@ const ProvidersPage: React.FC = () => {
           
           // Apply additional filters and sort the results
           const filtered = providersToFilter
-            .filter(provider => 
+            .filter((provider: ProviderAttributes) => 
               provider.name?.toLowerCase().includes(query.toLowerCase()) &&
               (!county_name ||
-                provider.counties_served.some((c) =>
+                provider.counties_served.some((c: County) =>
                   c.county_name?.toLowerCase().includes(county_name.toLowerCase())
                 )) &&
               (!insurance ||
-                provider.insurance.some((i) =>
+                provider.insurance.some((i: Insurance) =>
                   i.name?.toLowerCase().includes(insurance.toLowerCase())
                 )) &&
               (spanish === "" ||
@@ -370,9 +352,11 @@ const ProvidersPage: React.FC = () => {
                   (age === "19+" &&
                     provider.max_age <= 19)))) &&
               (!providerType ||
-                provider.provider_type.some((type) => type.name.toLowerCase() === providerType.toLowerCase()))
+                provider.provider_type.some((type: ProviderTypeInterface) => 
+                  type.name.toLowerCase() === providerType.toLowerCase()
+                ))
             )
-            .sort((a, b) => {
+            .sort((a: ProviderAttributes, b: ProviderAttributes) => {
               const nameA = a.name || "";
               const nameB = b.name || "";
               return nameA.localeCompare(nameB);

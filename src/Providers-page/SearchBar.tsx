@@ -2,14 +2,14 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './SearchBar.css';
-import { CountyData, MockProviders, ProviderAttributes } from '../Utility/Types';
+import { CountyData, MockProviders, ProviderAttributes, InsuranceData } from '../Utility/Types';
 import { fetchCountiesByState, fetchStates } from '../Utility/ApiCall'
 
 interface SearchBarProps {
   onResults: (results: MockProviders) => void;
   onSearch: (params: { query: string; county_name: string; insurance: string; spanish: string; service: string; waitlist: string; age: string; providerType: string; stateId: string;}) => void;
   onCountyChange: (county_name: string) => void;
-  insuranceOptions: string[];
+  insuranceOptions: InsuranceData[];
   onInsuranceChange: (insurance: string) => void;
   onSpanishChange: (spanish: string) => void;
   onServiceChange: (service: string) => void;
@@ -263,26 +263,26 @@ const SearchBar: React.FC<SearchBarProps> = ({
             </select>
           </div>
 
-          <div className="filter-item provider-insurance-dropdown">
-            <select
-              className="provider-insurance-select"
-              value={selectedInsurance}
-              onChange={(e) => {
-                setSelectedInsurance(e.target.value);
-                onInsuranceChange(e.target.value);
-              }}
-              aria-label="Select Insurance"
-            >
-              <option value="">All Insurances</option>
-              {insuranceOptions
-                .filter(insurance => insurance !== 'Contact us')
-                .map((insurance, index) => (
-                  <option key={index} value={insurance}>
-                    {insurance}
-                  </option>
-                ))}
-            </select>
-          </div>
+              <div className="filter-item provider-insurance-dropdown">
+                <select
+                  className="provider-insurance-select"
+                  value={selectedInsurance}
+                  onChange={(e) => {
+                    setSelectedInsurance(e.target.value);
+                    onInsuranceChange(e.target.value);
+                  }}
+                  aria-label="Select Insurance"
+                >
+                  <option value="">All Insurances</option>
+                  {insuranceOptions
+                    .filter(insurance => insurance.attributes.name !== 'Contact us')
+                    .map((insurance, index) => (
+                      <option key={index} value={insurance.attributes.name}>
+                        {insurance.attributes.name}
+                      </option>
+                    ))}
+                </select>
+              </div>
 
           <div className="filter-item provider-service-dropdown">
             <select

@@ -67,10 +67,10 @@ export interface InsuranceData {
     };
 }
 
-interface ProviderType {
-    id: number;
-    name: string;
-  }
+export interface ProviderType {
+  id: number;
+  name: string;
+}
 
 // should we remove the word "mock" from this interface??
   export interface MockProviderData {
