@@ -3,7 +3,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './SearchBar.css';
 import { CountyData, MockProviders, ProviderAttributes, InsuranceData } from '../Utility/Types';
-import { fetchCountiesByState, fetchStates } from '../Utility/ApiCall'
+import { fetchCountiesByState, fetchStates} from '../Utility/ApiCall'
 
 interface SearchBarProps {
   onResults: (results: MockProviders) => void;
@@ -45,11 +45,11 @@ const SearchBar: React.FC<SearchBarProps> = ({
   const [showNotification, setShowNotification] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [selectedProviderType, setSelectedProviderType] = useState<string>('none');
-  const [providerStates, setProviderStates] = useState<any[]>([]) // need to update type from any
-  const [error, setError] = useState<string>("") // need to create space for error message, if applicable
+  const [providerStates, setProviderStates] = useState<any[]>([]) 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [error, setError] = useState<string>("") 
   const [selectedStateId, setSelectedStateId] = useState<string>('none');
   const [counties, setCounties] = useState<CountyData[]>([]);
-
   // Fetch states on component mount
   useEffect(() => {
     const getStates = async () => {
@@ -105,19 +105,22 @@ const SearchBar: React.FC<SearchBarProps> = ({
   }, [showNotification, isVisible]);
 
   const handleSearch = useCallback(() => {
-    onSearch({
-      query: searchQuery,
-      county_name: selectedCounty,
-      insurance: selectedInsurance,
-      spanish: selectedSpanish,
-      service: selectedService,
-      waitlist: selectedWaitList,
-      age: selectedAge,
-      providerType: selectedProviderType,
-      stateId: selectedStateId
-    });
-    setShowNotification(true);
-    setIsVisible(true);
+    // Only search if both state and provider type are selected
+    if (selectedStateId !== 'none' && selectedProviderType !== 'none') {
+      onSearch({
+        query: searchQuery,
+        county_name: selectedCounty,
+        insurance: selectedInsurance,
+        spanish: selectedSpanish,
+        service: selectedService,
+        waitlist: selectedWaitList,
+        age: selectedAge,
+        providerType: selectedProviderType,
+        stateId: selectedStateId
+      });
+      setShowNotification(true);
+      setIsVisible(true);
+    }
   }, [searchQuery, selectedCounty, selectedInsurance, selectedSpanish, 
     selectedService, selectedWaitList, selectedAge, selectedProviderType, 
     selectedStateId, onSearch]);
@@ -173,22 +176,6 @@ const SearchBar: React.FC<SearchBarProps> = ({
   return (
     <section className="provider-map-search-section">
       <div className="provider-map-searchbar">
-        <div className="search-group">
-          <input
-            type="text"
-            placeholder="Search for a provider..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            list="provider-names"
-          />
-          <datalist id="provider-names">
-            {providers.map((provider, index) => (
-              <option key={index} value={provider.name ?? ''} />
-            ))}
-          </datalist>
-        </div>
-
-        <div className="filter-group">
           <div className="filter-item provider-state-dropdown">
             <select
               className="provider-state-select"
@@ -214,6 +201,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
                 setSelectedProviderType(newValue);
                 onProviderTypeChange(newValue);
               }}
+              required
               aria-label="Select Provider Type"
             >
               {providerTypeOptions.map((option) => (
@@ -223,6 +211,44 @@ const SearchBar: React.FC<SearchBarProps> = ({
               ))}
             </select>
           </div>
+        <div className="search-group">
+          <input
+            type="text"
+            placeholder="Search provider by name..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            list="provider-names"
+          />
+          <datalist id="provider-names">
+            {providers.map((provider, index) => (
+              <option key={index} value={provider.name ?? ''} />
+            ))}
+          </datalist>
+        </div>
+        <div className="filter-item provider-insurance-dropdown">
+                <input
+                  type="text"
+                  className="provider-insurance-select"
+                  value={selectedInsurance}
+                  onChange={(e) => {
+                    setSelectedInsurance(e.target.value);
+                    onInsuranceChange(e.target.value);
+                  }}
+                  list="insurance-options"
+                  placeholder="Search by Insurance"
+                  aria-label="Select Insurance"
+                />
+                <datalist id="insurance-options">
+                  {insuranceOptions
+                    .filter(insurance => insurance.attributes.name !== 'Contact us')
+                    .sort((a, b) => a.attributes.name.localeCompare(b.attributes.name))
+                    .map((insurance, index) => (
+                      <option key={index} value={insurance.attributes.name} />
+                    ))}
+                </datalist>
+              </div>
+        <div className="filter-group">
+
 
           <div className="filter-item provider-county-dropdown">
             <select
@@ -263,26 +289,6 @@ const SearchBar: React.FC<SearchBarProps> = ({
             </select>
           </div>
 
-              <div className="filter-item provider-insurance-dropdown">
-                <select
-                  className="provider-insurance-select"
-                  value={selectedInsurance}
-                  onChange={(e) => {
-                    setSelectedInsurance(e.target.value);
-                    onInsuranceChange(e.target.value);
-                  }}
-                  aria-label="Select Insurance"
-                >
-                  <option value="">All Insurances</option>
-                  {insuranceOptions
-                    .filter(insurance => insurance.attributes.name !== 'Contact us')
-                    .map((insurance, index) => (
-                      <option key={index} value={insurance.attributes.name}>
-                        {insurance.attributes.name}
-                      </option>
-                    ))}
-                </select>
-              </div>
 
           <div className="filter-item provider-service-dropdown">
             <select
@@ -306,7 +312,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
               aria-label="Select Waitlist Status"
             >
               <option value="">All Waitlist Status</option>
-              <option value="No">No Waitlist</option>
+              <option value="no wait list">No Waitlist</option>
               <option value="6 Months or Less">6 Months or Less</option>
             </select>
           </div>
@@ -328,6 +334,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
           <button 
             className="provider-search-button" 
             onClick={handleSearch}
+            disabled={selectedStateId === '' || selectedProviderType === ''}
           >
             Search
           </button>
@@ -341,7 +348,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
           <div className={`bg-steelblue text-white p-4 rounded-lg shadow-lg transform transition-all duration-300 ease-in-out ${showNotification ? 'animate-jump-in' : 'animate-jump-out'}`}>
             <span className="font-bold">
               {providers.length === 0 
-                ? `No ${selectedProviderType} providers found for the selected state` 
+                ? `No ${selectedProviderType} providers found for the selected state make sure to choose a state and provider type to see results` 
                 : `Your search resulted in ${providers.length} ${selectedProviderType} providers`
               }
             </span>

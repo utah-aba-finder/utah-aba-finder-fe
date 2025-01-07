@@ -17,7 +17,7 @@
 
 .search-group {
     flex: 1 1 200px;
-    min-width: 300px;
+    min-width: 290px;
 }
 
 .provider-state-select,
@@ -57,8 +57,10 @@
 
 .provider-state-select,
 .provider-type-select,
+.provider-insurance-select,
 .provider-map-searchbar input[type="text"] {
     width: 99.5%;
+    max-width: 99.5%;
     border: none;
     border-radius: .8rem;
     font-size: 1rem;
@@ -69,13 +71,10 @@
 
 /* Common styles for inputs and selects */
 .provider-county-select,
-.provider-insurance-select,
 .provider-spanish-select,
 .provider-service-select,
 .provider-waitlist-select,
-.provider-age-select,
-.provider-search-button,
-.provider-reset-button {
+.provider-age-select {
     width: 100%;
     border: none;
     border-radius: .7rem;
@@ -89,6 +88,23 @@
     overflow: hidden;
     text-overflow: ellipsis;
     text-align: center;
+}
+
+
+.provider-search-button,
+.provider-reset-button {
+    width: 100%;
+    border: none;
+    border-radius: .7rem;
+    font-size: 1rem;
+    height: 40px;
+    appearance: none;
+    transition: background-color 0.3s ease;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: center;
+    cursor: pointer;
 }
 
 /* Input and select specific styles */
@@ -146,7 +162,6 @@
 
 /* Dropdown arrows */
 .provider-county-dropdown,
-.provider-insurance-dropdown,
 .provider-spanish-dropdown,
 .provider-service-dropdown,
 .provider-waitlist-dropdown,
@@ -155,8 +170,11 @@
     width: 100%;
 }
 
+.provider-insurance-dropdown {
+    width: 50%;
+}
+
 .provider-county-dropdown::after,
-.provider-insurance-dropdown::after,
 .provider-spanish-dropdown::after,
 .provider-service-dropdown::after,
 .provider-waitlist-dropdown::after,
@@ -179,7 +197,7 @@
     }
     .provider-type-select,
     .provider-state-select {
-        width: 50%;
+        width: 80%;
     }
 }
 

@@ -7,18 +7,10 @@ import ProviderCard from "./ProviderCard";
 import { MockProviders, ProviderAttributes, InsuranceData, Insurance, CountiesServed as County, ProviderType as ProviderTypeInterface } from "../Utility/Types";
 import gearImage from "../Assets/Gear@1x-0.5s-200px-200px.svg";
 import Joyride, { Step, STATUS } from "react-joyride";
-import { fetchProviders, fetchProvidersByStateIdAndProviderType } from "../Utility/ApiCall";
+import { fetchProviders, fetchProvidersByStateIdAndProviderType, fetchInsurance } from "../Utility/ApiCall";
 
 interface FavoriteDate {
   [providerId: number]: string;
-}
-
-// Add type interfaces for the filter functions
-interface ProviderResponse {
-  data: {
-    id: number;
-    attributes: ProviderAttributes;
-  }[];
 }
 
 const ProvidersPage: React.FC = () => {
@@ -28,10 +20,6 @@ const ProvidersPage: React.FC = () => {
   // const [providersByTypeandState, setProvidersByTypeAndState] = useState<any[]>([])
   const [filteredProviders, setFilteredProviders] = useState<
     ProviderAttributes[]
-  >([]);
-  const [preFilterExecuted, setPreFilterExecuted] = useState<boolean>(false)
-  const [uniqueInsuranceOptions, setUniqueInsuranceOptions] = useState<
-    InsuranceData[]
   >([]);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedCounty, setSelectedCounty] = useState<string>("");
@@ -43,6 +31,7 @@ const ProvidersPage: React.FC = () => {
   const [selectedWaitList, setSelectedWaitList] = useState<string>("");
   const [selectedAddress, setSelectedAddress] = useState<string>("");
   const [mapAddress, setMapAddress] = useState<string>("");
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isFiltered, setIsFiltered] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [showError, setShowError] = useState("");
@@ -52,11 +41,15 @@ const ProvidersPage: React.FC = () => {
     ProviderAttributes[]
   >([]);
   const [favoriteDates, setFavoriteDates] = useState<FavoriteDate>({});
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedAge, setSelectedAge] = useState<string>("");
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedProviderName, setSelectedProviderName] = useState<string>("");
   const [selectedProviderType, setSelectedProviderType] = useState<string>("");
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedStateId, setSelectedStateId] = useState<string>("");
   const providersPerPage = 8;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [pageTransition, setPageTransition] = useState<"next" | "prev" | null>(
     null
   );
@@ -65,11 +58,16 @@ const ProvidersPage: React.FC = () => {
   const [stepIndex, setStepIndex] = useState(0);
   const [steps] = useState<Step[]>([
     {
-      target: ".provider-type-select",
-      content: "First select the type of provider you are looking for.",
+      target: ".provider-state-select",
+      content: "First select the state you are looking for.",
       disableBeacon: true,
       placement: "bottom",
     },
+    {
+      target: ".provider-type-select",
+      content: "Then select the type of provider you are looking for.",
+      placement: "bottom",
+    }, 
     {
       target: ".provider-map-searchbar",
       content:
@@ -89,6 +87,7 @@ const ProvidersPage: React.FC = () => {
       placement: "top",
     },
   ]);
+  const [insuranceOptions, setInsuranceOptions] = useState<InsuranceData[]>([]);
 
   useEffect(() => {
     const hasVisited = localStorage.getItem("providersPageVisited");
@@ -98,29 +97,15 @@ const ProvidersPage: React.FC = () => {
   }, []);
 
   const handleJoyrideCallback = (data: any) => {
-    const { action, index, status, type } = data;
+    const { status, type, index } = data;
 
     if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status)) {
       localStorage.setItem("providersPageVisited", "true");
       setRun(false);
-    } else if (type === "step:after" && index === 0) {
-      // After first step, wait for provider type selection
-      if (selectedProviderType && selectedProviderType !== 'none') {
-        setStepIndex(index + 1);
-      }
-    } else if (action === "next" && type === "step:after") {
+    } else if (type === "step:after") {
       setStepIndex(index + 1);
-    } else if (action === "prev" && type === "step:after") {
-      setStepIndex(index - 1);
     }
   };
-  
-  // Update Joyride when provider type is selected
-  useEffect(() => {
-    if (selectedProviderType && selectedProviderType !== 'none' && stepIndex === 0) {
-      setStepIndex(1);
-    }
-  }, [selectedProviderType, stepIndex]);
 
   useEffect(() => {
     const storedFavorites = localStorage.getItem("favoriteProviders");
@@ -213,16 +198,6 @@ const ProvidersPage: React.FC = () => {
         setAllProviders(sortedProviders);
         setFilteredProviders(sortedProviders);
 
-        // const uniqueInsurances = Array.from(
-        //   new Set(
-        //     sortedProviders
-        //       .flatMap((provider) =>
-        //         provider.insurance.map((ins) => ins.name || "")
-        //       )
-        //       .sort() as string[]
-        //   )
-        // );
-        // setUniqueInsuranceOptions(uniqueInsurances);
         setMapAddress("Utah");
         setIsLoading(false);
         if (sortedProviders.length === 0) {
@@ -286,7 +261,7 @@ const ProvidersPage: React.FC = () => {
           
           // Show message if no providers found
           if (providersToFilter.length === 0) {
-            setShowError(`We currently don't have any ${providerType} providers for this state please check back periodically!`);
+            setShowError(`We currently don't have any ${providerType} providers for this state, please check back periodically! Also ensure you have selected a state and provider type to see results!`);
             setIsLoading(false);
             return;
           }
@@ -323,7 +298,7 @@ const ProvidersPage: React.FC = () => {
                   (provider.waitlist
                     ? parseInt(provider.waitlist, 10) <= 6
                     : false)) ||
-                (waitlist === "no" &&
+                (waitlist.includes("no") &&
                   provider.waitlist?.toLowerCase() === "no")) &&
               (!age ||
                 (provider.min_age !== null &&
@@ -587,6 +562,18 @@ const ProvidersPage: React.FC = () => {
     setStepIndex(0);
   };
 
+  useEffect(() => {
+    const getInsuranceOptions = async () => {
+      try {
+        const insuranceData = await fetchInsurance();
+        setInsuranceOptions(insuranceData);
+      } catch (error) {
+        console.error('Error fetching insurance options:', error);
+      }
+    };
+    getInsuranceOptions();
+  }, []);
+
   return (
     <div className="providers-page">
 
@@ -633,7 +620,7 @@ const ProvidersPage: React.FC = () => {
             onSearch={handleSearch}
             onCountyChange={handleCountyChange}
             onInsuranceChange={handleInsuranceChange}
-            insuranceOptions={uniqueInsuranceOptions}
+            insuranceOptions={insuranceOptions}
             onSpanishChange={handleSpanishChange}
             onServiceChange={handleServiceChange}
             onWaitListChange={handleWaitListChange}
