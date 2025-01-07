@@ -47,6 +47,7 @@ const ProvidersPage: React.FC = () => {
   const [selectedAge, setSelectedAge] = useState<string>("");
   const [selectedProviderName, setSelectedProviderName] = useState<string>("");
   const [selectedProviderType, setSelectedProviderType] = useState<string>("");
+  const [selectedStateId, setSelectedStateId] = useState<string>("");
   const providersPerPage = 8;
   const [pageTransition, setPageTransition] = useState<"next" | "prev" | null>(
     null
@@ -241,13 +242,24 @@ const ProvidersPage: React.FC = () => {
     };
   }, []);
   
-  const handlePreFilter = (selectedStateId: string, selectedProviderType: string, providers: MockProviders) => {
+  const handlePreFilter = (selectedStateId: string, selectedProviderType: string) => {
     const getProvidersByTypeandState = async () => {
       try {
-        const providers = await fetchProvidersByStateIdAndProviderType(selectedStateId, selectedProviderType)
-        setFilteredProviders(providers)
+        const response = await fetchProvidersByStateIdAndProviderType(selectedStateId, selectedProviderType);
+        const mappedProviders = response.data.map(provider => ({
+          ...provider.attributes,
+          id: provider.id
+        }));
+        setFilteredProviders(mappedProviders);
+        
+        // Show message if no providers found for selected state and type
+        if (mappedProviders.length === 0) {
+          setShowError(`We currently don't have any ${selectedProviderType} for this state please check back periodically!`);
+        } else {
+          setShowError("");
+        }
       } catch {
-        setShowError("We are currently experiencing issues displaying Providers. Please try again later.")
+        setShowError("We are currently experiencing issues displaying Providers. Please try again later.");
       }
     }
     if(selectedStateId !== 'none' && selectedProviderType !== 'none') {
@@ -257,15 +269,16 @@ const ProvidersPage: React.FC = () => {
   }
   
   const handleSearch = useCallback(
-    ({
-      query,
-      county_name,
-      insurance,
-      spanish,
-      service,
-      waitlist,
-      age,
-      providerType,
+    async ({ 
+      query, 
+      county_name, 
+      insurance, 
+      spanish, 
+      service, 
+      waitlist, 
+      age, 
+      providerType, 
+      stateId 
     }: {
       query: string;
       county_name: string;
@@ -275,131 +288,107 @@ const ProvidersPage: React.FC = () => {
       waitlist: string;
       age: string;
       providerType: string;
+      stateId: string;
     }) => {
-      const normalizedCounty = county_name.toLowerCase();
-      const normalizedInsurance = insurance.toLowerCase();
-      const serviceFilter = (provider: ProviderAttributes) => {
-        if (!service) return true;
-        switch (service) {
-          case "telehealth":
-            return (
-              provider.telehealth_services?.toLowerCase() === "yes" ||
-              provider.telehealth_services === null ||
-              provider.telehealth_services.toLowerCase() === "limited"
-            );
-          case "at_home":
-            return (
-              provider.at_home_services?.toLowerCase() === "yes" ||
-              provider.at_home_services === null ||
-              provider.at_home_services.toLowerCase() === "limited"
-            );
-          case "in_clinic":
-            return (
-              provider.in_clinic_services?.toLowerCase() === "yes" ||
-              provider.in_clinic_services === null ||
-              provider.in_clinic_services.toLowerCase() === "limited"
-            );
-          default:
-            return true;
+      try {
+        setIsLoading(true);
+        setFilteredProviders([]); // Reset filtered providers before new search
+        
+        // If both state and provider type are selected, use the specific API endpoint
+        if (stateId !== 'none' && providerType !== 'none') {
+          const response = await fetchProvidersByStateIdAndProviderType(stateId, providerType);
+          const providersToFilter = response.data.map(provider => ({
+            ...provider.attributes,
+            id: provider.id,
+          }));
+          
+          // Show message if no providers found
+          if (providersToFilter.length === 0) {
+            setShowError(`We currently don't have any ${providerType} providers for this state please check back periodically!`);
+            setIsLoading(false);
+            return;
+          }
+          
+          // Apply additional filters and sort the results
+          const filtered = providersToFilter
+            .filter(provider => 
+              provider.name?.toLowerCase().includes(query.toLowerCase()) &&
+              (!county_name ||
+                provider.counties_served.some((c) =>
+                  c.county_name?.toLowerCase().includes(county_name.toLowerCase())
+                )) &&
+              (!insurance ||
+                provider.insurance.some((i) =>
+                  i.name?.toLowerCase().includes(insurance.toLowerCase())
+                )) &&
+              (spanish === "" ||
+                (spanish === "no" &&
+                  (!provider.spanish_speakers ||
+                    provider.spanish_speakers.toLowerCase() === "no")) ||
+                (spanish === "yes" &&
+                  (provider.spanish_speakers?.toLowerCase() === "yes" ||
+                    provider.spanish_speakers === null ||
+                    provider.spanish_speakers.toLowerCase() === "limited"))) &&
+              (!service ||
+                (service === "telehealth" &&
+                  provider.telehealth_services?.toLowerCase() === "yes") ||
+                (service === "at_home" &&
+                  provider.at_home_services?.toLowerCase() === "yes") ||
+                (service === "in_clinic" &&
+                  provider.in_clinic_services?.toLowerCase() === "yes")) &&
+              (!waitlist ||
+                (waitlist === "6 Months or Less" &&
+                  (provider.waitlist
+                    ? parseInt(provider.waitlist, 10) <= 6
+                    : false)) ||
+                (waitlist === "no" &&
+                  provider.waitlist?.toLowerCase() === "no")) &&
+              (!age ||
+                (provider.min_age !== null &&
+                  provider.max_age !== null &&
+                  ((age === "0-2" &&
+                    provider.min_age <= 0 &&
+                    provider.max_age >= 2) ||
+                  (age === "3-5" &&
+                    provider.min_age <= 3 &&
+                    provider.max_age >= 5) ||
+                  (age === "5-7" &&
+                    provider.min_age <= 5 &&
+                    provider.max_age >= 7) ||
+                  (age === "8-10" &&
+                    provider.min_age <= 8 &&
+                    provider.max_age >= 10) ||
+                  (age === "11-13" &&
+                    provider.min_age <= 11 &&
+                    provider.max_age >= 13) ||
+                  (age === "13-15" &&
+                    provider.min_age <= 13 &&
+                    provider.max_age >= 15) ||
+                  (age === "16-18" &&
+                    provider.max_age <= 16 &&
+                    provider.min_age >= 18) ||
+                  (age === "19+" &&
+                    provider.max_age <= 19)))) &&
+              (!providerType ||
+                provider.provider_type.some((type) => type.name.toLowerCase() === providerType.toLowerCase()))
+            )
+            .sort((a, b) => {
+              const nameA = a.name || "";
+              const nameB = b.name || "";
+              return nameA.localeCompare(nameB);
+            });
+          
+          setFilteredProviders(filtered);
+          setCurrentPage(1);
+          setShowError(""); // Clear error if providers found
         }
-      };
-
-      const providerTypeServiceFilter = (provider: ProviderAttributes) => {
-        if (!providerType) return true;
-        switch (providerType) {
-          case "aba":
-            return provider.provider_type?.some((type: { name: string }) =>
-              type.name?.toLowerCase() === "ABA Therapy"
-            );
-          case "evaluation":
-            return provider.provider_type?.some((type: { name: string }) =>
-              type.name?.toLowerCase() === "Autism Evaluation"
-            );
-          case "speech":
-            return provider.provider_type?.some((type: { name: string }) =>
-              type.name?.toLowerCase() === "Speech Therapy"
-            );
-          case "occupational":
-            return provider.provider_type?.some((type: { name: string }) =>
-              type.name?.toLowerCase() === "Occupational Therapy"
-            );
-          default:
-            return true;
-        }
-      };
-
-      const waitlistFilter = (provider: ProviderAttributes) => {
-        if (waitlist === "6 Months or Less") {
-          const waitlistTime = provider.waitlist
-            ? parseInt(provider.waitlist, 10)
-            : null;
-          return waitlistTime !== null && waitlistTime <= 6;
-        } else if (!waitlist) {
-          return true;
-        }
-        return waitlist === "yes"
-          ? provider.waitlist?.toLowerCase() !== "no"
-          : provider.waitlist?.toLowerCase() === "no";
-      };
-
-      const ageFilter = (provider: ProviderAttributes) => {
-        if (!age) return true;
-        const selectedAgeNum = parseInt(age, 10);
-
-        const minAge =
-          typeof provider.min_age === "string" && provider.min_age === "- years"
-            ? 0
-            : parseInt(String(provider.min_age || "0"), 10);
-        const maxAge =
-          typeof provider.max_age === "string" && provider.max_age === "- years"
-            ? 99
-            : parseInt(String(provider.max_age || "99"), 10);
-
-        return selectedAgeNum >= minAge && selectedAgeNum <= maxAge;
-      };
-
-      const providerTypeFilter = (provider: ProviderAttributes) => {
-        if (!providerType || providerType === 'none') return false;
-        return provider.provider_type?.some((type: { name: string }) =>
-          type.name?.toLowerCase() === providerType.toLowerCase()
-        );
-      };
-      const filtered = allProviders.filter(
-        (provider) =>
-          provider.name?.toLowerCase().includes(query.toLowerCase()) &&
-          (!county_name ||
-            provider.counties_served.some((c) =>
-              c.county_name?.toLowerCase().includes(normalizedCounty)
-            )) &&
-          (!insurance ||
-            provider.insurance.some((i) =>
-              i.name?.toLowerCase().includes(normalizedInsurance)
-            )) &&
-          (spanish === "" ||
-            (spanish === "no" &&
-              (!provider.spanish_speakers ||
-                provider.spanish_speakers.toLowerCase() === "no")) ||
-            (spanish === "yes" &&
-              (provider.spanish_speakers?.toLowerCase() === "yes" ||
-                provider.spanish_speakers === null ||
-                provider.spanish_speakers.toLowerCase() === "limited"))) &&
-          serviceFilter(provider) &&
-          waitlistFilter(provider) &&
-          ageFilter(provider) &&
-          providerTypeServiceFilter(provider) &&
-          providerTypeFilter(provider)
-      );
-      
-      const sortedFilteredProviders = filtered.sort((a, b) => {
-        const nameA = a.name || "";
-        const nameB = b.name || "";
-        return nameA.localeCompare(nameB);
-      });
-      setFilteredProviders(sortedFilteredProviders);
-      setSelectedAge(age);
-      setSelectedProviderType(providerType);
-      setIsFiltered(true);
-      setCurrentPage(1);
+        
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Error during search:', error);
+        setShowError('Error filtering providers. Please try again.');
+        setIsLoading(false);
+      }
     },
     [allProviders]
   );
@@ -643,17 +632,13 @@ const ProvidersPage: React.FC = () => {
         <h1 className="providers-banner-title">Find Your Provider</h1>
       </section>
       <div className="glass-container">
-        <div className="glass-two">
-          <h2 className="searched-provider-number-status-title">
-            {/* {!preFilterExecuted ? (
-              'Please select a state and provider type to get started with your search'
-            ) : preFilterExecuted ? (
-              `Showing ${paginatedProviders.length} of ${combinedProviders.length} Providers`
-            ) : (
-              `Showing ${allProviders.length} Providers`
-            )} */}
-          </h2>
-        </div>
+        {selectedStateId === '' && selectedProviderType === '' ? (
+          <div className="glass-two">
+            <h2 className="searched-provider-number-status-title">
+              Please select a state and provider type to get started with your search
+            </h2>
+          </div>
+        ) : null}
       </div>
       <main>
         <div className="provider-page-search-cards-section">
@@ -671,79 +656,76 @@ const ProvidersPage: React.FC = () => {
             onAgeChange={handleAgeChange}
             onProviderTypeChange={handleProviderTypeChange}
             onReset={handleResetSearch}
-            onPreFilter={handlePreFilter}
           />
-          {preFilterExecuted && (
-            <section className="glass">
-              <section className="searched-provider-map-locations-list-section">
-                {isLoading && (
-                  <div className="loading-container">
-                    <img
-                      src={gearImage}
-                      alt="Loading..."
-                      className="loading-gear"
-                    />
-                    <p>Loading providers...</p>
-                  </div>
-                )}
-                {!isLoading && showError && (
-                  <div className="error-message">{showError}</div>
-                )}
-                {!isLoading && !showError && (
-                  <div className="card-container">
-                    <div
-                      className={`provider-cards-grid ${pageTransition ? `page-${pageTransition}` : ""
-                        }`}
-                    >
-                      {paginatedProviders.map((provider) => (
-                        <div
-                          key={provider.id}
-                          className={`provider-card-wrapper ${pageTransition ? `animate-${pageTransition}` : ""
-                            }`}
-                        >
-                          <ProviderCard
-                            provider={provider}
-                            onViewDetails={handleProviderCardClick}
-                            renderViewOnMapButton={renderViewOnMapButton}
-                            onToggleFavorite={toggleFavorite}
-                            isFavorited={favoriteProviders.some(
-                              (fav) => fav.id === provider.id
-                            )}
-                            favoritedDate={favoriteDates[provider.id]}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                    {combinedProviders.length > 0 && (
-                      <div className="pagination-section">
-                        <p className="pagination-info">
-                          Page {currentPage} of {totalPages}
-                        </p>
-                        <div className="pagination-controls">
-                          {currentPage > 1 && (
-                            <button
-                              className="pagination-button"
-                              onClick={handlePreviousPage}
-                            >
-                              &lt; Previous
-                            </button>
+          <section className="glass">
+            <section className="searched-provider-map-locations-list-section">
+              {isLoading && (
+                <div className="loading-container">
+                  <img
+                    src={gearImage}
+                    alt="Loading..."
+                    className="loading-gear"
+                  />
+                  <p>Loading providers...</p>
+                </div>
+              )}
+              {!isLoading && showError && (
+                <div className="error-message-container">{showError}</div>
+              )}
+              {!isLoading && !showError && (
+                <div className="card-container">
+                  <div
+                    className={`provider-cards-grid ${pageTransition ? `page-${pageTransition}` : ""
+                      }`}
+                  >
+                    {paginatedProviders.map((provider) => (
+                      <div
+                        key={provider.id}
+                        className={`provider-card-wrapper ${pageTransition ? `animate-${pageTransition}` : ""
+                          }`}
+                      >
+                        <ProviderCard
+                          provider={provider}
+                          onViewDetails={handleProviderCardClick}
+                          renderViewOnMapButton={renderViewOnMapButton}
+                          onToggleFavorite={toggleFavorite}
+                          isFavorited={favoriteProviders.some(
+                            (fav) => fav.id === provider.id
                           )}
-                          {currentPage < totalPages && (
-                            <button
-                              className="pagination-button"
-                              onClick={handleNextPage}
-                            >
-                              Next &gt;
-                            </button>
-                          )}
-                        </div>
+                          favoritedDate={favoriteDates[provider.id]}
+                        />
                       </div>
-                    )}
+                    ))}
                   </div>
-                )}
-              </section>
+                  {combinedProviders.length > 0 && (
+                    <div className="pagination-section">
+                      <p className="pagination-info">
+                        Page {currentPage} of {totalPages}
+                      </p>
+                      <div className="pagination-controls">
+                        {currentPage > 1 && (
+                          <button
+                            className="pagination-button"
+                            onClick={handlePreviousPage}
+                          >
+                            &lt; Previous
+                          </button>
+                        )}
+                        {currentPage < totalPages && (
+                          <button
+                            className="pagination-button"
+                            onClick={handleNextPage}
+                          >
+                            Next &gt;
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </section>
-          )}
+          </section>
         </div>
 
         {selectedProvider && (

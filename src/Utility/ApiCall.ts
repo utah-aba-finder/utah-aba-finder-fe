@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { MockProviders, StateData, CountyData, InsuranceData } from './Types';
+import { MockProviders, StateData, CountyData, InsuranceData, MockProviderData } from './Types';
 
 const API_URL = 'https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/providers';
 
@@ -77,7 +77,7 @@ export const fetchInsurance = async (): Promise<InsuranceData[]> => {
   return data.data;
 };
 
-export const fetchProvidersByStateIdAndProviderType = async(stateId: string, providerType: string): Promise<MockProviders[]> => {
+export const fetchProvidersByStateIdAndProviderType = async(stateId: string, providerType: string): Promise<MockProviders> => {
   const response = await fetch(
     `https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/states/${stateId}/providers?provider_type=${providerType}`,
     {
@@ -85,8 +85,8 @@ export const fetchProvidersByStateIdAndProviderType = async(stateId: string, pro
         Authorization: `Bearer ${sessionStorage.getItem("authToken")}`,
       },
     }
-  )
-  if(!response.ok) throw new Error("Failed to fetch providers by state and provider type")
-  const data = await response.json()
-  return data.data
+  );
+  if(!response.ok) throw new Error("Failed to fetch providers");
+  const data = await response.json();
+  return data;
 }
