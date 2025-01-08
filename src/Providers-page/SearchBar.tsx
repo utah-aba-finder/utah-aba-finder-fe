@@ -4,7 +4,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import './SearchBar.css';
 import { CountyData, MockProviders, ProviderAttributes, InsuranceData } from '../Utility/Types';
 import { fetchCountiesByState, fetchStates} from '../Utility/ApiCall'
-
+import { ChevronDown, ChevronUp } from 'lucide-react';
 interface SearchBarProps {
   onResults: (results: MockProviders) => void;
   onSearch: (params: { query: string; county_name: string; insurance: string; spanish: string; service: string; waitlist: string; age: string; providerType: string; stateId: string;}) => void;
@@ -50,6 +50,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
   const [error, setError] = useState<string>("") 
   const [selectedStateId, setSelectedStateId] = useState<string>('none');
   const [counties, setCounties] = useState<CountyData[]>([]);
+  const [advancedOptions, setAdvancedOptions] = useState(false)
   // Fetch states on component mount
   useEffect(() => {
     const getStates = async () => {
@@ -105,22 +106,19 @@ const SearchBar: React.FC<SearchBarProps> = ({
   }, [showNotification, isVisible]);
 
   const handleSearch = useCallback(() => {
-    // Only search if both state and provider type are selected
-    if (selectedStateId !== 'none' && selectedProviderType !== 'none') {
-      onSearch({
-        query: searchQuery,
-        county_name: selectedCounty,
-        insurance: selectedInsurance,
-        spanish: selectedSpanish,
-        service: selectedService,
-        waitlist: selectedWaitList,
-        age: selectedAge,
-        providerType: selectedProviderType,
-        stateId: selectedStateId
-      });
-      setShowNotification(true);
-      setIsVisible(true);
-    }
+    onSearch({
+      query: searchQuery,
+      county_name: selectedCounty,
+      insurance: selectedInsurance,
+      spanish: selectedSpanish,
+      service: selectedService,
+      waitlist: selectedWaitList,
+      age: selectedAge,
+      providerType: selectedProviderType,
+      stateId: selectedStateId
+    });
+    setShowNotification(true);
+    setIsVisible(true);
   }, [searchQuery, selectedCounty, selectedInsurance, selectedSpanish, 
     selectedService, selectedWaitList, selectedAge, selectedProviderType, 
     selectedStateId, onSearch]);
@@ -176,6 +174,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
   return (
     <section className="provider-map-search-section">
       <div className="provider-map-searchbar">
+        <div className="filter-container">
           <div className="filter-item provider-state-dropdown">
             <select
               className="provider-state-select"
@@ -211,133 +210,143 @@ const SearchBar: React.FC<SearchBarProps> = ({
               ))}
             </select>
           </div>
-        <div className="search-group">
-          <input
-            type="text"
-            placeholder="Search provider by name..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            list="provider-names"
-          />
-          <datalist id="provider-names">
-            {providers.map((provider, index) => (
-              <option key={index} value={provider.name ?? ''} />
-            ))}
-          </datalist>
-        </div>
-        <div className="filter-item provider-insurance-dropdown">
-                <input
-                  type="text"
-                  className="provider-insurance-select"
-                  value={selectedInsurance}
-                  onChange={(e) => {
-                    setSelectedInsurance(e.target.value);
-                    onInsuranceChange(e.target.value);
-                  }}
-                  list="insurance-options"
-                  placeholder="Search by Insurance"
-                  aria-label="Select Insurance"
-                />
-                <datalist id="insurance-options">
-                  {insuranceOptions
-                    .filter(insurance => insurance.attributes.name !== 'Contact us')
-                    .sort((a, b) => a.attributes.name.localeCompare(b.attributes.name))
-                    .map((insurance, index) => (
-                      <option key={index} value={insurance.attributes.name} />
-                    ))}
-                </datalist>
-              </div>
-        <div className="filter-group">
 
-
-          <div className="filter-item provider-county-dropdown">
-            <select
-              className="provider-county-select"
-              value={selectedCounty}
-              onChange={(e) => {
-                const value = e.target.value;
-                setSelectedCounty(value);
-                onCountyChange(value);
-              }}
-              aria-label="Select County"
-              disabled={selectedStateId === 'none'}
-            >
-              <option value="">All Counties</option>
-              {counties.map((county) => (
-                <option key={county.id} value={county.attributes.name}>
-                  {county.attributes.name}
-                </option>
+          <div className="search-group">
+            <input
+              type="text"
+              placeholder="Search provider by name..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              list="provider-names"
+            />
+            <datalist id="provider-names">
+              {providers.map((provider, index) => (
+                <option key={index} value={provider.name ?? ''} />
               ))}
-            </select>
+            </datalist>
           </div>
 
-          <div className="filter-item provider-age-dropdown">
-            <select
-              className="provider-age-select"
-              value={selectedAge}
+          <div className="filter-item provider-insurance-dropdown">
+            <input
+              type="text"
+              className="provider-insurance-select"
+              value={selectedInsurance}
               onChange={(e) => {
-                setSelectedAge(e.target.value);
-                onAgeChange(e.target.value);
+                setSelectedInsurance(e.target.value);
+                onInsuranceChange(e.target.value);
               }}
-              aria-label="Select Age Group"
-            >
-              {ageOptions.map((option, index) => (
-                <option key={index} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-
-          <div className="filter-item provider-service-dropdown">
-            <select
-              className="provider-service-select"
-              value={selectedService}
-              onChange={(e) => setSelectedService(e.target.value)}
-              aria-label="Select Service Type"
-            >
-              <option value="">All Services</option>
-              <option value="telehealth">Telehealth Services</option>
-              <option value="at_home">At Home Services</option>
-              <option value="in_clinic">In Clinic Services</option>
-            </select>
-          </div>
-
-          <div className="filter-item provider-waitlist-dropdown">
-            <select
-              className="provider-waitlist-select"
-              value={selectedWaitList}
-              onChange={(e) => setSelectedWaitList(e.target.value)}
-              aria-label="Select Waitlist Status"
-            >
-              <option value="">All Waitlist Status</option>
-              <option value="no wait list">No Waitlist</option>
-              <option value="6 Months or Less">6 Months or Less</option>
-            </select>
-          </div>
-
-          <div className="filter-item provider-spanish-dropdown">
-            <select
-              className="provider-spanish-select"
-              value={selectedSpanish}
-              onChange={(e) => setSelectedSpanish(e.target.value)}
-              aria-label="Spanish Language Option"
-            >
-              <option value="">Spanish?</option>
-              <option value="yes">Yes</option>
-            </select>
+              list="insurance-options"
+              placeholder="Search by Insurance"
+              aria-label="Select Insurance"
+            />
+            <datalist id="insurance-options">
+              {insuranceOptions
+                .filter(insurance => insurance.attributes.name !== 'Contact us')
+                .sort((a, b) => a.attributes.name.localeCompare(b.attributes.name))
+                .map((insurance, index) => (
+                  <option key={index} value={insurance.attributes.name} />
+                ))}
+            </datalist>
           </div>
         </div>
+
+        {advancedOptions && (
+          <div className="filter-group">
+            <div className="filter-item provider-county-dropdown">
+              <select
+                className="provider-county-select"
+                value={selectedCounty}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setSelectedCounty(value);
+                  onCountyChange(value);
+                }}
+                aria-label="Select County"
+                required
+                disabled={selectedStateId === 'none'}
+              >
+                <option value="">All Counties</option>
+                {counties.map((county) => (
+                  <option key={county.id} value={county.attributes.name}>
+                    {county.attributes.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="filter-item provider-age-dropdown">
+              <select
+                className="provider-age-select"
+                value={selectedAge}
+                onChange={(e) => {
+                  setSelectedAge(e.target.value);
+                  onAgeChange(e.target.value);
+                }}
+                aria-label="Select Age Group"
+              >
+                {ageOptions.map((option, index) => (
+                  <option key={index} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="filter-item provider-service-dropdown">
+              <select
+                className="provider-service-select"
+                value={selectedService}
+                onChange={(e) => setSelectedService(e.target.value)}
+                aria-label="Select Service Type"
+              >
+                <option value="">All Services</option>
+                <option value="telehealth">Telehealth Services</option>
+                <option value="at_home">At Home Services</option>
+                <option value="in_clinic">In Clinic Services</option>
+              </select>
+            </div>
+
+            <div className="filter-item provider-waitlist-dropdown">
+              <select
+                className="provider-waitlist-select"
+                value={selectedWaitList}
+                onChange={(e) => setSelectedWaitList(e.target.value)}
+                aria-label="Select Waitlist Status"
+              >
+                <option value="">All Waitlist Status</option>
+                <option value="no wait list">No Waitlist</option>
+                <option value="6 Months or Less">6 Months or Less</option>
+              </select>
+            </div>
+
+            <div className="filter-item provider-spanish-dropdown">
+              <select
+                className="provider-spanish-select"
+                value={selectedSpanish}
+                onChange={(e) => setSelectedSpanish(e.target.value)}
+                aria-label="Spanish Language Option"
+              >
+                <option value="">Spanish?</option>
+                <option value="yes">Yes</option>
+              </select>
+            </div>
+          </div>
+        )}
 
         <div className="button-group">
-          {/* <button 
+          <button className="advanced-options-button" onClick={() => setAdvancedOptions(!advancedOptions)}>
+            <span className="flex items-center gap-2">
+              Advanced Options
+              {advancedOptions ? <ChevronUp /> : <ChevronDown />}
+            </span>
+          </button>
+          <button 
             className="provider-search-button" 
             onClick={handleSearch}
             disabled={selectedStateId === '' || selectedProviderType === ''}
           >
             Search
-          </button> */}
+          </button>
           <button className="provider-reset-button" onClick={handleReset}>
             Reset
           </button>
