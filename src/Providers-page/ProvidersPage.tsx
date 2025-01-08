@@ -31,7 +31,7 @@ const ProvidersPage: React.FC = () => {
   const [selectedWaitList, setSelectedWaitList] = useState<string>("");
   const [selectedAddress, setSelectedAddress] = useState<string>("");
   const [mapAddress, setMapAddress] = useState<string>("");
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isFiltered, setIsFiltered] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [showError, setShowError] = useState("");
@@ -41,15 +41,15 @@ const ProvidersPage: React.FC = () => {
     ProviderAttributes[]
   >([]);
   const [favoriteDates, setFavoriteDates] = useState<FavoriteDate>({});
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedAge, setSelectedAge] = useState<string>("");
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedProviderName, setSelectedProviderName] = useState<string>("");
   const [selectedProviderType, setSelectedProviderType] = useState<string>("");
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedStateId, setSelectedStateId] = useState<string>("");
   const providersPerPage = 8;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [pageTransition, setPageTransition] = useState<"next" | "prev" | null>(
     null
   );
@@ -67,7 +67,7 @@ const ProvidersPage: React.FC = () => {
       target: ".provider-type-select",
       content: "Then select the type of provider you are looking for.",
       placement: "bottom",
-    }, 
+    },
     {
       target: ".provider-map-searchbar",
       content:
@@ -226,16 +226,16 @@ const ProvidersPage: React.FC = () => {
   }, []);
 
   const handleSearch = useCallback(
-    async ({ 
-      query, 
-      county_name, 
-      insurance, 
-      spanish, 
-      service, 
-      waitlist, 
-      age, 
-      providerType, 
-      stateId 
+    async ({
+      query,
+      county_name,
+      insurance,
+      spanish,
+      service,
+      waitlist,
+      age,
+      providerType,
+      stateId
     }: {
       query: string;
       county_name: string;
@@ -250,7 +250,7 @@ const ProvidersPage: React.FC = () => {
       try {
         setIsLoading(true);
         setFilteredProviders([]); // Reset filtered providers before new search
-        
+
         // If both state and provider type are selected, use the specific API endpoint
         if (stateId !== 'none' && providerType !== 'none') {
           const response = await fetchProvidersByStateIdAndProviderType(stateId, providerType);
@@ -258,17 +258,17 @@ const ProvidersPage: React.FC = () => {
             ...provider.attributes,
             id: provider.id,
           }));
-          
+
           // Show message if no providers found
           if (providersToFilter.length === 0) {
             setShowError(`We currently don't have any ${providerType} providers for this state, please check back periodically! Also ensure you have selected a state and provider type to see results!`);
             setIsLoading(false);
             return;
           }
-          
+
           // Apply additional filters and sort the results
           const filtered = providersToFilter
-            .filter((provider: ProviderAttributes) => 
+            .filter((provider: ProviderAttributes) =>
               provider.name?.toLowerCase().includes(query.toLowerCase()) &&
               (!county_name ||
                 provider.counties_served.some((c: County) =>
@@ -306,28 +306,28 @@ const ProvidersPage: React.FC = () => {
                   ((age === "0-2" &&
                     provider.min_age <= 0 &&
                     provider.max_age >= 2) ||
-                  (age === "3-5" &&
-                    provider.min_age <= 3 &&
-                    provider.max_age >= 5) ||
-                  (age === "5-7" &&
-                    provider.min_age <= 5 &&
-                    provider.max_age >= 7) ||
-                  (age === "8-10" &&
-                    provider.min_age <= 8 &&
-                    provider.max_age >= 10) ||
-                  (age === "11-13" &&
-                    provider.min_age <= 11 &&
-                    provider.max_age >= 13) ||
-                  (age === "13-15" &&
-                    provider.min_age <= 13 &&
-                    provider.max_age >= 15) ||
-                  (age === "16-18" &&
-                    provider.max_age <= 16 &&
-                    provider.min_age >= 18) ||
-                  (age === "19+" &&
-                    provider.max_age <= 19)))) &&
+                    (age === "3-5" &&
+                      provider.min_age <= 3 &&
+                      provider.max_age >= 5) ||
+                    (age === "5-7" &&
+                      provider.min_age <= 5 &&
+                      provider.max_age >= 7) ||
+                    (age === "8-10" &&
+                      provider.min_age <= 8 &&
+                      provider.max_age >= 10) ||
+                    (age === "11-13" &&
+                      provider.min_age <= 11 &&
+                      provider.max_age >= 13) ||
+                    (age === "13-15" &&
+                      provider.min_age <= 13 &&
+                      provider.max_age >= 15) ||
+                    (age === "16-18" &&
+                      provider.max_age <= 16 &&
+                      provider.min_age >= 18) ||
+                    (age === "19+" &&
+                      provider.max_age <= 19)))) &&
               (!providerType ||
-                provider.provider_type.some((type: ProviderTypeInterface) => 
+                provider.provider_type.some((type: ProviderTypeInterface) =>
                   type.name.toLowerCase() === providerType.toLowerCase()
                 ))
             )
@@ -336,12 +336,12 @@ const ProvidersPage: React.FC = () => {
               const nameB = b.name || "";
               return nameA.localeCompare(nameB);
             });
-          
+
           setFilteredProviders(filtered);
           setCurrentPage(1);
           setShowError(""); // Clear error if providers found
         }
-        
+
         setIsLoading(false);
       } catch (error) {
         console.error('Error during search:', error);
@@ -364,7 +364,7 @@ const ProvidersPage: React.FC = () => {
   //     providerType: "",
   //   });
   // }, [handleSearch]);
-  
+
   const handleProviderCardClick = (provider: ProviderAttributes) => {
     setSelectedProvider(provider);
 
@@ -602,7 +602,7 @@ const ProvidersPage: React.FC = () => {
         />
         <h1 className="providers-banner-title">Find Your Provider</h1>
       </section>
-      <div className="glass-container">
+      {/* <div className="glass-container">
         {selectedStateId === '' && selectedProviderType === '' ? (
           <div className="glass-two">
             <h2 className="searched-provider-number-status-title">
@@ -610,7 +610,7 @@ const ProvidersPage: React.FC = () => {
             </h2>
           </div>
         ) : null}
-      </div>
+      </div> */}
       <main>
         <div className="provider-page-search-cards-section">
           <SearchBar

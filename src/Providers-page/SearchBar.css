@@ -2,25 +2,43 @@
     display: flex;
     height: fit-content;
     justify-content: center;
-    margin-left: .5em;
-    margin-right: .5em;
+    width: 100%;
 }
 
 .provider-map-searchbar {
     display: flex;
+    /* flex-direction: column; */
     flex-wrap: wrap;
-    gap: 0.6rem;
-    padding: .5rem;
+    gap: 1rem;
+    padding: 1rem;
     background-color: rgb(255, 255, 255);
     border-radius: 1.2rem;
     box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
     height: fit-content;
+    width: 90%;
+    max-width: 70rem;
+    margin: 0 auto;
+    align-items: center;
 }
 
-.search-group {
-    flex: 1 1 200px;
-    min-width: 290px;
+.filter-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 70rem;
+    margin: 0 auto;
 }
+
+
+input:focus,
+select:focus {
+    outline: none;
+}
+
+
 
 .provider-state-select,
 .provider-type-select,
@@ -29,9 +47,18 @@
     text-align: center;
 }
 
+
+
 .provider-map-searchbar input[type="text"]::placeholder {
-    color: #ffffff;
-    opacity: 0.7;
+    color: #5e5e5e;
+}
+
+.search-group {
+    flex: 1 1 200px;
+    min-width: 290px;
+    border: 1px solid rgb(155, 155, 155);
+    padding-right: 1rem;
+    border-radius: 10px;
 }
 
 .filter-group {
@@ -42,10 +69,14 @@
     justify-content: center;
 }
 
+
 .filter-item {
     flex: 1 1 160px;
     min-width: 160px;
-    max-width: 250px;
+    max-width: 260px;
+    border: 1px solid rgb(155, 155, 155);
+    padding-right: 1.1rem;
+    border-radius: 10px;
 }
 
 .button-group {
@@ -57,22 +88,27 @@
     max-width: 100%;
 }
 
+
 .provider-state-select,
 .provider-type-select,
 .provider-insurance-select,
-.provider-map-searchbar input[type="text"] {
+.provider-map-searchbar input[type="text"],
+.provider-age-select,
+.provider-service-select,
+.provider-waitlist-select,
+.provider-spanish-select,
+.provider-county-select {
     width: 99.5%;
     max-width: 99.5%;
     border: none;
     border-radius: .8rem;
     font-size: 1rem;
     height: 38px;
-    color: #ffffff;
     transition: background-color 0.3s ease;
 }
 
 /* Common styles for inputs and selects */
-.provider-county-select,
+/* .provider-county-select,
 .provider-spanish-select,
 .provider-service-select,
 .provider-waitlist-select,
@@ -83,14 +119,14 @@
     font-size: 1rem;
     height: 40px;
     padding-left: .4em;
-    padding-right: 2em; 
+    padding-right: 2em;
     appearance: none;
     transition: background-color 0.3s ease;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     text-align: center;
-}
+} */
 
 .advanced-options-button {
     background-color: transparent;
@@ -104,7 +140,7 @@
 
 
 .provider-search-button,
-.provider-reset-button{
+.provider-reset-button {
     width: 100%;
     border: none;
     border-radius: .7rem;
@@ -129,31 +165,38 @@
 .provider-state-select,
 .provider-type-select,
 .provider-waitlist-select {
-    background-color: #555555;
-    color: #ffffff;
+    background-color: #ffffff;
+    color: #000000;
     text-align: center;
 }
 
 /* Button specific styles */
 .provider-search-button {
-    background-color: #4A6FA5;
-    transition: background-color 0.3s, transform 0.3s;
-    /* background-image: linear-gradient(90deg, rgba(57, 210, 248, 1), rgb(121, 157, 180)); */
+    display: flex;
+    justify-content: center;
+    background-color: #16A34A;
     color: rgb(255, 255, 255);
     font-weight: 750;
     font-size: 1.2rem;
+    align-items: center;
+    gap: 8px;
+
 }
 
 .provider-reset-button {
-    background-color: #A54A4A;
-    color: white;
-    transition: all 0.3s ease;
+    display: flex;
+    justify-content: center;
+    background-color: #ffffff;
+    border: 1px solid black;
+    color: rgb(2, 2, 2);
     font-weight: 750;
     font-size: 1.2rem;
+    align-items: center;
+    gap: 8px;
 }
 
 /* Hover states */
-.provider-map-searchbar input[type="text"]:hover,
+/* .provider-map-searchbar input[type="text"]:hover,
 .provider-county-select:hover,
 .provider-insurance-select:hover,
 .provider-spanish-select:hover,
@@ -164,13 +207,12 @@
 }
 
 .provider-search-button:hover {
-    /* background-image: linear-gradient(90deg, rgb(82, 102, 116), rgb(41, 157, 185)); */
     background-color: #74a3ea;
 }
 
 .provider-reset-button:hover {
     background-color: #e68181;
-}
+} */
 
 /* Dropdown arrows */
 .provider-county-dropdown,
@@ -186,6 +228,7 @@
     width: 50%;
 }
 
+/* 
 .provider-county-dropdown::after,
 .provider-spanish-dropdown::after,
 .provider-service-dropdown::after,
@@ -196,17 +239,18 @@
     right: 0.5rem;
     top: 50%;
     transform: translateY(-50%);
-    color: #ffffff;
+    color: #000000;
     pointer-events: none;
     font-size: 0.8rem;
-    background-color: #555555; 
-    padding: 0 0.3rem; 
-}
+    background-color: #ffffff;
+    padding: 0 0.3rem;
+} */
 
 @media (max-width: 431px) {
     .provider-map-searchbar input[type="text"] {
         width: 96%;
     }
+
     .provider-type-select,
     .provider-state-select {
         width: 80%;
@@ -228,8 +272,291 @@
 } */
 
 .advanced-options-button span {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem; /* Adjusts space between text and icon */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+@media (max-width: 1024px) {
+    .provider-map-searchbar {
+        max-width: 100%;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 0.5rem;
+        justify-content: space-evenly;
+        align-items: center;
+        width: 100%;
+    }
+
+    .filter-item {
+        flex: 1 1 auto;
+        min-width: 100px;
+        max-width: 200px;
+    }
+
+    .filter-item select {
+        width: 100%;
+        padding: 0.5rem;
+        font-size: 1rem;
+        border-radius: 0.4rem;
+        box-sizing: border-box;
+    }
+
+
+    .filter-container {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-evenly;
+        width: 100%;
+        max-width: 150rem;
+    }
+
+    .filter-container>* {
+        flex: 1 1 45%;
+        min-width: 350px;
+        max-width: 500px;
+    }
+}
+
+@media (max-width: 839px) {
+    .provider-map-searchbar {
+        max-width: 100%;
+    }
+
+    .button-group button {
+        font-size: 15px;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 0.5rem;
+        justify-content: space-evenly;
+        align-items: center;
+        width: 100%;
+    }
+
+    .filter-item {
+        flex: 1 1 auto;
+        min-width: 100px;
+        max-width: 200px;
+    }
+
+    .filter-item select {
+        width: 100%;
+        padding: 0.5rem;
+        font-size: 1rem;
+        border-radius: 0.4rem;
+        box-sizing: border-box;
+    }
+
+
+    .filter-container {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-evenly;
+        width: 100%;
+        max-width: 150rem;
+    }
+
+    .filter-container>* {
+        flex: 1 1 45%;
+        min-width: 180px;
+        max-width: 350px;
+    }
+
+    .provider-county-dropdown select,
+    .provider-age-dropdown select,
+    .provider-service-dropdown select,
+    .provider-waitlist-dropdown select,
+    .provider-spanish-dropdown select {
+        font-size: 15px;
+    }
+}
+
+
+@media (max-width: 767px) {
+    .provider-map-searchbar {
+        max-width: 100%;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 0.5rem;
+        justify-content: space-evenly;
+        align-items: center;
+        width: 100%;
+    }
+
+    .filter-item {
+        flex: 1 1 auto;
+        min-width: 100px;
+        max-width: 200px;
+    }
+
+    .filter-item select {
+        width: 100%;
+        padding: 0.5rem;
+        font-size: 1rem;
+        border-radius: 0.4rem;
+        box-sizing: border-box;
+    }
+
+
+    .filter-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        align-items: center;
+        justify-content: space-evenly;
+        width: 100%;
+        max-width: 70rem;
+        margin: 0 auto;
+    }
+
+    .filter-container>* {
+        flex: 1 1 45%;
+        min-width: 150px;
+        max-width: 300px;
+    }
+
+    .provider-county-dropdown select,
+    .provider-age-dropdown select,
+    .provider-service-dropdown select,
+    .provider-waitlist-dropdown select,
+    .provider-spanish-dropdown select {
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 700px) {
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .provider-county-dropdown,
+    .provider-age-dropdown,
+    .provider-service-dropdown,
+    .provider-waitlist-dropdown,
+    .provider-spanish-dropdown {
+        width: 100%;
+        min-width: 35rem;
+        box-sizing: border-box;
+    }
+
+    .provider-county-dropdown select,
+    .provider-age-dropdown select,
+    .provider-service-dropdown select,
+    .provider-waitlist-dropdown select,
+    .provider-spanish-dropdown select {
+        font-size: 13px;
+    }
+
+}
+
+
+
+@media (max-width: 613px) {
+    .provider-map-searchbar {
+        max-width: 100%;
+    }
+
+    .button-group button {
+        font-size: 15px;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 0.5rem;
+        justify-content: space-evenly;
+        align-items: center;
+        width: 100%;
+    }
+
+    .filter-item {
+        flex: 1 1 auto;
+        min-width: 100px;
+        max-width: 200px;
+    }
+
+    .filter-item select {
+        width: 100%;
+        padding: 0.5rem;
+        font-size: 1rem;
+        border-radius: 0.4rem;
+        box-sizing: border-box;
+    }
+
+
+    .filter-container {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-evenly;
+        width: 100%;
+        max-width: 150rem;
+    }
+
+    .filter-container>* {
+        flex: 1 1 40%;
+        min-width: 130px;
+        max-width: 250px;
+    }
+
+    .provider-state-dropdown select,
+    .provider-state-select {
+        font-size: 14px;
+    }
+
+    .provider-type-dropdown select,
+    .provider-type-select {
+        font-size: 14px;
+    }
+
+    .search-group input::placeholder,
+    .provider-insurance-select::placeholder {
+        font-size: 14px;
+    }
+
+    .provider-county-dropdown select,
+    .provider-age-dropdown select,
+    .provider-service-dropdown select,
+    .provider-waitlist-dropdown select,
+    .provider-spanish-dropdown select {
+        font-size: 12px;
+    }
+
+    .provider-county-dropdown,
+    .provider-age-dropdown,
+    .provider-service-dropdown,
+    .provider-waitlist-dropdown,
+    .provider-spanish-dropdown {
+        width: 100%;
+        min-width: 25rem;
+        box-sizing: border-box;
+    }
+
+}
+
+@media (max-width: 412px) {
+
+    .provider-county-dropdown,
+    .provider-age-dropdown,
+    .provider-service-dropdown,
+    .provider-waitlist-dropdown,
+    .provider-spanish-dropdown {
+        width: 100%;
+        min-width: 18rem;
+        box-sizing: border-box;
+    }
 }

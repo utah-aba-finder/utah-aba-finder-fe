@@ -1,13 +1,24 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './SearchBar.css';
 import { CountyData, MockProviders, ProviderAttributes, InsuranceData } from '../Utility/Types';
-import { fetchCountiesByState, fetchStates} from '../Utility/ApiCall'
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { fetchCountiesByState, fetchStates } from '../Utility/ApiCall';
+import { ChevronDown, ChevronUp, Search, RotateCcw, MapPin } from 'lucide-react';
+
 interface SearchBarProps {
   onResults: (results: MockProviders) => void;
-  onSearch: (params: { query: string; county_name: string; insurance: string; spanish: string; service: string; waitlist: string; age: string; providerType: string; stateId: string;}) => void;
+  onSearch: (params: {
+    query: string;
+    county_name: string;
+    insurance: string;
+    spanish: string;
+    service: string;
+    waitlist: string;
+    age: string;
+    providerType: string;
+    stateId: string;
+  }) => void;
   onCountyChange: (county_name: string) => void;
   insuranceOptions: InsuranceData[];
   onInsuranceChange: (insurance: string) => void;
@@ -45,24 +56,24 @@ const SearchBar: React.FC<SearchBarProps> = ({
   const [showNotification, setShowNotification] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [selectedProviderType, setSelectedProviderType] = useState<string>('none');
-  const [providerStates, setProviderStates] = useState<any[]>([]) 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [error, setError] = useState<string>("") 
+  const [providerStates, setProviderStates] = useState<any[]>([]);
+  const [error, setError] = useState<string>('');
   const [selectedStateId, setSelectedStateId] = useState<string>('none');
   const [counties, setCounties] = useState<CountyData[]>([]);
-  const [advancedOptions, setAdvancedOptions] = useState(false)
+  const [advancedOptions, setAdvancedOptions] = useState(false);
+
   // Fetch states on component mount
   useEffect(() => {
     const getStates = async () => {
       try {
-        const statesData = await fetchStates()
-        setProviderStates(statesData)
+        const statesData = await fetchStates();
+        setProviderStates(statesData);
       } catch {
-        setError("We are currently experiencing issues displaying states. Please try again later.")
+        setError('We are currently experiencing issues displaying states. Please try again later.');
       }
-    }
-    getStates()
-  }, [])
+    };
+    getStates();
+  }, []);
 
   // Fetch counties whenever selected state changes
   useEffect(() => {
@@ -79,7 +90,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
         } catch (err) {
           console.error('Error fetching counties:', err);
           setCounties([]);
-          setError("Error loading counties. Please try again later.");
+          setError('Error loading counties. Please try again later.');
         }
       } else {
         setCounties([]);
@@ -89,7 +100,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
     };
 
     getCounties();
-  }, [selectedStateId, selectedProviderType, selectedCounty, selectedAge, selectedInsurance, selectedService, selectedWaitList, selectedSpanish, searchQuery, onSearch, onCountyChange, onAgeChange, onInsuranceChange, onServiceChange, onWaitListChange, onSpanishChange, onSearch]); 
+  }, [selectedStateId]);
 
   useEffect(() => {
     if (showNotification) {
@@ -115,20 +126,22 @@ const SearchBar: React.FC<SearchBarProps> = ({
       waitlist: selectedWaitList,
       age: selectedAge,
       providerType: selectedProviderType,
-      stateId: selectedStateId
+      stateId: selectedStateId,
     });
     setShowNotification(true);
     setIsVisible(true);
-  }, [searchQuery, selectedCounty, selectedInsurance, selectedSpanish, 
-    selectedService, selectedWaitList, selectedAge, selectedProviderType, 
-    selectedStateId, onSearch]);
-
-  // Add effect to trigger search when state or provider type changes
-  useEffect(() => {
-    if (selectedStateId !== 'none' && selectedProviderType !== 'none') {
-      handleSearch();
-    }
-  }, [selectedStateId, selectedProviderType, handleSearch]);
+  }, [
+    searchQuery,
+    selectedCounty,
+    selectedInsurance,
+    selectedSpanish,
+    selectedService,
+    selectedWaitList,
+    selectedAge,
+    selectedProviderType,
+    selectedStateId,
+    onSearch,
+  ]);
 
   const handleReset = () => {
     setSearchQuery('');
@@ -141,7 +154,6 @@ const SearchBar: React.FC<SearchBarProps> = ({
     setSelectedProviderType('none');
     setSelectedStateId('none');
     onReset();
-    // Reset all callback handlers
     onCountyChange('');
     onInsuranceChange('');
     onSpanishChange('');
@@ -182,7 +194,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
               onChange={(e) => setSelectedStateId(e.target.value)}
               aria-label="Select State"
             >
-              <option value="none">All States</option>
+              <option value="none"> <MapPin size={18} /> Choose a state</option>
               {providerStates.map((providerState) => (
                 <option key={providerState.id} value={providerState.id}>
                   {providerState.attributes.name}
@@ -214,7 +226,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
           <div className="search-group">
             <input
               type="text"
-              placeholder="Search provider by name..."
+              placeholder="Search by name"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               list="provider-names"
@@ -236,12 +248,13 @@ const SearchBar: React.FC<SearchBarProps> = ({
                 onInsuranceChange(e.target.value);
               }}
               list="insurance-options"
-              placeholder="Search by Insurance"
+              placeholder="Search by insurance"
               aria-label="Select Insurance"
             />
             <datalist id="insurance-options">
+              <option value="">All Insurance</option>
               {insuranceOptions
-                .filter(insurance => insurance.attributes.name !== 'Contact us')
+                .filter((insurance) => insurance.attributes.name !== 'Contact us')
                 .sort((a, b) => a.attributes.name.localeCompare(b.attributes.name))
                 .map((insurance, index) => (
                   <option key={index} value={insurance.attributes.name} />
@@ -340,15 +353,15 @@ const SearchBar: React.FC<SearchBarProps> = ({
               {advancedOptions ? <ChevronUp /> : <ChevronDown />}
             </span>
           </button>
-          <button 
-            className="provider-search-button" 
+          <button
+            className="provider-search-button"
             onClick={handleSearch}
             disabled={selectedStateId === '' || selectedProviderType === ''}
           >
-            Search
+            <Search size={18} />Search
           </button>
           <button className="provider-reset-button" onClick={handleReset}>
-            Reset
+            <RotateCcw size={18} />Reset
           </button>
         </div>
       </div>
@@ -356,10 +369,9 @@ const SearchBar: React.FC<SearchBarProps> = ({
         <div className="fixed inset-0 flex items-center justify-center z-50">
           <div className={`bg-steelblue text-white p-4 rounded-lg shadow-lg transform transition-all duration-300 ease-in-out ${showNotification ? 'animate-jump-in' : 'animate-jump-out'}`}>
             <span className="font-bold">
-              {providers.length === 0 
-                ? `No ${selectedProviderType} providers found for the selected state make sure to choose a state and provider type to see results` 
-                : `Your search resulted in ${providers.length} ${selectedProviderType} providers`
-              }
+              {providers.length === 0
+                ? `No ${selectedProviderType} providers found for the selected state make sure to choose a state and provider type to see results`
+                : `Your search resulted in ${providers.length} ${selectedProviderType} providers`}
             </span>
           </div>
         </div>
