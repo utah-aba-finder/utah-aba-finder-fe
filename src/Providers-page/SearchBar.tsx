@@ -187,9 +187,9 @@ const SearchBar: React.FC<SearchBarProps> = ({
     <section className="provider-map-search-section">
       <div className="provider-map-searchbar">
         <div className="filter-container">
-          <div className="filter-item provider-state-dropdown">
+          <div className={`filter-item provider-state-dropdown ${selectedStateId === 'none' ? 'focus' : ''}`}>
             <select
-              className={`provider-state-select ${selectedStateId === 'none' ? 'focus' : ''}`}
+              className="provider-state-select"
               value={selectedStateId}
               onChange={(e) => setSelectedStateId(e.target.value)}
               aria-label="Select State"
@@ -204,9 +204,9 @@ const SearchBar: React.FC<SearchBarProps> = ({
             </select>
           </div>
 
-          <div className="filter-item provider-type-dropdown">
+          <div className={`filter-item provider-type-dropdown ${selectedProviderType === 'none' ? 'focus' : ''}`}>
             <select
-              className={`provider-type-select ${selectedProviderType === 'none' ? 'focus' : ''}`}
+              className="provider-type-select"
               value={selectedProviderType}
               onChange={(e) => {
                 const newValue = e.target.value;

@@ -42,7 +42,7 @@ select {
     cursor: pointer;
 }
 
-.provider-state-select.focus,
+.filter-item.focus,
 .provider-type-select.focus {
     border: 1px solid red;
 }
