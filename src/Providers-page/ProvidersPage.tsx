@@ -395,9 +395,9 @@ const ProvidersPage: React.FC = () => {
     setSelectedService("");
     setSelectedWaitList("");
     setSelectedAge("");
-    setSelectedProviderType("");
+    setSelectedProviderType("none");
     setIsFiltered(false);
-    setMapAddress("Utah");
+    setMapAddress("none");
     setCurrentPage(1);
   };
 
