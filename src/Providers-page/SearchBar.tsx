@@ -187,12 +187,13 @@ const SearchBar: React.FC<SearchBarProps> = ({
     <section className="provider-map-search-section">
       <div className="provider-map-searchbar">
         <div className="filter-container">
-          <div className="filter-item provider-state-dropdown">
+          <div className={`filter-item provider-state-dropdown ${selectedStateId === 'none' ? 'focus' : ''}`}>
             <select
               className="provider-state-select"
               value={selectedStateId}
               onChange={(e) => setSelectedStateId(e.target.value)}
               aria-label="Select State"
+              required
             >
               <option value="none"> <MapPin size={18} /> Choose a state</option>
               {providerStates.map((providerState) => (
@@ -203,7 +204,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
             </select>
           </div>
 
-          <div className="filter-item provider-type-dropdown">
+          <div className={`filter-item provider-type-dropdown ${selectedProviderType === 'none' ? 'focus' : ''}`}>
             <select
               className="provider-type-select"
               value={selectedProviderType}
@@ -356,7 +357,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
           <button
             className="provider-search-button"
             onClick={handleSearch}
-            disabled={selectedStateId === '' || selectedProviderType === ''}
+            disabled={selectedStateId === 'none' || selectedProviderType === 'none'}
           >
             <Search size={18} />Search
           </button>
@@ -369,7 +370,9 @@ const SearchBar: React.FC<SearchBarProps> = ({
         <div className="fixed inset-0 flex items-center justify-center z-50">
           <div className={`bg-steelblue text-white p-4 rounded-lg shadow-lg transform transition-all duration-300 ease-in-out ${showNotification ? 'animate-jump-in' : 'animate-jump-out'}`}>
             <span className="font-bold">
-              {providers.length === 0
+              {selectedStateId === 'none' && selectedProviderType === 'none' ?
+                'Please select a state and provider type to see results'
+                : providers.length === 0
                 ? `No ${selectedProviderType} providers found for the selected state make sure to choose a state and provider type to see results`
                 : `Your search resulted in ${providers.length} ${selectedProviderType} providers`}
             </span>

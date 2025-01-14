@@ -27,7 +27,8 @@ import Resources from "../Resources/Resources";
 import { fetchProviders } from "../Utility/ApiCall";
 import { SuperAdminEdit } from "../SuperAdmin/SuperAdminEdit";
 import FavoriteProviders from "../FavoriteProviders-page/FavoriteProviders";
-
+import ServiceDisclaimer from "../Footer/servicedisclaimer";
+import Careers from "../Footer/Careers";  
 function App() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [loggedInProvider, setLoggedInProvider] =
@@ -82,7 +83,9 @@ function App() {
             <Route path="/resources" element={<Resources />} />
             <Route path="/favoriteproviders" element={<FavoriteProviders />} />
             <Route path="/donate" element={<Donations />} />
-
+            <Route path="/servicedisclaimer" element={<ServiceDisclaimer />} />
+            <Route path="/careers" element={<Careers />} />
+            
             <Route
               path="/superAdmin/edit/:id"
               element={

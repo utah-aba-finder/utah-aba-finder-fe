@@ -38,7 +38,14 @@ select:focus {
     outline: none;
 }
 
+select {
+    cursor: pointer;
+}
 
+.filter-item.focus,
+.provider-type-select.focus {
+    border: 1px solid red;
+}
 
 .provider-state-select,
 .provider-type-select,
@@ -227,6 +234,20 @@ select:focus {
 .provider-insurance-dropdown {
     width: 50%;
 }
+
+.provider-search-button:disabled {
+    background-color: #808080;
+    color: #ffffff;
+    font-weight: 750;
+    font-size: 1.2rem;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+    cursor: not-allowed;
+}
+
+
+
 
 /* 
 .provider-county-dropdown::after,
