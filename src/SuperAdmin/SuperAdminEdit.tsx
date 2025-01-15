@@ -677,9 +677,6 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                     </div>
 
                     {/* Service Delivery Options */}
-                    {editedProvider.provider_type?.some((type: { name: string }) =>
-                      type.name?.toLowerCase() === "aba therapy"
-                    ) && (
                       <div className="mt-8">
                         <label className="block text-sm font-medium text-gray-600 mb-4">
                           Service Delivery Options
@@ -748,7 +745,6 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                           </div>
                         </div>
                       </div>
-                    )}
                   </div>
                 </div>
               </div>
