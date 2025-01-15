@@ -370,10 +370,8 @@ const SearchBar: React.FC<SearchBarProps> = ({
         <div className="fixed inset-0 flex items-center justify-center z-50">
           <div className={`bg-steelblue text-white p-4 rounded-lg shadow-lg transform transition-all duration-300 ease-in-out ${showNotification ? 'animate-jump-in' : 'animate-jump-out'}`}>
             <span className="font-bold">
-              {selectedStateId === 'none' && selectedProviderType === 'none' ?
-                'Please select a state and provider type to see results'
-                : providers.length === 0
-                ? `No ${selectedProviderType} providers found for the selected state make sure to choose a state and provider type to see results`
+              {providers.length === 0
+                ? `No ${selectedProviderType} providers found for the selected state make sure to check back periodically!`
                 : `Your search resulted in ${providers.length} ${selectedProviderType} providers`}
             </span>
           </div>
