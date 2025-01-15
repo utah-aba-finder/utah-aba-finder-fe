@@ -574,6 +574,14 @@ const ProvidersPage: React.FC = () => {
     getInsuranceOptions();
   }, []);
 
+  // if (filteredProviders.length === 0){
+  //   return (
+  //     <div className="providers-page">
+  //       <h3>We currently don't have any providers for this state, please check back periodically!</h3>
+  //     </div>
+  //   )
+  // }
+
   return (
     <div className="providers-page">
 
@@ -627,7 +635,7 @@ const ProvidersPage: React.FC = () => {
             onAgeChange={handleAgeChange}
             onProviderTypeChange={handleProviderTypeChange}
             onReset={handleResetSearch}
-          />
+            />
           <section className="glass">
             <section className="searched-provider-map-locations-list-section">
               {isLoading && (
@@ -695,17 +703,16 @@ const ProvidersPage: React.FC = () => {
                   )}
                 </div>
               )}
+              </section>
             </section>
-          </section>
-        </div>
-
+          </div>
         {selectedProvider && (
           <ProviderModal
-            provider={selectedProvider}
-            address={selectedAddress || "Address not available"}
-            mapAddress={mapAddress}
-            onClose={handleCloseModal}
-            onViewOnMapClick={handleViewOnMapClick}
+          provider={selectedProvider}
+          address={selectedAddress || "Address not available"}
+          mapAddress={mapAddress}
+          onClose={handleCloseModal}
+          onViewOnMapClick={handleViewOnMapClick}
           />
         )}
       </main>
