@@ -1,5 +1,5 @@
 import React from 'react';
-import { Linkedin } from 'lucide-react';
+import { Linkedin, Facebook } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const Footer = () => {
@@ -11,6 +11,9 @@ const Footer = () => {
                     <h3>Follow us on:</h3>
                     <Link to="https://www.linkedin.com/company/autism-services-locator/" target="_blank">
                         <Linkedin className="p-2" size={24} />
+                    </Link>
+                    <Link to="https://www.facebook.com/profile.php?id=61571553697036" target="_blank">
+                        <Facebook className="p-2" size={24} />
                     </Link>
                 </div>
                 <div className="w-full flex flex-col md:flex-row lg:flex-row items-center justify-center text-sm">
