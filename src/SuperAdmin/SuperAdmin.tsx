@@ -21,7 +21,7 @@ import Analytics from "./Analytics";
 import SuperAdminCreate from "./SuperAdminCreate";
 import SuperAdminAddInsurances from "./SuperAdminAddInsurances";
 import moment from "moment";
-import { MockProviderData, ProviderAttributes } from "../Utility/Types";
+import { MockProviderData, ProviderAttributes} from "../Utility/Types";
 
 const SuperAdmin = () => {
   const { setToken, loggedInProvider } = useAuth();
@@ -86,7 +86,6 @@ const SuperAdmin = () => {
         return;
       }
 
-      console.log("Received updatedProvider:", updatedProvider); // Debug log
 
       setProviders((prevProviders) => {
         if (!selectedProvider?.id) {
@@ -115,7 +114,6 @@ const SuperAdmin = () => {
 
   const filteredProviders = providers.filter((provider) => {
     if (!provider?.attributes) {
-      console.log("Filtering out invalid provider:", provider); // Debug log
       return false;
     }
 
@@ -136,7 +134,7 @@ const SuperAdmin = () => {
         ? true
         : provider.attributes.status?.toLowerCase() === statusFilter;
 
-    return nameMatch && typeMatch && statusMatch;
+    return nameMatch && typeMatch && statusMatch ;
   });
 
   const getStatusColor = (status: string | null | undefined) => {
@@ -464,7 +462,7 @@ const SuperAdmin = () => {
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                               Provider Name
                             </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-6 py-3 text-left max-w-[1rem] text-xs font-medium text-gray-500 uppercase tracking-wider">
                               Type
                             </th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -489,12 +487,12 @@ const SuperAdmin = () => {
                               }}
                             >
                               <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="text-sm font-medium text-gray-900 truncate max-w-[16rem]">
+                                <div className="text-sm font-medium text-gray-900 truncate max-w-[10rem]">
                                   {provider.attributes.name}
                                 </div>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="text-sm text-gray-500">
+                                <div className="text-sm text-gray-500 max-w-[6rem] truncate">
                                   {provider.attributes.provider_type?.map(type => type.name).join(", ") || "Unknown"}
                                 </div>
                               </td>
