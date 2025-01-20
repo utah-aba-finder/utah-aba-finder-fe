@@ -48,7 +48,7 @@ const ProvidersPage: React.FC = () => {
   const [selectedProviderType, setSelectedProviderType] = useState<string>("");
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedStateId, setSelectedStateId] = useState<string>("");
-  const providersPerPage = 8;
+  const providersPerPage = 10;
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [pageTransition, setPageTransition] = useState<"next" | "prev" | null>(
     null
