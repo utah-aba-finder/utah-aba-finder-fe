@@ -198,7 +198,7 @@ class Homepage extends Component<Props, State> {
                         <h2 className="discover-section-subtitle">Autism Evaluations | ABA Therapy | Speech Therapy | Occupational Therapy</h2>
                         <div className="discover-section-content">
                             <p className="discover-section-description">
-                                We're here to guide you every step of the way in finding the best providers for you and your family. Start your journey with a bit of ease.
+                                We're here to make your search in finding the best providers for you and your family easier. Start your journey with a bit of ease.
                             </p>
                         </div>
                         <div className="discover-section-button-container">

@@ -131,7 +131,7 @@ const Header = () => {
           </div>
         </div>
       </div>
-      <div className="w-full h-[.2em] bg-[#544d49]" />
+      {/* <div className="w-full h-[.2em] bg-[#544d49]" /> */}
 
       {/* Mobile Menu */}
       <div
