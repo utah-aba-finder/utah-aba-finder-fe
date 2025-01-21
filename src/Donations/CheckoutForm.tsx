@@ -1,11 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { useStripe, useElements, CardElement, PaymentRequestButtonElement } from '@stripe/react-stripe-js';
 
+interface CheckoutFormProps {
+  initialAmount?: number;
+  isRecurring?: boolean;
+  providerData?: any | null;
+  onPaymentSuccess?: () => void;
+}
 
-const CheckoutForm: React.FC = () => {
+const CheckoutForm: React.FC<CheckoutFormProps> = ({
+  initialAmount = 0,
+  isRecurring = false,
+  providerData = null,
+  onPaymentSuccess = () => {}
+}) => {
     const stripe = useStripe();
     const elements = useElements();
-    const [donationAmount, setDonationAmount] = useState<number | null>(50);
+    const [donationAmount, setDonationAmount] = useState<number | null>(initialAmount);
     const [customAmount, setCustomAmount] = useState<string>('');
     const [isCustomAmount, setIsCustomAmount] = useState<boolean>(false);
     const [frequency, setFrequency] = useState<'one-time' | 'recurring'>('one-time');
