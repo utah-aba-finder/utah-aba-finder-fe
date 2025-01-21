@@ -1,6 +1,6 @@
 import { NotebookPen, MoveDown, Search, LockKeyhole, FilePenLine } from 'lucide-react'; import './Signup.css';
 import { useState } from 'react'
-import { SignupModal } from './SignupModal';
+import  SignupModal  from './SignupModal';
 
 
 
@@ -38,8 +38,8 @@ export const Signup = () => {
             </div>
             {isModalOpen &&
                 <SignupModal
-                    isOpen={isModalOpen}
-                    onClose={() => setIsModalOpen(false)}
+                    handleCloseForm={() => setIsModalOpen(false)}
+                    onProviderCreated={() => setIsModalOpen(false)}
                 />
             }
         </section>
