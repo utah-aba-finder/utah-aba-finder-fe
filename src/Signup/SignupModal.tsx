@@ -556,22 +556,6 @@ const SignupModal: React.FC<SuperAdminCreateProps> = ({
                     <option value="6 months or less">6 months or less</option>
                     <option value="6 months or more">6 months or more</option>
                   </select>
-                  <div>
-                    <label className="block text-sm text-gray-600 mb-2">
-                      Status
-                    </label>
-                    <select
-                      name="status"
-                      value={formData.status || ""}
-                      onChange={handleChange}
-                      className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                    >
-                      <option value="" disabled>Select an option</option>
-                      <option value="approved">Approved</option>
-                      <option value="pending">Pending</option>
-                      <option value="denied">Denied</option>
-                    </select>
-                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
