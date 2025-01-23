@@ -708,11 +708,16 @@ const ProvidersPage: React.FC = () => {
           </div>
         {selectedProvider && (
           <ProviderModal
-          provider={selectedProvider}
-          address={selectedAddress || "Address not available"}
-          mapAddress={mapAddress}
-          onClose={handleCloseModal}
-          onViewOnMapClick={handleViewOnMapClick}
+            provider={{
+              id: selectedProvider.id,
+              type: "provider",
+              states: selectedProvider.states,
+              attributes: selectedProvider
+            }}
+            address={selectedAddress || "Address not available"}
+            mapAddress={mapAddress}
+            onClose={() => setSelectedProvider(null)}
+            onViewOnMapClick={handleViewOnMapClick}
           />
         )}
       </main>

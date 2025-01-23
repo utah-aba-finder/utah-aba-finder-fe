@@ -37,7 +37,7 @@ export interface StatesServed {
 export interface ProviderAttributes {
     id: number;
     name: string | null;
-    states: string[] | null;
+    states: string[];
     provider_type: ProviderType[];
     locations: Location[];
     insurance: Insurance[];

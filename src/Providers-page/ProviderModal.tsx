@@ -41,6 +41,7 @@ interface ProviderAttributes {
   counties_served: County[];
   logo?: string | null;
   updated_last: string | null;
+  states: string[];
 }
 
 interface County {
@@ -49,13 +50,17 @@ interface County {
 }
 
 interface ProviderModalProps {
-  provider: ProviderAttributes;
+  provider: {
+    id: number;
+    type: string;
+    states?: string[];
+    attributes: ProviderAttributes;
+  };
   address: string;
   mapAddress: string;
   onClose: () => void;
   onViewOnMapClick: (address: string) => void;
 }
-
 
 const ProviderModal: React.FC<ProviderModalProps> = ({ provider, address, mapAddress, onViewOnMapClick, onClose }) => {
   const [isVisible, setIsVisible] = useState(false);
@@ -76,7 +81,7 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ provider, address, mapAdd
 
   if (!provider) return null;
 
-  const hasMultipleLocations = provider.locations.length > 1;
+  const hasMultipleLocations = provider.attributes.locations.length > 1;
 
   const handleKeyDown = (e: React.KeyboardEvent, tabName: string) => {
     if (e.key === 'Enter' || e.key === ' ') {
@@ -91,80 +96,88 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ provider, address, mapAdd
           <section className="modal-text-section">
             <div className="provider-main-info">
               <div className="update-section">
-                <span className="last-update">Last Updated {moment(provider.updated_last).format('MM/DD/YYYY')}</span>
+                <span className="last-update">Last Updated {moment(provider.attributes.updated_last).format('MM/DD/YYYY')}</span>
               </div>
-              <p className="provider-address-phone text">
-                {provider.locations.length > 0 ? (
-                  provider.locations.map((location, index) => (
-                    <div key={index} className="provider-address-phone">
-                      {hasMultipleLocations && (
-                        <p><strong>Location {index + 1}: {location.name ? location.name : 'Unnamed Location'} -</strong>
-                          <button className="view-on-map-button"
-                            onClick={() => {
-                              const fullAddress = `${location.address_1 || ''} ${location.address_2 || ''}, ${location.city || ''}, ${location.state || ''} ${location.zip || ''}`.trim();
-                              onViewOnMapClick(fullAddress);
-                            }}>
-                            View this address on the map
-                          </button>
-                        </p>
-                      )}
-                      <p>
-                        <MapPin style={{ marginRight: '8px' }} />
-                        <strong>Address: </strong>
-                        {location.address_1 ? (
-                          `${location.address_1}${location.address_2 ? `, ${location.address_2}` : ''}${location.city ? `, ${location.city}` : ''}${location.state ? `, ${location.state}` : ''} ${location.zip || ''}`
-                        ) : (
-                          'Physical address is not available for this provider.'
-                        )}
-                      </p>
-                      <p><Phone style={{ marginRight: '8px' }} />
-                        <strong>Phone: </strong>
-                        {location.phone ? <a href={`tel:${location.phone}`}>{location.phone}</a> : 'Provider does not have a number for this location yet.'}
-                      </p>
-                      <p><Globe style={{ marginRight: '8px' }} />
-                        <strong>Website: </strong>
-                        {provider.website ? <a href={provider.website} target="_blank" rel="noopener noreferrer">{provider.website}</a> : 'Provider does not have a website yet.'}
-                      </p>
-                      <p className="email-text"><Mail style={{ marginRight: '8px' }} />
-                        <strong>Email: </strong>
-                        {provider.email ? <a href={`mailto:${provider.email}`} target="_blank" rel="noopener noreferrer">{provider.email}</a> : 'Provider does not have an email yet.'}
-                      </p>
-                    </div>
-                  ))
-                ) : (
-                  <p><strong>Physical address is not available for this provider</strong></p>
-                )}
+              <p className="provider-contact text">
+                <p><Phone style={{ marginRight: '8px' }} />
+                  <strong>Phone: </strong>
+                  {provider.attributes.locations[0].phone ? <a href={`tel:${provider.attributes.locations[0].phone}`}>{provider.attributes.locations[0].phone}</a> : 'Provider does not have a number for this location yet.'}
+                </p>
+                <p><Globe style={{ marginRight: '8px' }} />
+                  <strong>Website: </strong>
+                  {provider.attributes.website ? <a href={provider.attributes.website} target="_blank" rel="noopener noreferrer">{provider.attributes.website}</a> : 'Provider does not have a website yet.'}
+                </p>
+                <p className="email-text"><Mail style={{ marginRight: '8px' }} />
+                  <strong>Email: </strong>
+                  {provider.attributes.email ? <a href={`mailto:${provider.attributes.email}`} target="_blank" rel="noopener noreferrer">{provider.attributes.email}</a> : 'Provider does not have an email yet.'}
+                </p>
               </p>
             </div>
             <div className="provider-details text">
-            <p><strong>Counties Served:</strong> {
-              provider.provider_type.length > 0 && provider.provider_type[0].name === "ABA Therapy"
-                ? provider.counties_served?.length === 1 && provider.counties_served[0].county_name === "Contact Us"
-                  ? 'Contact us'
-                  : provider.counties_served?.length > 0
-                    ? provider.counties_served
+              <p><strong>Counties Served:</strong> {
+                provider.attributes.provider_type.length > 0 && provider.attributes.provider_type[0].name === "ABA Therapy"
+                  ? provider.attributes.counties_served?.length === 1 && provider.attributes.counties_served[0].county_name === "Contact Us"
+                    ? 'Contact us'
+                    : provider.attributes.counties_served?.length > 0
+                      ? provider.attributes.counties_served
+                          .filter(county => county.county_name !== "Contact Us")
+                          .map(county => county.county_name)
+                          .join(', ')
+                      : 'Not applicable for this provider'
+                  : provider.attributes.counties_served?.length > 1 || (provider.attributes.counties_served?.length === 1 && provider.attributes.counties_served[0].county_name !== "Contact Us")
+                    ? provider.attributes.counties_served
                         .filter(county => county.county_name !== "Contact Us")
                         .map(county => county.county_name)
                         .join(', ')
                     : 'Not applicable for this provider'
-                : provider.counties_served?.length > 1 || (provider.counties_served?.length === 1 && provider.counties_served[0].county_name !== "Contact Us")
-                  ? provider.counties_served
-                      .filter(county => county.county_name !== "Contact Us")
-                      .map(county => county.county_name)
-                      .join(', ')
-                  : 'Not applicable for this provider'
-            }</p>
-              <p><strong>Ages Served:</strong> {provider.min_age} - {provider.max_age} years</p>
-              <p><strong>Waitlist:</strong> {provider.waitlist || 'Contact us'}</p>
-              <p><strong>Telehealth Services:</strong> {provider.telehealth_services || 'Contact us'}</p>
-              <p><strong>At Home Services:</strong> {provider.provider_type.length > 0 ? (provider.at_home_services || 'Contact us') : provider.provider_type.length > 0 ? (provider.at_home_services || 'Not applicable') : null}</p>
-              <p><strong>In-Clinic Services:</strong> {provider.provider_type.length > 0 ? (provider.in_clinic_services || 'Contact us') : provider.provider_type.length > 0 && provider.locations?.some(location => location.address_1 && location.city && location.state && location.zip) ? 'Yes' : 'Not applicable'}</p>
-              <p><strong>Spanish Speakers:</strong> {provider.spanish_speakers || 'Contact us'}</p>
-              <p><strong>Cost:</strong> {provider.cost || 'Contact us'}</p>
-              <p><strong>Insurance:</strong> {provider.insurance.map(i => i.name).join(', ') || 'Contact us'}</p>
+              }</p>
+              <p><strong>Ages Served:</strong> {provider.attributes.min_age} - {provider.attributes.max_age} years</p>
+              <p><strong>Waitlist:</strong> {provider.attributes.waitlist || 'Contact us'}</p>
+              <p><strong>Telehealth Services:</strong> {provider.attributes.telehealth_services || 'Contact us'}</p>
+              <p><strong>At Home Services:</strong> {provider.attributes.provider_type.length > 0 ? (provider.attributes.at_home_services || 'Contact us') : provider.attributes.provider_type.length > 0 ? (provider.attributes.at_home_services || 'Not applicable') : null}</p>
+              <p><strong>In-Clinic Services:</strong> {provider.attributes.provider_type.length > 0 ? (provider.attributes.in_clinic_services || 'Contact us') : provider.attributes.provider_type.length > 0 && provider.attributes.locations?.some(location => location.address_1 && location.city && location.state && location.zip) ? 'Yes' : 'Not applicable'}</p>
+              <p><strong>Spanish Speakers:</strong> {provider.attributes.spanish_speakers || 'Contact us'}</p>
+              <p><strong>Cost:</strong> {provider.attributes.cost || 'Contact us'}</p>
+              <p><strong>Insurance:</strong> {provider.attributes.insurance.map(i => i.name).join(', ') || 'Contact us'}</p>
             </div>
           </section>
         );
+      case 'locations':
+        return <section className="location-section">
+          <div className="location-map">
+            <div className="location-list">
+              {provider.attributes.locations.length > 0 ? (
+                provider.attributes.locations.map((location, index) => (
+                  <div key={index} className="provider-address-phone">
+                    <p><strong>Location {index + 1}: {location.name ? location.name : ""}</strong></p>
+                    <p>
+                      <MapPin style={{ marginRight: '8px' }} />
+                      <strong>Address: </strong>
+                      {location.address_1 ? (
+                        `${location.address_1}${location.address_2 ? `, ${location.address_2}` : ''}${location.city ? `, ${location.city}` : ''}${location.state ? `, ${location.state}` : ''} ${location.zip || ''}`
+                      ) : (
+                        'Physical address is not available for this provider.'
+                      )}
+                    </p>
+                    <p><Phone style={{ marginRight: '8px' }} />
+                      <strong>Phone: </strong>
+                      {location.phone ? <a href={`tel:${location.phone}`}>{location.phone}</a> : 'Provider does not have a number for this location yet.'}
+                    </p>
+                    <button className="view-on-map-button"
+                      onClick={() => {
+                        const fullAddress = `${location.address_1 || ''} ${location.address_2 || ''}, ${location.city || ''}, ${location.state || ''} ${location.zip || ''}`.trim();
+                        onViewOnMapClick(fullAddress);
+                      }}>
+                      View this address on the map
+                    </button>
+                  </div>
+                ))
+              ) : (
+                <p><strong>Physical address is not available for this provider</strong></p>
+              )}
+            </div>
+          </div>
+        </section>;
       case 'reviews':
         return <section className="review-section">Client testimonial content will go here</section>;
       case 'media':
@@ -182,15 +195,15 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ provider, address, mapAdd
         </button>
         <div className="modal-grid">
           <div className="modal-grid-map">
-            <GoogleMap address={provider.locations.some((location) => location.address_1)
+            <GoogleMap address={provider.attributes.locations.some((location) => location.address_1)
               ? mapAddress
-              : undefined}
+              : provider.states?.[0] || ''}
             />
           </div>
           <div className="modal-grid-text">
             <section className="modal-logo">
-              <img src={provider.logo ?? undefined} alt={provider.name ?? undefined} className="modal-img" />
-              <h2 className="provider-name title">{provider.name}</h2>
+              <img src={provider.attributes.logo ?? undefined} alt={provider.attributes.name ?? undefined} className="modal-img" />
+              <h2 className="provider-name title">{provider.attributes.name}</h2>
             </section>
             <div className="modal-tabs">
               <button
@@ -200,6 +213,14 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ provider, address, mapAdd
                 tabIndex={0}
               >
                 Details
+              </button>
+              <button
+                className={`tab-button ${activeTab === 'locations' ? 'active' : ''}`}
+                onClick={() => setActiveTab('locations')}
+                onKeyDown={(e) => handleKeyDown(e, 'locations')}
+                tabIndex={0}
+              >
+                Locations
               </button>
               <button
                 className={`tab-button ${activeTab === 'reviews' ? 'active' : ''}`}

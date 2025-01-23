@@ -152,7 +152,12 @@ const FavoriteProviders: React.FC = () => {
 
             {selectedProvider && (
                 <ProviderModal
-                    provider={selectedProvider}
+                    provider={{
+                        id: selectedProvider.id,
+                        type: "provider",
+                        states: selectedProvider.states,
+                        attributes: selectedProvider
+                    }}
                     address={selectedAddress || 'Address not available'}
                     mapAddress={mapAddress || 'Address not available'}
                     onClose={handleCloseModal}

@@ -1,60 +1,43 @@
 .signupWrapper {
-    background-size: cover;
-    background-position: center;
-    height: 100vh;
+    height: fit-content;
     display: flex;
+    flex-direction: column;
     width: 100%;
 }
 
 .signupImageText {
-    position: absolute;
     color: white;
     font-size: 2.5rem;
     text-align: center;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: #4A6FA5;
     padding: 1rem;
     border-radius: 10px;
-    bottom: 85%;
 }
 
 .signupContainer {
-    position: relative;
     display: flex;
+    flex-direction: column;
     justify-content: space-evenly;
     align-items: center;
     align-content: center;
     margin: 5px;
     height: 100%;
     width: 100%;
+    padding: 10px;
 }
 
-.insuranceChoices {
-    height: fit-content;
-    font-size: 10px;
+.signupInstructionsContainer {
     display: flex;
     flex-direction: row;
-    flex-wrap: wrap;
-    padding: 0;
-}
-
-.signupForm {
-    display: flex;
-    flex-direction: column;
-    color: white;
-    font-size: 2.5rem;
-    text-align: center;
-    background-color: rgba(0, 0, 0, 0.8);
-    padding: 1rem;
-    border-radius: 10px;
-    display: flex;
-    flex-direction: column;
-    width: 40%;
+    width: 100%;
+    justify-content: space-evenly;
     align-items: center;
+    justify-content: center;
 }
 
 .signupInstructions {
-    background-color: rgba(0, 0, 0, .9);
-    width: 40%;
+    background-color: #4A6FA5;
+    width: 50%;
     padding: 1rem;
     color: rgb(255, 255, 255);
     border-radius: .5rem;
@@ -68,10 +51,35 @@
     align-items: center;
 }
 
-/* .instructionContainer {
+.plan-options-container {
     display: flex;
-    width: 100%;
-} */
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 70%;
+    padding-bottom: 5rem;
+}
+
+.plan-options-container h2 {
+    font-size: 2rem;
+    margin-bottom: 20px;
+}
+
+.plan-options-container table {
+    width: 80%;
+}
+
+.plan-options-container table th,
+.plan-options-container table td {
+    padding: 10px;
+    text-align: center;
+    border: 1px solid #ccc;
+}
+
+.plan-options-container table th {
+    background-color: #4A6FA5;
+    
+}
 
 .iconColumn {
     display: flex;
@@ -98,15 +106,6 @@
     color: white;
 }
 
-/* 
-.messageColumn {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    width: 80%;
-    color: white;
-} */
-
 .instructionIcons {
     font-size: 48px;
     color: rgb(251, 251, 251);
@@ -115,7 +114,6 @@
 .messageColumn p {
     margin-bottom: 20px;
 }
-
 
 .step1,
 .instructionIcon1,

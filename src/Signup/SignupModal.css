@@ -212,3 +212,10 @@
 .inClinicServices button:hover {
     background-color: #1b5da8;
 }
+
+.payment-section {
+    margin: 2rem 0;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    background-color: #f8f9fa;
+}
