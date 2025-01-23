@@ -99,6 +99,10 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ provider, address, mapAdd
                 <span className="last-update">Last Updated {moment(provider.attributes.updated_last).format('MM/DD/YYYY')}</span>
               </div>
               <p className="provider-contact text">
+                <p><Phone style={{ marginRight: '8px' }} />
+                  <strong>Phone: </strong>
+                  {provider.attributes.locations[0].phone ? <a href={`tel:${provider.attributes.locations[0].phone}`}>{provider.attributes.locations[0].phone}</a> : 'Provider does not have a number for this location yet.'}
+                </p>
                 <p><Globe style={{ marginRight: '8px' }} />
                   <strong>Website: </strong>
                   {provider.attributes.website ? <a href={provider.attributes.website} target="_blank" rel="noopener noreferrer">{provider.attributes.website}</a> : 'Provider does not have a website yet.'}
