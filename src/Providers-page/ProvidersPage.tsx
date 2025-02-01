@@ -516,6 +516,7 @@ const ProvidersPage: React.FC = () => {
       setTimeout(() => {
         setCurrentPage(prevPage => prevPage + 1);
         setIsAnimating(false);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }, 300);
     }
   };
@@ -526,6 +527,7 @@ const ProvidersPage: React.FC = () => {
       setTimeout(() => {
         setCurrentPage(prevPage => prevPage - 1);
         setIsAnimating(false);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }, 300);
     }
   };

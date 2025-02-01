@@ -71,7 +71,8 @@
     width: 92%;
 }
 
-.paypalContainer {
+.paypalContainer,
+.venmoContainer {
     width: 100%;
     height: 40%;
     display: flex;
@@ -79,12 +80,14 @@
     align-items: center;
 }
 
-.paypalLink {
+.paypalLink,
+.venmoLink {
     width: 30%;
     height: 20%;
 }
 
-.paypalContainer a {
+.paypalContainer a,
+.venmoContainer a {
     text-decoration: none;
     color: #4285f4;
     font-size: 1.2rem;

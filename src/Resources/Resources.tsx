@@ -35,13 +35,14 @@ const Resources = () => {
                                 width="100%"
                                 height="500px"
                                 className="pdf-preview"
+                                // style={{ width: '100%', height: '50vh' }}
                             >
                                 <p>Your browser does not support PDF preview. Click here to download.</p>
                             </object>
                         </a>
                     </div>
                 </div>
-                <h1>Useful Forms</h1>
+                {/* <h1>Useful Forms</h1>
                 <hr className="divider" />
                 <p className="resources-content-description">Click the image to download/print the worksheets</p>
                 <div className="resource-links-container">
@@ -65,7 +66,7 @@ const Resources = () => {
                             <img src={socialImage} alt="Social Stories and Scripts Worksheet" />
                         </a>
                     </div>
-                </div>
+                </div> */}
 
                 <h1>Useful Websites</h1>
                 <hr className="divider" />
