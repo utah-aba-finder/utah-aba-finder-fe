@@ -6,6 +6,21 @@ import detailImage from '../Assets/detail-image.png'
 
 const resourceBannerVideo = require('../Assets/resource-banner.mp4');
 
+const podCasts = [
+    {
+        title: "Autism Navigation Pod",
+        url: "https://open.spotify.com/embed/episode/7lOy8KyWzMEJHwudATB5K6?utm_source=generator&theme=0"
+    },
+    {
+        title: "Navigating Adult Autism",
+        url: "https://open.spotify.com/embed/show/43VNbJfLCHwXod0rsfVqFW"
+    },
+    {
+        title:"The Telepathy Tapes",
+        url: "https://open.spotify.com/embed/show/1zigaPaUWO4G9SiFV0Kf1c"
+    }
+]
+
 const Resources = () => {
     return (
         <div className="resources-container">
@@ -35,34 +50,10 @@ const Resources = () => {
                                 width="100%"
                                 height="500px"
                                 className="pdf-preview"
+                                // style={{ width: '100%', height: '50vh' }}
                             >
                                 <p>Your browser does not support PDF preview. Click here to download.</p>
                             </object>
-                        </a>
-                    </div>
-                </div>
-                <h1>Useful Forms</h1>
-                <hr className="divider" />
-                <p className="resources-content-description">Click the image to download/print the worksheets</p>
-                <div className="resource-links-container">
-                    <div className="resource-image-container">
-                        <h3>Behavior Tracking Worksheet</h3>
-                        <a href="https://docs.google.com/document/d/1k9adZvc0qy_hpwxb-odU-OtGWjBiD4BifIObdskplwQ/edit?usp=sharing" target="_blank" rel="noopener noreferrer">
-                            <img src={behaviorImage} alt="Behavior Tracking Sheet" />
-                        </a>
-                    </div>
-
-                    <div className="resource-image-container">
-                        <h3>Detailed Goal Setting Worksheet</h3>
-                        <a href="https://docs.google.com/document/d/1Bg_EzRx8ozIHrDDpkkcv6cHZTtONIxhTgYPNzqIf-Co/edit?usp=sharing" target="_blank" rel="noopener noreferrer">
-                            <img src={detailImage} alt="Detailed Goal Setting Worksheet" />
-                        </a>
-                    </div>
-
-                    <div className="resource-image-container">
-                        <h3>Social Stories and Scripts Worksheet</h3>
-                        <a href="https://docs.google.com/document/d/1UrYopDLjw0OXp-58D6HeYbGtGd1CSQ7Eo_j9HZUWi4Y/edit?usp=sharing" target="_blank" rel="noopener noreferrer">
-                            <img src={socialImage} alt="Social Stories and Scripts Worksheet" />
                         </a>
                     </div>
                 </div>
@@ -75,7 +66,7 @@ const Resources = () => {
                             <a href="https://www.autismspeaks.org/" target="_blank" rel="noopener noreferrer">
                                 Autism Speaks
                             </a>
-                            - Autism Speaks offers a wealth of information about autism spectrum disorder (ASD), treatment options including ABA therapy, and resources for families, educators, and professionals.
+                            - Autism Speaks offers a wealth of information about autism spectrum disorder (ASD), different therapy options including ABA therapy, and resources for families, educators, and professionals.
                         </li>
                         <li>
                             <a href="https://autismnavigator.com/" target="_blank" rel="noopener noreferrer">
@@ -105,7 +96,7 @@ const Resources = () => {
                             <a href="https://www.bacb.com/" target="_blank" rel="noopener noreferrer">
                                 Behavior Analyst Certification Board (BACB)
                             </a>
-                            - BACB provides information about the certification process for behavior analysts and resources related to ABA therapy. It’s particularly useful for those pursuing a career in ABA.
+                            - BACB provides information about the certification process for behavior analysts and resources related to ABA therapy. It's particularly useful for those pursuing a career in ABA.
                         </li>
                         <li>
                             <a href="https://www.rethinkbh.com/" target="_blank" rel="noopener noreferrer">
@@ -132,6 +123,22 @@ const Resources = () => {
                             - The NIMH provides detailed information on autism spectrum disorders, including symptoms, causes, and treatment options like ABA therapy.
                         </li>
                     </ul>
+                </div>
+                <h1>Podcasts</h1>
+                <hr className="divider" />
+                <div className="podcasts-container">
+                    {podCasts.map((podcast) => (
+                        <iframe 
+                            src={podcast.url} 
+                            width="100%" 
+                            height="152" 
+                            frameBorder="0" 
+                            allowFullScreen 
+                            allow="clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+                            loading="lazy"
+                            title={podcast.title}
+                        ></iframe>
+                    ))}
                 </div>
 
 

@@ -8,7 +8,6 @@ import { fetchStates, fetchCountiesByState } from "../Utility/ApiCall";
 import "react-toastify/dist/ReactToastify.css";
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
-import CheckoutForm from '../Donations/CheckoutForm';
 import ProviderCheckoutForm from './ProviderCheckoutForm';
 
 interface SuperAdminCreateProps {

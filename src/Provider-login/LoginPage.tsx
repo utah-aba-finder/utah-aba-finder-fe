@@ -16,7 +16,6 @@ export const LoginPage: React.FC = () => {
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false)
     const { initializeSession, setLoggedInProvider } = useAuth();
-    const [showForm, setShowForm] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -113,25 +112,6 @@ export const LoginPage: React.FC = () => {
         );
     }
 
-    if (showForm) {
-        return (
-            <div className='w-full h-1/2 flex flex-col items-center justify-center'>
-            <iframe 
-                title="Provider Survey Form"
-                width="50%" 
-                height="100px" 
-                src="https://forms.office.com/Pages/ResponsePage.aspx?id=_IR5aO6kqkyeTQpq0x0eeboM_4PVAohJve2GUCHFA5tUQ0QwMFBTV1hCN1Q3TFBZMlM0NFhLOFdOWC4u&embed=true" 
-                frameBorder={0}
-                style={{border: "none", minHeight: "800px"}}
-                allowFullScreen
-            >
-                <p>Your browser does not support the embedded form. Please <a href="https://forms.office.com/Pages/ResponsePage.aspx?id=_IR5aO6kqkyeTQpq0x0eeboM_4PVAohJve2GUCHFA5tUQ0QwMFBTV1hCN1Q3TFBZMlM0NFhLOFdOWC4u">click here</a> to fill out the form.</p>
-            </iframe>
-                <button onClick={() => setShowForm(false)} className=' bg-blue-500 text-xl text-white text-center py-2 rounded-md w-fit my-9 mx-auto cursor-pointer'>Close</button>
-            </div>
-        )
-    }
-
 
 
     return (
@@ -173,8 +153,6 @@ export const LoginPage: React.FC = () => {
                         <button type='submit' id='login' className='loginButton'>Login</button>
                     </div>
                 </form>
-            </div>
-                <button onClick={() => setShowForm(true)} className=' bg-blue-500 text-lg text-white text-center py-5 rounded-md w-fit mt-9 mx-auto cursor-pointer'>Take a quick survey</button>
-        </div>
+            </div></div>
     );
 }
