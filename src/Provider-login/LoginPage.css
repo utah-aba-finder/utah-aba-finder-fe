@@ -115,20 +115,20 @@ input:-webkit-autofill {
     transition: background-color 5000s ease-in-out 0s;
 }
 
-.loginButton:disabled:hover {
+.signupButton:disabled:hover {
     content: 'feature not yet available';
     background-color: #cccccc;
     color: #666666;
 }
 
-.loginButton:disabled:hover::after {
+.signupButton:disabled:hover::after {
     content: 'feature not yet available';
     position: absolute;
-    top: 20%;
+    bottom: 30%;
     left: 50%;
     transform: translateX(-50%);
     background-color: rgba(0, 0, 0, 0.8);
-    color: white;
+    color: red;
     padding: 5px 10px;
     border-radius: 5px;
     font-size: 14px;
@@ -141,22 +141,11 @@ input:-webkit-autofill {
     left: 1.2rem;
 }
 
-.eyeButton {
-    position: absolute;
-    right: 1%;
-    background-color: transparent;
-    border: none;
-    width: auto;
-    cursor: pointer;
-}
-
 .eye {
     position: absolute;
-    margin: 5px;
     right: 1rem;
-    bottom: -.9rem;
     cursor: pointer;
-    color: rgb(251, 99, 57);
+    color: #4A6FA5;
 }
 
 .login-input input {
