@@ -322,10 +322,10 @@ const ProvidersPage: React.FC = () => {
                       provider.min_age <= 13 &&
                       provider.max_age >= 15) ||
                     (age === "16-18" &&
-                      provider.max_age <= 16 &&
-                      provider.min_age >= 18) ||
+                      provider.min_age <= 16 &&
+                      provider.max_age >= 18) ||
                     (age === "19+" &&
-                      provider.max_age <= 19)))) &&
+                      provider.max_age >= 19)))) &&
               (!providerType ||
                 provider.provider_type.some((type: ProviderTypeInterface) =>
                   type.name.toLowerCase() === providerType.toLowerCase()
@@ -399,6 +399,7 @@ const ProvidersPage: React.FC = () => {
     setIsFiltered(false);
     setMapAddress("none");
     setCurrentPage(1);
+    setShowError("");
   };
 
   const handleCountyChange = (county: string) => {

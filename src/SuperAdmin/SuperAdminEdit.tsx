@@ -633,8 +633,8 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                           onChange={handleInputChange}
                           className="w-full pl-10 pr-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                         >
-                          <option value="contact us">Contact Us</option>
-                          <option value="no wait list">No wait list</option>
+                          <option value="Contact us">Contact us</option>
+                          <option value="No waitlist">No waitlist</option>
                           <option value="6 months or less">6 months or less</option>
                           <option value="6 months or more">6 months or more</option>
                         </select>

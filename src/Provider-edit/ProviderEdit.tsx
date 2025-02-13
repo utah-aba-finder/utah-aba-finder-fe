@@ -61,8 +61,15 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
 
       const refreshedData = await response.json();
       if (refreshedData.data?.[0]) {
-        setCurrentProvider(refreshedData.data[0]);
-        onUpdate(refreshedData.data[0].attributes);
+        const oldData = JSON.stringify(currentProvider);
+        const newData = JSON.stringify(refreshedData.data[0]);
+        
+        if (oldData !== newData) {
+          setCurrentProvider(refreshedData.data[0]);
+          onUpdate(refreshedData.data[0].attributes);
+          // Only show success toast if data actually changed
+          toast.success("Provider information updated successfully!");
+        }
       }
     } catch (error) {
       console.error("Error refreshing provider data:", error);
@@ -70,7 +77,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
     } finally {
       setIsLoading(false);
     }
-  }, [loggedInProvider.id, onUpdate]);
+  }, [loggedInProvider.id, onUpdate, currentProvider]);
 
   const handleLogout = useCallback(() => {
     toast.dismiss("session-warning");
@@ -135,8 +142,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       }));
 
       await refreshProviderData();
-
-      toast.success("Provider information updated successfully!");
+      // Remove success toast from here since it's now in refreshProviderData
     },
     [refreshProviderData]
   );
