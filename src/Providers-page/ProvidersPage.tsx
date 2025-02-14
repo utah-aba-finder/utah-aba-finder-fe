@@ -338,8 +338,17 @@ const ProvidersPage: React.FC = () => {
             });
 
           setFilteredProviders(filtered);
+          
+          // Show message if no providers found after filtering
+          if (filtered.length === 0) {
+            setShowError('No providers found matching your search criteria. Please try adjusting your filters.');
+          } else {
+            setShowError(''); // Clear error if providers found
+          }
+          
           setCurrentPage(1);
-          setShowError(""); // Clear error if providers found
+        } else if (stateId === 'none' || providerType === 'none') {
+          setShowError('Please select both a state and provider type to begin your search.');
         }
 
         setIsLoading(false);
@@ -577,14 +586,6 @@ const ProvidersPage: React.FC = () => {
     getInsuranceOptions();
   }, []);
 
-  // if (filteredProviders.length === 0){
-  //   return (
-  //     <div className="providers-page">
-  //       <h3>We currently don't have any providers for this state, please check back periodically!</h3>
-  //     </div>
-  //   )
-  // }
-
   return (
     <div className="providers-page">
 
@@ -613,15 +614,6 @@ const ProvidersPage: React.FC = () => {
         />
         <h1 className="providers-banner-title">Find Your Provider</h1>
       </section>
-      {/* <div className="glass-container">
-        {selectedStateId === '' && selectedProviderType === '' ? (
-          <div className="glass-two">
-            <h2 className="searched-provider-number-status-title">
-              Please select a state and provider type to get started with your search
-            </h2>
-          </div>
-        ) : null}
-      </div> */}
       <main>
         <div className="provider-page-search-cards-section">
           <SearchBar
