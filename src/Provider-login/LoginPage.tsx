@@ -143,9 +143,10 @@ export const LoginPage: React.FC = () => {
                             onChange={(e) => setPassword(e.target.value)}
                             required
                         />
-                        <button className='eyeButton' type='button' onClick={handleShowPassword}>
-                            {showPassword ? <EyeOff className='eye' /> : <Eye className='eye' />}
-                        </button>
+                        {showPassword ? 
+                            <EyeOff className='eye' onClick={handleShowPassword} role="button" tabIndex={0} /> : 
+                            <Eye className='eye' onClick={handleShowPassword} role="button" tabIndex={0} />
+                        }
                     </div>
                     {error && <p className="error-message">Username or password incorrect, try again.</p>}
                     <div className="submit-container">
