@@ -365,6 +365,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
             <RotateCcw size={18} />Reset
           </button>
         </div>
+        
       </div>
       {isVisible && (
         <div className="fixed inset-0 flex items-center justify-center z-50">

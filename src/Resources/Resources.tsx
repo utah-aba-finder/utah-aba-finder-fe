@@ -1,9 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './Resources.css';
-import behaviorImage from '../Assets/behavior-image.png'
-import socialImage from '../Assets/social-image.png'
-import detailImage from '../Assets/detail-image.png'
-
+import { ChevronDown, ChevronUp } from 'lucide-react';
 const resourceBannerVideo = require('../Assets/resource-banner.mp4');
 
 const podCasts = [
@@ -21,7 +18,14 @@ const podCasts = [
     }
 ]
 
+
+
+
 const Resources = () => {
+    const [websites, setWebsites] = useState(false);
+    const [podcasts, setPodcasts] = useState(false);
+    const [providerInfo, setProviderInfo] = useState(false);
+
     return (
         <div className="resources-container">
             <div className="resources-banner">
@@ -34,8 +38,10 @@ const Resources = () => {
                 </div>
             </div>
             <div className="resources-content">
-                <div className="resources-content-container">
-                    <h1>Printable Information for Providers</h1>
+                <h2 className="resources-content-description">Click on any of the different buttons below to expand the resources!</h2>
+                <button className={`provider-info-button ${providerInfo ? 'active' : ''}`} onClick={() => setProviderInfo(!providerInfo)}>Printable Information for Providers {providerInfo ? <ChevronUp /> : <ChevronDown />}</button>
+                {providerInfo ? (
+                    <div className="resources-content-container">
                     <hr className="divider" />
                     <p className="resources-content-description">Click below to download/print the document to handout</p>
                     <div className="provider-info-container">
@@ -55,13 +61,21 @@ const Resources = () => {
                                 <p>Your browser does not support PDF preview. Click here to download.</p>
                             </object>
                         </a>
+                        </div>
                     </div>
-                </div>
+                ) : null}
 
-                <h1>Useful Websites</h1>
-                <hr className="divider" />
-                <div className="useful-websites-container">
+                <button className={`websites-button ${websites ? 'active' : ''}`} onClick={() => setWebsites(!websites)}>Useful Websites {websites ? <ChevronUp /> : <ChevronDown />}</button>
+                {websites ? (
+                    <div className="useful-websites-container">
+                    <hr className="divider" />
                     <ul>
+                        <li>
+                            <a href="https://www.ssa.gov/ssi" target="_blank" rel="noopener noreferrer">
+                                Social Security Administration
+                            </a>
+                            - Here you can find information about Social Security benefits for individuals with disabilites.
+                        </li>
                         <li>
                             <a href="https://www.autismspeaks.org/" target="_blank" rel="noopener noreferrer">
                                 Autism Speaks
@@ -124,9 +138,11 @@ const Resources = () => {
                         </li>
                     </ul>
                 </div>
-                <h1>Podcasts</h1>
-                <hr className="divider" />
-                <div className="podcasts-container">
+                ) : null}
+                <button className={`podcasts-button ${podcasts ? 'active' : ''}`} onClick={() => setPodcasts(!podcasts)}>Podcasts {podcasts ? <ChevronUp /> : <ChevronDown />}</button>
+                {podcasts ? (
+                    <div className="podcasts-container">
+                    <hr className="divider" />
                     {podCasts.map((podcast) => (
                         <iframe 
                             src={podcast.url} 
@@ -140,7 +156,7 @@ const Resources = () => {
                         ></iframe>
                     ))}
                 </div>
-
+                ) : null}
 
             </div>
         </div>
