@@ -47,8 +47,7 @@ const SignupModal: React.FC<SuperAdminCreateProps> = ({
     counties_served: [] as string[],
     website: "",
     cost: "",
-    min_age: "",
-    max_age: "",
+    min_age: "",    max_age: "",
     waitlist: "",
     telehealth_services: "",
     spanish_speakers: "",
@@ -68,7 +67,9 @@ const SignupModal: React.FC<SuperAdminCreateProps> = ({
   const [selectedInsurances, setSelectedInsurances] = useState<Insurance[]>([]);
   const [availableStates, setAvailableStates] = useState<StateData[]>([]);
   const [availableCounties, setAvailableCounties] = useState<CountyData[]>([]);
-  const [isProviderInfoSubmitted, setIsProviderInfoSubmitted] = useState(false);
+  const [isProviderInfoSubmitted, setIsProviderInfoSubmitted] = useState(false); 
+
+  
 
   useEffect(() => {
     const loadStates = async () => {
