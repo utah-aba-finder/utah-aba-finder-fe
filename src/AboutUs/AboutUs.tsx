@@ -197,11 +197,6 @@ const AboutUs: React.FC = () => {
                         <h3>Kim Ewing</h3>
                         <p>Frontend Developer Intern.</p>
                       </div>
-                    <div className='intern-card'>
-                      <img src={intern3} alt="intern3" className="intern-icon" />
-                      <h3>Jarvis Bailey</h3>
-                      <p>Directory expansion and Outreach Assistant.</p>
-                    </div>
                     </div>
                 </div>
                   </div>

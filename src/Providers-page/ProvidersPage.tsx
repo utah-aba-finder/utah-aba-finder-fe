@@ -8,11 +8,10 @@ import { MockProviders, ProviderAttributes, InsuranceData, Insurance, CountiesSe
 import gearImage from "../Assets/Gear@1x-0.5s-200px-200px.svg";
 import Joyride, { Step, STATUS } from "react-joyride";
 import { fetchProviders, fetchProvidersByStateIdAndProviderType, fetchInsurance } from "../Utility/ApiCall";
-
+import { Link } from "react-router-dom";
 interface FavoriteDate {
   [providerId: number]: string;
 }
-
 const ProvidersPage: React.FC = () => {
   const [selectedProvider, setSelectedProvider] =
     useState<ProviderAttributes | null>(null);
@@ -56,6 +55,9 @@ const ProvidersPage: React.FC = () => {
   const [isAnimating, setIsAnimating] = useState(false);
   const [run, setRun] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
+  const [showModal, setShowModal] = useState(true);
+  const [dontShowAgain, setDontShowAgain] = useState(false);
+  
   const [steps] = useState<Step[]>([
     {
       target: ".provider-state-select",
@@ -531,6 +533,24 @@ const ProvidersPage: React.FC = () => {
     }
   };
 
+  const handleCheckboxChange = () => {
+    const newDontShowAgain = !dontShowAgain;
+    setDontShowAgain(newDontShowAgain);
+    localStorage.setItem('ProvidersModalDontShowAgain', newDontShowAgain.toString());
+    if (newDontShowAgain) {
+      setShowModal(false);
+    }
+  };
+
+  const closeModal = () => {
+    if (dontShowAgain) {
+      localStorage.setItem('ProvidersModalDontShowAgain', 'true');
+    }
+    const currentTime = new Date().getTime();
+    localStorage.setItem('ProvidersModalLastVisit', currentTime.toString());
+    setShowModal(false);
+  };
+
   const handlePreviousPage = () => {
     if (currentPage > 1 && !isAnimating) {
       setIsAnimating(true);
@@ -586,6 +606,19 @@ const ProvidersPage: React.FC = () => {
     getInsuranceOptions();
   }, []);
 
+  useEffect(() => {
+    const dontShow = localStorage.getItem('ProvidersModalDontShowAgain');
+    const lastVisit = localStorage.getItem('ProvidersModalLastVisit');
+    const now = new Date().getTime();
+    const twentyFourHours = 24 * 60 * 60 * 1000;
+
+    if (dontShow === 'true' || (lastVisit && now - parseInt(lastVisit) < twentyFourHours)) {
+      setShowModal(false);
+    } else {
+      setShowModal(true);
+    }
+  }, []);
+
   return (
     <div className="providers-page">
 
@@ -616,6 +649,40 @@ const ProvidersPage: React.FC = () => {
       </section>
       <main>
         <div className="provider-page-search-cards-section">
+          {/* Modal */}
+          {showModal && (
+                    <div className="homepage-modal-overlay">
+                        <div className="homepage-modal">
+                            {/* <h2>Scheduled Maintenance!</h2> */}
+                            <div className="homepage-modal-content">
+                                <h1 className='text-center'>SPECIAL NOTE</h1>
+                                <p>By using our website, you agree to our <Link to="/servicedisclaimer" className='text-[#4A6FA5]'>Service Disclaimer</Link>.</p>
+                                <h2 className='text-center'>New Changes!</h2>
+                                <ul>
+                                    <li><strong>Nationwide Coverage:</strong> Our website is expanding to cover the entire <strong>United States</strong>! No matter where you are, you'll soon be able to find the right providers and resources near you.</li>
+                                    <br/>
+                                    <li><strong>Sponsorship Opportunities:</strong> Become a sponsor and support our mission! Sponsors will be featured in a special <strong>Sponsors Section</strong> on our site recognizing their contributions to the autism care community.</li>
+                                    <br />
+                                    <h3>** If you're a provider and would like to be added to our platform, please <Link to="/contact" className='text-[#4A6FA5]'>contact us</Link>, it's completely free!</h3>
+                                    <br />
+                                </ul>
+                            </div>
+                            <div>
+                                <label>
+                                    <input
+                                        type="checkbox"
+                                        onChange={handleCheckboxChange}
+                                        checked={dontShowAgain}
+                                    />
+                                    Don't show this again
+                                </label>
+                            </div>
+
+                            <button className="homepage-modal-button" onClick={closeModal}>Go to Providers</button>
+                        </div>
+                    </div>
+                )}
+
           <SearchBar
             providers={filteredProviders}
             totalProviders={allProviders.length}
