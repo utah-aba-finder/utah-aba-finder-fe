@@ -21,6 +21,7 @@ import Analytics from "./Analytics";
 import SuperAdminCreate from "./SuperAdminCreate";
 import SuperAdminAddInsurances from "./SuperAdminAddInsurances";
 import moment from "moment";
+import CreateUser from "./CreateUser";
 import { MockProviderData, ProviderAttributes} from "../Utility/Types";
 
 const SuperAdmin = () => {
@@ -33,6 +34,7 @@ const SuperAdmin = () => {
   const [openNewProviderForm, setOpenNewProviderForm] = useState(false);
   const [openNewInsuranceForm, setOpenNewInsuranceForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [openCreateUserForm, setOpenCreateUserForm] = useState(false);
   const [providerTypeFilter, setProviderTypeFilter] = useState<
     "all" | "ABA Therapy" | "Autism Evaluation" | "Speech Therapy" | "Occupational Therapy"
   >("all");
@@ -52,6 +54,7 @@ const SuperAdmin = () => {
       setToken(null);
     }, 2000);
   }, [setToken]);
+
 
   // Fetch providers
   const fetchAllProviders = async () => {
@@ -285,6 +288,26 @@ const SuperAdmin = () => {
                 </li>
                 <li>
                   <button
+                    onClick={() => {
+                      setSelectedTab("createUser");
+                      setOpenCreateUserForm(true);
+                    }}
+                    className={`
+            w-full flex items-center space-x-3 px-3 py-2 rounded-lg
+            transition-colors hover:cursor-pointer duration-200
+            ${
+              selectedTab === "createUser"
+                ? "bg-[#4A6FA5] text-white"
+                : "text-gray-700 hover:bg-gray-100"
+            }
+          `}
+                  >
+                    <PlusCircle className="w-4 h-4" />
+                    <span className="text-sm">Create User</span>
+                  </button>
+                </li>
+                <li>
+                  <button
                     onClick={() => setSelectedTab("billing")}
                     className={`
             w-full flex items-center space-x-3 px-3 py-2 rounded-lg
@@ -352,6 +375,7 @@ const SuperAdmin = () => {
                           {selectedTab === "createInsurance" && "Add Insurance"}
                           {selectedTab === "billing" && "Billing Management"}
                           {selectedTab === "edit" && "Edit Provider"}
+                          {selectedTab === "createUser" && "Create User"}
                         </div>
                       )}
                     </div>
@@ -552,6 +576,15 @@ const SuperAdmin = () => {
                 <SuperAdminAddInsurances
                   handleCloseForm={() => {
                     setOpenNewInsuranceForm(false);
+                    setSelectedTab("view");
+                  }}
+                />
+              )}
+
+              {selectedTab === "createUser" && openCreateUserForm && (
+                <CreateUser
+                  handleCloseForm={() => {
+                    setOpenCreateUserForm(false);
                     setSelectedTab("view");
                   }}
                 />
