@@ -10,6 +10,7 @@ import emailjs from 'emailjs-com';
 //sponsor images
 import wansutter from '../Assets/sponsor-images/wansutter.png';
 import ACU from '../Assets/sponsor-images/ACU.png'
+import { ChevronRight, DatabaseIcon, DraftingCompassIcon, Mail, PenTool, StethoscopeIcon, TowerControlIcon } from 'lucide-react';
 
 
 
@@ -234,9 +235,9 @@ class Homepage extends Component<Props, State> {
                         Start by taking a simple screening test to see if your child or yourself meet the criteria.
                     </p>
                     <div className="begin-section-button-container">
-                        <Link to="/providers" className="begin-section-button1"> VIEW PROVIDERS</Link>
-                        <Link to="/screening" className="begin-section-button2">SCREENING TOOLS</Link>
-                        <Link to="/contact" className="begin-section-button3"> CONTACT US</Link>
+                        <Link to="/providers" className="begin-section-button1"> VIEW PROVIDERS <StethoscopeIcon className="ml-1 h-5 w-5 text-[white]" /></Link>
+                        <Link to="/screening" className="begin-section-button2">SCREENING TOOLS <DraftingCompassIcon className="ml-1 h-5 w-5 text-[white]" /></Link>
+                        <Link to="/contact" className="begin-section-button3"> CONTACT US <Mail className="ml-1 h-5 w-5 text-[white]" /></Link>
                     </div>
                 </div>
 

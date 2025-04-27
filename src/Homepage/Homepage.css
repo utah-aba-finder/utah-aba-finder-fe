@@ -92,7 +92,7 @@
     bottom: 20px;
     right: 20px;
     background-color: #f60808;
-    color: white;
+    color: whitesmoke;
     padding: 30px;
     border: none;
     border-radius: 50px;
@@ -205,8 +205,8 @@
     display: flex;
     flex-direction: row;
     width: 100%;
-    color: white;
-    background-color: rgb(7, 7, 7);
+    color: rgb(7, 7, 7);
+    background-color: linear-gradient(135deg, #51e2f5 0%, #9df9ef 100%);
     height: 12rem;
     margin-top: 0;
     padding: 1rem;
@@ -240,7 +240,7 @@
 
 .sponsor-section-list {
     display: flex;
-    background-color: white;
+    background-color: linear-gradient(135deg, #51e2f5 0%, #9df9ef 100%);
     width: 50%;
     flex-direction: row;
     padding: .5rem;
@@ -301,7 +301,7 @@
     padding-top: 2rem;
     padding-bottom: 1rem;
     font-size: 1.3rem;
-    background-color: rgb(255, 229, 191);
+    background-color: linear-gradient(135deg, #51e2f5 0%, #9df9ef 100%);
     height: 20rem;
 }
 
@@ -337,7 +337,7 @@
     color: white;
     font-weight: 450;
     font-size: 1.1rem;
-    background-color: rgb(10, 150, 94);
+    background-color: #4A6FA5;
     cursor: pointer;
     align-content: center;
     text-decoration: none;
@@ -346,11 +346,16 @@
 }
 
 .begin-section-button2 {
-    background-color: rgb(0, 0, 130);
+    background-color: #4A6FA5;
+}
+
+.begin-section-button2:focus {
+    outline: 3px solid #4A6FA5;
+    outline-offset: 3px;
 }
 
 .begin-section-button3 {
-    background-color: #A54A4A;
+    background-color: #4A6FA5;
 }
 
 .begin-section-button1:hover,
@@ -414,7 +419,7 @@
     flex-direction: row;
     width: 100%;
     height: 40rem;
-    background-color: white;
+    background-color: linear-gradient(135deg, #51e2f5 0%, #9df9ef 100%);
 }
 
 .what-we-are-about-container {
@@ -568,7 +573,7 @@
 .contact-form-container {
     display: flex;
     flex-direction: column;
-    background-color: rgb(255, 226, 226);
+    background-color: linear-gradient(135deg, #51e2f5 0%, #9df9ef 100%);
     align-items: center;
     justify-content: center;
     /* border-left: 1px solid rgb(145, 145, 145);
@@ -614,14 +619,14 @@
     margin: 1rem;
     padding: 0.3rem;
     border-radius: 0;
-    border: 1px solid rgb(145, 145, 145);
+    border: 1px solid #4A6FA5;
     height: 1rem;
 }
 
 .contact-form-textarea {
     width: 30rem;
     height: 1rem;
-    border: 1px solid rgb(145, 145, 145);
+    border: 1px solid #4A6FA5;
 }
 
 
