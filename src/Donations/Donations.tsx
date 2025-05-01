@@ -39,7 +39,7 @@ const Donations = () => {
                 <p>You are also helping us to continue to provide this service for free and also create another resource for individuals to connect with other like minded individuals and create/host events near them! Lookout for our site/application <strong>Neurodiversity Friends!</strong></p>
                 <p><strong>Donate Now</strong> and join us in making a difference in the autism community.</p>
                 <p>You can also donate via <strong>PayPal</strong> or <strong>Venmo</strong> by scanning the QR code below or by clicking the link below if you have any issues with the other options.</p>
-                <p>If you'd like to send it by mail you can send it to our P.O. Box: <br/> <strong>Autism Services Locator, 521929, Salt Lake City, UT, 84152</strong></p>
+                <p>If you'd like to send it by mail you can send it to our P.O. Box: <br/> <strong>Autism Services Locator, 50, Riverton, UT, 84065</strong></p>
             </div>
             <div className='donateContainer'>
                 <Elements stripe={stripePromise} options={options}>
