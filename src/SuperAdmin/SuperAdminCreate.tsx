@@ -176,6 +176,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
                   name: formData.name,
                   provider_type: [
                     {
+                      id: getProviderTypeId(formData.provider_type),
                       name: formData.provider_type,
                     },
                   ],
@@ -260,6 +261,16 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const getProviderTypeId = (typeName: string): number => {
+    const typeMap: { [key: string]: number } = {
+      "ABA Therapy": 1,
+      "Autism Evaluation": 2,
+      "Speech Therapy": 3,
+      "Occupational Therapy": 4,
+    };
+    return typeMap[typeName] || 1;
   };
 
   return (

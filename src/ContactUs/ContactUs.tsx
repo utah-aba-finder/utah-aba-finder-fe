@@ -38,7 +38,7 @@ const ContactUs: React.FC = () => {
             <div className="contact-content">
                 <div className='contact-us-text'>
                     <p>If you have any questions or feedback, please feel free to contact us using the form below.</p>
-                    <p>Or feel free to call us at <a href="tel:1(385)560-4481" className='contact-us-phone-number'>(385) 560-4481</a></p>
+                    <p>Or feel free to call us at <a href="tel:1(801)833-0284" className='contact-us-phone-number'>(801)833-0284</a></p>
                     <p>Don't want to use the form? Email us at <a href="mailto:info@autismserviceslocator.com" className='contact-us-email'>info@autismserviceslocator.com</a></p>
                     <p>Looking to be added to our database? Email us at <a href="mailto:register@autismserviceslocator.com" className='contact-us-email'>register@autismserviceslocator.com</a></p>
                 </div>

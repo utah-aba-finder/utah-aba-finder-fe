@@ -34,6 +34,22 @@ interface SuperAdminEditProps {
   setSelectedTab?: Dispatch<SetStateAction<string>>;
 }
 
+interface ProviderType {
+  id: number;
+  name: string;
+}
+
+// Add this helper function at the top level
+const getProviderTypeId = (typeName: string): number => {
+  const typeMap: { [key: string]: number } = {
+    "ABA Therapy": 1,
+    "Autism Evaluation": 2,
+    "Speech Therapy": 3,
+    "Occupational Therapy": 4,
+  };
+  return typeMap[typeName] || 1;
+};
+
 export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
   provider,
   onUpdate,
@@ -52,6 +68,9 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
   const [providerState, setProviderState] = useState<string[]>([]);
   const [availableStates, setAvailableStates] = useState<StateData[]>([]);
   const [availableCounties, setAvailableCounties] = useState<CountyData[]>([]);
+  const [selectedProviderTypes, setSelectedProviderTypes] = useState<ProviderType[]>(
+    provider.attributes.provider_type || []
+  );
 
   useEffect(() => {
     if (provider) {
@@ -60,6 +79,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
       setSelectedCounties(provider.attributes.counties_served || []);
       setSelectedInsurances(provider.attributes.insurance || []);
       setLocations(provider.attributes.locations || []);
+      setSelectedProviderTypes(provider.attributes.provider_type || []);
       setIsLoading(false);
     }
   }, [provider]);
@@ -166,19 +186,21 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
 
     try {
       const requestBody = {
-        data: [
-          {
+        data: [{
           id: provider.id,
           type: "provider",
           attributes: {
             ...editedProvider,
+            provider_type: selectedProviderTypes.map(type => ({
+              id: type.id,
+              name: type.name
+            })),
             insurance: selectedInsurances,
             counties_served: selectedCounties,
             locations: locations,
-            state: providerState, // Include the state in the request
+            state: providerState,
           },
-          },
-        ],
+        }],
       };
 
       console.log('Sending request:', JSON.stringify(requestBody, null, 2));
@@ -339,22 +361,70 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                     />
                   </div>
 
+                  {/* Provider States Selection */}
                   <div>
-                    <label className="block text-sm text-gray-600 mb-2">
-                      Provider Type
-                    </label>
+                    <label className="block text-sm text-gray-600 mb-2">States</label>
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {providerState.map((state) => (
+                        <div key={state} className="bg-blue-100 text-blue-800 px-2 py-1 rounded-md flex items-center">
+                          <span>{state}</span>
+                          <X 
+                            className="ml-2 w-4 h-4 cursor-pointer" 
+                            onClick={() => setProviderState(prev => prev.filter(s => s !== state))}
+                          />
+                        </div>
+                      ))}
+                    </div>
                     <select
-                      name="provider_type"
-                      value={editedProvider.provider_type?.[0]?.name || ""}
-                      onChange={handleInputChange}
-                      className="block w-[95%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                      onChange={(e) => {
+                        if (!providerState.includes(e.target.value)) {
+                          setProviderState(prev => [...prev, e.target.value]);
+                        }
+                      }}
+                      className="block w-[95%] px-3 py-2 rounded-lg border border-gray-300"
                     >
-                      <option value="ABA Therapy">ABA Therapy</option>
-                      <option value="Autism Evaluation">Autism Evaluation</option>
-                      <option value="Speech Therapy">Speech Therapy</option>
-                      <option value="Occupational Therapy">
-                        Occupational Therapy
-                      </option>
+                      <option value="">Add a state...</option>
+                      {availableStates.map((state) => (
+                        <option key={state.id} value={state.attributes.name}>
+                          {state.attributes.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Provider Types Selection */}
+                  <div>
+                    <label className="block text-sm text-gray-600 mb-2">Provider Types</label>
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {selectedProviderTypes.map((type) => (
+                        <div key={type.id} className="bg-blue-100 text-blue-800 px-2 py-1 rounded-md flex items-center">
+                          <span>{type.name}</span>
+                          <X 
+                            className="ml-2 w-4 h-4 cursor-pointer" 
+                            onClick={() => setSelectedProviderTypes(prev => prev.filter(t => t.id !== type.id))}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                    <select
+                      onChange={(e) => {
+                        const type = e.target.value;
+                        if (!selectedProviderTypes.some(t => t.name === type)) {
+                          setSelectedProviderTypes(prev => [...prev, {
+                            id: getProviderTypeId(type),
+                            name: type
+                          }]);
+                        }
+                      }}
+                      className="block w-[95%] px-3 py-2 rounded-lg border border-gray-300"
+                    >
+                      <option value="">Add a provider type...</option>
+                      {["ABA Therapy", "Autism Evaluation", "Speech Therapy", "Occupational Therapy"]
+                        .filter(type => !selectedProviderTypes.some(t => t.name === type))
+                        .map(type => (
+                          <option key={type} value={type}>{type}</option>
+                        ))
+                      }
                     </select>
                   </div>
 
@@ -780,27 +850,6 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                         <option value="Contact Us">Contact Us</option>
                       </select>
                     </div>
-                    <div>
-                    <label className="block text-sm text-gray-600 mb-2">
-                      Provider State
-                    </label>
-                    <select
-                      name="state"
-                      value={provider.states?.[0] || ""}
-                      onChange={handleInputChange}
-                      className="block w-[95%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                    >
-                      <option value="">{provider.states?.[0] || "Select a State"}</option>
-                      {availableStates.map((state) => (
-                        <option 
-                          key={state.id} 
-                          value={state.attributes.name}
-                        >
-                          {state.attributes.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
                   </div>
 
                   {/* Coverage Buttons */}
@@ -839,6 +888,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                     setSelectedCounties(provider.attributes.counties_served || []);
                     setSelectedInsurances(provider.attributes.insurance || []);
                     setLocations(provider.attributes.locations || []);
+                    setSelectedProviderTypes(provider.attributes.provider_type || []);
                   }
                 }}
                 className="px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
