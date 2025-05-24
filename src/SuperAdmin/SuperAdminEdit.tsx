@@ -54,7 +54,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
   provider,
   onUpdate,
   setSelectedTab,
-}) => {
+}): JSX.Element => {
   const [editedProvider, setEditedProvider] =
     useState<ProviderAttributes | null>(null);
   const [isInsuranceModalOpen, setIsInsuranceModalOpen] = useState(false);
@@ -71,6 +71,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
   const [selectedProviderTypes, setSelectedProviderTypes] = useState<ProviderType[]>(
     provider.attributes.provider_type || []
   );
+  const [activeStateForCounties, setActiveStateForCounties] = useState<string>(providerState[0] || '');
 
   useEffect(() => {
     if (provider) {
@@ -110,6 +111,28 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
 
     loadInitialData();
   }, [provider.states]); // Add provider.state as dependency
+
+  useEffect(() => {
+    const loadCountiesForState = async () => {
+      if (activeStateForCounties && availableStates.length > 0) {
+        const selectedState = availableStates.find(
+          state => state.attributes.name === activeStateForCounties
+        );
+        
+        if (selectedState) {
+          try {
+            const counties = await fetchCountiesByState(selectedState.id);
+            setAvailableCounties(counties);
+          } catch (error) {
+            console.error("Failed to load counties:", error);
+            toast.error("Failed to load counties for selected state");
+          }
+        }
+      }
+    };
+
+    loadCountiesForState();
+  }, [activeStateForCounties, availableStates]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
@@ -866,10 +889,22 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                     <button
                       type="button"
                       onClick={() => setIsCountiesModalOpen(true)}
-                      className="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      className="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
                     >
                       <MapPin className="w-5 h-5 mr-2" />
                       Edit Counties Served
+                      {providerState.length > 1 && (
+                        <select 
+                          className="ml-2 p-1 border rounded"
+                          value={activeStateForCounties}
+                          onChange={(e) => setActiveStateForCounties(e.target.value)}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {providerState.map(state => (
+                            <option key={state} value={state}>{state} Counties</option>
+                          ))}
+                        </select>
+                      )}
                     </button>
                   </div>
                 </div>
@@ -922,7 +957,12 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
               onClose={() => setIsCountiesModalOpen(false)}
               selectedCounties={selectedCounties}
               onCountiesChange={handleCountiesChange}
-              availableCounties={availableCounties}
+              availableCounties={availableCounties.filter(county => 
+                county.attributes.state === activeStateForCounties
+              )}
+              currentState={activeStateForCounties}
+              states={providerState}
+              onStateChange={setActiveStateForCounties}
             />
           )}
         </form>

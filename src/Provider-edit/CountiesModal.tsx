@@ -8,6 +8,9 @@ interface CountiesModalProps {
     selectedCounties: CountiesServed[];
     onCountiesChange: (counties: CountiesServed[]) => void;
     availableCounties: CountyData[];
+    currentState?: string;
+    states?: string[];
+    onStateChange?: (state: string) => void;
 }
 
 const CountiesModal: React.FC<CountiesModalProps> = ({
@@ -15,7 +18,10 @@ const CountiesModal: React.FC<CountiesModalProps> = ({
     onClose,
     selectedCounties,
     onCountiesChange,
-    availableCounties
+    availableCounties,
+    currentState,
+    states,
+    onStateChange
 }) => {
     const [localCheckedCounties, setLocalCheckedCounties] = useState<CountiesServed[]>([]);
 
