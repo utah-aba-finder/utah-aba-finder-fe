@@ -1,14 +1,36 @@
-import { FC } from "react";
-import { Building2, Globe, Mail, Home, MapPin } from "lucide-react";
+import { FC, useState, useEffect } from "react";
+import { Building2, Globe, Mail, Home, MapPin, X } from "lucide-react";
 import moment from "moment";
-import { MockProviderData, Location } from "../../Utility/Types";
+import { MockProviderData, Location, ProviderType, CountiesServed, CountyData } from "../../Utility/Types";
 
 interface DashboardProps {
   provider: MockProviderData;
+  onUpdate?: (updatedData: MockProviderData) => void;
 }
 
-const Dashboard: FC<DashboardProps> = ({ provider }) => {
+const Dashboard: FC<DashboardProps> = ({ provider, onUpdate }) => {
   const { attributes } = provider;
+  const [selectedProviderTypes, setSelectedProviderTypes] = useState<ProviderType[]>(
+    attributes.provider_type || []
+  );
+  const [isCountiesModalOpen, setIsCountiesModalOpen] = useState(false);
+  const [selectedCounties, setSelectedCounties] = useState<CountiesServed[]>(
+    attributes.counties_served || []
+  );
+  const [activeStateForCounties, setActiveStateForCounties] = useState<string>(
+    attributes.states?.[0] || ''
+  );
+  const [availableCounties, setAvailableCounties] = useState<CountyData[]>([]);
+
+  const getProviderTypeId = (typeName: string): number => {
+    const typeMap: { [key: string]: number } = {
+      "ABA Therapy": 1,
+      "Autism Evaluation": 2,
+      "Speech Therapy": 3,
+      "Occupational Therapy": 4,
+    };
+    return typeMap[typeName] || 1;
+  };
 
   return (
     <div className="space-y-4 sm:space-y-6">

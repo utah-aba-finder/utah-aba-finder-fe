@@ -71,23 +71,28 @@ const CountiesModal: React.FC<CountiesModalProps> = ({
                 <h2>Select Counties</h2>
 
                 <div className="counties-options">
-                    {availableCounties.length > 0 ? (
-                        availableCounties.map(county => (
-                            <div key={county.id} className="county-option">
-                                <input
-                                    type="checkbox"
-                                    checked={localCheckedCounties.some(c => c.county_id === county.id)}
-                                    onChange={() => handleSelect(county.id, county.attributes.name)}
-                                    id={`county-${county.id}`}
-                                />
-                                <label htmlFor={`county-${county.id}`}>
-                                    {county.attributes.name}
-                                </label>
+                    {states?.map(state => (
+                        <div key={state} className="mb-4">
+                            <h3 className="text-sm font-medium mb-2">{state}</h3>
+                            <div className="grid grid-cols-2 gap-2">
+                                {availableCounties
+                                    .filter(county => county.attributes.state === state)
+                                    .map(county => (
+                                        <div key={county.id} className="county-option">
+                                            <input
+                                                type="checkbox"
+                                                checked={localCheckedCounties.some(c => c.county_id === county.id)}
+                                                onChange={() => handleSelect(county.id, county.attributes.name)}
+                                                id={`county-${county.id}`}
+                                            />
+                                            <label htmlFor={`county-${county.id}`}>
+                                                {county.attributes.name}
+                                            </label>
+                                        </div>
+                                    ))}
                             </div>
-                        ))
-                    ) : (
-                        <p>No counties available for selected state</p>
-                    )}
+                        </div>
+                    ))}
                 </div>
 
                 <div className='countyModalButtonSection'>

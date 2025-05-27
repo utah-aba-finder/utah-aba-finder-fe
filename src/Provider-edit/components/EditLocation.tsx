@@ -9,8 +9,6 @@ import {
   Stethoscope,
   Languages,
 } from "lucide-react";
-import InsuranceModal from "../InsuranceModal";
-import CountiesModal from "../CountiesModal";
 import { toast } from "react-toastify";
 import moment from "moment";
 import {
@@ -721,36 +719,6 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
                   </div>
                 )}
               </div>
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <div className="flex items-center space-x-3 mb-6">
-                  <div className="p-2 bg-blue-100 rounded-lg flex-shrink-0">
-                    <MapPin className="w-5 h-5 text-blue-600" />
-                  </div>
-                  <h2 className="text-lg font-semibold text-gray-900">
-                    Coverage Information
-                  </h2>
-                </div>
-
-                <div className="space-y-4">
-                  <button
-                    type="button"
-                    onClick={() => setIsInsuranceModalOpen(true)}
-                    className="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer"
-                  >
-                    <DollarSign className="w-5 h-5 mr-2" />
-                    Edit Insurance Coverage
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setIsCountiesModalOpen(true)}
-                    className="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                  >
-                    <MapPin className="w-5 h-5 mr-2" />
-                    Edit Counties Served
-                  </button>
-                </div>
-              </div>
             </div>
           )}
 
@@ -775,27 +743,6 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
             </div>
           </div>
         </form>
-
-        {/* Modals */}
-        {isInsuranceModalOpen && (
-          <InsuranceModal
-            isOpen={isInsuranceModalOpen}
-            onClose={() => setIsInsuranceModalOpen(false)}
-            selectedInsurances={selectedInsurances}
-            onInsurancesChange={setSelectedInsurances}
-            providerInsurances={provider.attributes.insurance || []}
-          />
-        )}
-
-        {isCountiesModalOpen && (
-          <CountiesModal
-            isOpen={isCountiesModalOpen}
-            onClose={() => setIsCountiesModalOpen(false)}
-            selectedCounties={selectedCounties}
-            onCountiesChange={setSelectedCounties}
-            availableCounties={availableCounties}
-          />
-        )}
       </div>
     </div>
   );
