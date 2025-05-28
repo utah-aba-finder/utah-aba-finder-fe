@@ -4,7 +4,7 @@ import childrenBanner from "../Assets/children-banner-2.jpg";
 import ProviderModal from "./ProviderModal";
 import SearchBar from "./SearchBar";
 import ProviderCard from "./ProviderCard";
-import { MockProviders, ProviderAttributes, InsuranceData, Insurance, CountiesServed as County, ProviderType as ProviderTypeInterface } from "../Utility/Types";
+import { Providers, ProviderAttributes, InsuranceData, Insurance, CountiesServed as County, ProviderType as ProviderTypeInterface, ProviderData } from "../Utility/Types";
 import gearImage from "../Assets/Gear@1x-0.5s-200px-200px.svg";
 import Joyride, { Step, STATUS } from "react-joyride";
 import { fetchProviders, fetchProvidersByStateIdAndProviderType, fetchInsurance } from "../Utility/ApiCall";
@@ -44,6 +44,7 @@ const ProvidersPage: React.FC = () => {
   const [selectedAge, setSelectedAge] = useState<string>("");
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedProviderName, setSelectedProviderName] = useState<string>("");
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedProviderType, setSelectedProviderType] = useState<string>("");
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedStateId, setSelectedStateId] = useState<string>("");
@@ -186,8 +187,8 @@ const ProvidersPage: React.FC = () => {
         if (errorTimeoutRef.current) {
           clearTimeout(errorTimeoutRef.current);
         }
-        const providersList: MockProviders = await fetchProviders();
-        const mappedProviders = providersList.data.map((provider) => ({
+        const providersList: Providers = await fetchProviders();
+        const mappedProviders = providersList.data.map((provider: ProviderData) => ({
           ...provider.attributes,
           id: provider.id,
         }));
@@ -360,7 +361,7 @@ const ProvidersPage: React.FC = () => {
         setIsLoading(false);
       }
     },
-    [allProviders]
+    []
   );
 
   // useEffect(() => {
@@ -437,8 +438,8 @@ const ProvidersPage: React.FC = () => {
     setSelectedProviderType(type);
   };
 
-  const handleResults = (results: MockProviders) => {
-    const mappedResults = results.data.map((p) => ({
+  const handleResults = (results: Providers) => {
+    const mappedResults = results.data.map((p: ProviderData) => ({
       id: p.attributes.id,
       name: p.attributes.name,
       locations: p.attributes.locations,

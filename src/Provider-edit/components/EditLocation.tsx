@@ -12,7 +12,7 @@ import {
 import { toast } from "react-toastify";
 import moment from "moment";
 import {
-  MockProviderData,
+  ProviderData,
   ProviderAttributes,
   Location,
   Insurance,
@@ -23,7 +23,7 @@ import {
 import { fetchStates, fetchCountiesByState } from "../../Utility/ApiCall";
 
 interface EditLocationProps {
-  provider: MockProviderData;
+  provider: ProviderData;
   onUpdate: (updatedProvider: ProviderAttributes) => void;
 }
 
@@ -39,6 +39,7 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
   const [locations, setLocations] = useState<Location[]>(
     provider.attributes.locations || []
   );
+  
   const [isInsuranceModalOpen, setIsInsuranceModalOpen] = useState(false);
   const [isCountiesModalOpen, setIsCountiesModalOpen] = useState(false);
   const [selectedInsurances, setSelectedInsurances] = useState<Insurance[]>(
@@ -251,36 +252,6 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
                       }
                       className="block w-[95%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm cursor-text"
                     />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm text-gray-600 mb-2">
-                      Provider Type
-                    </label>
-                    <select
-                      value={formData.provider_type?.[0]?.name || ""}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          provider_type: [
-                            {
-                              id: formData.provider_type?.[0]?.id || 0,
-                              name: e.target.value,
-                            },
-                          ],
-                        })
-                      }
-                      className="block w-[95%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm cursor-pointer"
-                    >
-                      <option value="ABA Therapy">ABA Therapy</option>
-                      <option value="Autism Evaluation">
-                        Autism Evaluation
-                      </option>
-                      <option value="Speech Therapy">Speech Therapy</option>
-                      <option value="Occupational Therapy">
-                        Occupational Therapy
-                      </option>
-                    </select>
                   </div>
                 </div>
               </div>

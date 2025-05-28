@@ -22,15 +22,15 @@ import SuperAdminCreate from "./SuperAdminCreate";
 import SuperAdminAddInsurances from "./SuperAdminAddInsurances";
 import moment from "moment";
 import CreateUser from "./CreateUser";
-import { MockProviderData, ProviderAttributes} from "../Utility/Types";
+import { ProviderData, ProviderAttributes} from "../Utility/Types";
 
 const SuperAdmin = () => {
   const { setToken, loggedInProvider } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [selectedTab, setSelectedTab] = useState("view");
-  const [providers, setProviders] = useState<MockProviderData[]>([]);
+  const [providers, setProviders] = useState<ProviderData[]>([]);
   const [selectedProvider, setSelectedProvider] =
-    useState<MockProviderData | null>(null);
+    useState<ProviderData | null>(null);
   const [openNewProviderForm, setOpenNewProviderForm] = useState(false);
   const [openNewInsuranceForm, setOpenNewInsuranceForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -517,7 +517,7 @@ const SuperAdmin = () => {
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
                                 <div className="text-sm text-gray-500 max-w-[6rem] truncate">
-                                  {provider.attributes.provider_type?.map(type => type.name).join(", ") || "Unknown"}
+                                  {provider.attributes.provider_type?.map((type: { name: string }) => type.name).join(", ") || "Unknown"}
                                 </div>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">

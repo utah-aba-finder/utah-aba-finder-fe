@@ -1,25 +1,30 @@
 import { FC, useState, useEffect } from "react";
 import { Building2, Globe, Mail, Home, MapPin, X } from "lucide-react";
 import moment from "moment";
-import { MockProviderData, Location, ProviderType, CountiesServed, CountyData } from "../../Utility/Types";
+import { ProviderData, Location, ProviderType, CountiesServed, CountyData } from "../../Utility/Types";
 
 interface DashboardProps {
-  provider: MockProviderData;
-  onUpdate?: (updatedData: MockProviderData) => void;
+  provider: ProviderData;
+  onUpdate?: (updatedData: ProviderData) => void;
 }
 
 const Dashboard: FC<DashboardProps> = ({ provider, onUpdate }) => {
   const { attributes } = provider;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedProviderTypes, setSelectedProviderTypes] = useState<ProviderType[]>(
     attributes.provider_type || []
   );
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isCountiesModalOpen, setIsCountiesModalOpen] = useState(false);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedCounties, setSelectedCounties] = useState<CountiesServed[]>(
     attributes.counties_served || []
   );
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [activeStateForCounties, setActiveStateForCounties] = useState<string>(
     attributes.states?.[0] || ''
   );
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [availableCounties, setAvailableCounties] = useState<CountyData[]>([]);
 
   const getProviderTypeId = (typeName: string): number => {
@@ -204,6 +209,9 @@ const Dashboard: FC<DashboardProps> = ({ provider, onUpdate }) => {
             <h4 className="text-sm sm:text-base font-medium text-gray-700 mb-2">
               Service Types
             </h4>
+            <p className="text-xs sm:text-sm text-gray-600">
+              {attributes.provider_type?.map((type: ProviderType) => type.name).join(", ") || "Unknown"}
+            </p>
             <ul className="list-disc list-inside text-xs sm:text-sm text-gray-600 space-y-1">
               {attributes.in_clinic_services === "yes" && (
                 <li>In-clinic Services</li>
