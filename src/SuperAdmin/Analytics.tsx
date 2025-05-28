@@ -12,15 +12,19 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { MockProviderData } from "../Utility/Types";
+import { ProviderData } from "../Utility/Types";
 
 interface AnalyticsProps {
-  providers: MockProviderData[];
+  providers: ProviderData[];
 }
 
 interface ChartDataItem {
   name: string;
   value: number;
+}
+
+interface Insurance {
+  name: string | null;
 }
 
 const Analytics: React.FC<AnalyticsProps> = ({ providers }) => {
@@ -67,7 +71,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ providers }) => {
 
     const insuranceDistribution = approvedProviders
       .flatMap(
-        (p) => p.attributes.insurance?.map((i) => i.name || "Unknown") || []
+        (p) => p.attributes.insurance?.map((i: Insurance) => i.name || "Unknown") || []
       )
       .filter(
         (name): name is string =>

@@ -18,7 +18,7 @@ import moment from "moment";
 import InsuranceModal from "../Provider-edit/InsuranceModal";
 import CountiesModal from "../Provider-edit/CountiesModal";
 import {
-  MockProviderData,
+  ProviderData,
   ProviderAttributes,
   Insurance,
   CountiesServed,
@@ -29,7 +29,7 @@ import {
 import { fetchStates, fetchCountiesByState } from "../Utility/ApiCall";
 
 interface SuperAdminEditProps {
-  provider: MockProviderData;
+  provider: ProviderData;
   onUpdate: (updatedProvider: ProviderAttributes) => void;
   setSelectedTab?: Dispatch<SetStateAction<string>>;
 }
@@ -39,7 +39,6 @@ interface ProviderType {
   name: string;
 }
 
-// Add this helper function at the top level
 const getProviderTypeId = (typeName: string): number => {
   const typeMap: { [key: string]: number } = {
     "ABA Therapy": 1,
@@ -225,9 +224,6 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
           },
         }],
       };
-
-      console.log('Sending request:', JSON.stringify(requestBody, null, 2));
-
       const response = await fetch(
         `https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/admin/providers/${provider.id}`,
         {
@@ -241,7 +237,6 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
       );
 
       const responseText = await response.text();
-      console.log('Raw response:', responseText);
 
       if (!response.ok) {
         console.error('Response status:', response.status);
@@ -249,7 +244,6 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
       }
 
       const updatedProvider = responseText ? JSON.parse(responseText) : null;
-      console.log('Parsed response:', updatedProvider);
 
       if (updatedProvider) {
         onUpdate(updatedProvider.data.attributes);
@@ -291,6 +285,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
             Editing: <span className="text-blue-600">{editedProvider.name}</span>
           </h1>
+          <h2 className="text-lg font-semibold text-gray-900 mb-2">ID:{provider.id}</h2>
           <p className="text-sm text-gray-500">
             Last updated:{" "}
             {editedProvider.updated_last

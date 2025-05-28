@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './InsuranceModal.css';
 import { fetchProviders } from '../Utility/ApiCall';
-import { MockProviders } from '../Utility/Types';
+import { Providers } from '../Utility/Types';
 
 interface Insurance {
     name: string;
@@ -28,7 +28,7 @@ export const InsuranceModal: React.FC<InsuranceModalProps> = ({ isOpen, onClose,
     useEffect(() => {
         const getProviders = async () => {
             try {
-                const providersList: MockProviders = await fetchProviders();
+                const providersList: Providers = await fetchProviders();
                 const uniqueInsurances = new Set<string>();
 
                 providersList.data.forEach(provider => {

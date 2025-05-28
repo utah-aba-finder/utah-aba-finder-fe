@@ -12,13 +12,26 @@ import {
   Menu,
   X,
   BarChart,
+  MapPin,
+  Globe,
+  Mail,
+  DollarSign,
+  Clock,
+  Video,
+  Home,
+  Languages,
+  Plus,
+  Briefcase,
 } from "lucide-react";
 import moment from "moment";
 import "react-toastify/dist/ReactToastify.css";
-import { MockProviderData, ProviderAttributes } from "../Utility/Types";
+import { ProviderData, ProviderAttributes, Insurance, CountiesServed, Location, StateData, CountyData, ProviderType } from "../Utility/Types";
+import { fetchStates, fetchCountiesByState } from "../Utility/ApiCall";
+import InsuranceModal from "./InsuranceModal";
+import CountiesModal from "./CountiesModal";
 
 interface ProviderEditProps {
-  loggedInProvider: MockProviderData;
+  loggedInProvider: ProviderData;
   clearProviderData: () => void;
   onUpdate: (updatedProvider: ProviderAttributes) => void;
 }
@@ -32,24 +45,43 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
   const [selectedTab, setSelectedTab] = useState("dashboard");
   const [authModalOpen, setAuthModalOpen] = useState(true);
   const [sessionTimeLeft, setSessionTimeLeft] = useState<number | null>(null);
-  const [currentProvider, setCurrentProvider] =
-    useState<MockProviderData>(loggedInProvider);
+  const [currentProvider, setCurrentProvider] = useState<ProviderData>({
+    ...loggedInProvider,
+    attributes: {
+      ...loggedInProvider.attributes,
+      provider_type: loggedInProvider.attributes.provider_type || [],
+      insurance: loggedInProvider.attributes.insurance || [],
+      counties_served: loggedInProvider.attributes.counties_served || [],
+      states: loggedInProvider.attributes.states || []
+    }
+  });
   const [isLoading, setIsLoading] = useState(false);
   const { logout } = useAuth();
+  const [editedProvider, setEditedProvider] = useState<ProviderAttributes>(loggedInProvider.attributes);
+  const [providerState, setProviderState] = useState<string[]>(loggedInProvider.attributes.states || []);
+  const [activeStateForCounties, setActiveStateForCounties] = useState<string>(loggedInProvider.attributes.states?.[0] || '');
+  const [isCountiesModalOpen, setIsCountiesModalOpen] = useState(false);
+  const [availableCounties, setAvailableCounties] = useState<CountyData[]>([]);
+  const [selectedCounties, setSelectedCounties] = useState<CountiesServed[]>(
+    loggedInProvider.attributes.counties_served || []
+  );
+  const [selectedProviderTypes, setSelectedProviderTypes] = useState<ProviderType[]>(
+    loggedInProvider.attributes.provider_type || []
+  );
+  const [availableStates, setAvailableStates] = useState<StateData[]>([]);
+  const [isStateModalOpen, setIsStateModalOpen] = useState(false);
+  const [isInsuranceModalOpen, setIsInsuranceModalOpen] = useState(false);
 
   useEffect(() => {
     setCurrentProvider(loggedInProvider);
   }, [loggedInProvider]);
 
-  const refreshProviderData = useCallback(async () => {
-    setIsLoading(true);
+  const refreshProviderData = async () => {
     try {
       const response = await fetch(
         `https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/providers/${loggedInProvider.id}`,
         {
-          method: "GET",
           headers: {
-            "Content-Type": "application/json",
             Authorization: `Bearer ${sessionStorage.getItem("authToken")}`,
           },
         }
@@ -59,25 +91,31 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
         throw new Error("Failed to refresh provider data");
       }
 
-      const refreshedData = await response.json();
-      if (refreshedData.data?.[0]) {
-        const oldData = JSON.stringify(currentProvider);
-        const newData = JSON.stringify(refreshedData.data[0]);
-        
-        if (oldData !== newData) {
-          setCurrentProvider(refreshedData.data[0]);
-          onUpdate(refreshedData.data[0].attributes);
-          // Only show success toast if data actually changed
-          toast.success("Provider information updated successfully!");
+      const data = await response.json();
+      const providerData = data.data;
+      
+      // Ensure we have all required properties with defaults
+      const safeProviderData = {
+        ...providerData,
+        attributes: {
+          ...providerData.attributes,
+          provider_type: providerData.attributes.provider_type || [],
+          insurance: providerData.attributes.insurance || [],
+          counties_served: providerData.attributes.counties_served || [],
+          states: providerData.attributes.states || []
         }
-      }
+      };
+
+      setCurrentProvider(safeProviderData);
+      setEditedProvider(safeProviderData.attributes);
+      setSelectedProviderTypes(safeProviderData.attributes.provider_type);
+      setSelectedCounties(safeProviderData.attributes.counties_served);
+      setProviderState(safeProviderData.attributes.states);
     } catch (error) {
-      console.error("Error refreshing provider data:", error);
-      toast.error("Failed to refresh provider data");
-    } finally {
-      setIsLoading(false);
+      console.error('Error refreshing provider data:', error);
+      toast.error('Failed to refresh provider data');
     }
-  }, [loggedInProvider.id, onUpdate, currentProvider]);
+  };
 
   const handleLogout = useCallback(() => {
     toast.dismiss("session-warning");
@@ -154,6 +192,130 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
     }
   };
 
+  useEffect(() => {
+    const loadStatesAndCounties = async () => {
+      try {
+        const states = await fetchStates();
+        setAvailableStates(states);
+
+        if (providerState.length > 0) {
+          const stateIds = states
+            .filter(s => providerState.includes(s.attributes.name))
+            .map(s => s.id);
+          const countiesPromises = stateIds.map(id => fetchCountiesByState(id));
+          const countiesResults = await Promise.all(countiesPromises);
+          const allCounties = countiesResults.flat();
+          setAvailableCounties(allCounties);
+        }
+      } catch (error) {
+        console.error('Error loading states and counties:', error);
+        toast.error('Failed to load states and counties');
+      }
+    };
+
+    loadStatesAndCounties();
+  }, [providerState]);
+
+  // Add this effect to handle state changes
+  useEffect(() => {
+    if (providerState.length > 0 && !activeStateForCounties) {
+      setActiveStateForCounties(providerState[0]);
+    }
+  }, [providerState, activeStateForCounties]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setEditedProvider(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleStateChange = async (stateName: string) => {
+    try {
+      setIsLoading(true);
+      const stateData = availableStates.find(s => s.attributes.name === stateName);
+      if (stateData) {
+        const counties = await fetchCountiesByState(stateData.id);
+        setAvailableCounties(prev => [...prev, ...counties]);
+        setProviderState(prev => [...prev, stateName]);
+        if (!activeStateForCounties) {
+          setActiveStateForCounties(stateName);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching counties:', error);
+      toast.error('Failed to fetch counties');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const removeState = (stateToRemove: string) => {
+    setProviderState(prev => prev.filter(state => state !== stateToRemove));
+    if (activeStateForCounties === stateToRemove) {
+      setActiveStateForCounties(providerState[0] || '');
+    }
+  };
+
+  const getProviderTypeId = (typeName: string): number => {
+    const typeMap: { [key: string]: number } = {
+      "ABA Therapy": 1,
+      "Autism Evaluation": 2,
+      "Speech Therapy": 3,
+      "Occupational Therapy": 4,
+    };
+    return typeMap[typeName] || 1;
+  };
+
+  const handleSaveChanges = async () => {
+    try {
+      setIsLoading(true);
+      const updatedAttributes = {
+        ...editedProvider,
+        provider_type: selectedProviderTypes.map(type => ({
+          id: type.id,
+          name: type.name
+        })),
+        counties_served: selectedCounties,
+        states: providerState,
+        insurance: currentProvider.attributes.insurance
+      };
+
+      const response = await fetch(
+        `https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/providers/${loggedInProvider.id}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${sessionStorage.getItem("authToken")}`,
+          },
+          body: JSON.stringify({
+            data: [{
+              id: loggedInProvider.id,
+              type: "provider",
+              attributes: updatedAttributes,
+            }],
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to update provider");
+      }
+
+      await refreshProviderData();
+      toast.success("Changes saved successfully!");
+      return true;
+    } catch (error) {
+      console.error('Error saving changes:', error);
+      toast.error('Failed to save changes');
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   if (!currentProvider) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -196,6 +358,43 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
 
       {renderSessionWarning()}
 
+      {isCountiesModalOpen && (
+        <CountiesModal
+          isOpen={isCountiesModalOpen}
+          onClose={() => setIsCountiesModalOpen(false)}
+          selectedCounties={selectedCounties}
+          onCountiesChange={setSelectedCounties}
+          availableCounties={availableCounties}
+          currentState={activeStateForCounties}
+          states={providerState}
+          onStateChange={setActiveStateForCounties}
+        />
+      )}
+
+      {isInsuranceModalOpen && (
+        <InsuranceModal
+          isOpen={isInsuranceModalOpen}
+          onClose={() => setIsInsuranceModalOpen(false)}
+          selectedInsurances={currentProvider.attributes.insurance || []}
+          onInsurancesChange={(insurances) => {
+            // Only update local state, don't make API call
+            setCurrentProvider(prev => ({
+              ...prev,
+              attributes: {
+                ...prev.attributes,
+                insurance: insurances
+              }
+            }));
+            setEditedProvider(prev => ({
+              ...prev,
+              insurance: insurances
+            }));
+            setIsInsuranceModalOpen(false);
+          }}
+          providerInsurances={currentProvider.attributes.insurance || []}
+        />
+      )}
+
       <div className="h-screen bg-gray-100 flex flex-col">
         <div className="flex min-h-screen overflow-hidden">
           {/* Sidebar */}
@@ -224,60 +423,102 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
             </div>
 
             {/* Navigation Menu */}
-            <nav className="flex-1 overflow-y-auto py-2">
-              <ul className="space-y-1 px-2">
-                <li>
-                  <button
-                    onClick={() => setSelectedTab("dashboard")}
-                    className={`
-                      w-full flex items-center hover:cursor-pointer space-x-3 px-3 py-2 rounded-lg
-                      transition-colors duration-200
-                      ${
-                        selectedTab === "dashboard"
-                          ? "bg-[#4A6FA5] text-white"
-                          : "text-gray-700 hover:bg-gray-100"
-                      }
-                    `}
-                  >
-                    <BarChart className="w-4 h-4" />
-                    <span className="text-sm">Dashboard</span>
-                  </button>
-                </li>
-                <li>
-                  <button
-                    onClick={() => setSelectedTab("edit")}
-                    className={`
-                      w-full flex items-center hover:cursor-pointer space-x-3 px-3 py-2 rounded-lg
-                      transition-colors duration-200
-                      ${
-                        selectedTab === "edit"
-                          ? "bg-[#4A6FA5] text-white"
-                          : "text-gray-700 hover:bg-gray-100"
-                      }
-                    `}
-                  >
-                    <Building2 className="w-4 h-4" />
-                    <span className="text-sm">Edit Details</span>
-                  </button>
-                </li>
-                <li>
-                  <button
-                    onClick={() => setSelectedTab("create")}
-                    className={`
-                      w-full flex items-center hover:cursor-pointer space-x-3 px-3 py-2 rounded-lg
-                      transition-colors duration-200
-                      ${
-                        selectedTab === "create"
-                          ? "bg-[#4A6FA5] text-white"
-                          : "text-gray-700 hover:bg-gray-100"
-                      }
-                    `}
-                  >
-                    <PlusCircle className="w-4 h-4" />
-                    <span className="text-sm">Create Location</span>
-                  </button>
-                </li>
-              </ul>
+            <nav className="flex-1 flex flex-col justify-center gap-4 py-2 px-4">
+              <button
+                onClick={() => setSelectedTab("dashboard")}
+                className={`
+                  flex items-center justify-center gap-2 px-3 py-2 rounded-lg
+                  transition-colors duration-200 md:flex hidden
+                  ${
+                    selectedTab === "dashboard"
+                      ? "bg-[#4A6FA5] text-white"
+                      : "text-gray-700 hover:bg-gray-100"
+                  }
+                `}
+              >
+                <BarChart className="w-4 h-4" />
+                <span className="text-sm">Dashboard</span>
+              </button>
+
+              <button
+                onClick={() => setSelectedTab("edit")}
+                className={`
+                  flex items-center justify-center gap-2 px-3 py-2 rounded-lg
+                  transition-colors duration-200 md:flex hidden
+                  ${
+                    selectedTab === "edit"
+                      ? "bg-[#4A6FA5] text-white"
+                      : "text-gray-700 hover:bg-gray-100"
+                  }
+                `}
+              >
+                <Building2 className="w-4 h-4" />
+                <span className="text-sm">Basic Details</span>
+              </button>
+
+              <button
+                onClick={() => setSelectedTab("create")}
+                className={`
+                  flex items-center justify-center gap-2 px-3 py-2 rounded-lg
+                  transition-colors duration-200 md:flex hidden
+                  ${
+                    selectedTab === "create"
+                      ? "bg-[#4A6FA5] text-white"
+                      : "text-gray-700 hover:bg-gray-100"
+                  }
+                `}
+              >
+                <PlusCircle className="w-4 h-4" />
+                <span className="text-sm">Create Location</span>
+              </button>
+
+              <button
+                onClick={() => setSelectedTab("details")}
+                className={`
+                  flex items-center justify-center gap-2 px-3 py-2 rounded-lg
+                  transition-colors duration-200 md:flex hidden
+                  ${
+                    selectedTab === "details"
+                      ? "bg-[#4A6FA5] text-white"
+                      : "text-gray-700 hover:bg-gray-100"
+                  }
+                `}
+              >
+                <Building2 className="w-4 h-4" />
+                <span className="text-sm">Provider Services</span>
+              </button>
+
+              <button
+                onClick={() => setSelectedTab("coverage")}
+                className={`
+                  flex items-center justify-center gap-2 px-3 py-2 rounded-lg
+                  transition-colors duration-200 md:flex hidden
+                  ${
+                    selectedTab === "coverage"
+                      ? "bg-[#4A6FA5] text-white"
+                      : "text-gray-700 hover:bg-gray-100"
+                  }
+                `}
+              >
+                <MapPin className="w-4 h-4" />
+                <span className="text-sm">Coverage Area</span>
+              </button>
+
+              <button
+                onClick={() => setSelectedTab("insurance")}
+                className={`
+                  flex items-center justify-center gap-2 px-3 py-2 rounded-lg
+                  transition-colors duration-200 md:flex hidden
+                  ${
+                    selectedTab === "insurance"
+                      ? "bg-[#4A6FA5] text-white"
+                      : "text-gray-700 hover:bg-gray-100"
+                  }
+                `}
+              >
+                <DollarSign className="w-4 h-4" />
+                <span className="text-sm">Insurance</span>
+              </button>
             </nav>
 
             {/* Logout Button */}
@@ -356,6 +597,301 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                     <p className="text-gray-600">
                       Billing features coming soon...
                     </p>
+                  </div>
+                </div>
+              )}
+              {selectedTab === "details" && (
+                <div className="space-y-6">
+                  <div className="bg-white rounded-lg shadow p-6">
+                    <h2 className="text-xl font-semibold mb-4">Provider Details</h2>
+                    
+                    {/* Provider Types */}
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-2">Provider Types</label>
+                      <div className="flex flex-wrap gap-2 mb-2">
+                        {(selectedProviderTypes || []).map((type) => (
+                          <div key={type?.id} className="bg-blue-100 text-blue-800 px-2 py-1 rounded-md flex items-center">
+                            <span>{type?.name || 'Unknown'}</span>
+                            <X 
+                              className="ml-2 w-4 h-4 cursor-pointer" 
+                              onClick={() => setSelectedProviderTypes(prev => prev.filter(t => t.id !== type.id))}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                      <select
+                        onChange={(e) => {
+                          const type = e.target.value;
+                          if (!selectedProviderTypes.some(t => t.name === type)) {
+                            setSelectedProviderTypes(prev => [...prev, {
+                              id: getProviderTypeId(type),
+                              name: type
+                            }]);
+                          }
+                        }}
+                        className="block w-[95%] px-3 py-2 rounded-lg border border-gray-300"
+                      >
+                        <option value="">Add a provider type...</option>
+                        {["ABA Therapy", "Autism Evaluation", "Speech Therapy", "Occupational Therapy"]
+                          .filter(type => !selectedProviderTypes.some(t => t.name === type))
+                          .map(type => (
+                            <option key={type} value={type}>{type}</option>
+                          ))
+                        }
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Save and Discard Buttons */}
+                  <div className="mt-6 flex justify-end space-x-4">
+                    <button
+                      onClick={() => {
+                        setSelectedProviderTypes(loggedInProvider.attributes.provider_type || []);
+                        toast.info("Provider types changes discarded");
+                      }}
+                      className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                    >
+                      Discard Changes
+                    </button>
+                    <button
+                      onClick={async () => {
+                        const success = await handleSaveChanges();
+                        if (success) {
+                          toast.success("Changes saved successfully!");
+                        }
+                      }}
+                      disabled={isLoading}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                    >
+                      {isLoading ? "Saving..." : "Save Changes"}
+                    </button>
+                  </div>
+                </div>
+              )}
+              {selectedTab === "provider-types" && (
+                <div className="space-y-6">
+                  <div className="bg-white rounded-lg shadow p-6">
+                    <h3 className="text-sm font-medium text-gray-700 mb-4">Provider Types</h3>
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {(selectedProviderTypes || []).map((type) => (
+                        <div key={type?.id} className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm flex items-center">
+                          {type?.name || 'Unknown'}
+                          <button
+                            onClick={() => setSelectedProviderTypes(prev => prev.filter(t => t.id !== type.id))}
+                            className="ml-2 hover:text-red-500"
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                    <select
+                      className="w-full rounded-md border border-gray-300 py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      value=""
+                      onChange={(e) => {
+                        const typeName = e.target.value;
+                        if (typeName && !selectedProviderTypes.some(t => t.name === typeName)) {
+                          setSelectedProviderTypes(prev => [...prev, {
+                            id: getProviderTypeId(typeName),
+                            name: typeName
+                          }]);
+                        }
+                      }}
+                    >
+                      <option value="">Add provider type...</option>
+                      {["ABA Therapy", "Autism Evaluation", "Speech Therapy", "Occupational Therapy"]
+                        .filter(type => !selectedProviderTypes.some(t => t.name === type))
+                        .map(type => (
+                          <option key={type} value={type}>
+                            {type}
+                          </option>
+                        ))}
+                    </select>
+                  </div>
+                </div>
+              )}
+              {selectedTab === "coverage" && (
+                <div className="space-y-6">
+                  <div className="bg-white rounded-lg shadow p-6">
+                    <h2 className="text-xl font-semibold mb-4">Coverage Area</h2>
+                    
+                    {/* States Section */}
+                    <div className="mb-6">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">States</label>
+                      <div className="flex flex-wrap gap-2 mb-2">
+                        {providerState.map((state) => (
+                          <div
+                            key={state}
+                            className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm flex items-center"
+                          >
+                            {state}
+                            <button
+                              onClick={() => removeState(state)}
+                              className="ml-2 hover:text-red-500"
+                            >
+                              <X className="h-4 w-4" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="flex gap-2">
+                        <select
+                          className="flex-1 rounded-md border border-gray-300 py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          value=""
+                          onChange={(e) => {
+                            const state = e.target.value;
+                            if (state) handleStateChange(state);
+                          }}
+                        >
+                          <option value="">Select a state</option>
+                          {availableStates
+                            .filter(state => !providerState.includes(state.attributes.name))
+                            .map(state => (
+                              <option key={state.id} value={state.attributes.name}>
+                                {state.attributes.name}
+                              </option>
+                            ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Counties Section */}
+                    <div>
+                      <div className="mb-4">
+                        <h3 className="text-sm font-medium text-gray-700 mb-2">Counties Served</h3>
+                        {/* Group counties by state and display them */}
+                        {providerState.map(state => (
+                          <div key={state} className="mb-4">
+                            <h4 className="text-sm font-medium text-gray-600 mb-2">{state}</h4>
+                            <div className="flex flex-wrap gap-2 mb-2">
+                              {selectedCounties
+                                .filter(county => {
+                                  const countyData = availableCounties.find(c => c.id === county.county_id);
+                                  return countyData?.attributes.state === state;
+                                })
+                                .map(county => (
+                                  <div key={county.county_id} className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm flex items-center">
+                                    {county.county_name}
+                                    <button 
+                                      onClick={() => setSelectedCounties(prev => prev.filter(c => c.county_id !== county.county_id))} 
+                                      className="ml-2 hover:text-red-500"
+                                    >
+                                      <X className="h-4 w-4" />
+                                    </button>
+                                  </div>
+                                ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <button
+                        onClick={() => setIsCountiesModalOpen(true)}
+                        className="w-full flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+                      >
+                        <MapPin className="h-4 w-4" />
+                        Edit Counties
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Save and Discard Buttons */}
+                  <div className="mt-6 flex justify-end space-x-4">
+                    <button
+                      onClick={() => {
+                        setProviderState(loggedInProvider.attributes.states || []);
+                        setSelectedCounties(loggedInProvider.attributes.counties_served || []);
+                        toast.info("Coverage area changes discarded");
+                      }}
+                      className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                    >
+                      Discard Changes
+                    </button>
+                    <button
+                      onClick={async () => {
+                        const success = await handleSaveChanges();
+                        if (success) {
+                          toast.success("Changes saved successfully!");
+                        }
+                      }}
+                      disabled={isLoading}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                    >
+                      {isLoading ? "Saving..." : "Save Changes"}
+                    </button>
+                  </div>
+                </div>
+              )}
+              {selectedTab === "insurance" && (
+                <div className="space-y-6">
+                  <div className="bg-white rounded-lg shadow p-6">
+                    <h2 className="text-xl font-semibold mb-4">Insurance Coverage</h2>
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {currentProvider.attributes.insurance?.map((insurance) => (
+                        <div key={insurance.id} className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm flex items-center">
+                          {insurance.name}
+                          <X 
+                            className="ml-2 w-4 h-4 cursor-pointer" 
+                            onClick={() => {
+                              const updatedInsurance = currentProvider.attributes.insurance?.filter(i => i.id !== insurance.id) || [];
+                              setCurrentProvider(prev => ({
+                                ...prev,
+                                attributes: {
+                                  ...prev.attributes,
+                                  insurance: updatedInsurance
+                                }
+                              }));
+                              setEditedProvider(prev => ({
+                                ...prev,
+                                insurance: updatedInsurance
+                              }));
+                            }}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setIsInsuranceModalOpen(true)}
+                      className="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                    >
+                      <DollarSign className="w-5 h-5 mr-2" />
+                      Edit Insurance Coverage
+                    </button>
+                  </div>
+
+                  {/* Save and Discard Buttons */}
+                  <div className="mt-6 flex justify-end space-x-4">
+                    <button
+                      onClick={() => {
+                        setCurrentProvider(prev => ({
+                          ...prev,
+                          attributes: {
+                            ...prev.attributes,
+                            insurance: loggedInProvider.attributes.insurance
+                          }
+                        }));
+                        setEditedProvider(prev => ({
+                          ...prev,
+                          insurance: loggedInProvider.attributes.insurance
+                        }));
+                        toast.info("Insurance changes discarded");
+                      }}
+                      className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                    >
+                      Discard Changes
+                    </button>
+                    <button
+                      onClick={async () => {
+                        const success = await handleSaveChanges();
+                        if (success) {
+                          toast.success("Changes saved successfully!");
+                        }
+                      }}
+                      disabled={isLoading}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                    >
+                      {isLoading ? "Saving..." : "Save Changes"}
+                    </button>
                   </div>
                 </div>
               )}

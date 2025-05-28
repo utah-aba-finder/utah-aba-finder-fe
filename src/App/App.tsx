@@ -18,8 +18,8 @@ import { AuthProvider, useAuth } from "../Provider-login/AuthProvider";
 import { useEffect, useState } from "react";
 import ProtectedRoute from "../Provider-login/ProtectedRoute";
 import {
-  MockProviderData,
-  MockProviders,
+  ProviderData,
+  Providers,
   ProviderAttributes,
 } from "../Utility/Types";
 import SuperAdmin from "../SuperAdmin/SuperAdmin";
@@ -32,8 +32,8 @@ import Careers from "../Footer/Careers";
 function App() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [loggedInProvider, setLoggedInProvider] =
-    useState<MockProviderData | null>(null);
-  const [allProviders, setAllProviders] = useState<MockProviderData[]>([]);
+    useState<ProviderData | null>(null);
+  const [allProviders, setAllProviders] = useState<ProviderData[]>([]);
 
   const clearProviderData = () => {
     setLoggedInProvider(null);
@@ -42,7 +42,7 @@ function App() {
   useEffect(() => {
     const fetchAllProviders = async () => {
       try {
-        const providers: MockProviders = await fetchProviders();
+        const providers: Providers = await fetchProviders();
         const data = providers.data;
         setAllProviders(data);
       } catch (error) {
@@ -131,7 +131,7 @@ function SuperAdminEditWrapper({
   providers,
   onUpdate,
 }: {
-  providers: MockProviderData[];
+  providers: ProviderData[];
   onUpdate: (updatedProvider: ProviderAttributes) => void;
 }) {
   const { providerId } = useParams();

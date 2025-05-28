@@ -8,14 +8,14 @@ import {
   Insurance,
   CountiesServed,
   ProviderAttributes,
-  MockProviderData,
+  ProviderData,
   StateData,
   CountyData,
 } from "../../Utility/Types";
 import { fetchStates, fetchCountiesByState } from "../../Utility/ApiCall";
 
 interface CreateLocationProps {
-  provider: MockProviderData;
+  provider: ProviderData;
   onLocationCreated: (updatedProvider: ProviderAttributes) => void;
   setSelectedTab: Dispatch<SetStateAction<string>>;
 }

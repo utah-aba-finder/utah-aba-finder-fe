@@ -72,23 +72,21 @@ export interface ProviderType {
   name: string;
 }
 
-// should we remove the word "mock" from this interface??
-  export interface MockProviderData {
+export interface ProviderData {
     id: number;
     type: string;
     states: string[]; 
     attributes: ProviderAttributes;
-  }
+}
 
-// same question as above
-export interface MockProviders {
-    data: MockProviderData[];
+export interface Providers {
+    data: ProviderData[];
 }
 
 interface SuperAdminEditProps {
-    provider: MockProviderData;
+    provider: ProviderData;
     onUpdate: (updatedProvider: ProviderAttributes) => void;
-  }
+}
 
 export interface CountyData {
   id: number;

@@ -2,12 +2,12 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './SearchBar.css';
-import { CountyData, MockProviders, ProviderAttributes, InsuranceData } from '../Utility/Types';
+import { CountyData, Providers, ProviderAttributes, InsuranceData } from '../Utility/Types';
 import { fetchCountiesByState, fetchStates } from '../Utility/ApiCall';
 import { ChevronDown, ChevronUp, Search, RotateCcw, MapPin } from 'lucide-react';
 
 interface SearchBarProps {
-  onResults: (results: MockProviders) => void;
+  onResults: (results: Providers) => void;
   onSearch: (params: {
     query: string;
     county_name: string;

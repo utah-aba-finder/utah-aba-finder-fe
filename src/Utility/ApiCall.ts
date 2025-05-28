@@ -1,11 +1,11 @@
 import axios from 'axios';
-import { MockProviders, StateData, CountyData, InsuranceData, MockProviderData } from './Types';
+import { Providers, StateData, CountyData, InsuranceData, ProviderData } from './Types';
 
 const API_URL = 'https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/providers';
 
-export const fetchProviders = async (): Promise<MockProviders> => {
+export const fetchProviders = async (): Promise<Providers> => {
   try {
-    const response = await axios.get<MockProviders>(API_URL);
+    const response = await axios.get<Providers>(API_URL);
     return response.data;
   } catch (error) {
     console.error('Error fetching providers:', error);
@@ -77,7 +77,7 @@ export const fetchInsurance = async (): Promise<InsuranceData[]> => {
   return data.data;
 };
 
-export const fetchProvidersByStateIdAndProviderType = async(stateId: string, providerType: string): Promise<MockProviders> => {
+export const fetchProvidersByStateIdAndProviderType = async(stateId: string, providerType: string): Promise<Providers> => {
   const response = await fetch(
     `https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/states/${stateId}/providers?provider_type=${providerType}`,
     {
