@@ -1,7 +1,7 @@
 import React from 'react';
 import puzzleLogo from '../Assets/puzzle.png';
 import { ProviderAttributes } from '../Utility/Types';
-import { MapPin, Phone, Mail, Globe, Eye, ToggleLeft, ToggleRight } from 'lucide-react';
+import { MapPin, Phone, Mail, Globe, Eye, ToggleLeft, ToggleRight, Briefcase } from 'lucide-react';
 import './ProviderCard.css';
 import { toast } from 'react-toastify';
 
@@ -12,6 +12,7 @@ interface ProviderCardProps {
   onToggleFavorite: (providerId: number, date?: string) => void;
   isFavorited: boolean;
   favoritedDate?: string;
+  selectedState: string;
 }
 
 const ProviderCard: React.FC<ProviderCardProps> = ({
@@ -20,7 +21,8 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
   renderViewOnMapButton,
   onToggleFavorite,
   isFavorited,
-  favoritedDate
+  favoritedDate,
+  selectedState
 }) => {
 
   const handleToggleFavorite = (e: React.MouseEvent) => {
@@ -41,8 +43,18 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
     }
   };
 
+  // Filter locations based on selected state
+  const filteredLocations = provider.locations.filter(
+    location => location.state?.toUpperCase() === selectedState?.toUpperCase()
+  );
+
+  // If no locations match the selected state, don't render the card
+  if (filteredLocations.length === 0) {
+    return null;
+  }
+
   return (
-    <div className={`searched-provider-card ${provider.locations.length > 1 ? 'multiple-locations' : ''}`}>
+    <div className={`searched-provider-card ${filteredLocations.length > 1 ? 'multiple-locations' : ''}`}>
       <div className="provider-card">
         {/* <div className="featured-badge">Proud Sponsor</div> */}
         <div className="card-logo-and-text">
@@ -57,13 +69,13 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
                   <MapPin style={{ marginRight: '8px' }} />
                   <span>Address: </span>
                 </strong>
-                {provider.locations[0]?.address_1 ? (
+                {filteredLocations[0]?.address_1 ? (
                   <>
-                    {provider.locations[0].address_1}
-                    {provider.locations[0]?.address_2 && `, ${provider.locations[0].address_2}`}
-                    {provider.locations[0]?.city && `, ${provider.locations[0].city}`}
-                    {provider.locations[0]?.state && `, ${provider.locations[0].state}`}
-                    {provider.locations[0]?.zip && ` ${provider.locations[0].zip}`}
+                    {filteredLocations[0].address_1}
+                    {filteredLocations[0]?.address_2 && `, ${filteredLocations[0].address_2}`}
+                    {filteredLocations[0]?.city && `, ${filteredLocations[0].city}`}
+                    {filteredLocations[0]?.state && `, ${filteredLocations[0].state}`}
+                    {filteredLocations[0]?.zip && ` ${filteredLocations[0].zip}`}
                   </>
                 ) : (
                   'Physical address is not available for this provider.'
@@ -71,7 +83,7 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
               </h4>
               <h4>
                 <strong><Phone style={{ marginRight: '8px' }} />
-                  Phone: </strong><a href={`tel:${provider.locations[0]?.phone}`} className='custom-link'>{provider.locations[0]?.phone || 'Phone number is not available.'}</a>
+                  Phone: </strong><a href={`tel:${filteredLocations[0]?.phone}`} className='custom-link'>{filteredLocations[0]?.phone || 'Phone number is not available.'}</a>
               </h4>
               <h4>
                 <strong><Mail style={{ marginRight: '8px' }} />
@@ -88,6 +100,15 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
                 >
                   {provider.website ?? 'Provider does not have a website yet.'}
                 </a>
+              </h4>
+              <h4>
+                <strong><Briefcase style={{ marginRight: '8px' }} />
+                  Services at this location: </strong>
+                {filteredLocations[0]?.services?.length > 0 ? (
+                  filteredLocations[0].services.map(service => service.name).join(', ')
+                ) : (
+                  'No services listed for this location.'
+                )}
               </h4>
               {isFavorited && favoritedDate && (
                 <div className="favorited-date text">

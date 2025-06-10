@@ -1,3 +1,8 @@
+export interface Service {
+    id: number;
+    name: string;
+}
+
 export interface Insurance {
     id: number | null,
     name: string | null;
@@ -13,6 +18,7 @@ export interface Location {
     state: string | null;
     zip: string | null;
     phone: string | null;
+    services: Service[];
 }
 
 export interface CountiesServed {

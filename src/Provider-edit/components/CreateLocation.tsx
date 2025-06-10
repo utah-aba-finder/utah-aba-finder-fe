@@ -11,8 +11,10 @@ import {
   ProviderData,
   StateData,
   CountyData,
+  Service,
 } from "../../Utility/Types";
 import { fetchStates, fetchCountiesByState } from "../../Utility/ApiCall";
+import { Building2, MapPin, Phone, X } from 'lucide-react';
 
 interface CreateLocationProps {
   provider: ProviderData;
@@ -25,15 +27,16 @@ const CreateLocation: React.FC<CreateLocationProps> = ({
   onLocationCreated,
   setSelectedTab,
 }) => {
-  const [location, setLocation] = useState<Location>({
+  const [newLocation, setNewLocation] = useState<Location>({
     id: null,
-    name: null,
-    address_1: null,
-    address_2: null,
-    city: null,
-    state: null,
-    zip: null,
-    phone: null,
+    name: '',
+    address_1: '',
+    address_2: '',
+    city: '',
+    state: '',
+    zip: '',
+    phone: '',
+    services: []
   });
 
   const [isInsuranceModalOpen, setIsInsuranceModalOpen] = useState(false);
@@ -68,193 +71,218 @@ const CreateLocation: React.FC<CreateLocationProps> = ({
     loadStatesAndCounties();
   }, [provider.states]);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleServiceChange = (service: Service) => {
+    const serviceExists = newLocation.services.some(s => s.id === service.id);
+    if (serviceExists) {
+      setNewLocation({
+        ...newLocation,
+        services: newLocation.services.filter(s => s.id !== service.id)
+      });
+    } else {
+      setNewLocation({
+        ...newLocation,
+        services: [...newLocation.services, service]
+      });
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
 
     try {
-      const updatedLocations = [...provider.attributes.locations, location];
-
+      const updatedLocations = [...provider.attributes.locations, newLocation];
       const response = await fetch(
         `https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/providers/${provider.id}`,
         {
-          method: "PATCH",
+          method: 'PATCH',
           headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${sessionStorage.getItem("authToken")}`,
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`
           },
           body: JSON.stringify({
-            data: [
-              {
-                id: provider.id,
-                type: "provider",
-                attributes: {
-                  ...provider.attributes,
-                  locations: updatedLocations,
-                  insurance:
-                    selectedInsurances.length > 0
-                      ? selectedInsurances
-                      : provider.attributes.insurance,
-                  counties_served:
-                    selectedCounties.length > 0
-                      ? selectedCounties
-                      : provider.attributes.counties_served,
-                },
-              },
-            ],
-          }),
+            data: [{
+              id: provider.id,
+              type: 'provider',
+              attributes: {
+                ...provider.attributes,
+                locations: updatedLocations
+              }
+            }]
+          })
         }
       );
 
       if (!response.ok) {
-        throw new Error("Failed to create location");
+        throw new Error('Failed to create location');
       }
 
-      const result = await response.json();
-      onLocationCreated(result.data[0].attributes);
-      toast.success("Location created successfully");
-      setSelectedTab("dashboard");
+      const data = await response.json();
+      onLocationCreated(data.data[0].attributes);
+      toast.success('Location created successfully!');
+      setSelectedTab('edit');
     } catch (error) {
-      console.error("Error creating location:", error);
-      toast.error("Failed to create location");
+      console.error('Error creating location:', error);
+      toast.error('Failed to create location');
     } finally {
       setIsSaving(false);
     }
   };
 
   return (
-    <div className="space-y-6">
-      {/* Location Details Card */}
-      <div className="bg-white rounded-lg shadow p-8 max-w-[95%] mx-auto">
-        {" "}
-        <h2 className="text-xl font-semibold mb-6">New Location Details</h2>
-        <form onSubmit={handleSubmit}>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-            {" "}
+    <div className="max-w-4xl mx-auto p-6">
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center space-x-3 mb-6">
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <Building2 className="w-5 h-5 text-blue-600" />
+            </div>
+            <h2 className="text-lg font-semibold text-gray-900">New Location Details</h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm text-gray-600 mb-2">
-                Location Name
-              </label>
+              <label className="block text-sm text-gray-600 mb-2">Location Name</label>
               <input
                 type="text"
-                value={location.name || ""}
-                onChange={(e) =>
-                  setLocation({ ...location, name: e.target.value })
-                }
-                className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                placeholder="Enter location name"
+                value={newLocation.name || ''}
+                onChange={(e) => setNewLocation({ ...newLocation, name: e.target.value })}
+                className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 required
               />
             </div>
+
             <div>
-              <label className="block text-sm text-gray-600 mb-2">
-                Phone Number
-              </label>
+              <label className="block text-sm text-gray-600 mb-2">Phone Number</label>
+              <div className="relative">
+                <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                  type="tel"
+                  value={newLocation.phone || ''}
+                  onChange={(e) => setNewLocation({ ...newLocation, phone: e.target.value })}
+                  className="w-full pl-10 pr-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-sm text-gray-600 mb-2">Address Line 1</label>
               <input
                 type="text"
-                value={location.phone || ""}
-                onChange={(e) =>
-                  setLocation({ ...location, phone: e.target.value })
-                }
-                className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                placeholder="Enter phone number"
+                value={newLocation.address_1 || ''}
+                onChange={(e) => setNewLocation({ ...newLocation, address_1: e.target.value })}
+                className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 required
               />
             </div>
+
             <div className="md:col-span-2">
-              <label className="block text-sm text-gray-600 mb-2">
-                Address Line 1
-              </label>
+              <label className="block text-sm text-gray-600 mb-2">Address Line 2</label>
               <input
                 type="text"
-                value={location.address_1 || ""}
-                onChange={(e) =>
-                  setLocation({ ...location, address_1: e.target.value })
-                }
-                className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                placeholder="Enter street address"
-                required
+                value={newLocation.address_2 || ''}
+                onChange={(e) => setNewLocation({ ...newLocation, address_2: e.target.value })}
+                className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
-            <div className="md:col-span-2">
-              <label className="block text-sm text-gray-600 mb-2">
-                Address Line 2
-              </label>
-              <input
-                type="text"
-                value={location.address_2 || ""}
-                onChange={(e) =>
-                  setLocation({ ...location, address_2: e.target.value })
-                }
-                className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                placeholder="Apartment, suite, etc. (optional)"
-              />
-            </div>
+
             <div>
               <label className="block text-sm text-gray-600 mb-2">City</label>
               <input
                 type="text"
-                value={location.city || ""}
-                onChange={(e) =>
-                  setLocation({ ...location, city: e.target.value })
-                }
-                className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                placeholder="Enter city"
+                value={newLocation.city || ''}
+                onChange={(e) => setNewLocation({ ...newLocation, city: e.target.value })}
+                className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 required
               />
             </div>
+
             <div>
               <label className="block text-sm text-gray-600 mb-2">State</label>
               <input
                 type="text"
-                value={location.state || ""}
-                onChange={(e) =>
-                  setLocation({ ...location, state: e.target.value })
-                }
-                className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                placeholder="Enter state"
+                value={newLocation.state || ''}
+                onChange={(e) => setNewLocation({ ...newLocation, state: e.target.value })}
+                className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 required
               />
             </div>
+
             <div>
-              <label className="block text-sm text-gray-600 mb-2">
-                ZIP Code
-              </label>
+              <label className="block text-sm text-gray-600 mb-2">ZIP Code</label>
               <input
                 type="text"
-                value={location.zip || ""}
-                onChange={(e) =>
-                  setLocation({ ...location, zip: e.target.value })
-                }
-                className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                placeholder="Enter ZIP code"
+                value={newLocation.zip || ''}
+                onChange={(e) => setNewLocation({ ...newLocation, zip: e.target.value })}
+                className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 required
               />
             </div>
-          </div>
 
-          {/* Additional Coverage Options */}
-          
-
-          {/* Submit Button */}
-          <div className="mt-8 flex justify-end space-x-4">
-            <button
-              type="button"
-              onClick={() => setSelectedTab("dashboard")}
-              className="px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isSaving}
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-[#4A6FA5] hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
-            >
-              {isSaving ? "Creating..." : "Create Location"}
-            </button>
+            <div className="md:col-span-2">
+              <label className="block text-sm text-gray-600 mb-2">Services Offered at this Location</label>
+              <div className="flex flex-wrap gap-2 mb-2">
+                {newLocation.services.map((service) => (
+                  <div
+                    key={service.id}
+                    className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm flex items-center"
+                  >
+                    {service.name}
+                    <button
+                      type="button"
+                      onClick={() => handleServiceChange(service)}
+                      className="ml-2 hover:text-red-500"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <select
+                className="w-full rounded-md border border-gray-300 py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value=""
+                onChange={(e) => {
+                  const [id, name] = e.target.value.split('|');
+                  if (id && name) {
+                    handleServiceChange({ id: parseInt(id), name });
+                  }
+                }}
+              >
+                <option value="">Add a service...</option>
+                {[
+                  { id: 1, name: "ABA Therapy" },
+                  { id: 2, name: "Autism Evaluation" },
+                  { id: 3, name: "Speech Therapy" },
+                  { id: 4, name: "Occupational Therapy" }
+                ]
+                  .filter(service => !newLocation.services.some(s => s.id === service.id))
+                  .map(service => (
+                    <option key={service.id} value={`${service.id}|${service.name}`}>
+                      {service.name}
+                    </option>
+                  ))
+                }
+              </select>
+            </div>
           </div>
-        </form>
-      </div>
+        </div>
+
+        <div className="flex justify-end space-x-4">
+          <button
+            type="button"
+            onClick={() => setSelectedTab('edit')}
+            className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          >
+            Create Location
+          </button>
+        </div>
+      </form>
 
       {/* Modals */}
       {isInsuranceModalOpen && (

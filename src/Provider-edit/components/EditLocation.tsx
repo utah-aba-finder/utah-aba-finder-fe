@@ -8,6 +8,7 @@ import {
   Clock,
   Stethoscope,
   Languages,
+  X,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import moment from "moment";
@@ -19,6 +20,7 @@ import {
   CountiesServed,
   StateData,
   CountyData,
+  Service,
 } from "../../Utility/Types";
 import { fetchStates, fetchCountiesByState } from "../../Utility/ApiCall";
 
@@ -37,7 +39,10 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
     provider.attributes
   );
   const [locations, setLocations] = useState<Location[]>(
-    provider.attributes.locations || []
+    (provider.attributes.locations || []).map((location: Location) => ({
+      ...location,
+      services: location.services || []
+    }))
   );
   
   const [isInsuranceModalOpen, setIsInsuranceModalOpen] = useState(false);
@@ -55,7 +60,10 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
 
   const handleCancel = () => {
     setFormData(provider.attributes);
-    setLocations(provider.attributes.locations || []);
+    setLocations((provider.attributes.locations || []).map((location: Location) => ({
+      ...location,
+      services: location.services || []
+    })));
     setSelectedInsurances(provider.attributes.insurance || []);
     setSelectedCounties(provider.attributes.counties_served || []);
     toast.info("Changes have been reverted");
@@ -133,7 +141,10 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
         setSelectedCounties(
           refreshedData.data[0].attributes.counties_served || []
         );
-        setLocations(refreshedData.data[0].attributes.locations || []);
+        setLocations((refreshedData.data[0].attributes.locations || []).map((location: Location) => ({
+          ...location,
+          services: location.services || []
+        })));
 
         onUpdate(refreshedData.data[0].attributes);
       }
@@ -146,9 +157,27 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
       setIsSaving(false);
     }
   };
+
+  const handleServiceChange = (locationIndex: number, service: Service) => {
+    const newLocations = [...locations];
+    const locationServices = newLocations[locationIndex].services || [];
+    
+    const serviceExists = locationServices.some(s => s.id === service.id);
+    if (serviceExists) {
+      newLocations[locationIndex].services = locationServices.filter(s => s.id !== service.id);
+    } else {
+      newLocations[locationIndex].services = [...locationServices, service];
+    }
+    
+    setLocations(newLocations);
+  };
+
   useEffect(() => {
     setFormData(provider.attributes);
-    setLocations(provider.attributes.locations || []);
+    setLocations((provider.attributes.locations || []).map((location: Location) => ({
+      ...location,
+      services: location.services || []
+    })));
     setSelectedInsurances(provider.attributes.insurance || []);
     setSelectedCounties(provider.attributes.counties_served || []);
   }, [provider.attributes]);
@@ -463,6 +492,53 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
                         className="w-[95%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm cursor-text"
                       />
                     </div>
+                  </div>
+
+                  <div className="mt-4">
+                    <label className="block text-sm text-gray-600 mb-2">
+                      Services Offered at this Location
+                    </label>
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {location.services?.map((service) => (
+                        <div
+                          key={service.id}
+                          className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm flex items-center"
+                        >
+                          {service.name}
+                          <button
+                            onClick={() => handleServiceChange(index, service)}
+                            className="ml-2 hover:text-red-500"
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                    <select
+                      className="w-full rounded-md border border-gray-300 py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      value=""
+                      onChange={(e) => {
+                        const [id, name] = e.target.value.split('|');
+                        if (id && name) {
+                          handleServiceChange(index, { id: parseInt(id), name });
+                        }
+                      }}
+                    >
+                      <option value="">Add a service...</option>
+                      {[
+                        { id: 1, name: "ABA Therapy" },
+                        { id: 2, name: "Autism Evaluation" },
+                        { id: 3, name: "Speech Therapy" },
+                        { id: 4, name: "Occupational Therapy" }
+                      ]
+                        .filter(service => !location.services?.some(s => s.id === service.id))
+                        .map(service => (
+                          <option key={service.id} value={`${service.id}|${service.name}`}>
+                            {service.name}
+                          </option>
+                        ))
+                      }
+                    </select>
                   </div>
                 </div>
               ))}

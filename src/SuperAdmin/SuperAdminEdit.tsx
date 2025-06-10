@@ -185,6 +185,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
       state: null,
       zip: null,
       phone: null,
+      services: []
     };
     setLocations([...locations, newLocation]);
   };

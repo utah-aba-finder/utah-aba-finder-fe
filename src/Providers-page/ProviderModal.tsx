@@ -1,7 +1,7 @@
 import React from 'react';
 import './ProviderModal.css';
 import GoogleMap from './GoogleMap';
-import { MapPin, Phone, Globe, Mail } from 'lucide-react'
+import { MapPin, Phone, Globe, Mail, Briefcase } from 'lucide-react'
 import { useEffect, useState } from 'react';
 import moment from 'moment';
 
@@ -13,6 +13,7 @@ interface Location {
   state: string | null;
   zip: string | null;
   phone?: string | null;
+  services?: Service[];
 }
 
 interface Insurance {
@@ -49,6 +50,10 @@ interface County {
   county_name: string | null;
 }
 
+interface Service {
+  name: string;
+}
+
 interface ProviderModalProps {
   provider: {
     id: number;
@@ -60,9 +65,10 @@ interface ProviderModalProps {
   mapAddress: string;
   onClose: () => void;
   onViewOnMapClick: (address: string) => void;
+  selectedState: string | null;
 }
 
-const ProviderModal: React.FC<ProviderModalProps> = ({ provider, address, mapAddress, onViewOnMapClick, onClose }) => {
+const ProviderModal: React.FC<ProviderModalProps> = ({ provider, address, mapAddress, onViewOnMapClick, onClose, selectedState }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const [activeTab, setActiveTab] = useState('details');
@@ -88,6 +94,11 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ provider, address, mapAdd
       setActiveTab(tabName);
     }
   };
+
+  const filteredLocations = provider.attributes.locations.filter(location => {
+    if (!selectedState || !location.state) return false;
+    return location.state.trim().toUpperCase() === selectedState.trim().toUpperCase();
+  });
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -146,8 +157,8 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ provider, address, mapAdd
         return <section className="location-section">
           <div className="location-map">
             <div className="location-list">
-              {provider.attributes.locations.length > 0 ? (
-                provider.attributes.locations.map((location, index) => (
+              {filteredLocations.length > 0 ? (
+                filteredLocations.map((location, index) => (
                   <div key={index} className="provider-address-phone">
                     <p><strong>Location {index + 1}: {location.name ? location.name : ""}</strong></p>
                     <p>
@@ -163,6 +174,14 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ provider, address, mapAdd
                       <strong>Phone: </strong>
                       {location.phone ? <a href={`tel:${location.phone}`}>{location.phone}</a> : 'Provider does not have a number for this location yet.'}
                     </p>
+                    <p><Briefcase style={{ marginRight: '8px' }} />
+                      <strong>Services: </strong>
+                      {(location.services && location.services.length > 0) ? (
+                        location.services.map(service => service.name).join(', ')
+                      ) : (
+                        'No services listed for this location.'
+                      )}
+                    </p>
                     <button className="view-on-map-button"
                       onClick={() => {
                         const fullAddress = `${location.address_1 || ''} ${location.address_2 || ''}, ${location.city || ''}, ${location.state || ''} ${location.zip || ''}`.trim();
@@ -173,7 +192,7 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ provider, address, mapAdd
                   </div>
                 ))
               ) : (
-                <p><strong>Physical address is not available for this provider</strong></p>
+                <p><strong>No locations available in {selectedState}</strong></p>
               )}
             </div>
           </div>
