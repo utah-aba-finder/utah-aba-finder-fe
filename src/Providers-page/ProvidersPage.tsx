@@ -4,10 +4,10 @@ import childrenBanner from "../Assets/children-banner-2.jpg";
 import ProviderModal from "./ProviderModal";
 import SearchBar from "./SearchBar";
 import ProviderCard from "./ProviderCard";
-import { Providers, ProviderAttributes, InsuranceData, Insurance, CountiesServed as County, ProviderType as ProviderTypeInterface, ProviderData } from "../Utility/Types";
+import { Providers, ProviderAttributes, InsuranceData, Insurance, CountiesServed as County, ProviderType as ProviderTypeInterface, ProviderData, CountyData } from "../Utility/Types";
 import gearImage from "../Assets/Gear@1x-0.5s-200px-200px.svg";
 import Joyride, { Step, STATUS } from "react-joyride";
-import { fetchProviders, fetchProvidersByStateIdAndProviderType, fetchInsurance } from "../Utility/ApiCall";
+import { fetchProviders, fetchProvidersByStateIdAndProviderType, fetchInsurance, fetchCountiesByState } from "../Utility/ApiCall";
 import { Link } from "react-router-dom";
 interface FavoriteDate {
   [providerId: number]: string;
@@ -48,6 +48,8 @@ const ProvidersPage: React.FC = () => {
   const [selectedProviderType, setSelectedProviderType] = useState<string>("");
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedStateId, setSelectedStateId] = useState<string>("");
+  const [selectedStateAbbr, setSelectedStateAbbr] = useState<string | null>(null);
+  const [counties, setCounties] = useState<CountyData[]>([]);
   const providersPerPage = 10;
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [pageTransition, setPageTransition] = useState<"next" | "prev" | null>(
@@ -229,17 +231,21 @@ const ProvidersPage: React.FC = () => {
   }, []);
 
   const handleSearch = useCallback(
-    async ({
+    async ({ 
+      state, 
+      stateId, 
+      providerType,
       query,
       county_name,
       insurance,
       spanish,
       service,
       waitlist,
-      age,
-      providerType,
-      stateId
+      age
     }: {
+      state: string;
+      stateId: string;
+      providerType: string;
       query: string;
       county_name: string;
       insurance: string;
@@ -247,12 +253,19 @@ const ProvidersPage: React.FC = () => {
       service: string;
       waitlist: string;
       age: string;
-      providerType: string;
-      stateId: string;
     }) => {
+      setSelectedStateAbbr(state);
       try {
         setIsLoading(true);
         setFilteredProviders([]); // Reset filtered providers before new search
+
+        // If a state is selected, fetch its counties
+        if (stateId !== 'none') {
+          const countiesData = await fetchCountiesByState(parseInt(stateId));
+          setCounties(countiesData);
+        } else {
+          setCounties([]);
+        }
 
         // If both state and provider type are selected, use the specific API endpoint
         if (stateId !== 'none' && providerType !== 'none') {
@@ -513,7 +526,11 @@ const ProvidersPage: React.FC = () => {
         return false;
     }
   });
+
+  // Combine all filtered providers without location filtering
   const combinedProviders = [...filteredWithService, ...filteredWithoutService];
+
+  // Then do pagination on the filtered list
   const indexOfLastProvider = currentPage * providersPerPage;
   const indexOfFirstProvider = indexOfLastProvider - providersPerPage;
   const paginatedProviders = combinedProviders.slice(
@@ -735,6 +752,7 @@ const ProvidersPage: React.FC = () => {
                             (fav) => fav.id === provider.id
                           )}
                           favoritedDate={favoriteDates[provider.id]}
+                          selectedState={selectedStateAbbr === 'none' ? '' : selectedStateAbbr || ''}
                         />
                       </div>
                     ))}
@@ -781,6 +799,8 @@ const ProvidersPage: React.FC = () => {
             mapAddress={mapAddress}
             onClose={() => setSelectedProvider(null)}
             onViewOnMapClick={handleViewOnMapClick}
+            selectedState={selectedStateAbbr}
+            availableCounties={counties}
           />
         )}
       </main>

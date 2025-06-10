@@ -1,7 +1,7 @@
 import React from 'react';
 import './ProviderModal.css';
 import GoogleMap from './GoogleMap';
-import { MapPin, Phone, Globe, Mail } from 'lucide-react'
+import { MapPin, Phone, Globe, Mail, Briefcase } from 'lucide-react'
 import { useEffect, useState } from 'react';
 import moment from 'moment';
 
@@ -13,6 +13,7 @@ interface Location {
   state: string | null;
   zip: string | null;
   phone?: string | null;
+  services?: Service[];
 }
 
 interface Insurance {
@@ -47,6 +48,20 @@ interface ProviderAttributes {
 interface County {
   county_id: number | null;
   county_name: string | null;
+  state?: string | null;
+}
+
+interface Service {
+  name: string;
+}
+
+interface CountyData {
+  id: number;
+  type: string;
+  attributes: {
+    name: string;
+    state: string;
+  };
 }
 
 interface ProviderModalProps {
@@ -60,9 +75,19 @@ interface ProviderModalProps {
   mapAddress: string;
   onClose: () => void;
   onViewOnMapClick: (address: string) => void;
+  selectedState: string | null;
+  availableCounties?: CountyData[];
 }
 
-const ProviderModal: React.FC<ProviderModalProps> = ({ provider, address, mapAddress, onViewOnMapClick, onClose }) => {
+const ProviderModal: React.FC<ProviderModalProps> = ({ 
+  provider, 
+  address, 
+  mapAddress, 
+  onViewOnMapClick, 
+  onClose, 
+  selectedState,
+  availableCounties = []
+}) => {
   const [isVisible, setIsVisible] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const [activeTab, setActiveTab] = useState('details');
@@ -89,6 +114,11 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ provider, address, mapAdd
     }
   };
 
+  const filteredLocations = provider.attributes.locations.filter(location => {
+    if (!selectedState || !location.state || selectedState === 'none') return null;
+    return location.state.trim().toUpperCase() === selectedState.trim().toUpperCase();
+  });
+
   const renderTabContent = () => {
     switch (activeTab) {
       case 'details':
@@ -101,7 +131,7 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ provider, address, mapAdd
               <p className="provider-contact text">
                 <p><Phone style={{ marginRight: '8px' }} />
                   <strong>Phone: </strong>
-                  {provider.attributes.locations[0].phone ? <a href={`tel:${provider.attributes.locations[0].phone}`}>{provider.attributes.locations[0].phone}</a> : 'Provider does not have a number for this location yet.'}
+                  {provider.attributes.locations[0]?.phone ? <a href={`tel:${provider.attributes.locations[0]?.phone}`}>{provider.attributes.locations[0].phone}</a> : 'Provider does not have a number for this location yet.'}
                 </p>
                 <p><Globe style={{ marginRight: '8px' }} />
                   <strong>Website: </strong>
@@ -115,21 +145,37 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ provider, address, mapAdd
             </div>
             <div className="provider-details text">
               <p><strong>Counties Served:</strong> {
-                provider.attributes.provider_type.length > 0 && provider.attributes.provider_type[0].name === "ABA Therapy"
-                  ? provider.attributes.counties_served?.length === 1 && provider.attributes.counties_served[0].county_name === "Contact Us"
-                    ? 'Contact us'
-                    : provider.attributes.counties_served?.length > 0
-                      ? provider.attributes.counties_served
+                (() => {
+                  // Filter counties based on selected state and available counties
+                  const relevantCounties = selectedState && selectedState !== 'none'
+                    ? provider.attributes.counties_served.filter(county => {
+                        // Get the full state name from the available counties
+                        const matchingCounty = availableCounties.find(ac => 
+                          ac.attributes.name === county.county_name
+                        );
+                        return matchingCounty !== undefined;
+                      })
+                    : provider.attributes.counties_served;
+
+                  if (provider.attributes.provider_type.length > 0 && provider.attributes.provider_type[0].name === "ABA Therapy") {
+                    if (relevantCounties.length === 1 && relevantCounties[0].county_name === "Contact Us") {
+                      return 'Contact us';
+                    }
+                    return relevantCounties.length > 0
+                      ? relevantCounties
                           .filter(county => county.county_name !== "Contact Us")
                           .map(county => county.county_name)
                           .join(', ')
-                      : 'Not applicable for this provider'
-                  : provider.attributes.counties_served?.length > 1 || (provider.attributes.counties_served?.length === 1 && provider.attributes.counties_served[0].county_name !== "Contact Us")
-                    ? provider.attributes.counties_served
+                      : 'Not applicable for this provider';
+                  }
+                  
+                  return relevantCounties.length > 1 || (relevantCounties.length === 1 && relevantCounties[0].county_name !== "Contact Us")
+                    ? relevantCounties
                         .filter(county => county.county_name !== "Contact Us")
                         .map(county => county.county_name)
                         .join(', ')
-                    : 'Not applicable for this provider'
+                    : 'Not applicable for this provider';
+                })()
               }</p>
               <p><strong>Ages Served:</strong> {provider.attributes.min_age} - {provider.attributes.max_age} years</p>
               <p><strong>Waitlist:</strong> {provider.attributes.waitlist || 'Contact us'}</p>
@@ -146,8 +192,8 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ provider, address, mapAdd
         return <section className="location-section">
           <div className="location-map">
             <div className="location-list">
-              {provider.attributes.locations.length > 0 ? (
-                provider.attributes.locations.map((location, index) => (
+              {filteredLocations.length > 0 ? (
+                filteredLocations.map((location, index) => (
                   <div key={index} className="provider-address-phone">
                     <p><strong>Location {index + 1}: {location.name ? location.name : ""}</strong></p>
                     <p>
@@ -163,6 +209,14 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ provider, address, mapAdd
                       <strong>Phone: </strong>
                       {location.phone ? <a href={`tel:${location.phone}`}>{location.phone}</a> : 'Provider does not have a number for this location yet.'}
                     </p>
+                    <p><Briefcase style={{ marginRight: '8px' }} />
+                      <strong>Services: </strong>
+                      {(location.services && location.services.length > 0) ? (
+                        location.services.map(service => service.name).join(', ')
+                      ) : (
+                        'No services listed for this location.'
+                      )}
+                    </p>
                     <button className="view-on-map-button"
                       onClick={() => {
                         const fullAddress = `${location.address_1 || ''} ${location.address_2 || ''}, ${location.city || ''}, ${location.state || ''} ${location.zip || ''}`.trim();
@@ -173,7 +227,7 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ provider, address, mapAdd
                   </div>
                 ))
               ) : (
-                <p><strong>Physical address is not available for this provider</strong></p>
+                <p><strong>No locations available in {selectedState}</strong></p>
               )}
             </div>
           </div>

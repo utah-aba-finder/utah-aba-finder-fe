@@ -18,6 +18,7 @@ interface SearchBarProps {
     age: string;
     providerType: string;
     stateId: string;
+    state: string;
   }) => void;
   onCountyChange: (county_name: string) => void;
   insuranceOptions: InsuranceData[];
@@ -59,6 +60,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
   const [providerStates, setProviderStates] = useState<any[]>([]);
   const [error, setError] = useState<string>('');
   const [selectedStateId, setSelectedStateId] = useState<string>('none');
+  const [selectedState, setSelectedState] = useState<string>('none');
   const [counties, setCounties] = useState<CountyData[]>([]);
   const [advancedOptions, setAdvancedOptions] = useState(false);
 
@@ -127,6 +129,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
       age: selectedAge,
       providerType: selectedProviderType,
       stateId: selectedStateId,
+      state: selectedState,
     });
     setShowNotification(true);
     setIsVisible(true);
@@ -140,6 +143,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
     selectedAge,
     selectedProviderType,
     selectedStateId,
+    selectedState,
     onSearch,
   ]);
 
@@ -161,6 +165,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
     onWaitListChange('');
     onAgeChange('');
     onProviderTypeChange('none');
+    setSelectedState('none');
   };
 
   const ageOptions = [
@@ -191,13 +196,25 @@ const SearchBar: React.FC<SearchBarProps> = ({
             <select
               className="provider-state-select"
               value={selectedStateId}
-              onChange={(e) => setSelectedStateId(e.target.value)}
+              onChange={(e) => {
+                const stateId = e.target.value;
+                setSelectedStateId(stateId);
+                if (stateId !== 'none') {
+                  const state = providerStates.find(s => s.id.toString() === stateId);
+                  setSelectedState(state?.attributes.abbreviation || 'none');
+                } else {
+                  setSelectedState('none');
+                }
+              }}
               aria-label="Select State"
               required
             >
               <option value="none"> <MapPin size={18} /> Choose a state</option>
               {providerStates.map((providerState) => (
-                <option key={providerState.id} value={providerState.id}>
+                <option 
+                  key={providerState.id} 
+                  value={providerState.id}
+                >
                   {providerState.attributes.name}
                 </option>
               ))}

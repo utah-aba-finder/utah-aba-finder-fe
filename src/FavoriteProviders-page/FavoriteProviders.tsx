@@ -128,6 +128,7 @@ const FavoriteProviders: React.FC = () => {
                                         isFavorited={true}
                                         favoritedDate={favoriteDates[provider.id]}
                                         renderViewOnMapButton={() => null}
+                                        selectedState=""
                                     />
                                 ))}
                             </div>
@@ -162,6 +163,7 @@ const FavoriteProviders: React.FC = () => {
                     mapAddress={mapAddress || 'Address not available'}
                     onClose={handleCloseModal}
                     onViewOnMapClick={handleViewOnMapClick}
+                    selectedState={null}
                 />
             )}
         </div>
