@@ -504,13 +504,11 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
                           key={service.id}
                           className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm flex items-center"
                         >
-                          {service.name}
-                          <button
-                            onClick={() => handleServiceChange(index, service)}
-                            className="ml-2 hover:text-red-500"
-                          >
-                            <X className="h-4 w-4" />
-                          </button>
+                          <span>{service.name}</span>
+                            <X  
+                             onClick={() => handleServiceChange(index, service)}
+                             className="ml-2 hover:text-red-500 p-0 border-0 bg-transparent cursor-pointer"
+                           />
                         </div>
                       ))}
                     </div>

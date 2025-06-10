@@ -417,7 +417,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                   <span className="text-lg font-semibold">Provider Panel</span>
                 </div>
                 <button className="md:hidden" onClick={() => setIsOpen(false)}>
-                  <X className="w-5 h-5" />
+                  <X className="ml-2 w-4 h-4 cursor-pointer" />
                 </button>
               </div>
             </div>
@@ -712,85 +712,107 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
               )}
               {selectedTab === "coverage" && (
                 <div className="space-y-6">
-                  <div className="bg-white rounded-lg shadow p-6">
+                  <div className="bg-white rounded-lg">
                     <h2 className="text-xl font-semibold mb-4">Coverage Area</h2>
                     
                     {/* States Section */}
                     <div className="mb-6">
                       <label className="block text-sm font-medium text-gray-700 mb-2">States</label>
                       <div className="flex flex-wrap gap-2 mb-2">
-                        {providerState.map((state) => (
+                        {availableStates.map((state) => (
                           <div
-                            key={state}
-                            className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm flex items-center"
+                            key={state.id}
+                            className={`px-3 py-1 rounded-full text-sm flex items-center cursor-pointer justify-between
+                              ${providerState.includes(state.attributes.name) ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
                           >
-                            {state}
-                            <button
-                              onClick={() => removeState(state)}
-                              className="ml-2 hover:text-red-500"
+                            <span 
+                              onClick={async () => {
+                                setActiveStateForCounties(state.attributes.name);
+                                if (!providerState.includes(state.attributes.name)) {
+                                  await handleStateChange(state.attributes.name);
+                                }
+                                // Fetch counties for this state even if already selected
+                                const counties = await fetchCountiesByState(state.id);
+                                setAvailableCounties(prev => {
+                                  // Remove existing counties for this state
+                                  const filtered = prev.filter(c => c.attributes.state !== state.attributes.name);
+                                  // Add new counties
+                                  return [...filtered, ...counties];
+                                });
+                              }}
                             >
-                              <X className="h-4 w-4" />
-                            </button>
+                              {state.attributes.name}
+                            </span>
+                            {providerState.includes(state.attributes.name) && (
+                              <X 
+                                className="h-4 w-4 ml-2 hover:text-red-500" 
+                                onClick={() => {
+                                  const newStates = providerState.filter(s => s !== state.attributes.name);
+                                  setProviderState(newStates);
+                                  // Clear counties for this state
+                                  setSelectedCounties(prev => prev.filter(c => c.state !== state.attributes.name));
+                                  if (activeStateForCounties === state.attributes.name) {
+                                    setActiveStateForCounties('');
+                                  }
+                                }}
+                              />
+                            )}
                           </div>
                         ))}
-                      </div>
-                      <div className="flex gap-2">
-                        <select
-                          className="flex-1 rounded-md border border-gray-300 py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          value=""
-                          onChange={(e) => {
-                            const state = e.target.value;
-                            if (state) handleStateChange(state);
-                          }}
-                        >
-                          <option value="">Select a state</option>
-                          {availableStates
-                            .filter(state => !providerState.includes(state.attributes.name))
-                            .map(state => (
-                              <option key={state.id} value={state.attributes.name}>
-                                {state.attributes.name}
-                              </option>
-                            ))}
-                        </select>
                       </div>
                     </div>
 
                     {/* Counties Section */}
                     <div>
-                      <div className="mb-4">
-                        <h3 className="text-sm font-medium text-gray-700 mb-2">Counties Served</h3>
-                        {/* Group counties by state and display them */}
-                        {providerState.map(state => (
-                          <div key={state} className="mb-4">
-                            <h4 className="text-sm font-medium text-gray-600 mb-2">{state}</h4>
-                            <div className="flex flex-wrap gap-2 mb-2">
-                              {selectedCounties
-                                .filter(county => {
-                                  const countyData = availableCounties.find(c => c.id === county.county_id);
-                                  return countyData?.attributes.state === state;
-                                })
-                                .map(county => (
-                                  <div key={county.county_id} className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm flex items-center">
-                                    {county.county_name}
-                                    <button 
-                                      onClick={() => setSelectedCounties(prev => prev.filter(c => c.county_id !== county.county_id))} 
-                                      className="ml-2 hover:text-red-500"
-                                    >
-                                      <X className="h-4 w-4" />
-                                    </button>
+                      <div>
+                        <h3 className="text-sm font-medium text-gray-700 mb-2">Counties in {activeStateForCounties}</h3>
+                        {activeStateForCounties && (
+                          <div className="flex flex-wrap gap-2">
+                            {availableCounties
+                              .filter(county => county.attributes.state === activeStateForCounties)
+                              .map(county => {
+                                const isSelected = selectedCounties.some(c => c.county_id === county.id);
+                                return (
+                                  <div
+                                    key={county.id}
+                                    onClick={() => {
+                                      if (isSelected) {
+                                        const remaining = selectedCounties.filter(c => c.county_id !== county.id);
+                                        // If no counties selected for this state, automatically select "Contact Us"
+                                        if (!remaining.some(c => c.state === activeStateForCounties)) {
+                                          setSelectedCounties(prev => [...prev.filter(c => c.state !== activeStateForCounties), {
+                                            county_id: 0,
+                                            county_name: "Contact Us",
+                                            state: activeStateForCounties
+                                          }]);
+                                        } else {
+                                          setSelectedCounties(remaining);
+                                        }
+                                      } else {
+                                        setSelectedCounties(prev => [...prev.filter(c => 
+                                          !(c.state === activeStateForCounties && c.county_name === "Contact Us")
+                                        ), {
+                                          county_id: county.id,
+                                          county_name: county.attributes.name,
+                                          state: county.attributes.state
+                                        }]);
+                                      }
+                                    }}
+                                    className={`px-3 py-1 rounded-full text-sm cursor-pointer flex items-center justify-between
+                                      ${isSelected 
+                                        ? 'bg-blue-500 text-white' 
+                                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                                  >
+                                    <span>{county.attributes.name}</span>
+                                    {isSelected && (
+                                      <X className="h-4 w-4 ml-2" />
+                                    )}
                                   </div>
-                                ))}
-                            </div>
+                                );
+                              })}
                           </div>
-                        ))}
+                        )}
                       </div>
-                      <button
-                        onClick={() => setIsCountiesModalOpen(true)}
-                        className="w-full flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
-                      >
-                        <MapPin className="h-4 w-4" />
-                        Edit Counties
-                      </button>
                     </div>
                   </div>
 

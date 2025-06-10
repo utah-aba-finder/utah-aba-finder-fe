@@ -48,10 +48,20 @@ interface ProviderAttributes {
 interface County {
   county_id: number | null;
   county_name: string | null;
+  state?: string | null;
 }
 
 interface Service {
   name: string;
+}
+
+interface CountyData {
+  id: number;
+  type: string;
+  attributes: {
+    name: string;
+    state: string;
+  };
 }
 
 interface ProviderModalProps {
@@ -66,9 +76,18 @@ interface ProviderModalProps {
   onClose: () => void;
   onViewOnMapClick: (address: string) => void;
   selectedState: string | null;
+  availableCounties?: CountyData[];
 }
 
-const ProviderModal: React.FC<ProviderModalProps> = ({ provider, address, mapAddress, onViewOnMapClick, onClose, selectedState }) => {
+const ProviderModal: React.FC<ProviderModalProps> = ({ 
+  provider, 
+  address, 
+  mapAddress, 
+  onViewOnMapClick, 
+  onClose, 
+  selectedState,
+  availableCounties = []
+}) => {
   const [isVisible, setIsVisible] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const [activeTab, setActiveTab] = useState('details');
@@ -96,7 +115,7 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ provider, address, mapAdd
   };
 
   const filteredLocations = provider.attributes.locations.filter(location => {
-    if (!selectedState || !location.state) return false;
+    if (!selectedState || !location.state || selectedState === 'none') return null;
     return location.state.trim().toUpperCase() === selectedState.trim().toUpperCase();
   });
 
@@ -112,7 +131,7 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ provider, address, mapAdd
               <p className="provider-contact text">
                 <p><Phone style={{ marginRight: '8px' }} />
                   <strong>Phone: </strong>
-                  {provider.attributes.locations[0].phone ? <a href={`tel:${provider.attributes.locations[0].phone}`}>{provider.attributes.locations[0].phone}</a> : 'Provider does not have a number for this location yet.'}
+                  {provider.attributes.locations[0]?.phone ? <a href={`tel:${provider.attributes.locations[0]?.phone}`}>{provider.attributes.locations[0].phone}</a> : 'Provider does not have a number for this location yet.'}
                 </p>
                 <p><Globe style={{ marginRight: '8px' }} />
                   <strong>Website: </strong>
@@ -126,21 +145,37 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ provider, address, mapAdd
             </div>
             <div className="provider-details text">
               <p><strong>Counties Served:</strong> {
-                provider.attributes.provider_type.length > 0 && provider.attributes.provider_type[0].name === "ABA Therapy"
-                  ? provider.attributes.counties_served?.length === 1 && provider.attributes.counties_served[0].county_name === "Contact Us"
-                    ? 'Contact us'
-                    : provider.attributes.counties_served?.length > 0
-                      ? provider.attributes.counties_served
+                (() => {
+                  // Filter counties based on selected state and available counties
+                  const relevantCounties = selectedState && selectedState !== 'none'
+                    ? provider.attributes.counties_served.filter(county => {
+                        // Get the full state name from the available counties
+                        const matchingCounty = availableCounties.find(ac => 
+                          ac.attributes.name === county.county_name
+                        );
+                        return matchingCounty !== undefined;
+                      })
+                    : provider.attributes.counties_served;
+
+                  if (provider.attributes.provider_type.length > 0 && provider.attributes.provider_type[0].name === "ABA Therapy") {
+                    if (relevantCounties.length === 1 && relevantCounties[0].county_name === "Contact Us") {
+                      return 'Contact us';
+                    }
+                    return relevantCounties.length > 0
+                      ? relevantCounties
                           .filter(county => county.county_name !== "Contact Us")
                           .map(county => county.county_name)
                           .join(', ')
-                      : 'Not applicable for this provider'
-                  : provider.attributes.counties_served?.length > 1 || (provider.attributes.counties_served?.length === 1 && provider.attributes.counties_served[0].county_name !== "Contact Us")
-                    ? provider.attributes.counties_served
+                      : 'Not applicable for this provider';
+                  }
+                  
+                  return relevantCounties.length > 1 || (relevantCounties.length === 1 && relevantCounties[0].county_name !== "Contact Us")
+                    ? relevantCounties
                         .filter(county => county.county_name !== "Contact Us")
                         .map(county => county.county_name)
                         .join(', ')
-                    : 'Not applicable for this provider'
+                    : 'Not applicable for this provider';
+                })()
               }</p>
               <p><strong>Ages Served:</strong> {provider.attributes.min_age} - {provider.attributes.max_age} years</p>
               <p><strong>Waitlist:</strong> {provider.attributes.waitlist || 'Contact us'}</p>

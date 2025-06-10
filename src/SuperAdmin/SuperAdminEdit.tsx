@@ -25,6 +25,7 @@ import {
   Location as ProviderLocation,
   StateData,
   CountyData,
+  Service,
 } from "../Utility/Types";
 import { fetchStates, fetchCountiesByState } from "../Utility/ApiCall";
 
@@ -63,6 +64,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
   const [locations, setLocations] = useState<ProviderLocation[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [services, setServices] = useState<Service[]>([]);
   const [activeTab, setActiveTab] = useState("basic");
   const [providerState, setProviderState] = useState<string[]>([]);
   const [availableStates, setAvailableStates] = useState<StateData[]>([]);
@@ -80,6 +82,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
       setSelectedInsurances(provider.attributes.insurance || []);
       setLocations(provider.attributes.locations || []);
       setSelectedProviderTypes(provider.attributes.provider_type || []);
+      setServices(provider.attributes.locations.map(location => location.services).flat() || []);
       setIsLoading(false);
     }
   }, [provider]);
@@ -168,7 +171,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
   const handleLocationChange = (
     index: number,
     field: keyof ProviderLocation,
-    value: string
+    value: string | Service[]
   ) => {
     const updatedLocations = [...locations];
     updatedLocations[index] = { ...updatedLocations[index], [field]: value };
@@ -192,6 +195,8 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
 
   const removeLocation = (index: number) => {
     const updatedLocations = locations.filter((_, i) => i !== index);
+    const updatedServices = services.filter((_, i) => i !== index);
+    setServices(updatedServices);
     setLocations(updatedLocations);
   };
 
@@ -222,6 +227,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
             counties_served: selectedCounties,
             locations: locations,
             state: providerState,
+            services: locations.map(location => location.services).flat(),
           },
         }],
       };
@@ -669,6 +675,48 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                       />
                     </div>
                   </div>
+                  <div className="mt-6">
+                    <label className="block text-sm text-gray-600 mb-2">
+                      Services
+                    </label>
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {location.services && location.services.map((service) => {
+                        return service && (
+                          <div key={service.id} className="bg-blue-100 text-blue-800 px-2 py-1 rounded-md flex items-center">
+                            <span>{service.name}</span>
+                            <X 
+                              className="ml-2 w-4 h-4 cursor-pointer" 
+                              onClick={() => {
+                                const updatedServices = location.services.filter(s => s.id !== service.id);
+                                handleLocationChange(index, "services", updatedServices);
+                              }}
+                            />
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <select
+                      onChange={(e) => {
+                        const serviceId = parseInt(e.target.value);
+                        const service = services.find(s => s.id === serviceId);
+                        if (service && !location.services.some(existingService => existingService.id === service.id)) {
+                          const updatedServices = [...location.services, service];
+                          handleLocationChange(index, "services", updatedServices);
+                        }
+                      }}
+                      className="w-[95%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                    >
+                      <option value="">Add a service...</option>
+                      {services
+                        .filter(service => !location.services.some(existingService => existingService.id === service.id))
+                        .map(service => (
+                          <option key={service.id} value={service.id}>
+                            {service.name}
+                          </option>
+                        ))
+                      }
+                    </select>
+                  </div>
                 </div>
               ))}
             </div>
@@ -919,6 +967,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                     setSelectedCounties(provider.attributes.counties_served || []);
                     setSelectedInsurances(provider.attributes.insurance || []);
                     setLocations(provider.attributes.locations || []);
+                    setServices(provider.attributes.locations.map(location => location.services).flat() || []);
                     setSelectedProviderTypes(provider.attributes.provider_type || []);
                   }
                 }}

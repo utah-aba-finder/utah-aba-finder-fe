@@ -225,16 +225,13 @@ const CreateLocation: React.FC<CreateLocationProps> = ({
                 {newLocation.services.map((service) => (
                   <div
                     key={service.id}
-                    className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm flex items-center"
+                    className="bg-blue-100 text-blue-800 px-2 py-1 rounded-md flex items-center"
                   >
-                    {service.name}
-                    <button
-                      type="button"
+                    <span>{service.name}</span>
+                    <X 
+                      className="ml-2 w-4 h-4 cursor-pointer" 
                       onClick={() => handleServiceChange(service)}
-                      className="ml-2 hover:text-red-500"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
+                    />
                   </div>
                 ))}
               </div>
