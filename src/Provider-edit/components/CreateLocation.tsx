@@ -160,7 +160,7 @@ const CreateLocation: React.FC<CreateLocationProps> = ({
                   type="tel"
                   value={newLocation.phone || ''}
                   onChange={(e) => setNewLocation({ ...newLocation, phone: e.target.value })}
-                  className="w-full pl-10 pr-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-5/6 pl-10 pr-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
             </div>
