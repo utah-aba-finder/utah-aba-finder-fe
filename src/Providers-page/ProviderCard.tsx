@@ -48,6 +48,9 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
     ? provider.locations.filter(location => location.state?.toUpperCase() === selectedState?.toUpperCase())
     : provider.locations;
 
+  // Use the first matching location, or fall back to the first location if none match
+  const primaryLocation = filteredLocations[0] || provider.locations[0];
+
   return (
     <div className={`searched-provider-card ${provider.locations.length > 1 ? 'multiple-locations' : ''}`}>
       <div className="provider-card">
@@ -64,13 +67,13 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
                   <MapPin style={{ marginRight: '8px' }} />
                   <span>Address: </span>
                 </strong>
-                {filteredLocations.length > 0 ? (
+                {primaryLocation ? (
                   <>
-                    {filteredLocations[0].address_1}
-                    {filteredLocations[0]?.address_2 && `, ${filteredLocations[0].address_2}`}
-                    {filteredLocations[0]?.city && `, ${filteredLocations[0].city}`}
-                    {filteredLocations[0]?.state && `, ${filteredLocations[0].state}`}
-                    {filteredLocations[0]?.zip && ` ${filteredLocations[0].zip}`}
+                    {primaryLocation.address_1}
+                    {primaryLocation?.address_2 && `, ${primaryLocation.address_2}`}
+                    {primaryLocation?.city && `, ${primaryLocation.city}`}
+                    {primaryLocation?.state && `, ${primaryLocation.state}`}
+                    {primaryLocation?.zip && ` ${primaryLocation.zip}`}
                   </>
                 ) : (
                   'Physical address is not available for this provider.'
@@ -78,7 +81,7 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
               </h4>
               <h4>
                 <strong><Phone style={{ marginRight: '8px' }} />
-                  Phone: </strong><a href={`tel:${filteredLocations[0]?.phone}`} className='custom-link'>{filteredLocations[0]?.phone || provider.locations[0]?.phone || 'Phone number is not available.'}</a>
+                  Phone: </strong><a href={`tel:${primaryLocation?.phone}`} className='custom-link'>{primaryLocation?.phone || 'Phone number is not available.'}</a>
               </h4>
               <h4>
                 <strong><Mail style={{ marginRight: '8px' }} />
@@ -102,9 +105,9 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
               </h4>
               <h4>
                 <strong><Briefcase style={{ marginRight: '8px' }} />
-                  {filteredLocations[0]?.services?.length > 0 ? 'Services at this location: ' : 'Provider Services: '} </strong>
-                {filteredLocations[0]?.services?.length > 0 ? (
-                  filteredLocations[0].services.map(service => service.name).join(', ')
+                  {primaryLocation?.services?.length > 0 ? 'Services at this location: ' : 'Provider Services: '} </strong>
+                {primaryLocation?.services?.length > 0 ? (
+                  primaryLocation.services.map(service => service.name).join(', ')
                 ) : provider.provider_type.length > 0 ? (
                   provider.provider_type.map(type => type.name).join(', ')
                 ) : (

@@ -106,18 +106,22 @@ const ProviderModal: React.FC<ProviderModalProps> = ({
 
   if (!provider) return null;
 
-  const hasMultipleLocations = provider.attributes.locations.length > 1;
+  // Filter locations based on selected state
+  const filteredLocations = selectedState && selectedState !== 'none'
+    ? provider.attributes.locations.filter(location => {
+        if (!location.state || !selectedState) return false;
+        return location.state.trim().toUpperCase() === selectedState.trim().toUpperCase();
+      })
+    : provider.attributes.locations;
+
+  // Use the first matching location, or fall back to the first location if none match
+  const primaryLocation = filteredLocations[0] || provider.attributes.locations[0];
 
   const handleKeyDown = (e: React.KeyboardEvent, tabName: string) => {
     if (e.key === 'Enter' || e.key === ' ') {
       setActiveTab(tabName);
     }
   };
-
-  const filteredLocations = provider.attributes.locations.filter(location => {
-    if (!selectedState || !location.state || selectedState === 'none') return null;
-    return location.state.trim().toUpperCase() === selectedState.trim().toUpperCase();
-  });
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -131,7 +135,7 @@ const ProviderModal: React.FC<ProviderModalProps> = ({
               <p className="provider-contact text">
                 <p><Phone style={{ marginRight: '8px' }} />
                   <strong>Phone: </strong>
-                  {provider.attributes.locations[0]?.phone ? <a href={`tel:${provider.attributes.locations[0]?.phone}`}>{provider.attributes.locations[0].phone}</a> : 'Provider does not have a number for this location yet.'}
+                  {primaryLocation?.phone ? <a href={`tel:${primaryLocation.phone}`}>{primaryLocation.phone}</a> : 'Provider does not have a number for this location yet.'}
                 </p>
                 <p><Globe style={{ marginRight: '8px' }} />
                   <strong>Website: </strong>
@@ -249,8 +253,8 @@ const ProviderModal: React.FC<ProviderModalProps> = ({
         </button>
         <div className="modal-grid">
           <div className="modal-grid-map">
-            <GoogleMap address={provider.attributes.locations.some((location) => location.address_1)
-              ? mapAddress
+            <GoogleMap address={primaryLocation?.address_1
+              ? `${primaryLocation.address_1}, ${primaryLocation.city}, ${primaryLocation.state} ${primaryLocation.zip}`
               : provider.states?.[0] || ''}
             />
           </div>

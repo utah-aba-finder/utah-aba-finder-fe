@@ -34,7 +34,7 @@ const ProvidersPage: React.FC = () => {
   const [isFiltered, setIsFiltered] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [showError, setShowError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const errorTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [favoriteProviders, setFavoriteProviders] = useState<
     ProviderAttributes[]
@@ -186,6 +186,7 @@ const ProvidersPage: React.FC = () => {
     const getProviders = async () => {
       try {
         setShowError("");
+        setIsLoading(true);
         if (errorTimeoutRef.current) {
           clearTimeout(errorTimeoutRef.current);
         }
@@ -639,12 +640,6 @@ const ProvidersPage: React.FC = () => {
 
   return (
     <div className="providers-page">
-
-      {/* 
-      <button onClick={handleResetTutorial} className="reset-tutorial-button">
-      Reset Tutorial
-      </button> */}
-
       <section className="find-your-provider-section">
         <Joyride
           run={run}
@@ -667,7 +662,6 @@ const ProvidersPage: React.FC = () => {
       </section>
       <main>
         <div className="provider-page-search-cards-section">
-          {/* Modal */}
           {showModal && (
                     <div className="homepage-modal-overlay">
                         <div className="homepage-modal">
@@ -715,23 +709,23 @@ const ProvidersPage: React.FC = () => {
             onAgeChange={handleAgeChange}
             onProviderTypeChange={handleProviderTypeChange}
             onReset={handleResetSearch}
-            />
+          />
           <section className="glass">
             <section className="searched-provider-map-locations-list-section">
-              {isLoading && (
-                <div className="loading-container">
-                  <img
-                    src={gearImage}
-                    alt="Loading..."
-                    className="loading-gear"
-                  />
-                  <p>Loading providers...</p>
+              {isLoading ? (
+                <div className="flex items-center justify-center min-h-[400px]">
+                  <div className="text-center">
+                    <img
+                      src={gearImage}
+                      alt="Loading..."
+                      className="loading-gear w-16 h-16 mx-auto mb-4"
+                    />
+                    <p className="text-lg text-gray-600">Loading providers...</p>
+                  </div>
                 </div>
-              )}
-              {!isLoading && showError && (
+              ) : showError ? (
                 <div className="error-message-container">{showError}</div>
-              )}
-              {!isLoading && !showError && (
+              ) : (
                 <div className="card-container">
                   <div
                     className={`provider-cards-grid ${pageTransition ? `page-${pageTransition}` : ""
