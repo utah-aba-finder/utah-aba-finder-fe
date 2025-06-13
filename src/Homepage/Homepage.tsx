@@ -162,7 +162,7 @@ class Homepage extends Component<Props, State> {
                                     <br/>
                                     <li><strong>Sponsorship Opportunities:</strong> Become a sponsor and support our mission! Sponsors will be featured in a special <strong>Sponsors Section</strong> on our site recognizing their contributions to the autism care community.</li>
                                     <br />
-                                    <h3>** If you're a provider and would like to be added to our platform, please <Link to="/contact" className='text-[#4A6FA5]'>contact us</Link>, it's completely free!</h3>
+                                    <h3>** If you're a provider and would like to be added to our platform, please <Link to="/signup" className='text-[#4A6FA5]'>sign up</Link>, it's completely free!</h3>
                                     <br />
                                 </ul>
                             </div>

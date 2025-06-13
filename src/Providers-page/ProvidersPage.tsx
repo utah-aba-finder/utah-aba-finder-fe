@@ -283,71 +283,94 @@ const ProvidersPage: React.FC = () => {
             return;
           }
 
-          // Apply additional filters and sort the results
+          // Filter providers based on location-specific services or provider type
           const filtered = providersToFilter
-            .filter((provider: ProviderAttributes) =>
-              provider.name?.toLowerCase().includes(query.toLowerCase()) &&
-              (!county_name ||
-                provider.counties_served.some((c: County) =>
-                  c.county_name?.toLowerCase().includes(county_name.toLowerCase())
-                )) &&
-              (!insurance ||
-                provider.insurance.some((i: Insurance) =>
-                  i.name?.toLowerCase().includes(insurance.toLowerCase())
-                )) &&
-              (spanish === "" ||
-                (spanish === "no" &&
-                  (!provider.spanish_speakers ||
-                    provider.spanish_speakers.toLowerCase() === "no")) ||
-                (spanish === "yes" &&
-                  (provider.spanish_speakers?.toLowerCase() === "yes" ||
-                    provider.spanish_speakers === null ||
-                    provider.spanish_speakers.toLowerCase() === "limited"))) &&
-              (!service ||
-                (service === "telehealth" &&
-                  provider.telehealth_services?.toLowerCase() === "yes") ||
-                (service === "at_home" &&
-                  provider.at_home_services?.toLowerCase() === "yes") ||
-                (service === "in_clinic" &&
-                  provider.in_clinic_services?.toLowerCase() === "yes")) &&
-              (!waitlist ||
-                (waitlist === "6 Months or Less" &&
-                  (provider.waitlist
-                    ? parseInt(provider.waitlist, 10) <= 6
-                    : false)) ||
-                (waitlist.includes("no") &&
-                  provider.waitlist?.toLowerCase() === "no")) &&
-              (!age ||
-                (provider.min_age !== null &&
-                  provider.max_age !== null &&
-                  ((age === "0-2" &&
-                    provider.min_age <= 0 &&
-                    provider.max_age >= 2) ||
-                    (age === "3-5" &&
-                      provider.min_age <= 3 &&
-                      provider.max_age >= 5) ||
-                    (age === "5-7" &&
-                      provider.min_age <= 5 &&
-                      provider.max_age >= 7) ||
-                    (age === "8-10" &&
-                      provider.min_age <= 8 &&
-                      provider.max_age >= 10) ||
-                    (age === "11-13" &&
-                      provider.min_age <= 11 &&
-                      provider.max_age >= 13) ||
-                    (age === "13-15" &&
-                      provider.min_age <= 13 &&
-                      provider.max_age >= 15) ||
-                    (age === "16-18" &&
-                      provider.min_age <= 16 &&
-                      provider.max_age >= 18) ||
-                    (age === "19+" &&
-                      provider.max_age >= 19)))) &&
-              (!providerType ||
-                provider.provider_type.some((type: ProviderTypeInterface) =>
-                  type.name.toLowerCase() === providerType.toLowerCase()
-                ))
-            )
+            .filter((provider: ProviderAttributes) => {
+              // Check if provider has any physical locations
+              const hasPhysicalLocations = provider.locations.some(location => 
+                location.address_1 || location.city || location.state || location.zip
+              );
+
+              if (hasPhysicalLocations) {
+                // For providers with physical locations, check if they offer the service in the selected state
+                const hasServiceInState = provider.locations.some(location => {
+                  const isInSelectedState = location.state?.toUpperCase() === state.toUpperCase();
+                  const hasSelectedService = location.services?.some(service => 
+                    service.name === providerType
+                  );
+                  return isInSelectedState && hasSelectedService;
+                });
+
+                if (!hasServiceInState) return false;
+              } else {
+                // For providers without physical locations, check if they offer the service type
+                const hasProviderType = provider.provider_type.some(type => 
+                  type.name === providerType
+                );
+                if (!hasProviderType) return false;
+              }
+
+              // Apply additional filters
+              return (
+                provider.name?.toLowerCase().includes(query.toLowerCase()) &&
+                (!county_name ||
+                  provider.counties_served.some((c: County) =>
+                    c.county_name?.toLowerCase().includes(county_name.toLowerCase())
+                  )) &&
+                (!insurance ||
+                  provider.insurance.some((i: Insurance) =>
+                    i.name?.toLowerCase().includes(insurance.toLowerCase())
+                  )) &&
+                (spanish === "" ||
+                  (spanish === "no" &&
+                    (!provider.spanish_speakers ||
+                      provider.spanish_speakers.toLowerCase() === "no")) ||
+                  (spanish === "yes" &&
+                    (provider.spanish_speakers?.toLowerCase() === "yes" ||
+                      provider.spanish_speakers === null ||
+                      provider.spanish_speakers.toLowerCase() === "limited"))) &&
+                (!service ||
+                  (service === "telehealth" &&
+                    provider.telehealth_services?.toLowerCase() === "yes") ||
+                  (service === "at_home" &&
+                    provider.at_home_services?.toLowerCase() === "yes") ||
+                  (service === "in_clinic" &&
+                    provider.in_clinic_services?.toLowerCase() === "yes")) &&
+                (!waitlist ||
+                  (waitlist === "6 Months or Less" &&
+                    (provider.waitlist
+                      ? parseInt(provider.waitlist, 10) <= 6
+                      : false)) ||
+                  (waitlist.includes("no") &&
+                    provider.waitlist?.toLowerCase() === "no")) &&
+                (!age ||
+                  (provider.min_age !== null &&
+                    provider.max_age !== null &&
+                    ((age === "0-2" &&
+                      provider.min_age <= 0 &&
+                      provider.max_age >= 2) ||
+                      (age === "3-5" &&
+                        provider.min_age <= 3 &&
+                        provider.max_age >= 5) ||
+                      (age === "5-7" &&
+                        provider.min_age <= 5 &&
+                        provider.max_age >= 7) ||
+                      (age === "8-10" &&
+                        provider.min_age <= 8 &&
+                        provider.max_age >= 10) ||
+                      (age === "11-13" &&
+                        provider.min_age <= 11 &&
+                        provider.max_age >= 13) ||
+                      (age === "13-15" &&
+                        provider.min_age <= 13 &&
+                        provider.max_age >= 15) ||
+                      (age === "16-18" &&
+                        provider.min_age <= 16 &&
+                        provider.max_age >= 18) ||
+                      (age === "19+" &&
+                        provider.max_age >= 19))))
+              );
+            })
             .sort((a: ProviderAttributes, b: ProviderAttributes) => {
               const nameA = a.name || "";
               const nameB = b.name || "";
@@ -675,7 +698,7 @@ const ProvidersPage: React.FC = () => {
                                     <br/>
                                     <li><strong>Sponsorship Opportunities:</strong> Become a sponsor and support our mission! Sponsors will be featured in a special <strong>Sponsors Section</strong> on our site recognizing their contributions to the autism care community.</li>
                                     <br />
-                                    <h3>** If you're a provider and would like to be added to our platform, please <Link to="/contact" className='text-[#4A6FA5]'>contact us</Link>, it's completely free!</h3>
+                                    <h3>** If you're a provider and would like to be added to our platform, please <Link to="/signup" className='text-[#4A6FA5]'>sign up</Link>, it's completely free!</h3>
                                     <br />
                                 </ul>
                             </div>

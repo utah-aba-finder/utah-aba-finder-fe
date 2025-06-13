@@ -22,7 +22,8 @@ import SuperAdminCreate from "./SuperAdminCreate";
 import SuperAdminAddInsurances from "./SuperAdminAddInsurances";
 import moment from "moment";
 import CreateUser from "./CreateUser";
-import { ProviderData, ProviderAttributes} from "../Utility/Types";
+import { ProviderData, ProviderAttributes, Providers } from "../Utility/Types";
+import { API_URL } from "../Utility/ApiCall";
 
 const SuperAdmin = () => {
   const { setToken, loggedInProvider } = useAuth();
@@ -41,6 +42,41 @@ const SuperAdmin = () => {
   const [statusFilter, setStatusFilter] = useState<
     "all" | "approved" | "pending" | "denied"
   >("all");
+  const [stateFilter, setStateFilter] = useState<string>("all");
+  const [serviceFilter, setServiceFilter] = useState<string>("all");
+  const [locationCountFilter, setLocationCountFilter] = useState<string>("all");
+
+  // Hardcoded list of all US states
+  const US_STATES = [
+    "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut",
+    "Delaware", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa",
+    "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan",
+    "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire",
+    "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio",
+    "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota",
+    "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia",
+    "Wisconsin", "Wyoming"
+  ];
+
+  // Extract states that are actually used by providers
+  const [availableStates, setAvailableStates] = useState<string[]>([]);
+
+  // Add this constant for available services
+  const AVAILABLE_SERVICES = [
+    { id: 1, name: "ABA Therapy" },
+    { id: 2, name: "Autism Evaluation" },
+    { id: 3, name: "Speech Therapy" },
+    { id: 4, name: "Occupational Therapy" }
+  ];
+
+  // Add this constant for location count options
+  const LOCATION_COUNT_OPTIONS = [
+    { value: "all", label: "All Locations" },
+    { value: "1", label: "1 Location" },
+    { value: "2-3", label: "2-3 Locations" },
+    { value: "4-5", label: "4-5 Locations" },
+    { value: "6+", label: "6+ Locations" }
+  ];
 
   const handleLogout = useCallback(() => {
     toast.dismiss("session-warning");
@@ -59,28 +95,74 @@ const SuperAdmin = () => {
   // Fetch providers
   const fetchAllProviders = async () => {
     try {
-      const response = await fetch(
-        "https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/admin/providers",
-        {
-          headers: {
-            Authorization: `Bearer ${sessionStorage.getItem("authToken")}`,
-          },
-        }
-      );
+      const response = await fetch(`${API_URL}/providers`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${sessionStorage.getItem("authToken")}`,
+        },
+      });
+
       if (!response.ok) {
-        throw new Error("Failed to fetch providers");
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-      const fetchedProviders = await response.json();
-      setProviders(fetchedProviders.data);
+
+      const data = await response.json();
+      
+      if (!data || !data.data) {
+        throw new Error("Invalid response format");
+      }
+
+      // Update the providers state with the fresh data
+      setProviders(data.data);
+      
+      // If we have a selected provider, update it with the fresh data
+      if (selectedProvider) {
+        const updatedProvider = data.data.find(
+          (p: ProviderData) => p.id === selectedProvider.id
+        );
+        if (updatedProvider) {
+          setSelectedProvider(updatedProvider);
+        }
+      }
+
     } catch (error) {
       console.error("Error fetching providers:", error);
-      toast.error("Failed to fetch providers. Please try again later.");
+      toast.error("Failed to fetch providers");
     }
   };
 
   useEffect(() => {
     fetchAllProviders();
   }, []);
+
+  // Extract states that are actually used by providers
+  useEffect(() => {
+    const states = new Set<string>();
+    providers.forEach(provider => {
+      provider.attributes.locations?.forEach(location => {
+        if (location.state) {
+          // Clean up state name
+          const cleanState = location.state.trim();
+          // Log the state we're processing
+          
+          // Try to find a matching state, being more lenient with the matching
+          const matchingState = US_STATES.find(state => 
+            state.toLowerCase() === cleanState.toLowerCase() ||
+            state.toLowerCase().includes(cleanState.toLowerCase()) ||
+            cleanState.toLowerCase().includes(state.toLowerCase())
+          );
+          
+          if (matchingState) {
+            states.add(matchingState);
+          }
+        }
+      });
+    });
+    
+    const sortedStates = Array.from(states).sort();
+    setAvailableStates(sortedStates);
+  }, [providers, US_STATES]);
 
   const handleProviderUpdate = async (updatedProvider: ProviderAttributes) => {
     try {
@@ -89,7 +171,7 @@ const SuperAdmin = () => {
         return;
       }
 
-
+      // First update the local state
       setProviders((prevProviders) => {
         if (!selectedProvider?.id) {
           console.error("No selected provider ID");
@@ -102,13 +184,23 @@ const SuperAdmin = () => {
             ? {
                 ...p,
                 attributes: updatedProvider,
-                state: p.states || []
+                states: p.states || []
               }
-            : p
+            : p;
         });
       });
 
+      // Then fetch fresh data from the server
       await fetchAllProviders();
+
+      // Show success message
+      toast.success("Provider updated successfully");
+
+      // Switch back to view tab after a short delay
+      setTimeout(() => {
+        setSelectedTab("view");
+      }, 1000);
+
     } catch (error) {
       console.error("Error in handleProviderUpdate:", error);
       toast.error("Failed to update provider");
@@ -137,7 +229,37 @@ const SuperAdmin = () => {
         ? true
         : provider.attributes.status?.toLowerCase() === statusFilter;
 
-    return nameMatch && typeMatch && statusMatch ;
+
+    const stateMatch =
+      stateFilter === "all"
+        ? true
+        : (provider.states || provider.attributes.states || [])?.some(state => {
+            return state.toLowerCase() === stateFilter.toLowerCase();
+          });
+
+    // Add service filter logic
+    const serviceMatch =
+      serviceFilter === "all"
+        ? true
+        : provider.attributes.locations?.some(location => 
+            location.services?.some(service => 
+              service.name === serviceFilter
+            )
+          );
+
+    // Add location count filter logic
+    const locationCount = provider.attributes.locations?.length || 0;
+    const locationCountMatch = (() => {
+      if (locationCountFilter === "all") return true;
+      if (locationCountFilter === "1") return locationCount === 1;
+      if (locationCountFilter === "2-3") return locationCount >= 2 && locationCount <= 3;
+      if (locationCountFilter === "4-5") return locationCount >= 4 && locationCount <= 5;
+      if (locationCountFilter === "6+") return locationCount >= 6;
+      return true;
+    })();
+
+    const result = nameMatch && typeMatch && statusMatch && stateMatch && serviceMatch && locationCountMatch;
+    return result;
   });
 
   const getStatusColor = (status: string | null | undefined) => {
@@ -170,17 +292,6 @@ const SuperAdmin = () => {
   return (
     <>
       <ToastContainer
-        position="top-right"
-        autoClose={5000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-        className="z-50"
       />
       <div className="h-screen bg-gray-100 flex lg:flex-col">
         <div className="flex min-h-screen overflow-hidden">
@@ -343,114 +454,175 @@ const SuperAdmin = () => {
             <header className="sticky top-0 z-30 px-2">
               <div className="bg-white shadow-lg rounded-lg mx-2 mt-4 mb-2">
                 <div className="p-3">
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    <div className="flex items-center gap-3 w-full sm:w-[40%]">
-                      {/* Menu Button */}
-                      <button
-                        className="flex-shrink-0 md:hidden p-1.5 hover:bg-gray-100 rounded-lg"
-                        onClick={() => setIsOpen(true)}
-                      >
-                        <Menu className="w-5 h-5" />
-                      </button>
+                  <div className="flex flex-col gap-4">
+                    {/* Top Row: Search and Admin User */}
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex items-center gap-3 flex-1">
+                        {/* Menu Button */}
+                        <button
+                          className="flex-shrink-0 md:hidden p-1.5 hover:bg-gray-100 rounded-lg"
+                          onClick={() => setIsOpen(true)}
+                        >
+                          <Menu className="w-5 h-5" />
+                        </button>
 
-                      {selectedTab === "view" ? (
-                        /* Search Input */
-                        <div className="w-full max-w-[calc(100%-94px)] sm:max-w-full min-w-0">
+                        {selectedTab === "view" ? (
+                          /* Search Input */
+                          <div className="flex-1 max-w-2xl">
+                            <div className="relative">
+                              <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                              <input
+                                type="text"
+                                placeholder="Search providers..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="w-full pl-8 pr-3 py-1.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                              />
+                            </div>
+                          </div>
+                        ) : (
+                          /* Title for other tabs */
+                          <div className="text-lg font-semibold">
+                            {selectedTab === "analytics" && "Analytics Dashboard"}
+                            {selectedTab === "create" && "Create New Provider"}
+                            {selectedTab === "createInsurance" && "Add Insurance"}
+                            {selectedTab === "billing" && "Billing Management"}
+                            {selectedTab === "edit" && "Edit Provider"}
+                            {selectedTab === "createUser" && "Create User"}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Admin User Profile */}
+                      <div className="hidden lg:flex items-center gap-3">
+                        <div className="text-right">
+                          <div className="text-sm font-medium text-gray-700">
+                            Admin User
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {loggedInProvider?.email || 'admin@example.com'}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Bottom Row: Filters */}
+                    {selectedTab === "view" && (
+                      <div className="flex flex-wrap items-center gap-3">
+                        {/* Provider Type Filter */}
+                        <div className="w-[calc(50%-0.375rem)] sm:w-40 flex-shrink-0">
                           <div className="relative">
-                            <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                            <input
-                              type="text"
-                              placeholder="Search providers..."
-                              value={searchTerm}
-                              onChange={(e) => setSearchTerm(e.target.value)}
-                              className="w-full pl-8 pr-3 py-1.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                            />
+                            <select
+                              value={providerTypeFilter}
+                              onChange={(e) =>
+                                setProviderTypeFilter(
+                                  e.target.value as "all" | "ABA Therapy" | "Autism Evaluation" | "Speech Therapy" | "Occupational Therapy"
+                                )
+                              }
+                              className="w-full pl-2.5 pr-8 py-1.5 rounded-lg border border-gray-300 bg-white 
+                             focus:outline-none focus:ring-2 focus:ring-blue-500 
+                             appearance-none cursor-pointer text-gray-700 text-sm"
+                            >
+                              <option value="all">All Providers</option>
+                              <option value="ABA Therapy">ABA Therapy</option>
+                              <option value="Autism Evaluation">Autism Evaluation</option>
+                              <option value="Speech Therapy">Speech Therapy</option>
+                              <option value="Occupational Therapy">Occupational Therapy</option>
+                            </select>
+                            <ChevronDown className="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 transform -translate-y-1/2 pointer-events-none" />
                           </div>
                         </div>
-                      ) : (
-                        /* Title for other tabs */
-                        <div className="text-lg font-semibold">
-                          {selectedTab === "analytics" && "Analytics Dashboard"}
-                          {selectedTab === "create" && "Create New Provider"}
-                          {selectedTab === "createInsurance" && "Add Insurance"}
-                          {selectedTab === "billing" && "Billing Management"}
-                          {selectedTab === "edit" && "Edit Provider"}
-                          {selectedTab === "createUser" && "Create User"}
+                        
+                        {/* State Filter */}
+                        <div className="w-[calc(50%-0.375rem)] sm:w-40 flex-shrink-0">
+                          <div className="relative">
+                            <select
+                              value={stateFilter}
+                              onChange={(e) => setStateFilter(e.target.value)}
+                              className="w-full pl-2.5 pr-8 py-1.5 rounded-lg border border-gray-300 bg-white 
+                             focus:outline-none focus:ring-2 focus:ring-blue-500 
+                             appearance-none cursor-pointer text-gray-700 text-sm"
+                            >
+                              <option value="all">All States</option>
+                              {US_STATES.map((state) => (
+                                <option key={state} value={state}>
+                                  {state}
+                                </option>
+                              ))}
+                            </select>
+                            <ChevronDown className="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 transform -translate-y-1/2 pointer-events-none" />
+                          </div>
                         </div>
-                      )}
-                    </div>
 
-                    <div className="flex flex-wrap items-center gap-3 sm:ml-auto">
-                      {selectedTab === "view" ? (
-                        /* Filters */
-                        <>
-                          {/* Provider Type Filter */}
-                          <div className="w-[calc(50%-0.375rem)] sm:w-32 flex-shrink-0">
-                            <div className="relative">
-                              <select
-                                value={providerTypeFilter}
-                                onChange={(e) =>
-                                  setProviderTypeFilter(
-                                    e.target.value as "all" | "ABA Therapy" | "Autism Evaluation" | "Speech Therapy" | "Occupational Therapy"
-                                  )
-                                }
-                                className="w-full pl-2.5 pr-8 py-1.5 rounded-lg border border-gray-300 bg-white 
-                               focus:outline-none focus:ring-2 focus:ring-blue-500 
-                               appearance-none cursor-pointer text-gray-700 text-sm"
-                              >
-                                <option value="all">All Providers</option>
-                                <option value="ABA Therapy">ABA Therapy</option>
-                                <option value="Autism Evaluation">Autism Evaluation</option>
-                                <option value="Speech Therapy">Speech Therapy</option>
-                                <option value="Occupational Therapy">Occupational Therapy</option>
-                              </select>
-                              <ChevronDown className="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 transform -translate-y-1/2 pointer-events-none" />
-                            </div>
+                        {/* Service Filter */}
+                        <div className="w-[calc(50%-0.375rem)] sm:w-40 flex-shrink-0">
+                          <div className="relative">
+                            <select
+                              value={serviceFilter}
+                              onChange={(e) => setServiceFilter(e.target.value)}
+                              className="w-full pl-2.5 pr-8 py-1.5 rounded-lg border border-gray-300 bg-white 
+                             focus:outline-none focus:ring-2 focus:ring-blue-500 
+                             appearance-none cursor-pointer text-gray-700 text-sm"
+                            >
+                              <option value="all">All Services</option>
+                              {AVAILABLE_SERVICES.map((service) => (
+                                <option key={service.id} value={service.name}>
+                                  {service.name}
+                                </option>
+                              ))}
+                            </select>
+                            <ChevronDown className="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 transform -translate-y-1/2 pointer-events-none" />
                           </div>
-                          
+                        </div>
 
-                          {/* Status Filter */}
-                          <div className="w-[calc(50%-0.375rem)] sm:w-28 flex-shrink-0">
-                            <div className="relative">
-                              <select
-                                value={statusFilter}
-                                onChange={(e) =>
-                                  setStatusFilter(
-                                    e.target.value as
-                                      | "all"
-                                      | "approved"
-                                      | "pending"
-                                      | "denied"
-                                  )
-                                }
-                                className="w-full pl-2.5 pr-8 py-1.5 rounded-lg border border-gray-300 bg-white 
-                               focus:outline-none focus:ring-2 focus:ring-blue-500 
-                               appearance-none cursor-pointer text-gray-700 text-sm"
-                              >
-                                <option value="all">All Status</option>
-                                <option value="approved">Approved</option>
-                                <option value="pending">Pending</option>
-                                <option value="denied">Denied</option>
-                              </select>
-                              <ChevronDown className="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 transform -translate-y-1/2 pointer-events-none" />
-                            </div>
+                        {/* Location Count Filter */}
+                        <div className="w-[calc(50%-0.375rem)] sm:w-40 flex-shrink-0">
+                          <div className="relative">
+                            <select
+                              value={locationCountFilter}
+                              onChange={(e) => setLocationCountFilter(e.target.value)}
+                              className="w-full pl-2.5 pr-8 py-1.5 rounded-lg border border-gray-300 bg-white 
+                             focus:outline-none focus:ring-2 focus:ring-blue-500 
+                             appearance-none cursor-pointer text-gray-700 text-sm"
+                            >
+                              {LOCATION_COUNT_OPTIONS.map((option) => (
+                                <option key={option.value} value={option.value}>
+                                  {option.label}
+                                </option>
+                              ))}
+                            </select>
+                            <ChevronDown className="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 transform -translate-y-1/2 pointer-events-none" />
                           </div>
-                        </>
-                      ) : /* Tab-specific actions could go here */
-                      null}
+                        </div>
 
-                      {/* User Profile */}
-<div className="hidden lg:block">
-  <div className="text-right">
-    <div className="text-sm font-medium text-gray-700">
-      Admin User
-    </div>
-    <div className="text-xs text-gray-500">
-      {loggedInProvider?.email || 'admin@example.com'}
-    </div>
-  </div>
-</div>
-                    </div>
+                        {/* Status Filter */}
+                        <div className="w-[calc(50%-0.375rem)] sm:w-32 flex-shrink-0">
+                          <div className="relative">
+                            <select
+                              value={statusFilter}
+                              onChange={(e) =>
+                                setStatusFilter(
+                                  e.target.value as
+                                    | "all"
+                                    | "approved"
+                                    | "pending"
+                                    | "denied"
+                                )
+                              }
+                              className="w-full pl-2.5 pr-8 py-1.5 rounded-lg border border-gray-300 bg-white 
+                             focus:outline-none focus:ring-2 focus:ring-blue-500 
+                             appearance-none cursor-pointer text-gray-700 text-sm"
+                            >
+                              <option value="all">All Status</option>
+                              <option value="approved">Approved</option>
+                              <option value="pending">Pending</option>
+                              <option value="denied">Denied</option>
+                            </select>
+                            <ChevronDown className="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 transform -translate-y-1/2 pointer-events-none" />
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

@@ -216,7 +216,16 @@ const ProviderModal: React.FC<ProviderModalProps> = ({
                     <p><Briefcase style={{ marginRight: '8px' }} />
                       <strong>Services: </strong>
                       {(location.services && location.services.length > 0) ? (
-                        location.services.map(service => service.name).join(', ')
+                        <>
+                          {location.services.map(service => service.name).join(', ')}
+                          {provider.attributes.provider_type.some(type => 
+                            !location.services?.some(s => s.name === type.name)
+                          ) && (
+                            <span className="text-gray-500 text-sm ml-2">
+                              (Other services available at different locations)
+                            </span>
+                          )}
+                        </>
                       ) : (
                         'No services listed for this location.'
                       )}

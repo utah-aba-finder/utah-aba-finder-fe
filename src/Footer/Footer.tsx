@@ -10,7 +10,7 @@ const Footer = () => {
                 <div className='w-full flex flex-col md:flex-col lg:flex-col items-center justify-center'>
                     <Link to="/contact" className='text-[#4A6FA5] no-underline text-lg font-bold pt-2'>Contact Us</Link>
                     <h3 className='text-lg p-0 m-0'><strong className='text-[#4A6FA5]'>Email:</strong> <a href="mailto:info@autismserviceslocator.com" className='text-[#010101] no-underline'>info@autismserviceslocator.com</a></h3>
-                    <h3 className='text-lg p-0 m-0'><strong className='text-[#4A6FA5]'>Phone:</strong> <a href="tel:(385)560-4481" className='text-[#030303] no-underline'> (385)560-4481</a></h3>
+                    <h3 className='text-lg p-0 m-0'><strong className='text-[#4A6FA5]'>Phone:</strong> <a href="tel:(801)833-0284" className='text-[#030303] no-underline'> (801)833-0284</a></h3>
                 </div>
                 <div className="w-full flex flex-col md:flex-row lg:flex-row items-center justify-center">
                     <h3 className='text-lg text-[#4A6FA5]'>Follow us on:</h3>

@@ -76,7 +76,7 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
                     {primaryLocation?.zip && ` ${primaryLocation.zip}`}
                   </>
                 ) : (
-                  'Physical address is not available for this provider.'
+                  'This provider offers virtual/remote services only.'
                 )}
               </h4>
               <h4>

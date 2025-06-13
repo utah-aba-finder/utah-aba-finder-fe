@@ -1,5 +1,7 @@
 import "./App.css";
 import { Routes, Route, useParams } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import Homepage from "../Homepage/Homepage";
 import InformationPage from "../Information-page/InformationPage";
 import { LoginPage } from "../Provider-login/LoginPage";
@@ -67,6 +69,17 @@ function App() {
 
   return (
     <div className="App">
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
       <Header /> 
       <div className="main-content">
         <AuthProvider>
