@@ -96,8 +96,8 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
         const states = await fetchStates();
         setAvailableStates(states);
 
-        // If provider has a state, fetch its counties
-        if (provider.states?.[0]) { // Assuming state is an array with one value
+        // If provider has states, fetch counties for the first state
+        if (provider.states?.[0]) {
           const selectedState = states.find(
             (state) => state.attributes.name === provider.states[0]
           );
@@ -105,6 +105,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
           if (selectedState) {
             const counties = await fetchCountiesByState(selectedState.id);
             setAvailableCounties(counties);
+            setActiveStateForCounties(provider.states[0]);
           }
         }
       } catch (error) {
@@ -114,7 +115,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
     };
 
     loadInitialData();
-  }, [provider.states]); // Add provider.state as dependency
+  }, [provider.states]);
 
   useEffect(() => {
     const loadCountiesForState = async () => {
@@ -128,8 +129,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
             const counties = await fetchCountiesByState(selectedState.id);
             setAvailableCounties(counties);
           } catch (error) {
-            console.error("Failed to load counties:", error);
-            toast.error("Failed to load counties for selected state");
+            toast.error("Failed to load counties");
           }
         }
       }
@@ -154,12 +154,14 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
           prev ? { ...prev, state: [value] } : null
         );
         
+        // Set active state for counties
+        setActiveStateForCounties(value);
+        
         fetchCountiesByState(selectedState.id)
           .then(counties => {
             setAvailableCounties(counties);
           })
           .catch(error => {
-            console.error("Failed to load counties:", error);
             toast.error("Failed to load counties");
           });
       }
@@ -468,7 +470,6 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                     </div>
 
                     <div className="space-y-6">
-                      
                       <div>
                         <label className="block text-sm text-gray-600 mb-2">
                           Provider Name
@@ -480,37 +481,6 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                           onChange={handleInputChange}
                           className="block w-[95%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                         />
-                      </div>
-
-                      {/* Provider States Selection */}
-                      <div>
-                        <label className="block text-sm text-gray-600 mb-2">States</label>
-                        <div className="flex flex-wrap gap-2 mb-2">
-                          {providerState.map((state) => (
-                            <div key={state} className="bg-blue-100 text-blue-800 px-2 py-1 rounded-md flex items-center">
-                              <span>{state}</span>
-                              <X 
-                                className="ml-2 w-4 h-4 cursor-pointer" 
-                                onClick={() => setProviderState(prev => prev.filter(s => s !== state))}
-                              />
-                            </div>
-                          ))}
-                        </div>
-                        <select
-                          onChange={(e) => {
-                            if (!providerState.includes(e.target.value)) {
-                              setProviderState(prev => [...prev, e.target.value]);
-                            }
-                          }}
-                          className="block w-[95%] px-3 py-2 rounded-lg border border-gray-300"
-                        >
-                          <option value="">Add a state...</option>
-                          {availableStates.map((state) => (
-                            <option key={state.id} value={state.attributes.name}>
-                              {state.attributes.name}
-                            </option>
-                          ))}
-                        </select>
                       </div>
 
                       {/* Provider Types Selection */}
@@ -1028,26 +998,105 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                           Edit Insurance Coverage
                         </button>
 
-                        <button
-                          type="button"
-                          onClick={() => setIsCountiesModalOpen(true)}
-                          className="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-                        >
-                          <MapPin className="w-5 h-5 mr-2" />
-                          Edit Counties Served
-                          {providerState.length > 1 && (
-                            <select 
-                              className="ml-2 p-1 border rounded"
-                              value={activeStateForCounties}
-                              onChange={(e) => setActiveStateForCounties(e.target.value)}
-                              onClick={(e) => e.stopPropagation()}
+                        {/* States Selection */}
+                        <div className="mt-4">
+                          <label className="block text-sm text-gray-600 mb-2">States</label>
+                          <div className="flex flex-wrap gap-2 mb-2">
+                            {providerState.map((state) => (
+                              <div 
+                                key={state} 
+                                className={`px-2 py-1 rounded-md flex items-center cursor-pointer ${
+                                  activeStateForCounties === state 
+                                    ? 'bg-blue-600 text-white' 
+                                    : 'bg-blue-100 text-blue-800 hover:bg-blue-200'
+                                }`}
+                                onClick={() => setActiveStateForCounties(state)}
+                              >
+                                <span>{state}</span>
+                                <X 
+                                  className="ml-2 w-4 h-4 cursor-pointer" 
+                                  onClick={(e) => {
+                                    e.stopPropagation(); // Prevent state selection when clicking X
+                                    setProviderState(prev => prev.filter(s => s !== state));
+                                    if (activeStateForCounties === state) {
+                                      setActiveStateForCounties(providerState[0] || '');
+                                    }
+                                  }}
+                                />
+                              </div>
+                            ))}
+                          </div>
+                          <select
+                            onChange={(e) => {
+                              if (!providerState.includes(e.target.value)) {
+                                setProviderState(prev => [...prev, e.target.value]);
+                                setActiveStateForCounties(e.target.value);
+                              }
+                            }}
+                            className="block w-full px-3 py-2 rounded-lg border border-gray-300"
+                          >
+                            <option value="">Add a state...</option>
+                            {availableStates.map((state) => (
+                              <option key={state.id} value={state.attributes.name}>
+                                {state.attributes.name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {/* Counties Selection */}
+                        <div className="mt-4">
+                          <label className="block text-sm text-gray-600 mb-2">
+                            Counties Served {activeStateForCounties && `for ${activeStateForCounties}`}
+                          </label>
+                          <div className="flex flex-wrap gap-2 mb-2">
+                            {selectedCounties
+                              .filter(county => {
+                                const countyData = availableCounties.find(c => c.id === county.county_id);
+                                return countyData?.attributes.state === activeStateForCounties;
+                              })
+                              .map((county) => (
+                                <div key={county.county_id} className="bg-blue-100 text-blue-800 px-2 py-1 rounded-md flex items-center">
+                                  <span>{county.county_name}</span>
+                                  <X 
+                                    className="ml-2 w-4 h-4 cursor-pointer" 
+                                    onClick={() => {
+                                      setSelectedCounties(prev => prev.filter(c => c.county_id !== county.county_id));
+                                    }}
+                                  />
+                                </div>
+                            ))}
+                          </div>
+                          {providerState.length > 0 ? (
+                            <select
+                              onChange={(e) => {
+                                const [id, name] = e.target.value.split('|');
+                                if (id && name && !selectedCounties.some(c => c.county_id === parseInt(id))) {
+                                  setSelectedCounties(prev => [...prev, { 
+                                    county_id: parseInt(id), 
+                                    county_name: name 
+                                  }]);
+                                }
+                              }}
+                              className="block w-full px-3 py-2 rounded-lg border border-gray-300"
                             >
-                              {providerState.map(state => (
-                                <option key={state} value={state}>{state} Counties</option>
-                              ))}
+                              <option value="">Add a {activeStateForCounties} county...</option>
+                              {availableCounties
+                                .filter(county => 
+                                  county.attributes.state === activeStateForCounties &&
+                                  !selectedCounties.some(c => c.county_id === county.id)
+                                )
+                                .map((county) => (
+                                  <option key={county.id} value={`${county.id}|${county.attributes.name}`}>
+                                    {county.attributes.name}
+                                  </option>
+                                ))
+                              }
                             </select>
+                          ) : (
+                            <p className="text-sm text-gray-500">Please select a state first</p>
                           )}
-                        </button>
+                        </div>
                       </div>
                     </div>
                   </div>
