@@ -678,91 +678,91 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
                   </div>
                 </div>
                 {/* Service Delivery Options */}
-                {formData.provider_type?.[0]?.name?.toLowerCase() ===
-                  "aba therapy" && (
-                  <div className="mt-8">
-                    <label className="block text-sm font-medium text-gray-600 mb-4">
-                      Service Delivery Options
-                    </label>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="mt-8">
+                  <label className="block text-sm font-medium text-gray-600 mb-4">
+                    Service Delivery Options
+                  </label>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="relative">
+                      <label className="block text-sm text-gray-600 mb-2">
+                        Telehealth Services
+                      </label>
                       <div className="relative">
-                        <label className="block text-sm text-gray-600 mb-2">
-                          Telehealth Services
-                        </label>
-                        <div className="relative">
-                          <div className="p-1.5 bg-blue-50 rounded absolute left-3 top-1/2 transform -translate-y-1/2">
-                            <Globe className="w-3.5 h-3.5 text-blue-600" />
-                          </div>
-                          <select
-                            value={formData.telehealth_services || ""}
-                            onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                telehealth_services: e.target.value,
-                              })
-                            }
-                            className="w-full pl-11 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white cursor-pointer"
-                          >
-                            <option value="">Select...</option>
-                            <option value="yes">Yes</option>
-                            <option value="no">No</option>
-                            <option value="limited">Limited</option>
-                          </select>
+                        <div className="p-1.5 bg-blue-50 rounded absolute left-3 top-1/2 transform -translate-y-1/2">
+                          <Globe className="w-3.5 h-3.5 text-blue-600" />
                         </div>
+                        <select
+                          value={formData.telehealth_services || ""}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              telehealth_services: e.target.value,
+                            })
+                          }
+                          className="w-full pl-11 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white cursor-pointer"
+                        >
+                          <option value="">Select...</option>
+                          <option value="yes">Yes</option>
+                          <option value="no">No</option>
+                          <option value="limited">Limited</option>
+                        </select>
                       </div>
+                    </div>
 
+                    <div className="relative">
+                      <label className="block text-sm text-gray-600 mb-2">
+                        In-Clinic Services
+                      </label>
                       <div className="relative">
-                        <label className="block text-sm text-gray-600 mb-2">
-                          In-Clinic Services
-                        </label>
-                        <div className="relative">
-                          <div className="p-1.5 bg-blue-50 rounded absolute left-3 top-1/2 transform -translate-y-1/2">
-                            <Building2 className="w-3.5 h-3.5 text-blue-600" />
-                          </div>
-                          <select
-                            value={formData.in_clinic_services || ""}
-                            onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                in_clinic_services: e.target.value,
-                              })
-                            }
-                            className="w-full pl-11 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white cursor-pointer"
-                          >
-                            <option value="">Select...</option>
-                            <option value="yes">Yes</option>
-                            <option value="no">No</option>
-                          </select>
+                        <div className="p-1.5 bg-blue-50 rounded absolute left-3 top-1/2 transform -translate-y-1/2">
+                          <Building2 className="w-3.5 h-3.5 text-blue-600" />
                         </div>
+                        <select
+                          value={formData.in_clinic_services || ""}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              in_clinic_services: e.target.value,
+                            })
+                          }
+                          className="w-full pl-11 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white cursor-pointer"
+                        >
+                          <option value="">Select...</option>
+                          <option value="yes">Yes</option>
+                          <option value="no">No</option>
+                          <option value="limited">Limited</option>
+                          <option value="contact us">Contact us</option>
+                        </select>
                       </div>
+                    </div>
 
+                    <div className="relative">
+                      <label className="block text-sm text-gray-600 mb-2">
+                        At-Home Services
+                      </label>
                       <div className="relative">
-                        <label className="block text-sm text-gray-600 mb-2">
-                          At-Home Services
-                        </label>
-                        <div className="relative">
-                          <div className="p-1.5 bg-blue-50 rounded absolute left-3 top-1/2 transform -translate-y-1/2">
-                            <MapPin className="w-3.5 h-3.5 text-blue-600" />
-                          </div>
-                          <select
-                            value={formData.at_home_services || ""}
-                            onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                at_home_services: e.target.value,
-                              })
-                            }
-                            className="w-full pl-11 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white cursor-pointer"
-                          >
-                            <option value="">Select...</option>
-                            <option value="yes">Yes</option>
-                            <option value="no">No</option>
-                          </select>
+                        <div className="p-1.5 bg-blue-50 rounded absolute left-3 top-1/2 transform -translate-y-1/2">
+                          <MapPin className="w-3.5 h-3.5 text-blue-600" />
                         </div>
+                        <select
+                          value={formData.at_home_services || ""}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              at_home_services: e.target.value,
+                            })
+                          }
+                          className="w-full pl-11 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white cursor-pointer"
+                        >
+                          <option value="">Select...</option>
+                          <option value="yes">Yes</option>
+                          <option value="no">No</option>
+                          <option value="contact us">Contact us</option>
+                        </select>
                       </div>
                     </div>
                   </div>
-                )}
+                </div>
               </div>
             </div>
           )}

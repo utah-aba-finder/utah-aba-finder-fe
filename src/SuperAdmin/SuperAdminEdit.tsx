@@ -190,7 +190,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
       phone: null,
       services: []
     };
-    setLocations([...locations, newLocation]);
+    setLocations([newLocation, ...locations]);
   };
 
   const removeLocation = (index: number) => {
@@ -564,7 +564,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                         <Building2 className="w-5 h-5 text-blue-600" />
                       </div>
                       <h3 className="text-lg font-semibold text-gray-900">
-                        Location {index + 1}
+                        Location {index + 1} of {locations.length}
                       </h3>
                     </div>
                     <button
