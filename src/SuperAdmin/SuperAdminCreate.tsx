@@ -69,7 +69,6 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
         const states = await fetchStates();
         setAvailableStates(states);
       } catch (error) {
-        console.error("Failed to load states:", error);
         toast.error("Failed to load states");
       }
     };

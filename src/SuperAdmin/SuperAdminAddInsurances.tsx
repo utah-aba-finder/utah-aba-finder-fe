@@ -80,7 +80,6 @@ const SuperAdminAddInsurances = ({handleCloseForm}: {handleCloseForm: () => void
 
             if (!response.ok) {
                 const responseText = await response.text();
-                console.log('Raw response:', responseText);
                 toast.error(responseText);
                 throw new Error(responseText);
             }

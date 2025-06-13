@@ -22,11 +22,11 @@ import SuperAdminCreate from "./SuperAdminCreate";
 import SuperAdminAddInsurances from "./SuperAdminAddInsurances";
 import moment from "moment";
 import CreateUser from "./CreateUser";
-import { ProviderData, ProviderAttributes, Providers } from "../Utility/Types";
+import { ProviderData, ProviderAttributes } from "../Utility/Types";
 import { API_URL } from "../Utility/ApiCall";
 
 const SuperAdmin = () => {
-  const { setToken, loggedInProvider } = useAuth();
+  const { loggedInProvider } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [selectedTab, setSelectedTab] = useState("view");
   const [providers, setProviders] = useState<ProviderData[]>([]);
@@ -87,9 +87,9 @@ const SuperAdmin = () => {
     });
 
     setTimeout(() => {
-      setToken(null);
+      // setToken(null);
     }, 2000);
-  }, [setToken]);
+  }, []);
 
 
   // Fetch providers
@@ -116,6 +116,28 @@ const SuperAdmin = () => {
       // Update the providers state with the fresh data
       setProviders(data.data);
       
+      // Process states from the new data
+      const states = new Set<string>();
+      data.data.forEach((provider: ProviderData) => {
+        provider.attributes.locations?.forEach(location => {
+          if (location.state) {
+            const cleanState = location.state.trim();
+            const matchingState = US_STATES.find(state => 
+              state.toLowerCase() === cleanState.toLowerCase() ||
+              state.toLowerCase().includes(cleanState.toLowerCase()) ||
+              cleanState.toLowerCase().includes(state.toLowerCase())
+            );
+            
+            if (matchingState) {
+              states.add(matchingState);
+            }
+          }
+        });
+      });
+      
+      const sortedStates = Array.from(states).sort();
+      setAvailableStates(sortedStates);
+      
       // If we have a selected provider, update it with the fresh data
       if (selectedProvider) {
         const updatedProvider = data.data.find(
@@ -134,35 +156,7 @@ const SuperAdmin = () => {
 
   useEffect(() => {
     fetchAllProviders();
-  }, []);
-
-  // Extract states that are actually used by providers
-  useEffect(() => {
-    const states = new Set<string>();
-    providers.forEach(provider => {
-      provider.attributes.locations?.forEach(location => {
-        if (location.state) {
-          // Clean up state name
-          const cleanState = location.state.trim();
-          // Log the state we're processing
-          
-          // Try to find a matching state, being more lenient with the matching
-          const matchingState = US_STATES.find(state => 
-            state.toLowerCase() === cleanState.toLowerCase() ||
-            state.toLowerCase().includes(cleanState.toLowerCase()) ||
-            cleanState.toLowerCase().includes(state.toLowerCase())
-          );
-          
-          if (matchingState) {
-            states.add(matchingState);
-          }
-        }
-      });
-    });
-    
-    const sortedStates = Array.from(states).sort();
-    setAvailableStates(sortedStates);
-  }, [providers, US_STATES]);
+  }, []); // Only run once on mount
 
   const handleProviderUpdate = async (updatedProvider: ProviderAttributes) => {
     try {

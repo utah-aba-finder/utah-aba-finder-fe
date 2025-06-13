@@ -129,8 +129,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
             const counties = await fetchCountiesByState(selectedState.id);
             setAvailableCounties(counties);
           } catch (error) {
-            console.error("Failed to load counties:", error);
-            toast.error("Failed to load counties for selected state");
+            toast.error("Failed to load counties");
           }
         }
       }
@@ -163,7 +162,6 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
             setAvailableCounties(counties);
           })
           .catch(error => {
-            console.error("Failed to load counties:", error);
             toast.error("Failed to load counties");
           });
       }
@@ -1092,7 +1090,8 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                                   <option key={county.id} value={`${county.id}|${county.attributes.name}`}>
                                     {county.attributes.name}
                                   </option>
-                                ))}
+                                ))
+                              }
                             </select>
                           ) : (
                             <p className="text-sm text-gray-500">Please select a state first</p>
