@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { toast, ToastContainer } from "react-toastify";
-import { Building2, MapPin, DollarSign, Stethoscope, Plus } from "lucide-react";
+import { Building2, MapPin, DollarSign, Stethoscope, Plus, X } from "lucide-react";
 import CountiesModal from "../Provider-edit/CountiesModal";
-import { CountiesServed, Insurance, StateData, CountyData } from "../Utility/Types";
+import { CountiesServed, Insurance, StateData, CountyData, Service } from "../Utility/Types";
 import InsuranceModal from "../Provider-edit/InsuranceModal";
 import { fetchStates, fetchCountiesByState } from "../Utility/ApiCall";
 import "react-toastify/dist/ReactToastify.css";
@@ -34,6 +34,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
         state: "",
         zip: "",
         phone: "",
+        services: [] as Service[]
       },
     ],
     insurances: [] as string[],
@@ -43,10 +44,10 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
     min_age: "",
     max_age: "",
     waitlist: "",
-    telehealth_services: "",
+    telehealth_services: "Contact us",
     spanish_speakers: "",
-    at_home_services: "",
-    in_clinic_services: "",
+    at_home_services: "Contact us",
+    in_clinic_services: "Contact us",
     logo: "",
     status: "",
   });
@@ -55,12 +56,12 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
   const [error, setError] = useState("");
   const [isCountiesModalOpen, setIsCountiesModalOpen] = useState(false);
   const [isInsuranceModalOpen, setIsInsuranceModalOpen] = useState(false);
-  const [selectedCounties, setSelectedCounties] = useState<CountiesServed[]>(
-    []
-  );
+  const [selectedCounties, setSelectedCounties] = useState<CountiesServed[]>([]);
   const [selectedInsurances, setSelectedInsurances] = useState<Insurance[]>([]);
   const [availableStates, setAvailableStates] = useState<StateData[]>([]);
   const [availableCounties, setAvailableCounties] = useState<CountyData[]>([]);
+  const [activeStateForCounties, setActiveStateForCounties] = useState<string>('');
+  const [providerState, setProviderState] = useState<string[]>([]);
 
   useEffect(() => {
     const loadStates = async () => {
@@ -75,6 +76,28 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
     loadStates();
   }, []);
 
+  useEffect(() => {
+    const loadCountiesForState = async () => {
+      if (activeStateForCounties && availableStates.length > 0) {
+        const selectedState = availableStates.find(
+          state => state.attributes.name === activeStateForCounties
+        );
+        
+        if (selectedState) {
+          try {
+            const counties = await fetchCountiesByState(selectedState.id);
+            setAvailableCounties(counties);
+          } catch (error) {
+            console.error("Failed to load counties:", error);
+            toast.error("Failed to load counties for selected state");
+          }
+        }
+      }
+    };
+
+    loadCountiesForState();
+  }, [activeStateForCounties, availableStates]);
+
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
@@ -84,16 +107,16 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
     setFormData((prev) => ({ ...prev, [name]: value }));
 
     if (name === "state") {
-      console.log("Selected state:", value);
       const selectedState = availableStates.find(
         state => state.attributes.name === value
       );
-      console.log("Found state object:", selectedState);
       
       if (selectedState) {
+        setProviderState([value]);
+        setActiveStateForCounties(value);
+        
         fetchCountiesByState(selectedState.id)
           .then(counties => {
-            console.log("Fetched counties:", counties);
             setAvailableCounties(counties);
             setSelectedCounties([]);
           })
@@ -119,7 +142,6 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
     setFormData((prev) => ({
       ...prev,
       locations: [
-        ...prev.locations,
         {
           id: null,
           name: "",
@@ -129,12 +151,18 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
           state: "",
           zip: "",
           phone: "",
+          services: []
         },
+        ...prev.locations
       ],
     }));
   };
 
   const handleOpenCountiesModal = () => {
+    if (providerState.length === 0) {
+      toast.warning("Please select a state first");
+      return;
+    }
     setIsCountiesModalOpen(true);
   };
 
@@ -152,6 +180,23 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
 
   const handleInsurancesChange = (selectedInsuranceNames: Insurance[]) => {
     setSelectedInsurances(selectedInsuranceNames);
+  };
+
+  const handleServiceChange = (locationIndex: number, service: Service) => {
+    const updatedLocations = [...formData.locations];
+    const locationServices = updatedLocations[locationIndex].services || [];
+    
+    const serviceExists = locationServices.some(s => s.id === service.id);
+    if (serviceExists) {
+      updatedLocations[locationIndex].services = locationServices.filter(s => s.id !== service.id);
+    } else {
+      updatedLocations[locationIndex].services = [...locationServices, service];
+    }
+    
+    setFormData(prev => ({
+      ...prev,
+      locations: updatedLocations
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -189,6 +234,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
                     state: location.state,
                     zip: location.zip,
                     phone: location.phone,
+                    services: location.services
                   })),
                   website: formData.website,
                   email: formData.email,
@@ -236,6 +282,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
             state: "",
             zip: "",
             phone: "",
+            services: []
           },
         ],
         insurances: [],
@@ -245,10 +292,10 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
         min_age: "",
         max_age: "",
         waitlist: "",
-        telehealth_services: "",
+        telehealth_services: "Contact us",
         spanish_speakers: "",
-        at_home_services: "",
-        in_clinic_services: "",
+        at_home_services: "Contact us",
+        in_clinic_services: "Contact us",
         logo: "",
         status: "",
       });
@@ -294,6 +341,147 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
       )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
+        {/* States and Counties Card */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center space-x-3 mb-6">
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <MapPin className="w-5 h-5 text-blue-600" />
+            </div>
+            <h2 className="text-lg font-semibold text-gray-900">
+              Coverage Area
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
+            {/* States Section */}
+            <div className="space-y-4 w-full">
+              <div className="w-full">
+                <label className="block text-sm text-gray-600 mb-2">States</label>
+                <div className="flex flex-wrap gap-2 mb-2 w-full">
+                  {providerState.map((state) => (
+                    <div 
+                      key={state} 
+                      className={`px-2 py-1 rounded-md flex items-center cursor-pointer ${
+                        activeStateForCounties === state 
+                          ? 'bg-blue-600 text-white' 
+                          : 'bg-blue-100 text-blue-800'
+                      }`}
+                      onClick={() => {
+                        setActiveStateForCounties(state);
+                        const stateData = availableStates.find(s => s.attributes.name === state);
+                        if (stateData) {
+                          fetchCountiesByState(stateData.id).then(counties => {
+                            setAvailableCounties(counties);
+                          });
+                        }
+                      }}
+                    >
+                      <span>{state}</span>
+                      <X 
+                        className="ml-2 w-4 h-4 cursor-pointer" 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setProviderState(prev => prev.filter(s => s !== state));
+                          setSelectedCounties(prev => prev.filter(c => c.state !== state));
+                          if (activeStateForCounties === state) {
+                            setActiveStateForCounties('');
+                          }
+                        }}
+                      />
+                    </div>
+                  ))}
+                </div>
+                <select
+                  onChange={(e) => {
+                    const selectedStateName = e.target.value;
+                    if (selectedStateName && !providerState.includes(selectedStateName)) {
+                      const stateData = availableStates.find(s => s.attributes.name === selectedStateName);
+                      if (stateData) {
+                        setActiveStateForCounties(selectedStateName);
+                        setProviderState(prev => [...prev, selectedStateName]);
+                        fetchCountiesByState(stateData.id).then(counties => {
+                          setAvailableCounties(counties);
+                        });
+                      }
+                    }
+                    e.target.value = '';
+                  }}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                  value=""
+                >
+                  <option value="">Add a state...</option>
+                  {availableStates
+                    .filter(state => !providerState.includes(state.attributes.name))
+                    .map(state => (
+                      <option key={state.id} value={state.attributes.name}>
+                        {state.attributes.name}
+                      </option>
+                    ))
+                  }
+                </select>
+              </div>
+
+              <div className="w-full">
+                <label className="block text-sm text-gray-600 mb-2">
+                  Counties for {activeStateForCounties || 'Select a State'}
+                </label>
+                <div className="flex flex-wrap gap-2 mb-2 w-full">
+                  {selectedCounties
+                    .filter(county => county.state === activeStateForCounties)
+                    .map((county) => (
+                      <div key={county.county_id} className="bg-blue-100 text-blue-800 px-2 py-1 rounded-md flex items-center">
+                        <span>{county.county_name}</span>
+                        <X 
+                          className="ml-2 w-4 h-4 cursor-pointer" 
+                          onClick={() => {
+                            setSelectedCounties(prev => prev.filter(c => c.county_id !== county.county_id));
+                          }}
+                        />
+                      </div>
+                    ))}
+                </div>
+                {activeStateForCounties && (
+                  <div className="flex flex-wrap gap-2 mt-2 w-full">
+                    {availableCounties
+                      .filter(county => 
+                        county.attributes.state === activeStateForCounties &&
+                        !selectedCounties.some(selected => selected.county_id === county.id)
+                      )
+                      .map((county) => (
+                        <div 
+                          key={county.id}
+                          className="bg-gray-100 text-gray-800 px-2 py-1 rounded-md flex items-center cursor-pointer hover:bg-blue-50"
+                          onClick={() => {
+                            setSelectedCounties(prev => [...prev, {
+                              county_id: county.id,
+                              county_name: county.attributes.name,
+                              state: activeStateForCounties
+                            }]);
+                          }}
+                        >
+                          <span>{county.attributes.name}</span>
+                          <Plus className="ml-2 w-4 h-4" />
+                        </div>
+                      ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Insurance Section
+            <div className="space-y-4">
+              <button
+                type="button"
+                onClick={handleOpenInsuranceModal}
+                className="w-[95%] inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:ring-blue-400"
+              >
+                <DollarSign className="w-5 h-5 mr-2" />
+                Select Insurances
+              </button>
+            </div> */}
+          </div>
+        </div>
+
         {/* Basic Information Card */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="flex items-center space-x-3 mb-6">
@@ -305,25 +493,22 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div >
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div>
               <label className="block text-sm text-gray-600 mb-2">
-                State
+                Provider Name
               </label>
-              <select
-                name="state"
-                value={formData.state}
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
                 onChange={handleChange}
-                className="hover:cursor-pointer w-[95%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-              >
-                <option value="">Select a state</option>
-                {availableStates.map((state) => (
-                  <option key={state.id} value={state.attributes.name}>
-                    {state.attributes.name}
-                  </option>
-                ))}
-              </select>
+                className="hover:cursor-text w-[95%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                placeholder="Provider Name"
+                required
+              />
             </div>
+
             <div>
               <label className="block text-sm text-gray-600 mb-2">
                 Provider Type
@@ -343,21 +528,6 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
                 <option value="Speech Therapy">Speech Therapy</option>
                 <option value="Occupational Therapy">Occupational Therapy</option>
               </select>
-            </div>
-
-            <div>
-              <label className="block text-sm text-gray-600 mb-2">
-                Provider Name
-              </label>
-              <input
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                className="hover:cursor-text w-[95%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                placeholder="Provider Name"
-                required
-              />
             </div>
 
             <div>
@@ -399,6 +569,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
                 }}
               />
             </div>
+
             <div>
               <label className="block text-sm text-gray-600 mb-2">
                 Logo
@@ -410,6 +581,23 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
                 value={formData.logo}
                 onChange={handleChange}
               />
+            </div>
+
+            <div>
+              <label className="block text-sm text-gray-600 mb-2">
+                Status
+              </label>
+              <select
+                name="status"
+                value={formData.status || ""}
+                onChange={handleChange}
+                className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              >
+                <option value="" disabled>Select an option</option>
+                <option value="approved">Approved</option>
+                <option value="pending">Pending</option>
+                <option value="denied">Denied</option>
+              </select>
             </div>
           </div>
         </div>
@@ -441,7 +629,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
               className="mb-6 p-6 bg-gray-50 rounded-lg border border-gray-200"
             >
               <h3 className="text-lg font-medium text-gray-900 mb-4">
-                Location {index + 1}
+                Location {index + 1} of {formData.locations.length}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <input
@@ -514,6 +702,50 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
                   />
                 </div>
               </div>
+              <div className="mt-6">
+                <label className="block text-sm text-gray-600 mb-2">
+                  Services Offered at this Location
+                </label>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {location.services?.map((service) => (
+                    <div
+                      key={service.id}
+                      className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm flex items-center"
+                    >
+                      <span>{service.name}</span>
+                      <X 
+                        onClick={() => handleServiceChange(index, service)}
+                        className="ml-2 hover:text-red-500 p-0 border-0 bg-transparent cursor-pointer"
+                      />
+                    </div>
+                  ))}
+                </div>
+                <select
+                  className="w-full rounded-md border border-gray-300 py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value=""
+                  onChange={(e) => {
+                    const [id, name] = e.target.value.split('|');
+                    if (id && name) {
+                      handleServiceChange(index, { id: parseInt(id), name });
+                    }
+                  }}
+                >
+                  <option value="">Add a service...</option>
+                  {[
+                    { id: 1, name: "ABA Therapy" },
+                    { id: 2, name: "Autism Evaluation" },
+                    { id: 3, name: "Speech Therapy" },
+                    { id: 4, name: "Occupational Therapy" }
+                  ]
+                    .filter(service => !location.services?.some(s => s.id === service.id))
+                    .map(service => (
+                      <option key={service.id} value={`${service.id}|${service.name}`}>
+                        {service.name}
+                      </option>
+                    ))
+                  }
+                </select>
+              </div>
             </div>
           ))}
         </div>
@@ -529,30 +761,21 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Coverage Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Service Options */}
+            {/* Insurance Section */}
             <div className="space-y-4">
               <button
                 type="button"
-                onClick={handleOpenCountiesModal}
-                className="w-full inline-flex items-center justify-center px-4 py-2 border hover:cursor-pointer border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:ring-blue-400"
-              >
-                <MapPin className="w-5 h-5 mr-2" />
-                Select Counties
-              </button>
-
-              <button
-                type="button"
                 onClick={handleOpenInsuranceModal}
-                className="w-full inline-flex items-center justify-center px-4 py-2 border hover:cursor-pointer border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:ring-blue-400"
+                className="w-[95%] inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:ring-blue-400"
               >
                 <DollarSign className="w-5 h-5 mr-2" />
                 Select Insurances
               </button>
             </div>
-
-            {/* Service Options */}
             <div className="space-y-4">
+            
               <div>
                 <label className="block text-sm text-gray-600 mb-2">
                   Cost Information
@@ -612,7 +835,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
                   name="waitlist"
                   value={formData.waitlist}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 rounded-lg border border-gray-300 hover:cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm"
+                  className="w-1/2 px-3 py-2 rounded-lg border border-gray-300 hover:cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm"
                   required
                 >
                   <option value="" disabled>
@@ -623,76 +846,57 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
                   <option value="6 months or less">6 months or less</option>
                   <option value="6 months or more">6 months or more</option>
                 </select>
-                <div>
-                    <label className="block text-sm text-gray-600 mb-2">
-                      Status
-                    </label>
-                    <select
-                      name="status"
-                          value={formData.status || ""}
-                          onChange={handleChange}
-                      className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                    >
-                      <option value="" disabled>Select an option</option>
-                      <option value="approved">Approved</option>
-                      <option value="pending">Pending</option>
-                      <option value="denied">Denied</option>
-                    </select>
-                  </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
+                <div className="w-full">
                   <label className="block text-sm text-gray-600 mb-2">
                     Telehealth Services
                   </label>
                   <select
                     name="telehealth_services"
-                    value={formData.telehealth_services}
+                    value={formData.telehealth_services || "Contact us"}
                     onChange={handleChange}
                     className="w-full px-3 py-2 rounded-lg border border-gray-300 hover:cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm"
                   >
-                    <option value="">Select an option</option>
+                    <option value="Contact us">Contact us</option>
                     <option value="Yes">Yes</option>
                     <option value="No">No</option>
                     <option value="Limited">Limited</option>
-                    <option value="Contact us">Contact us</option>
                   </select>
                 </div>
 
-                <div>
+                <div className="w-full">
                   <label className="block text-sm text-gray-600 mb-2">
                     At-Home Services
                   </label>
                   <select
                     name="at_home_services"
-                    value={formData.at_home_services}
+                    value={formData.at_home_services || "Contact us"}
                     onChange={handleChange}
                     className="w-full px-3 py-2 rounded-lg border border-gray-300 hover:cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm"
                   >
-                    <option value="">Select an option</option>
+                    <option value="Contact us">Contact us</option>
                     <option value="Yes">Yes</option>
                     <option value="No">No</option>
                     <option value="Limited">Limited</option>
-                    <option value="Contact us">Contact us</option>
                   </select>
                 </div>
 
-                <div>
+                <div className="w-full">
                   <label className="block text-sm text-gray-600 mb-2">
                     In-Clinic Services
                   </label>
                   <select
                     name="in_clinic_services"
-                    value={formData.in_clinic_services}
+                    value={formData.in_clinic_services || "Contact us"}
                     onChange={handleChange}
                     className="w-full px-3 py-2 rounded-lg border border-gray-300 hover:cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm"
                   >
-                    <option value="">Select an option</option>
+                    <option value="Contact us">Contact us</option>
                     <option value="Yes">Yes</option>
                     <option value="No">No</option>
                     <option value="Limited">Limited</option>
-                    <option value="Contact us">Contact us</option>
                   </select>
                 </div>
               </div>

@@ -91,7 +91,7 @@ const CreateLocation: React.FC<CreateLocationProps> = ({
     setIsSaving(true);
 
     try {
-      const updatedLocations = [...provider.attributes.locations, newLocation];
+      const updatedLocations = [newLocation, ...provider.attributes.locations];
       const response = await fetch(
         `https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/providers/${provider.id}`,
         {
