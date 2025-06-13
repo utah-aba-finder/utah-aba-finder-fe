@@ -229,7 +229,6 @@ const SuperAdmin = () => {
         ? true
         : provider.attributes.status?.toLowerCase() === statusFilter;
 
-
     const stateMatch =
       stateFilter === "all"
         ? true
@@ -237,7 +236,6 @@ const SuperAdmin = () => {
             return state.toLowerCase() === stateFilter.toLowerCase();
           });
 
-    // Add service filter logic
     const serviceMatch =
       serviceFilter === "all"
         ? true
@@ -247,7 +245,6 @@ const SuperAdmin = () => {
             )
           );
 
-    // Add location count filter logic
     const locationCount = provider.attributes.locations?.length || 0;
     const locationCountMatch = (() => {
       if (locationCountFilter === "all") return true;
@@ -260,6 +257,10 @@ const SuperAdmin = () => {
 
     const result = nameMatch && typeMatch && statusMatch && stateMatch && serviceMatch && locationCountMatch;
     return result;
+  }).sort((a, b) => {
+    const nameA = a.attributes.name?.toLowerCase() || "";
+    const nameB = b.attributes.name?.toLowerCase() || "";
+    return nameA.localeCompare(nameB);
   });
 
   const getStatusColor = (status: string | null | undefined) => {
