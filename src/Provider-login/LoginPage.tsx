@@ -150,7 +150,7 @@ export const LoginPage: React.FC = () => {
                     </div>
                     {error && <p className="error-message">Username or password incorrect, try again.</p>}
                     <div className="submit-container">
-                        <button disabled type='submit' id='signup' className='signupButton' onClick={() => toast("Feature coming soon")}>Sign Up</button>
+                        <button type='button' id='signup' className='signupButton' onClick={() => navigate('/signup')}>Sign Up</button>
                         <button type='submit' id='login' className='loginButton'>Login</button>
                     </div>
                 </form>

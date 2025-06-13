@@ -756,3 +756,38 @@
         overflow: auto;
     }
 }
+
+/* Provider signup animation */
+.provider-signup-container {
+    position: relative;
+    display: inline-block;
+    padding: 10px;
+}
+
+.rotating-circle {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 120%;
+    height: 120%;
+    border-radius: 50%;
+    background: transparent;
+    border: 2px solid transparent;
+    background-image: linear-gradient(white, white), 
+                      linear-gradient(90deg, #4A6FA5, #6B8CB8, #8BA9CB, #4A6FA5);
+    background-origin: border-box;
+    background-clip: content-box, border-box;
+    background-size: 300% 100%;
+    animation: colorRotate 4s linear infinite;
+    opacity: 0.5;
+}
+
+@keyframes colorRotate {
+    0% {
+        background-position: 0% 50%;
+    }
+    100% {
+        background-position: 100% 50%;
+    }
+}

@@ -45,7 +45,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     sessionStorage.removeItem("tokenExpiry");
     localStorage.removeItem("authToken");
     navigate("/login");
-    toast.info("You have been logged out");
+    toast.info("You have been logged out", {
+      position: "top-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+    });
   }, [navigate]);
 
   const validateToken = (token: string): boolean => {
@@ -138,8 +145,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           clearExistingTimeouts();
           toast.error("Session expired. Please log in again.", {
             toastId: "session-expired",
-            position: "top-center",
-            autoClose: 2000,
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
           });
           logout();
         }, timeUntilExpiration));
@@ -154,11 +165,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
               "Your session will expire in 5 minutes. Please save your work.",
               {
                 toastId: "session-warning-five-min",
-                position: "top-center",
+                position: "top-right",
                 autoClose: false,
-                closeOnClick: false,
-                closeButton: true,
-                draggable: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
               }
             );
           }, fiveMinWarning));
@@ -175,11 +186,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
               "Your session will expire in 60 seconds. Please save your work.",
               {
                 toastId: "session-warning-one-min",
-                position: "top-center",
+                position: "top-right",
                 autoClose: false,
-                closeOnClick: false,
-                closeButton: true,
-                draggable: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
               }
             );
           }, oneMinWarning));

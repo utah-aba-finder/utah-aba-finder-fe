@@ -1,11 +1,13 @@
 import axios from 'axios';
 import { Providers, StateData, CountyData, InsuranceData, ProviderData } from './Types';
 
-const API_URL = 'https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/providers';
+export const API_URL = "https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/admin";
+
+const API_URL_PROVIDERS = 'https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/providers';
 
 export const fetchProviders = async (): Promise<Providers> => {
   try {
-    const response = await axios.get<Providers>(API_URL);
+    const response = await axios.get<Providers>(API_URL_PROVIDERS);
     return response.data;
   } catch (error) {
     console.error('Error fetching providers:', error);
