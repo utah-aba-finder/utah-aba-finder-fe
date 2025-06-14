@@ -313,14 +313,58 @@ const SignupModal: React.FC<SignupModalProps> = ({
         in_clinic_services: formData.in_clinic_services
       };
 
+      // Format the email message
+      const formattedMessage = `
+New Provider Registration
+
+BASIC INFORMATION
+----------------
+Provider/Company Name: ${providerData.name}
+Provider Type: ${providerData.provider_type}
+Email: ${providerData.email}
+Username: ${providerData.username}
+Website: ${providerData.website}
+
+LOCATIONS
+---------
+${providerData.locations.map((location, index) => `
+Location ${index + 1}:
+Name: ${location.name}
+Address: ${location.address_1}${location.address_2 ? `, ${location.address_2}` : ''}
+City: ${location.city}
+State: ${location.state}
+ZIP: ${location.zip}
+Phone: ${location.phone}
+Services: ${location.services}
+`).join('\n')}
+
+COVERAGE AREA
+------------
+Counties Served: ${providerData.counties}
+
+INSURANCE
+---------
+Accepted Insurances: ${providerData.insurances}
+
+ADDITIONAL INFORMATION
+---------------------
+Cost: ${providerData.cost}
+Age Range: ${providerData.min_age} - ${providerData.max_age}
+Waitlist: ${providerData.waitlist}
+Telehealth Services: ${providerData.telehealth_services}
+Spanish Speakers: ${providerData.spanish_speakers}
+At-Home Services: ${providerData.at_home_services}
+In-Clinic Services: ${providerData.in_clinic_services}
+`;
+
       await emailjs.send(
         'service_b9y8kte',
         'template_a2x7i2h',
         {
           to_email: 'register@autismserviceslocator.com',
           from_email: formData.email,
-          provider_data: JSON.stringify(providerData, null, 2),
-          message: `New Provider Registration\n\nProvider Information:\n${JSON.stringify(providerData, null, 2)}`
+          provider_data: formattedMessage,
+          message: formattedMessage
         },
         '1FQP_qM9qMVxNGTmi'
       );
