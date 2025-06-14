@@ -7,45 +7,44 @@
 
 .signupImageText {
     color: white;
-    font-size: 2.5rem;
+    font-size: 2rem;
     text-align: center;
     background-color: #4A6FA5;
-    padding: 1rem;
+    padding: 0.8rem;
     border-radius: 10px;
+    width: 100%;
+    margin-bottom: 1.5rem;
 }
 
 .signupContainer {
     display: flex;
     flex-direction: column;
-    justify-content: space-evenly;
+    justify-content: flex-start;
     align-items: center;
-    align-content: center;
-    margin: 5px;
-    height: 100%;
     width: 100%;
-    padding: 10px;
+    padding: 1rem;
+}
+
+.signupImageTextContainer {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1.5rem;
 }
 
 .signupInstructionsContainer {
     display: flex;
-    flex-direction: row;
     width: 100%;
-    justify-content: space-evenly;
-    align-items: center;
     justify-content: center;
 }
 
 .signupInstructions {
     background-color: #4A6FA5;
-    width: 50%;
+    width: 95%;
+    max-width: 800px;
     padding: 1rem;
     color: rgb(255, 255, 255);
     border-radius: .5rem;
-    display: flex;
-    flex-direction: column;
-}
-
-.signupInstructions {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -60,45 +59,28 @@
     padding-bottom: 5rem;
 }
 
-.plan-options-container h2 {
-    font-size: 2rem;
-    margin-bottom: 20px;
-}
-
-.plan-options-container table {
-    width: 80%;
-}
-
-.plan-options-container table th,
-.plan-options-container table td {
-    padding: 10px;
-    text-align: center;
-    border: 1px solid #ccc;
-}
-
-.plan-options-container table th {
-    background-color: #4A6FA5;
-    
-}
-
 .iconColumn {
     display: flex;
     flex-direction: column;
     align-items: center;
-    align-content: center;
     justify-content: space-between;
-    margin-bottom: 20px;
-    font-size: 1.3rem;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+    width: 100%;
+    gap: 0.5rem;
 }
 
 .get-started-button {
-    font-size: 1.5rem;
-    padding: 1rem;
-    border-radius: 10px;
+    font-size: 1.2rem;
+    padding: 0.8rem 1.5rem;
+    border-radius: 8px;
     background-color: #ecf3fb;
     color: rgb(0, 0, 0);
     border: none;
     cursor: pointer;
+    margin-top: 1rem;
+    width: 90%;
+    max-width: 300px;
 }
 
 .get-started-button:hover {
@@ -138,8 +120,6 @@
     animation: fadeIn 10s ease-in-out;
 }
 
-
-
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -158,245 +138,110 @@
     }
 
     .signupContainer {
-        display: flex;
-        flex-direction: column-reverse;
-        align-items: center;
-        margin-top: 10rem;
-        padding: 0;
+        padding: 0.8rem;
     }
 
     .signupImageText {
-        top: -20%;
-        left: 15%;
-        font-size: 2rem;
-        height: fit-content;
-    }
-
-    .signupForm {
-        width: 90%;
         font-size: 1.5rem;
-        margin-top: 1rem;
+        padding: 0.6rem;
+        margin-bottom: 1rem;
     }
 
     .signupInstructions {
-        width: 90%;
+        width: 100%;
         font-size: 0.9rem;
+        padding: 0.8rem;
+    }
+
+    .iconColumn {
+        font-size: 0.9rem;
+        gap: 0.3rem;
+    }
+
+    .get-started-button {
+        font-size: 1rem;
+        padding: 0.7rem;
+        width: 100%;
+    }
+
+    .signupInstructions h1 {
+        font-size: 1.3rem;
+        margin-bottom: 0.8rem;
     }
 }
 
 @media (min-width: 436px) and (max-width: 820px) {
-    .signupWrapper {
-        width: 100%;
-        height: 100%;
-    }
-
     .signupContainer {
-        display: flex;
-        flex-direction: column-reverse;
-        align-items: center;
-        margin-top: 12rem;
+        padding: 1.2rem;
     }
 
     .signupImageText {
-        top: -20%;
-        left: 32%;
-        font-size: 2rem;
-        height: fit-content;
-    }
-
-    .signupForm {
-        width: 90%;
-        font-size: 1.5rem;
-        margin-top: 1rem;
+        font-size: 1.8rem;
+        padding: 0.7rem;
     }
 
     .signupInstructions {
-        width: 80%;
-        font-size: 1.2rem;
-        display: flex;
-        flex-direction: column;
+        width: 95%;
+        font-size: 1rem;
     }
 
-    .downArrow {
-        display: flex;
-        width: 90%;
-        margin-left: .08rem;
+    .iconColumn {
+        font-size: 1rem;
     }
 
-    .iconContainer {
-        width: 10%;
-        margin-bottom: 0.5rem;
-    }
-
-    .messageContainer {
-        margin-left: 10px;
-        padding: 2px;
-        text-wrap: wrap;
-    }
-
-    textarea::placeholder {
-        font-size: 1.2rem;
+    .get-started-button {
+        font-size: 1.1rem;
+        padding: 0.8rem;
     }
 }
 
-/* @media (max-width: 1558px) {
-    .downArrow {
-        display: flex;
-        width: 90%;
-        margin-left: 4.5rem;
-
-    }
-} */
-
-
 @media (min-height: 393px) and (max-width: 852px) and (orientation: landscape) {
-    .signupWrapper {
-        width: 100%;
-        height: 100%;
-    }
-
     .signupContainer {
-        display: flex;
-        flex-direction: column-reverse;
-        align-items: center;
-        margin-top: 12rem;
+        padding: 0.8rem;
     }
 
     .signupImageText {
-        top: -20%;
-        left: 32%;
-        font-size: 2rem;
-        height: fit-content;
-    }
-
-    .signupForm {
-        width: 80%;
-        font-size: 1.5rem;
-        margin-top: 1rem;
+        font-size: 1.6rem;
+        padding: 0.6rem;
     }
 
     .signupInstructions {
-        width: 80%;
-        font-size: 1.2rem;
-        display: flex;
-        flex-direction: column;
+        width: 95%;
+        font-size: 0.9rem;
     }
 
-
-    .iconContainer {
-        width: 10%;
-        margin-bottom: 0.5rem;
-    }
-
-    .messageContainer {
-        margin-left: 10px;
-        padding: 2px;
-        text-wrap: wrap;
-    }
-
-    textarea::placeholder {
-        font-size: 1.2rem;
+    .iconColumn {
+        font-size: 0.9rem;
     }
 }
 
 @media (min-height: 435px) and (max-width: 1040px) and (orientation: landscape) {
-    .signupWrapper {
-        width: 100%;
-        height: 100%;
-    }
-
     .signupContainer {
-        display: flex;
-        flex-direction: column-reverse;
-        align-items: center;
-        margin-top: 11rem;
+        padding: 1rem;
     }
 
     .signupImageText {
-        top: -20%;
-        left: 35%;
-        font-size: 2rem;
-        height: fit-content;
-    }
-
-    .signupForm {
-        width: 70%;
-        font-size: 1.5rem;
-        margin-top: 1rem;
+        font-size: 1.8rem;
     }
 
     .signupInstructions {
-        width: 70%;
-        font-size: 1.2rem;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-
-
-    .messageContainer {
-        margin-left: 10px;
-        padding: 2px;
-        text-wrap: wrap;
-    }
-
-    textarea::placeholder {
-        font-size: 1.2rem;
-    }
-}
-
-@media (min-height: 435px) and (max-width: 786px) and (orientation: landscape) {
-    .signupForm {
-        width: 70%;
-    }
-
-    .signupImageText {
-        left: 30%;
+        width: 90%;
+        font-size: 1rem;
     }
 }
 
 @media (min-height: 820px) and (max-width: 1180px) and (orientation: landscape) {
-    .signupWrapper {
-        width: 100%;
-        height: 100%;
-    }
-
     .signupContainer {
-        display: flex;
-        flex-direction: column-reverse;
-        align-items: center;
-        margin-top: 11rem;
+        padding: 1.5rem;
     }
 
     .signupImageText {
-        top: -20%;
-        left: 38%;
         font-size: 2rem;
-        height: fit-content;
-    }
-
-    .signupForm {
-        width: 50%;
-        font-size: 1.5rem;
-        margin-top: 1rem;
     }
 
     .signupInstructions {
-        width: 70%;
-        font-size: 1.2rem;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .messageContainer {
-        margin-left: 10px;
-        padding: 2px;
-        text-wrap: wrap;
-    }
-
-    textarea::placeholder {
-        font-size: 1.2rem;
+        width: 80%;
+        font-size: 1.1rem;
     }
 }
 
@@ -408,16 +253,16 @@
 
     .signupContainer {
         display: flex;
-        flex-direction: column-reverse;
+        flex-direction: column;
         align-items: center;
-        margin-top: 11rem;
+        margin-top: 2rem;
+        gap: 2rem;
     }
 
     .signupImageText {
-        top: -20%;
-        left: 35%;
         font-size: 2rem;
         height: fit-content;
+        width: 90%;
     }
 
     .signupForm {
@@ -432,20 +277,5 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-    }
-
-    .messageContainer {
-        margin-left: 10px;
-        padding: 2px;
-        text-wrap: wrap;
-    }
-
-    .downArrow {
-        display: flex;
-        width: 90%;
-    }
-
-    textarea::placeholder {
-        font-size: 1.2rem;
     }
 }
