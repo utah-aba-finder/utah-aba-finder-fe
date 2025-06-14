@@ -5,7 +5,12 @@ import Logo from "../Assets/autismserviceslocator_logo.png";
 
 const navigationItems = [
   { name: "Home", href: "/" },
-  { name: "Provider Login", href: "/login" },
+  { name: "Provider Login",
+    dropdown: [
+      { name: "Provider Login", href: "/login" },
+      { name: "Provider Signup", href: "/signup" },
+    ],
+  },
   {
     name: "Providers",
     dropdown: [

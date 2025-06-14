@@ -6,6 +6,7 @@ import { fetchStates, fetchCountiesByState } from "../Utility/ApiCall";
 import "react-toastify/dist/ReactToastify.css";
 import emailjs from 'emailjs-com';
 import Confetti from 'react-confetti';
+import ReCAPTCHA from "react-google-recaptcha";
 
 interface SignupModalProps {
   handleCloseForm: () => void;
@@ -67,14 +68,14 @@ const SignupModal: React.FC<SignupModalProps> = ({
     status: "pending",
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isSaving, setIsSaving] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [error, setError] = useState("");
-  const [isCountiesModalOpen, setIsCountiesModalOpen] = useState(false);
-  const [isInsuranceModalOpen, setIsInsuranceModalOpen] = useState(false);
   const [selectedCounties, setSelectedCounties] = useState<CountiesServed[]>([]);
   const [selectedInsurances, setSelectedInsurances] = useState<string[]>([]);
   const [availableStates, setAvailableStates] = useState<StateData[]>([]);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [availableCounties, setAvailableCounties] = useState<CountyData[]>([]);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isProviderInfoSubmitted, setIsProviderInfoSubmitted] = useState(false);
@@ -87,11 +88,14 @@ const SignupModal: React.FC<SignupModalProps> = ({
   const [newInsurance, setNewInsurance] = useState('');
   const [stateCounties, setStateCounties] = useState<{ [key: string]: CountyData[] }>({});
   const [selectedState, setSelectedState] = useState('');
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [showConfetti, setShowConfetti] = useState(false);
   const [windowSize, setWindowSize] = useState({
     width: window.innerWidth,
     height: window.innerHeight,
   });
+  const [recaptchaValue, setRecaptchaValue] = useState<string | null>(null);
+  const recaptchaRef = useRef<ReCAPTCHA>(null);
 
   const servicesList = [
     { id: 1, name: "ABA Therapy" },
@@ -225,6 +229,11 @@ const SignupModal: React.FC<SignupModalProps> = ({
   };
 
   const validateForm = () => {
+    if (!recaptchaValue) {
+      toast.error("Please complete the reCAPTCHA verification");
+      return false;
+    }
+
     // Basic information validation
     if (!formData.name || !formData.email || !formData.username || !formData.password || !formData.confirmPassword || !formData.website || !formData.registrant_name || !formData.affiliation) {
       toast.error("Please fill out all basic information fields");
@@ -245,8 +254,8 @@ const SignupModal: React.FC<SignupModalProps> = ({
 
     // Check locations
     for (const location of formData.locations) {
-      if (!location.name || !location.address_1 || !location.city || !location.state || !location.zip || !location.phone) {
-        toast.error("Please fill out all required location fields");
+      if (!location.phone) {
+        toast.error("Please fill at minimum the phone number field");
         return false;
       }
       if (location.services.length === 0) {
@@ -293,7 +302,7 @@ const SignupModal: React.FC<SignupModalProps> = ({
           services: location.services.map(service => service.name).join(", ")
         })),
         counties: selectedCounties.map(county => `${county.county_name}, ${county.state}`).join(", "),
-        insurances: formData.insurances.join(", "),
+        insurances: selectedInsurances.join(", "),
         cost: formData.cost,
         min_age: formData.min_age,
         max_age: formData.max_age,
@@ -316,11 +325,12 @@ const SignupModal: React.FC<SignupModalProps> = ({
         '1FQP_qM9qMVxNGTmi'
       );
 
+      setShowConfetti(true);
       toast.success(
         "Provider information submitted successfully! We will review your application and get back to you soon.",
         {
           position: "top-center",
-          autoClose: 20000,
+          autoClose: 15000,
           hideProgressBar: false,
           closeOnClick: true,
           pauseOnHover: true,
@@ -478,6 +488,13 @@ const SignupModal: React.FC<SignupModalProps> = ({
     }));
   };
 
+  const handleAddInsurance = () => {
+    if (newInsurance.trim() && !selectedInsurances.includes(newInsurance.trim())) {
+      setSelectedInsurances(prev => [...prev, newInsurance.trim()]);
+      setNewInsurance('');
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       {showConfetti && (
@@ -490,22 +507,22 @@ const SignupModal: React.FC<SignupModalProps> = ({
       )}
       <ToastContainer />
       <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
-        <div className="relative top-10 mx-auto p-8 border w-[95%] max-w-6xl shadow-lg rounded-md bg-white">
+        <div className="relative top-2 sm:top-10 mx-auto p-4 sm:p-8 border w-[98%] sm:w-[95%] max-w-6xl shadow-lg rounded-md bg-white mb-20 sm:mb-10">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-medium text-gray-900">Provider Registration</h3>
+            <h3 className="text-base sm:text-lg font-medium text-gray-900">Provider Registration</h3>
             <button
               onClick={handleCloseForm}
               className="text-gray-400 hover:text-gray-500 bg-transparent border-none"
             >
-              <X className="h-6 w-6 text-gray-500 hover:text-red-500 transition-colors cursor-pointer bg-transparent border-none" />
+              <X className="h-5 w-5 sm:h-6 sm:w-6 text-gray-500 hover:text-red-500 transition-colors cursor-pointer bg-transparent border-none" />
             </button>
           </div>
 
-          <form onSubmit={handleProviderInfoSubmit} className="space-y-8">
+          <form onSubmit={handleProviderInfoSubmit} className="space-y-6 sm:space-y-8">
             {/* Basic Information Section */}
-            <div className="space-y-6">
-              <h3 className="text-xl font-semibold text-gray-900">Basic Information</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4 sm:space-y-6">
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-900">Basic Information</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <div>
                   <label className="block text-sm text-gray-600 mb-2">
                     Provider/Company Name
@@ -516,7 +533,7 @@ const SignupModal: React.FC<SignupModalProps> = ({
                     placeholder="ABA Solutions"
                     value={formData.name}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full sm:w-3/4 px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     required
                   />
                 </div>
@@ -529,7 +546,7 @@ const SignupModal: React.FC<SignupModalProps> = ({
                     {formData.provider_type?.map((service) => (
                       <div
                         key={service.id}
-                        className="bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm flex items-center"
+                        className="bg-blue-100 text-blue-800 px-3 py-1.5 rounded-full text-xs sm:text-sm flex items-center"
                       >
                         <span>{service.name}</span>
                         <button
@@ -537,13 +554,13 @@ const SignupModal: React.FC<SignupModalProps> = ({
                           onClick={() => handleProviderTypeChange(service)}
                           className="ml-2 border-none bg-transparent"
                         >
-                          <X className="h-6 w-6 text-gray-500 hover:text-red-500 transition-colors cursor-pointer bg-transparent border-none" />
+                          <X className="h-4 w-4 sm:h-5 sm:w-5 text-gray-500 hover:text-red-500 transition-colors cursor-pointer bg-transparent border-none" />
                         </button>
                       </div>
                     ))}
                   </div>
                   <select
-                    className="w-full rounded-lg border border-gray-300 py-2.5 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
+                    className="w-full sm:w-3/4 rounded-lg border border-gray-300 py-2 px-3 sm:py-2.5 sm:px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                     value=""
                     onChange={(e) => {
                       const [id, name] = e.target.value.split('|');
@@ -574,7 +591,7 @@ const SignupModal: React.FC<SignupModalProps> = ({
                     placeholder="John Doe"
                     value={formData.registrant_name}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full sm:w-3/4 px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     required
                   />
                 </div>
@@ -586,17 +603,17 @@ const SignupModal: React.FC<SignupModalProps> = ({
                   <input
                     type="text"
                     name="affiliation"
-                    placeholder="BCBA/Owner"
+                    placeholder="BCBA/Owner/etc"
                     value={formData.affiliation}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full sm:w-3/4 px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     required
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm text-gray-600 mb-2">
-                    Email Address
+                    Best Contact Email Address (company email preferred)
                   </label>
                   <input
                     type="email"
@@ -604,7 +621,7 @@ const SignupModal: React.FC<SignupModalProps> = ({
                     placeholder="john.doe@example.com"
                     value={formData.email}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full sm:w-3/4 px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     required
                   />
                 </div>
@@ -619,7 +636,7 @@ const SignupModal: React.FC<SignupModalProps> = ({
                     placeholder="john.doe@example.com"
                     value={formData.username}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full sm:w-3/4 px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     required
                   />
                 </div>
@@ -635,7 +652,7 @@ const SignupModal: React.FC<SignupModalProps> = ({
                         name="password"
                         value={formData.password}
                         onChange={handleChange}
-                        className={`w-full px-3 py-2 rounded-lg border ${
+                        className={`w-full sm:w-3/4 px-3 py-2 rounded-lg border ${
                           passwordError ? "border-red-500" : "border-gray-300"
                         } focus:outline-none focus:ring-2 focus:ring-blue-500`}
                         required
@@ -643,18 +660,18 @@ const SignupModal: React.FC<SignupModalProps> = ({
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 border-none bg-transparent"
+                        className="absolute right-2 sm:right-14 top-1/2 transform -translate-y-1/2 border-none bg-transparent"
                       >
                         {showPassword ? (
-                          <EyeOff className="h-5 w-5 text-gray-500 hover:text-gray-700" />
+                          <EyeOff className="h-4 w-4 sm:h-5 sm:w-5 text-gray-500 hover:text-gray-700" />
                         ) : (
-                          <Eye className="h-5 w-5 text-gray-500 hover:text-gray-700" />
+                          <Eye className="h-4 w-4 sm:h-5 sm:w-5 text-gray-500 hover:text-gray-700" />
                         )}
                       </button>
                     </div>
-                    <div className="text-sm text-gray-600 space-y-1">
+                    <div className="text-xs sm:text-sm text-gray-600 space-y-1">
                       <p className="font-medium mb-1">Password Requirements:</p>
-                      <div className="flex items-center space-x-2">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
                         <span className={`w-4 h-4 flex items-center justify-center rounded-full ${getPasswordRequirements(formData.password).length ? 'bg-green-500' : 'bg-gray-200'}`}>
                           {getPasswordRequirements(formData.password).length && (
                             <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -664,7 +681,7 @@ const SignupModal: React.FC<SignupModalProps> = ({
                         </span>
                         <span>7-15 characters</span>
                       </div>
-                      <div className="flex items-center space-x-2">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
                         <span className={`w-4 h-4 flex items-center justify-center rounded-full ${getPasswordRequirements(formData.password).upperCase ? 'bg-green-500' : 'bg-gray-200'}`}>
                           {getPasswordRequirements(formData.password).upperCase && (
                             <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -674,7 +691,7 @@ const SignupModal: React.FC<SignupModalProps> = ({
                         </span>
                         <span>At least one uppercase letter</span>
                       </div>
-                      <div className="flex items-center space-x-2">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
                         <span className={`w-4 h-4 flex items-center justify-center rounded-full ${getPasswordRequirements(formData.password).lowerCase ? 'bg-green-500' : 'bg-gray-200'}`}>
                           {getPasswordRequirements(formData.password).lowerCase && (
                             <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -684,7 +701,7 @@ const SignupModal: React.FC<SignupModalProps> = ({
                         </span>
                         <span>At least one lowercase letter</span>
                       </div>
-                      <div className="flex items-center space-x-2">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
                         <span className={`w-4 h-4 flex items-center justify-center rounded-full ${getPasswordRequirements(formData.password).specialChar ? 'bg-green-500' : 'bg-gray-200'}`}>
                           {getPasswordRequirements(formData.password).specialChar && (
                             <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -694,7 +711,7 @@ const SignupModal: React.FC<SignupModalProps> = ({
                         </span>
                         <span>At least one special character (!@#$%^&*(),.?":{}|&lt;&gt;)</span>
                       </div>
-                      <div className="flex items-center space-x-2">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
                         <span className={`w-4 h-4 flex items-center justify-center rounded-full ${getPasswordRequirements(formData.password).number ? 'bg-green-500' : 'bg-gray-200'}`}>
                           {getPasswordRequirements(formData.password).number && (
                             <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -721,7 +738,7 @@ const SignupModal: React.FC<SignupModalProps> = ({
                       name="confirmPassword"
                       value={formData.confirmPassword}
                       onChange={handleChange}
-                      className={`w-full px-3 py-2 rounded-lg border ${
+                      className={`w-full sm:w-3/4 px-3 py-2 rounded-lg border ${
                         passwordError ? "border-red-500" : "border-gray-300"
                       } focus:outline-none focus:ring-2 focus:ring-blue-500`}
                       required
@@ -729,12 +746,12 @@ const SignupModal: React.FC<SignupModalProps> = ({
                     <button
                       type="button"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 border-none bg-transparent"
+                      className="absolute right-2 sm:right-14 top-1/2 transform -translate-y-1/2 border-none bg-transparent"
                     >
                       {showConfirmPassword ? (
-                        <EyeOff className="h-5 w-5 text-gray-500 hover:text-gray-700" />
+                        <EyeOff className="h-4 w-4 sm:h-5 sm:w-5 text-gray-500 hover:text-gray-700" />
                       ) : (
-                        <Eye className="h-5 w-5 text-gray-500 hover:text-gray-700" />
+                        <Eye className="h-4 w-4 sm:h-5 sm:w-5 text-gray-500 hover:text-gray-700" />
                       )}
                     </button>
                   </div>
@@ -752,7 +769,7 @@ const SignupModal: React.FC<SignupModalProps> = ({
                     name="website"
                     value={formData.website}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full sm:w-3/4 px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="https://"
                   />
                 </div>
@@ -760,12 +777,12 @@ const SignupModal: React.FC<SignupModalProps> = ({
             </div>
 
             {/* Locations Section */}
-            <div className="space-y-6">
-              <h3 className="text-xl font-semibold text-gray-900">Locations</h3>
+            <div className="space-y-4 sm:space-y-6">
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-900">Locations</h3>
               {formData.locations.map((location, index) => (
-                <div key={index} className="p-6 border rounded-lg space-y-6 bg-gray-50">
+                <div key={index} className="p-4 sm:p-6 border rounded-lg space-y-4 sm:space-y-6 bg-gray-50">
                   <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-lg font-semibold text-gray-900">
+                    <h3 className="text-sm sm:text-lg font-semibold text-gray-900">
                       Location {index + 1}
                     </h3>
                     {formData.locations.length > 1 && (
@@ -774,7 +791,7 @@ const SignupModal: React.FC<SignupModalProps> = ({
                         onClick={() => handleRemoveLocation(index)}
                         className="border-none bg-transparent"
                       >
-                        <X className="h-6 w-6 text-gray-500 hover:text-red-500 transition-colors cursor-pointer bg-transparent border-none" />
+                        <X className="h-4 w-4 sm:h-5 sm:w-5 text-gray-500 hover:text-red-500 transition-colors cursor-pointer bg-transparent border-none" />
                       </button>
                     )}
                   </div>
@@ -787,10 +804,22 @@ const SignupModal: React.FC<SignupModalProps> = ({
                       className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     <input
-                      type="text"
-                      placeholder="Phone"
+                      type="tel"
+                      placeholder="Phone (XXX-XXX-XXXX) *"
                       value={location.phone}
-                      onChange={(e) => handleLocationChange(index, "phone", e.target.value)}
+                      onChange={(e) => {
+                        const input = e.target.value.replace(/\D/g, '');
+                        let formatted = input;
+                        if (input.length >= 3) {
+                          formatted = `${input.slice(0,3)}-${input.slice(3)}`;
+                        }
+                        if (input.length >= 6) {
+                          formatted = `${input.slice(0,3)}-${input.slice(3,6)}-${input.slice(6,10)}`;
+                        }
+                        handleLocationChange(index, "phone", formatted);
+                      }}
+                      maxLength={12}
+                      required
                       className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     <input
@@ -817,16 +846,28 @@ const SignupModal: React.FC<SignupModalProps> = ({
                     <div className="grid grid-cols-2 gap-4">
                       <input
                         type="text"
-                        placeholder="State"
+                        placeholder="State (XX)"
                         value={location.state}
-                        onChange={(e) => handleLocationChange(index, "state", e.target.value)}
+                        onChange={(e) => {
+                          const input = e.target.value.toUpperCase();
+                          if (input.length <= 2 && /^[A-Z]*$/.test(input)) {
+                            handleLocationChange(index, "state", input);
+                          }
+                        }}
+                        maxLength={2}
                         className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                       <input
                         type="text"
                         placeholder="ZIP"
                         value={location.zip}
-                        onChange={(e) => handleLocationChange(index, "zip", e.target.value)}
+                        onChange={(e) => {
+                          const input = e.target.value.replace(/\D/g, '');
+                          if (input.length <= 5) {
+                            handleLocationChange(index, "zip", input);
+                          }
+                        }}
+                        maxLength={5}
                         className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
@@ -897,6 +938,14 @@ const SignupModal: React.FC<SignupModalProps> = ({
                     <select
                       value={selectedState}
                       onChange={(e) => setSelectedState(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          if (selectedState) {
+                            handleAddState(selectedState);
+                          }
+                        }
+                      }}
                       className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                     >
                       <option value="">Select a state...</option>
@@ -939,6 +988,14 @@ const SignupModal: React.FC<SignupModalProps> = ({
                         <select
                           value={selectedCounty}
                           onChange={(e) => setSelectedCounty(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              if (selectedCounty) {
+                                handleAddCounty(stateName, selectedCounty);
+                              }
+                            }
+                          }}
                           className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                         >
                           <option value="">Add counties in {stateName}...</option>
@@ -990,23 +1047,30 @@ const SignupModal: React.FC<SignupModalProps> = ({
             <div className="space-y-6">
               <h3 className="text-xl font-semibold text-gray-900">Insurance</h3>
               <div className="space-y-4">
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <input
                     type="text"
                     value={newInsurance}
                     onChange={(e) => setNewInsurance(e.target.value)}
                     placeholder="Enter insurance name"
-                    className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
+                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleAddInsurance();
+                      }
+                    }}
+                    onBlur={() => {
                       if (newInsurance.trim() && !selectedInsurances.includes(newInsurance.trim())) {
                         setSelectedInsurances(prev => [...prev, newInsurance.trim()]);
                         setNewInsurance('');
                       }
                     }}
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddInsurance}
+                    className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                   >
                     Add Insurance
                   </button>
@@ -1032,6 +1096,11 @@ const SignupModal: React.FC<SignupModalProps> = ({
                         </button>
                       </div>
                     ))}
+                    {selectedInsurances.includes(newInsurance.trim()) && (
+                      <p className="text-sm text-red-500">
+                        This insurance has already been added
+                      </p>
+                    )}
                   </div>
                 )}
               </div>
@@ -1046,7 +1115,7 @@ const SignupModal: React.FC<SignupModalProps> = ({
                   <input
                     type="text"
                     name="cost"
-                    placeholder="Insurance only or deductible/out of pocket"
+                    placeholder="I.E. $100 per session, Insurance only, etc"
                     value={formData.cost}
                     onChange={handleChange}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
@@ -1152,19 +1221,30 @@ const SignupModal: React.FC<SignupModalProps> = ({
               </div>
             </div>
 
+            {/* Add reCAPTCHA before the submit button */}
+            <div className="flex justify-center my-4">
+              <div className="scale-90 sm:scale-100">
+                <ReCAPTCHA
+                  ref={recaptchaRef}
+                  sitekey="6LfTMGErAAAAAARfviGKHaQSMBEiUqHOZeBEmRIu"
+                  onChange={(value: string | null) => setRecaptchaValue(value)}
+                />
+              </div>
+            </div>
+
             {/* Action Buttons */}
-            <div className="flex justify-end space-x-4 pt-6 border-t">
+            <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-4 pt-4 sm:pt-6 border-t sticky bottom-0 bg-white pb-4">
               <button
                 type="button"
                 onClick={handleCloseForm}
-                className="px-6 py-3 border border-gray-300 rounded-lg shadow-sm text-base font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 border border-gray-300 rounded-lg shadow-sm text-sm sm:text-base font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isSaving}
-                className="px-6 py-3 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 border border-transparent rounded-lg shadow-sm text-sm sm:text-base font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
               >
                 {isSaving ? "Submitting..." : "Submit Registration"}
               </button>
