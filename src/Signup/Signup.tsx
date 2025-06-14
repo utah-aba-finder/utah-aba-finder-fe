@@ -21,7 +21,7 @@ export const Signup = () => {
                             <div className="iconColumn">
                                 <p>Fill out the form with all necessary information.</p>
                                 <MoveDown className="arrow1" />
-                                <p>Once submitted, admin will review your information and approve the request if everything is met and send a confirmation email.</p>
+                                <p>Once submitted, admin will review your information and approve the request if all required information is met, send a confirmation email, and you will be able to login to your account.</p>
                                 <MoveDown className="arrow2" />
                                 <p>As a provider you can now update your information as often as needed!</p>
                             </div>
