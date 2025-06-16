@@ -14,6 +14,8 @@ interface Location {
   zip: string | null;
   phone?: string | null;
   services?: Service[];
+  in_home_waitlist?: boolean | null;
+  in_clinic_waitlist?: boolean | null;
 }
 
 interface Insurance {
@@ -182,7 +184,6 @@ const ProviderModal: React.FC<ProviderModalProps> = ({
                 })()
               }</p>
               <p><strong>Ages Served:</strong> {provider.attributes.min_age} - {provider.attributes.max_age} years</p>
-              <p><strong>Waitlist:</strong> {provider.attributes.waitlist || 'Contact us'}</p>
               <p><strong>Telehealth Services:</strong> {provider.attributes.telehealth_services || 'Contact us'}</p>
               <p><strong>At Home Services:</strong> {provider.attributes.provider_type.length > 0 ? (provider.attributes.at_home_services || 'Contact us') : provider.attributes.provider_type.length > 0 ? (provider.attributes.at_home_services || 'Not applicable') : null}</p>
               <p><strong>In-Clinic Services:</strong> {provider.attributes.provider_type.length > 0 ? (provider.attributes.in_clinic_services || 'Contact us') : provider.attributes.provider_type.length > 0 && provider.attributes.locations?.some(location => location.address_1 && location.city && location.state && location.zip) ? 'Yes' : 'Not applicable'}</p>
@@ -212,6 +213,28 @@ const ProviderModal: React.FC<ProviderModalProps> = ({
                     <p><Phone style={{ marginRight: '8px' }} />
                       <strong>Phone: </strong>
                       {location.phone ? <a href={`tel:${location.phone}`}>{location.phone}</a> : 'Provider does not have a number for this location yet.'}
+                    </p>
+                    <p className="text-gray-600">
+                      <span className="font-semibold">In-Home Waitlist:</span>{" "}
+                      {location.in_home_waitlist === true
+                        ? "Yes"
+                        : location.in_home_waitlist === false
+                        ? "No"
+                        : location.in_home_waitlist === null
+                        ? "Service not provided"
+                        : "Contact us"}
+                    </p>
+                    <p className="text-gray-600">
+                      <span className="font-semibold">In-Clinic Waitlist:</span>{" "}
+                      {provider.attributes.in_clinic_services === "No" && location.in_clinic_waitlist === true 
+                        ? "This service isn't provided at this clinic" 
+                        : location.in_clinic_waitlist === true 
+                          ? "Yes" 
+                          : location.in_clinic_waitlist === false 
+                            ? "No" 
+                            : location.in_clinic_waitlist === null
+                            ? "Service not provided"
+                            : "Contact us"}
                     </p>
                     <p><Briefcase style={{ marginRight: '8px' }} />
                       <strong>Services: </strong>

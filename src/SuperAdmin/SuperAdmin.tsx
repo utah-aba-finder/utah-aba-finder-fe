@@ -26,7 +26,7 @@ import { ProviderData, ProviderAttributes } from "../Utility/Types";
 import { API_URL } from "../Utility/ApiCall";
 
 const SuperAdmin = () => {
-  const { loggedInProvider } = useAuth();
+  const { loggedInProvider, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [selectedTab, setSelectedTab] = useState("view");
   const [providers, setProviders] = useState<ProviderData[]>([]);
@@ -87,9 +87,9 @@ const SuperAdmin = () => {
     });
 
     setTimeout(() => {
-      // setToken(null);
+      logout();
     }, 2000);
-  }, []);
+  }, [logout]);
 
 
   // Fetch providers
@@ -186,9 +186,6 @@ const SuperAdmin = () => {
 
       // Then fetch fresh data from the server
       await fetchAllProviders();
-
-      // Show success message
-      toast.success("Provider updated successfully");
 
       // Switch back to view tab after a short delay
       setTimeout(() => {

@@ -493,7 +493,52 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
                       />
                     </div>
                   </div>
-
+                  <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
+                    <div className="form-group">
+                      <label htmlFor={`location-in-home-waitlist-${index}`}>In-Home Waitlist</label>
+                      <p className="text-sm text-gray-500 mb-2">If you don't provide this service please select "No"</p>
+                      <select
+                        id={`location-in-home-waitlist-${index}`}
+                        value={location.in_home_waitlist === true ? "true" : location.in_home_waitlist === false ? "false" : ""}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          const newLocations = [...locations];
+                          newLocations[index] = {
+                            ...location,
+                            in_home_waitlist: value === "" ? null : value === "true"
+                          };
+                          setLocations(newLocations);
+                        }}
+                        required
+                      >
+                        <option value="">Select...</option>
+                        <option value="true">Yes</option>
+                        <option value="false">No</option>
+                      </select>
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor={`location-in-clinic-waitlist-${index}`}>In-Clinic Waitlist</label>
+                      <p className="text-sm text-gray-500 mb-2">If you don't provide this service please select "No"</p>
+                      <select
+                        id={`location-in-clinic-waitlist-${index}`}
+                        value={location.in_clinic_waitlist === true ? "true" : location.in_clinic_waitlist === false ? "false" : ""}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          const newLocations = [...locations];
+                          newLocations[index] = {
+                            ...location,
+                            in_clinic_waitlist: value === "" ? null : value === "true"
+                          };
+                          setLocations(newLocations);
+                        }}
+                        required
+                      >
+                        <option value="">Select...</option>
+                        <option value="true">Yes</option>
+                        <option value="false">No</option>
+                      </select>
+                    </div>
+                  </div>
                   <div className="mt-4">
                     <label className="block text-sm text-gray-600 mb-2">
                       Services Offered at this Location

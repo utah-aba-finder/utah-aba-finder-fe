@@ -175,7 +175,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
   const handleLocationChange = (
     index: number,
     field: keyof ProviderLocation,
-    value: string | Service[]
+    value: string | Service[] | boolean
   ) => {
     const updatedLocations = [...locations];
     updatedLocations[index] = { ...updatedLocations[index], [field]: value };
@@ -192,7 +192,9 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
       state: null,
       zip: null,
       phone: null,
-      services: []
+      services: [],
+      in_home_waitlist: null,
+      in_clinic_waitlist: null
     };
     setLocations([newLocation, ...locations]);
   };
@@ -315,17 +317,6 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
       }
       
       onUpdate(updatedProvider.attributes);
-      
-      // Show success message with a unique ID to prevent duplicates
-      toast.success("Provider updated successfully", {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        toastId: `success-${provider.id}-${Date.now()}`
-      });
       
       if (setSelectedTab) {
         setSelectedTab("view");
@@ -739,6 +730,42 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                             }
                             className="w-[95%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                           />
+                        </div>
+
+                        <div className="md:col-span-2">
+                          <label className="block text-sm text-gray-600 mb-2">
+                            In-Home Waitlist
+                          </label>
+                          <p className="text-sm text-gray-500 mb-2">If you don't provide this service please select "No"</p>
+                          <select
+                            value={location.in_home_waitlist === true ? "true" : location.in_home_waitlist === false ? "false" : ""}
+                            onChange={(e) =>
+                              handleLocationChange(index, "in_home_waitlist", e.target.value === "true")
+                            }
+                            className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                          >
+                            <option value="">Select...</option>
+                            <option value="true">Yes</option>
+                            <option value="false">No</option>
+                          </select>
+                        </div>
+
+                        <div className="md:col-span-2">
+                          <label className="block text-sm text-gray-600 mb-2">
+                            In-Clinic Waitlist
+                          </label>
+                          <p className="text-sm text-gray-500 mb-2">If you don't provide this service please select "No"</p>
+                          <select
+                            value={location.in_clinic_waitlist === true ? "true" : location.in_clinic_waitlist === false ? "false" : ""}
+                            onChange={(e) =>
+                              handleLocationChange(index, "in_clinic_waitlist", e.target.value === "true")
+                            }
+                            className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                          >
+                            <option value="">Select...</option>
+                            <option value="true">Yes</option>
+                            <option value="false">No</option>
+                          </select>
                         </div>
                       </div>
                       <div className="mt-6">

@@ -23,6 +23,8 @@ interface Location {
   zip: string;
   phone: string;
   services: Service[];
+  in_home_waitlist: boolean | null;
+  in_clinic_waitlist: boolean | null;
 }
 
 const SignupModal: React.FC<SignupModalProps> = ({
@@ -51,6 +53,8 @@ const SignupModal: React.FC<SignupModalProps> = ({
         zip: "",
         phone: "",
         services: [] as Service[],
+        in_home_waitlist: null,
+        in_clinic_waitlist: null
       },
     ],
     insurances: [] as string[],
@@ -201,7 +205,7 @@ const SignupModal: React.FC<SignupModalProps> = ({
   const handleLocationChange = (
     index: number,
     field: string,
-    value: string
+    value: string | boolean | null
   ) => {
     const updatedLocations = [...formData.locations];
     updatedLocations[index] = { ...updatedLocations[index], [field]: value };
@@ -222,7 +226,9 @@ const SignupModal: React.FC<SignupModalProps> = ({
           state: "",
           zip: "",
           phone: "",
-          services: [] as Service[]
+                                     services: [] as Service[],
+          in_home_waitlist: null,
+          in_clinic_waitlist: null
         },
       ],
     }));
@@ -404,7 +410,9 @@ In-Clinic Services: ${providerData.in_clinic_services}
             state: "",
             zip: "",
             phone: "",
-            services: []
+             services: [],
+            in_home_waitlist: null,
+            in_clinic_waitlist: null
           },
         ],
         insurances: [],
@@ -847,25 +855,52 @@ In-Clinic Services: ${providerData.in_clinic_services}
                       onChange={(e) => handleLocationChange(index, "name", e.target.value)}
                       className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
-                    <input
-                      type="tel"
-                      placeholder="Phone (XXX-XXX-XXXX) *"
-                      value={location.phone}
-                      onChange={(e) => {
-                        const input = e.target.value.replace(/\D/g, '');
-                        let formatted = input;
-                        if (input.length >= 3) {
-                          formatted = `${input.slice(0,3)}-${input.slice(3)}`;
+                    <div className="form-group">
+                      <label htmlFor={`location-phone-${index}`}>Phone Number</label>
+                      <input
+                        type="tel"
+                        id={`location-phone-${index}`}
+                        value={location.phone}
+                        onChange={(e) =>
+                          handleLocationChange(index, "phone", e.target.value)
                         }
-                        if (input.length >= 6) {
-                          formatted = `${input.slice(0,3)}-${input.slice(3,6)}-${input.slice(6,10)}`;
-                        }
-                        handleLocationChange(index, "phone", formatted);
-                      }}
-                      maxLength={12}
-                      required
-                      className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
+                        required
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor={`location-in-home-waitlist-${index}`}>In-Home Waitlist</label>
+                      <p className="text-sm text-gray-500 mb-2">If you don't provide this service please select "No"</p>
+                      <select
+                        id={`location-in-home-waitlist-${index}`}
+                        value={location.in_home_waitlist === true ? "true" : location.in_home_waitlist === false ? "false" : ""}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          handleLocationChange(index, "in_home_waitlist", value === "" ? null : value === "true");
+                        }}
+                        required
+                      >
+                        <option value="">Select...</option>
+                        <option value="true">Yes</option>
+                        <option value="false">No</option>
+                      </select>
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor={`location-in-clinic-waitlist-${index}`}>In-Clinic Waitlist</label>
+                      <p className="text-sm text-gray-500 mb-2">If you don't provide this service please select "No"</p>
+                      <select
+                        id={`location-in-clinic-waitlist-${index}`}
+                        value={location.in_clinic_waitlist === true ? "true" : location.in_clinic_waitlist === false ? "false" : ""}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          handleLocationChange(index, "in_clinic_waitlist", value === "" ? null : value === "true");
+                        }}
+                        required
+                      >
+                        <option value="">Select...</option>
+                        <option value="true">Yes</option>
+                        <option value="false">No</option>
+                      </select>
+                    </div>
                     <input
                       type="text"
                       placeholder="Address Line 1"

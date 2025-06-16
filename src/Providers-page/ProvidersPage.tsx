@@ -4,7 +4,7 @@ import childrenBanner from "../Assets/children-banner-2.jpg";
 import ProviderModal from "./ProviderModal";
 import SearchBar from "./SearchBar";
 import ProviderCard from "./ProviderCard";
-import { Providers, ProviderAttributes, InsuranceData, Insurance, CountiesServed as County, ProviderType as ProviderTypeInterface, ProviderData, CountyData } from "../Utility/Types";
+import { Providers, ProviderAttributes, InsuranceData, Insurance, CountiesServed as County, ProviderType as ProviderTypeInterface, ProviderData, CountyData, Location } from "../Utility/Types";
 import gearImage from "../Assets/Gear@1x-0.5s-200px-200px.svg";
 import Joyride, { Step, STATUS } from "react-joyride";
 import { fetchProviders, fetchProvidersByStateIdAndProviderType, fetchInsurance, fetchCountiesByState } from "../Utility/ApiCall";
@@ -337,12 +337,14 @@ const ProvidersPage: React.FC = () => {
                   (service === "in_clinic" &&
                     provider.in_clinic_services?.toLowerCase() === "yes")) &&
                 (!waitlist ||
-                  (waitlist === "6 Months or Less" &&
-                    (provider.waitlist
-                      ? parseInt(provider.waitlist, 10) <= 6
-                      : false)) ||
-                  (waitlist.includes("no") &&
-                    provider.waitlist?.toLowerCase() === "no")) &&
+                  (waitlist === "in_home_available" &&
+                    provider.locations.some((loc) => loc.in_home_waitlist === false)) ||
+                  (waitlist === "in_clinic_available" &&
+                    provider.locations.some((loc) => loc.in_clinic_waitlist === false)) ||
+                  (waitlist === "both_available" &&
+                    provider.locations.some((loc) => loc.in_home_waitlist === false && loc.in_clinic_waitlist === false)) ||
+                  (waitlist === "both_waitlist" &&
+                    provider.locations.some((loc) => loc.in_home_waitlist === true && loc.in_clinic_waitlist === true))) &&
                 (!age ||
                   (provider.min_age !== null &&
                     provider.max_age !== null &&
