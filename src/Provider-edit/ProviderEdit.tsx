@@ -13,15 +13,7 @@ import {
   X,
   BarChart,
   MapPin,
-  Globe,
-  Mail,
   DollarSign,
-  Clock,
-  Video,
-  Home,
-  Languages,
-  Plus,
-  Briefcase,
 } from "lucide-react";
 import moment from "moment";
 import "react-toastify/dist/ReactToastify.css";
@@ -68,8 +60,8 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
     loggedInProvider.attributes.provider_type || []
   );
   const [availableStates, setAvailableStates] = useState<StateData[]>([]);
-  const [isStateModalOpen, setIsStateModalOpen] = useState(false);
   const [isInsuranceModalOpen, setIsInsuranceModalOpen] = useState(false);
+  
   const [selectedStateAbbr, setSelectedStateAbbr] = useState<string>('none');
   const [selectedAddress, setSelectedAddress] = useState<string>('');
   const [mapAddress, setMapAddress] = useState<string>('');
@@ -90,7 +82,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
     }, 2000);
   }, [logout, clearProviderData]);
 
-  const refreshProviderData = async () => {
+  const refreshProviderData = useCallback(async () => {
     try {
       const response = await fetch(
         `https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/providers/${loggedInProvider.id}`,
@@ -106,23 +98,24 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       }
 
       const data = await response.json();
-      const providerData = data.data;
+      const providerData = data.data?.[0] || {};
       
       // Ensure we have all required properties with defaults
       const safeProviderData = {
         ...providerData,
         attributes: {
           ...providerData.attributes,
-          provider_type: providerData.attributes.provider_type || [],
-          insurance: providerData.attributes.insurance || [],
-          counties_served: providerData.attributes.counties_served || [],
+          provider_type: providerData.attributes?.provider_type || [],
+          insurance: providerData.attributes?.insurance || [],
+          counties_served: providerData.attributes?.counties_served || [],
+          locations: providerData.attributes?.locations || [],
         }
       };
 
       setCurrentProvider(safeProviderData);
       setEditedProvider(safeProviderData.attributes);
-      setSelectedProviderTypes(safeProviderData.attributes.provider_type);
-      setSelectedCounties(safeProviderData.attributes.counties_served);
+      setSelectedProviderTypes(safeProviderData.attributes.provider_type || []);
+      setSelectedCounties(safeProviderData.attributes.counties_served || []);
       setProviderState(safeProviderData.states || []);
       setSelectedInsurances(safeProviderData.attributes.insurance || []);
       setLocations(safeProviderData.attributes.locations || []);
@@ -130,7 +123,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       console.error('Error refreshing provider data:', error);
       toast.error('Failed to refresh provider data');
     }
-  };
+  }, [loggedInProvider.id]);
 
   // Initialize provider state and fetch counties for saved states
   useEffect(() => {

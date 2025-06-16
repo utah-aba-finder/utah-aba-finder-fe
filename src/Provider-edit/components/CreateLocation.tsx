@@ -36,7 +36,9 @@ const CreateLocation: React.FC<CreateLocationProps> = ({
     state: '',
     zip: '',
     phone: '',
-    services: []
+    services: [],
+    in_home_waitlist: null,
+    in_clinic_waitlist: null
   });
 
   const [isInsuranceModalOpen, setIsInsuranceModalOpen] = useState(false);
@@ -259,6 +261,34 @@ const CreateLocation: React.FC<CreateLocationProps> = ({
                     </option>
                   ))
                 }
+              </select>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm text-gray-600 mb-2">In-Home Waitlist</label>
+              <p className="text-sm text-gray-500 mb-2">If you don't provide this service please select "No"</p>
+              <select
+                className="w-full rounded-md border border-gray-300 py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={newLocation.in_home_waitlist === true ? "true" : newLocation.in_home_waitlist === false ? "false" : ""}
+                onChange={(e) => setNewLocation({ ...newLocation, in_home_waitlist: e.target.value === "true" })}
+              >
+                <option value="">Select...</option>
+                <option value="true">Yes</option>
+                <option value="false">No</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm text-gray-600 mb-2">In-Clinic Waitlist</label>
+              <p className="text-sm text-gray-500 mb-2">If you don't provide this service please select "No"</p>
+              <select
+                className="w-full rounded-md border border-gray-300 py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={newLocation.in_clinic_waitlist === true ? "true" : newLocation.in_clinic_waitlist === false ? "false" : ""}
+                onChange={(e) => setNewLocation({ ...newLocation, in_clinic_waitlist: e.target.value === "true" })}
+              >
+                <option value="">Select...</option>
+                <option value="true">Yes</option>
+                <option value="false">No</option>
               </select>
             </div>
           </div>

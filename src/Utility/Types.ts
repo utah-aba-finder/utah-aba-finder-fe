@@ -19,6 +19,9 @@ export interface Location {
     zip: string | null;
     phone: string | null;
     services: Service[];
+    in_home_waitlist: boolean | null;
+    in_clinic_waitlist: boolean | null;
+    isNotApplicable?: boolean;
 }
 
 export interface CountiesServed {
