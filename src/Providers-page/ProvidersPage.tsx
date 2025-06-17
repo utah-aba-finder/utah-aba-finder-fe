@@ -9,6 +9,7 @@ import gearImage from "../Assets/Gear@1x-0.5s-200px-200px.svg";
 import Joyride, { Step, STATUS } from "react-joyride";
 import { fetchProviders, fetchProvidersByStateIdAndProviderType, fetchInsurance, fetchCountiesByState } from "../Utility/ApiCall";
 import { Link } from "react-router-dom";
+import { toast } from "react-toastify";
 interface FavoriteDate {
   [providerId: number]: string;
 }
@@ -663,6 +664,38 @@ const ProvidersPage: React.FC = () => {
     }
   }, []);
 
+  useEffect(() => {
+    if (dontShowAgain) {
+      localStorage.setItem('ProvidersModalDontShowAgain', 'true');
+      setShowModal(false);
+    }
+  }, [dontShowAgain]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      toast.info(
+        <div>
+          <p>Are we missing something? Want to be added?</p>
+          <p>Contact us at:</p>
+          <p><a href="mailto:info@autismserviceslocator.com" className="text-blue-600 no-underline">info@autismserviceslocator.com</a></p>
+          <p>or register your account at:</p>
+          <p><a href="mailto:registration@autismserviceslocator.com" className="text-blue-600 no-underline">registration@autismserviceslocator.com</a></p>
+          <p>or signup <a href="/signup" className="text-blue-600 no-underline">HERE</a></p>
+        </div>,
+        {
+          position: "bottom-right",
+          autoClose: 10000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        }
+      );
+    }, 5000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <div className="providers-page">
       <section className="find-your-provider-section">
@@ -701,6 +734,7 @@ const ProvidersPage: React.FC = () => {
                                     <li><strong>Sponsorship Opportunities:</strong> Become a sponsor and support our mission! Sponsors will be featured in a special <strong>Sponsors Section</strong> on our site recognizing their contributions to the autism care community.</li>
                                     <br />
                                     <h3>** If you're a provider and would like to be added to our platform, please <Link to="/signup" className='text-[#4A6FA5]'>sign up</Link>, it's completely free!</h3>
+                                    <h3>Or if you and would like access to your information, please email us at <a href="mailto:registration@autismserviceslocator.com" className='text-[#4A6FA5]'>registration@autismserviceslocator.com</a></h3>
                                     <br />
                                 </ul>
                             </div>
