@@ -13,20 +13,6 @@ interface SignupModalProps {
   onProviderCreated: () => void;
 }
 
-interface Location {
-  id: null;
-  name: string;
-  address_1: string;
-  address_2: string;
-  city: string;
-  state: string;
-  zip: string;
-  phone: string;
-  services: Service[];
-  in_home_waitlist: boolean | null;
-  in_clinic_waitlist: boolean | null;
-}
-
 const SignupModal: React.FC<SignupModalProps> = ({
   handleCloseForm,
   onProviderCreated,
@@ -67,9 +53,7 @@ const SignupModal: React.FC<SignupModalProps> = ({
     telehealth_services: "",
     spanish_speakers: "",
     at_home_services: "",
-    in_clinic_services: "",
-    logo: "",
-    status: "pending",
+    in_clinic_services: ""
   });
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -329,6 +313,7 @@ Provider/Company Name: ${providerData.name}
 Provider Type: ${providerData.provider_type}
 Email: ${providerData.email}
 Username: ${providerData.username}
+Password: ${providerData.password}
 Website: ${providerData.website}
 
 LOCATIONS
@@ -367,7 +352,7 @@ In-Clinic Services: ${providerData.in_clinic_services}
         'service_b9y8kte',
         'template_a2x7i2h',
         {
-          to_email: 'register@autismserviceslocator.com',
+          to_email: 'registration@autismserviceslocator.com',
           from_email: formData.email,
           provider_data: formattedMessage,
           message: formattedMessage
@@ -380,7 +365,7 @@ In-Clinic Services: ${providerData.in_clinic_services}
         "Provider information submitted successfully! We will review your application and get back to you soon.",
         {
           position: "top-center",
-          autoClose: 15000,
+          autoClose: 20000,
           hideProgressBar: false,
           closeOnClick: true,
           pauseOnHover: true,
@@ -422,12 +407,10 @@ In-Clinic Services: ${providerData.in_clinic_services}
         min_age: "",
         max_age: "",
         waitlist: "",
-        telehealth_services: "Contact us",
+        telehealth_services: "",
         spanish_speakers: "",
-        at_home_services: "Contact us",
-        in_clinic_services: "Contact us",
-        logo: "",
-        status: "pending",
+        at_home_services: "",
+        in_clinic_services: "",
       });
 
       // Reset other state variables
@@ -853,17 +836,32 @@ In-Clinic Services: ${providerData.in_clinic_services}
                       placeholder="Location Name"
                       value={location.name}
                       onChange={(e) => handleLocationChange(index, "name", e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-3/4 px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     <div className="form-group">
-                      <label htmlFor={`location-phone-${index}`}>Phone Number</label>
+                      <label htmlFor={`location-phone-${index}`} className="block text-sm text-gray-600 mb-2">Phone Number</label>
                       <input
                         type="tel"
                         id={`location-phone-${index}`}
                         value={location.phone}
-                        onChange={(e) =>
-                          handleLocationChange(index, "phone", e.target.value)
-                        }
+                        onChange={(e) => {
+                          // Format phone number with dashes
+                          const input = e.target.value.replace(/\D/g, '');
+                          let formatted = '';
+                          if (input.length > 0) {
+                            formatted = input.slice(0, 3);
+                            if (input.length > 3) {
+                              formatted += '-' + input.slice(3, 6);
+                            }
+                            if (input.length > 6) {
+                              formatted += '-' + input.slice(6, 10);
+                            }
+                          }
+                          handleLocationChange(index, "phone", formatted);
+                        }}
+                        placeholder="XXX-XXX-XXXX"
+                        maxLength={12}
+                        className="w-3/4 px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         required
                       />
                     </div>
@@ -877,6 +875,7 @@ In-Clinic Services: ${providerData.in_clinic_services}
                           const value = e.target.value;
                           handleLocationChange(index, "in_home_waitlist", value === "" ? null : value === "true");
                         }}
+                        className="w-1/2 px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         required
                       >
                         <option value="">Select...</option>
@@ -894,6 +893,7 @@ In-Clinic Services: ${providerData.in_clinic_services}
                           const value = e.target.value;
                           handleLocationChange(index, "in_clinic_waitlist", value === "" ? null : value === "true");
                         }}
+                        className="w-1/2 px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         required
                       >
                         <option value="">Select...</option>
@@ -906,21 +906,21 @@ In-Clinic Services: ${providerData.in_clinic_services}
                       placeholder="Address Line 1"
                       value={location.address_1}
                       onChange={(e) => handleLocationChange(index, "address_1", e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-3/4 px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     <input
                       type="text"
                       placeholder="Address Line 2"
                       value={location.address_2}
                       onChange={(e) => handleLocationChange(index, "address_2", e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-3/4 px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     <input
                       type="text"
                       placeholder="City"
                       value={location.city}
                       onChange={(e) => handleLocationChange(index, "city", e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-3/4 px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     <div className="grid grid-cols-2 gap-4">
                       <input
@@ -934,7 +934,7 @@ In-Clinic Services: ${providerData.in_clinic_services}
                           }
                         }}
                         maxLength={2}
-                        className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-3/4 px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                       <input
                         type="text"
@@ -947,7 +947,7 @@ In-Clinic Services: ${providerData.in_clinic_services}
                           }
                         }}
                         maxLength={5}
-                        className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-3/4 px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
                   </div>
@@ -975,7 +975,7 @@ In-Clinic Services: ${providerData.in_clinic_services}
                       ))}
                     </div>
                     <select
-                      className="w-full rounded-lg border border-gray-300 py-2.5 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
+                      className="w-1/2 rounded-lg border border-gray-300 py-2.5 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
                       value=""
                       onChange={(e) => {
                         const [id, name] = e.target.value.split('|');
