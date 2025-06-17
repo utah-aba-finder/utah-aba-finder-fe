@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './SearchBar.css';
 import { CountyData, Providers, ProviderAttributes, InsuranceData } from '../Utility/Types';
@@ -397,7 +396,6 @@ const SearchBar: React.FC<SearchBarProps> = ({
           </div>
         </div>
       )}
-      <ToastContainer />
     </section>
   );
 };
