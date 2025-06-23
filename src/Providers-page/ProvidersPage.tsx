@@ -61,6 +61,7 @@ const ProvidersPage: React.FC = () => {
   const [stepIndex, setStepIndex] = useState(0);
   const [showModal, setShowModal] = useState(true);
   const [dontShowAgain, setDontShowAgain] = useState(false);
+  const [isSearchRefined, setIsSearchRefined] = useState(false);
   
   const [steps] = useState<Step[]>([
     {
@@ -257,6 +258,7 @@ const ProvidersPage: React.FC = () => {
       age: string;
     }) => {
       setSelectedStateAbbr(state);
+      setIsSearchRefined(true);
       try {
         setIsLoading(true);
         setFilteredProviders([]); // Reset filtered providers before new search
@@ -452,6 +454,7 @@ const ProvidersPage: React.FC = () => {
     setMapAddress("none");
     setCurrentPage(1);
     setShowError("");
+    setIsSearchRefined(false);
   };
 
   const handleCountyChange = (county: string) => {
@@ -786,6 +789,12 @@ const ProvidersPage: React.FC = () => {
                 <div className="error-message-container">{showError}</div>
               ) : (
                 <div className="card-container">
+                  {!isSearchRefined && (
+                    <>
+                      <p className="text-center text-red-500">Currently showing all providers within the United States.</p>
+                      <p className="text-center text-red-500">If you are looking for a provider in a specific state, please use the search bar to filter by state and provider type.</p>
+                    </>
+                  )}
                   <div
                     className={`provider-cards-grid ${pageTransition ? `page-${pageTransition}` : ""
                       }`}
