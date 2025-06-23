@@ -4,7 +4,7 @@ import { Building2, MapPin, DollarSign, Stethoscope, Plus, X } from "lucide-reac
 import CountiesModal from "../Provider-edit/CountiesModal";
 import { CountiesServed, Insurance, StateData, CountyData, Service } from "../Utility/Types";
 import InsuranceModal from "../Provider-edit/InsuranceModal";
-import { fetchStates, fetchCountiesByState } from "../Utility/ApiCall";
+import { fetchStates, fetchCountiesByState, fetchProviders } from "../Utility/ApiCall";
 import "react-toastify/dist/ReactToastify.css";
 
 interface SuperAdminCreateProps {
@@ -198,11 +198,43 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
     }));
   };
 
+  const getProviderTypeId = (typeName: string): number => {
+    const typeMap: { [key: string]: number } = {
+      "ABA Therapy": 1,
+      "Autism Evaluation": 2,
+      "Speech Therapy": 3,
+      "Occupational Therapy": 4,
+    };
+    return typeMap[typeName] || 1;
+  };
+
+  const checkForDuplicateProvider = async (providerName: string): Promise<boolean> => {
+    try {
+      const providers = await fetchProviders();
+      const existingProvider = providers.data.find(
+        (provider: any) => 
+          provider.attributes.name?.toLowerCase().trim() === providerName.toLowerCase().trim()
+      );
+      return !!existingProvider;
+    } catch (error) {
+      console.error("Error checking for duplicate provider:", error);
+      return false;
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSaving(true);
 
     try {
+      // Check for duplicate provider
+      const isDuplicate = await checkForDuplicateProvider(formData.name);
+      if (isDuplicate) {
+        toast.error(`Provider "${formData.name}" already exists. Please use a different name.`);
+        setIsSaving(false);
+        return;
+      }
+
       const response = await fetch(
         `https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/admin/providers`,
         {
@@ -307,16 +339,6 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
     } finally {
       setIsSaving(false);
     }
-  };
-
-  const getProviderTypeId = (typeName: string): number => {
-    const typeMap: { [key: string]: number } = {
-      "ABA Therapy": 1,
-      "Autism Evaluation": 2,
-      "Speech Therapy": 3,
-      "Occupational Therapy": 4,
-    };
-    return typeMap[typeName] || 1;
   };
 
   return (
