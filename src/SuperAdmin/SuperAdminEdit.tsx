@@ -295,6 +295,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
       }
 
       let responseData;
+      toast.success(`Provider ${editedProvider?.name} updated successfully!`);
       try {
         responseData = JSON.parse(responseText);
       } catch (parseError) {
