@@ -114,6 +114,7 @@ const CreateUser = ({ handleCloseForm }: { handleCloseForm: () => void }) => {
           value={role} 
           onChange={(e) => setRole(e.target.value)}
         >
+            <option value="">Select user role...</option>
             <option value="provider_admin">Provider Admin</option>
             <option value="super_admin">Super Admin</option>
         </select>

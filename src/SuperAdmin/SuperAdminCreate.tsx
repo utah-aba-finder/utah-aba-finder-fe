@@ -20,7 +20,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
     id: null,
     name: "",
     state: "",
-    provider_type: "",
+    provider_type: [] as string[],
     email: "",
     password: "",
     confirmPassword: "",
@@ -34,7 +34,9 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
         state: "",
         zip: "",
         phone: "",
-        services: [] as Service[]
+        services: [] as Service[],
+        in_clinic_waitlist: "",
+        in_home_waitlist: ""
       },
     ],
     insurances: [] as string[],
@@ -62,6 +64,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
   const [availableCounties, setAvailableCounties] = useState<CountyData[]>([]);
   const [activeStateForCounties, setActiveStateForCounties] = useState<string>('');
   const [providerState, setProviderState] = useState<string[]>([]);
+  const [selectedProviderTypes, setSelectedProviderTypes] = useState<string[]>([]);
 
   useEffect(() => {
     const loadStates = async () => {
@@ -150,7 +153,9 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
           state: "",
           zip: "",
           phone: "",
-          services: []
+          services: [],
+          in_clinic_waitlist: "",
+          in_home_waitlist: ""
         },
         ...prev.locations
       ],
@@ -179,6 +184,24 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
 
   const handleInsurancesChange = (selectedInsuranceNames: Insurance[]) => {
     setSelectedInsurances(selectedInsuranceNames);
+  };
+
+  const handleProviderTypeChange = (providerType: string) => {
+    if (providerType && !selectedProviderTypes.includes(providerType)) {
+      setSelectedProviderTypes(prev => [...prev, providerType]);
+      setFormData(prev => ({
+        ...prev,
+        provider_type: [...prev.provider_type, providerType]
+      }));
+    }
+  };
+
+  const removeProviderType = (providerType: string) => {
+    setSelectedProviderTypes(prev => prev.filter(type => type !== providerType));
+    setFormData(prev => ({
+      ...prev,
+      provider_type: prev.provider_type.filter(type => type !== providerType)
+    }));
   };
 
   const handleServiceChange = (locationIndex: number, service: Service) => {
@@ -250,12 +273,10 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
                 states: [formData.state],
                 attributes: {
                   name: formData.name,
-                  provider_type: [
-                    {
-                      id: getProviderTypeId(formData.provider_type),
-                      name: formData.provider_type,
-                    },
-                  ],
+                  provider_type: formData.provider_type.map((type) => ({
+                    id: getProviderTypeId(type),
+                    name: type,
+                  })),
                   locations: formData.locations.map((location) => ({
                     id: location.id,
                     name: location.name,
@@ -299,7 +320,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
         id: null,
         name: "",
         state: "",
-        provider_type: "",
+        provider_type: [],
         email: "",
         password: "",
         confirmPassword: "",
@@ -313,7 +334,9 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
             state: "",
             zip: "",
             phone: "",
-            services: []
+            services: [],
+            in_clinic_waitlist: "",
+            in_home_waitlist: ""
           },
         ],
         insurances: [],
@@ -330,6 +353,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
         logo: "",
         status: "",
       });
+      setSelectedProviderTypes([]);
       setTimeout(() => {
         handleCloseForm();
       }, 3000);
@@ -534,20 +558,45 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
               <label className="block text-sm text-gray-600 mb-2">
                 Provider Type
               </label>
+              <div className="flex flex-wrap gap-2 mb-2">
+                {selectedProviderTypes.map((type) => (
+                  <div
+                    key={type}
+                    className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm flex items-center"
+                  >
+                    <span>{type}</span>
+                    <X 
+                      onClick={() => removeProviderType(type)}
+                      className="ml-2 hover:text-red-500 p-0 border-0 bg-transparent cursor-pointer"
+                    />
+                  </div>
+                ))}
+              </div>
               <select
-                name="provider_type"
-                value={formData.provider_type}
-                onChange={handleChange}
-                className="hover:cursor-pointer w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                required
+                className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                value=""
+                onChange={(e) => {
+                  const selectedType = e.target.value;
+                  if (selectedType) {
+                    handleProviderTypeChange(selectedType);
+                    e.target.value = '';
+                  }
+                }}
               >
-                <option value="" disabled>
-                  Select Provider Type
-                </option>
-                <option value="ABA Therapy">ABA Therapy</option>
-                <option value="Autism Evaluation">Autism Evaluation</option>
-                <option value="Speech Therapy">Speech Therapy</option>
-                <option value="Occupational Therapy">Occupational Therapy</option>
+                <option value="">Add provider type...</option>
+                {[
+                  "ABA Therapy",
+                  "Autism Evaluation", 
+                  "Speech Therapy",
+                  "Occupational Therapy"
+                ]
+                  .filter(type => !selectedProviderTypes.includes(type))
+                  .map(type => (
+                    <option key={type} value={type}>
+                      {type}
+                    </option>
+                  ))
+                }
               </select>
             </div>
 
@@ -722,6 +771,53 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
                     className="w-[90%] px-3 py-2 rounded-lg border border-gray-300 hover:cursor-text focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm"
                   />
                 </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4 mt-4">
+                <div>
+                    <label className="block text-sm text-gray-600 mb-2">In-Clinic Waitlist</label>
+                    <select
+                        id={`location-in-home-waitlist-${index}`}
+                        value={location.in_clinic_waitlist}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          const newLocations = [...formData.locations];
+                          newLocations[index] = {
+                            ...location,
+                            in_clinic_waitlist: value
+                          };
+                          setFormData((prev) => ({ ...prev, locations: newLocations }));
+                        }}
+                        required
+                        className="w-[90%] px-3 py-2 rounded-lg border border-gray-300 hover:cursor-text focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm"
+                      >
+                        <option value="">Select...</option>
+                        <option value="true">Yes</option>
+                        <option value="false">No</option>
+                      </select>
+                </div>
+                <div>
+                    <label className="block text-sm text-gray-600 mb-2">At-Home Waitlist</label>
+                    <select
+                        id={`location-in-home-waitlist-${index}`}
+                        value={location.in_home_waitlist}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          const newLocations = [...formData.locations];
+                          newLocations[index] = {
+                            ...location,
+                            in_home_waitlist: value
+                          };
+                          setFormData((prev) => ({ ...prev, locations: newLocations }));
+                        }}
+                        required
+                        className="w-[90%] px-3 py-2 rounded-lg border border-gray-300 hover:cursor-text focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm"
+                      >
+                        <option value="">Select...</option>
+                        <option value="true">Yes</option>
+                        <option value="false">No</option>
+                      </select>
+                </div>
+                
               </div>
               <div className="mt-6">
                 <label className="block text-sm text-gray-600 mb-2">

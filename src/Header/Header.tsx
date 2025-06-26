@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { ChevronDown } from "lucide-react";
-import Logo from "../Assets/autismserviceslocator_logo.png";
+import Logo from "../Assets/NewHeaderLogo2.png";
 
 const navigationItems = [
   { name: "Home", href: "/" },
@@ -60,7 +60,7 @@ const Header = () => {
               <img
                 src={Logo}
                 alt="Autism Services Locator Logo"
-                className="h-[4rem] lg:h-[4.8rem] w-500px max-w-[280px] lg:max-w-[500px]  object-contain"
+                className="h-[8rem] lg:h-[12rem] w-[300px] max-w-[280px] lg:max-w-[300px]  object-contain"
               />
             </Link>
 
