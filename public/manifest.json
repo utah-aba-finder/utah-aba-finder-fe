@@ -1,6 +1,7 @@
 {
   "short_name": "ASL",
   "name": "Autism Services Locator",
+  "version": "1.0.0",
   "icons": [
     {
       "src": "ASL_5.2.png"

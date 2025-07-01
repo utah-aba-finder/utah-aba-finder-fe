@@ -19,9 +19,9 @@ const navigationItems = [
     ],
   },
   { 
-    name: "Donate", 
+    name: "Help Us Grow", 
     href: "/donate",
-    
+    isSpecial: true
   },
   {
     name: "Resources",
@@ -60,7 +60,7 @@ const Header = () => {
               <img
                 src={Logo}
                 alt="Autism Services Locator Logo"
-                className="h-[8rem] lg:h-[12rem] w-[300px] max-w-[280px] lg:max-w-[300px]  object-contain"
+                className="h-[8rem] lg:h-[12rem] w-[200px] max-w-[280px] lg:max-w-[200px]  object-contain"
               />
             </Link>
 
@@ -79,7 +79,11 @@ const Header = () => {
                     ) : (
                       <Link
                         to={item.href}
-                        className="text-[#332d29] hover:text-[#4A6FA5] xl:text-lg lg:text-base font-semibold no-underline"
+                        className={`xl:text-lg lg:text-base font-semibold no-underline ${
+                          item.isSpecial 
+                            ? 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105' 
+                            : 'text-[#332d29] hover:text-[#4A6FA5]'
+                        }`}
                       >
                         {item.name}
                       </Link>
@@ -186,8 +190,11 @@ const Header = () => {
               ) : (
                 <Link
                   to={item.href}
-                  className="block py-4 px-6 text-[#332d29] hover:text-[#4A6FA5] 
-                        text-xl font-bold no-underline"
+                  className={`block py-4 px-6 text-xl font-bold no-underline ${
+                    item.isSpecial 
+                      ? 'bg-gradient-to-r from-green-500 to-green-600 text-white mx-4 rounded-lg shadow-md text-center' 
+                      : 'text-[#332d29] hover:text-[#4A6FA5]'
+                  }`}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   {item.name}

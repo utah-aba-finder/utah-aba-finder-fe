@@ -29,11 +29,19 @@ const Donations = () => {
     return (
         <div>
             <div className='donateBannerContainer'>
-                <img src={donateBanner} alt="Donate Banner" className='loginBanner' />
-                <h1 className='donateBannerTitle'>Donate</h1>
+                <img src={donateBanner} alt="Help Us Grow Banner" className='loginBanner' />
+                <h1 className='donateBannerTitle'>Help Us Grow</h1>
             </div>
-            <div className='donation-message'>
-                <p>Thank you for your interest in supporting Autism Services Locator. We are a 501(c)(3) non-profit organization dedicated to connecting families with autism services. Your donation helps us maintain our free resource platform, ensuring up-to-date information for those seeking support.</p>
+            <div className='donateContent'>
+                <h2>Support Our Mission to Expand Autism Services</h2>
+                <p><strong>Help Us Grow</strong> and join us in expanding our directory and outreach to serve more families in the autism community.</p>
+                <p>Your support helps us:</p>
+                <ul>
+                    <li>Hire part-time staff to expand our provider directory</li>
+                    <li>Reach more families across the United States</li>
+                    <li>Improve our platform and services</li>
+                    <li>Provide better support to the autism community</li>
+                </ul>
                 <p>Donations are tax-deductible and you will receive an email receipt upon completion. Please note that we are not a licensed medical provider and cannot offer direct medical advice or services.</p>
                 <p>By supporting us, you're helping families navigate the complex world of autism resources more easily. Your contribution allows us to:</p> <ul> <li>Maintain our comprehensive database of local providers</li> <li>Continuously update information to reflect current best practices</li> <li>Expand our reach to support even more families</li> </ul>
                 <p>You are also helping us to continue to provide this service for free and also create another resource for individuals to connect with other like minded individuals and create/host events near them! Lookout for our site/application <strong>Neurodiversity Friends!</strong></p>

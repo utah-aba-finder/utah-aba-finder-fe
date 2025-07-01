@@ -327,6 +327,8 @@ State: ${location.state}
 ZIP: ${location.zip}
 Phone: ${location.phone}
 Services: ${location.services}
+In-Home Waitlist: ${location.in_home_waitlist === true ? "Yes" : location.in_home_waitlist === false ? "No" : "Not specified"}
+In-Clinic Waitlist: ${location.in_clinic_waitlist === true ? "Yes" : location.in_clinic_waitlist === false ? "No" : "Not specified"}
 `).join('\n')}
 
 COVERAGE AREA

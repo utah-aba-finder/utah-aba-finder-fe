@@ -721,6 +721,7 @@ const ProvidersPage: React.FC = () => {
         />
         <h1 className="providers-banner-title">Find Your Provider</h1>
       </section>
+      
       <main>
         <div className="provider-page-search-cards-section">
           {showModal && (

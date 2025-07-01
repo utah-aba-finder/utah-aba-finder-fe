@@ -203,14 +203,40 @@
 }
 
 @keyframes pulse {
-  0%, 100% {
-    opacity: 1;
+  0% {
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
   }
   50% {
-    opacity: 0.5;
+    box-shadow: 0 4px 25px rgba(40, 167, 69, 0.5);
+  }
+  100% {
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
   }
 }
 
 .animate-pulse {
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.help-us-grow-section {
+  position: relative;
+  z-index: 10;
+}
+
+/* Responsive styling for help-us-grow section */
+@media (max-width: 768px) {
+  .help-us-grow-section {
+    padding: 20px 10px !important;
+  }
+  
+  .help-us-grow-section > div {
+    position: static !important;
+    transform: none !important;
+    margin-top: 15px;
+  }
+  
+  .help-us-grow-section p {
+    padding-right: 0 !important;
+    margin-bottom: 15px;
+  }
 }

@@ -416,7 +416,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({
             </div>
 
             <button type="submit" disabled={!stripe} style={{ padding: '10px 20px', backgroundColor: '#28a745', color: '#fff', border: 'none', borderRadius: '5px', cursor: 'pointer', fontSize: '1.1rem' }}>
-                Donate Now
+                Help Us Grow
             </button>
         </form>
         
