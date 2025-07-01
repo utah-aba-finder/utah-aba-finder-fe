@@ -30,7 +30,9 @@ import { fetchProviders } from "../Utility/ApiCall";
 import { SuperAdminEdit } from "../SuperAdmin/SuperAdminEdit";
 import FavoriteProviders from "../FavoriteProviders-page/FavoriteProviders";
 import ServiceDisclaimer from "../Footer/servicedisclaimer";
-import Careers from "../Footer/Careers";  
+import Careers from "../Footer/Careers";
+import { handleMobileIssues } from "../Utility/cacheUtils";
+
 function App() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [loggedInProvider, setLoggedInProvider] =
@@ -40,6 +42,22 @@ function App() {
   const clearProviderData = () => {
     setLoggedInProvider(null);
   };
+
+  // Mobile-specific cache clearing and error handling
+  useEffect(() => {
+    // Use the utility function to handle mobile issues
+    handleMobileIssues();
+
+    // Force reload if there are any console errors related to cached content
+    const originalError = console.error;
+    console.error = (...args) => {
+      if (args[0] && typeof args[0] === 'string' && 
+          (args[0].includes('Failed to load') || args[0].includes('under construction'))) {
+        window.location.reload();
+      }
+      originalError.apply(console, args);
+    };
+  }, []);
 
   useEffect(() => {
     const fetchAllProviders = async () => {

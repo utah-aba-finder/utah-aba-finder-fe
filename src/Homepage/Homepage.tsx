@@ -208,9 +208,9 @@ class Homepage extends Component<Props, State> {
                     </div>
                 </div>
 
-                {/* Donate Button */}
+                {/* Help Us Grow Button */}
                 <Link to="/donate" className="floating-donate-button">
-                    Donate
+                    Help Us Grow
                 </Link>
 
                 {/* Sponsors Section */}

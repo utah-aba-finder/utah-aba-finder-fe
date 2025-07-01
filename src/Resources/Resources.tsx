@@ -45,22 +45,81 @@ const Resources = () => {
                     <hr className="divider" />
                     <p className="resources-content-description">Click below to download/print the document to handout</p>
                     <div className="provider-info-container">
-                        <a 
-                            href={require('../Assets/provider_handout.pdf')}
-                            download="provider_handout.pdf"
-                            className="provider-info-link"
-                        >
-                            <object
-                                data={require('../Assets/provider_handout.pdf')}
-                                type="application/pdf"
-                                width="100%"
-                                height="500px"
-                                className="pdf-preview"
-                                // style={{ width: '100%', height: '50vh' }}
+                        <div className="provider-actions">
+                            <a 
+                                href={require('../Assets/ProviderHandout.png')}
+                                download="provider_handout.png"
+                                className="provider-info-link"
                             >
-                                <p>Your browser does not support PDF preview. Click here to download.</p>
-                            </object>
-                        </a>
+                                Download Printable Image
+                            </a>
+                            <button 
+                                onClick={() => {
+                                    const printWindow = window.open('', '_blank');
+                                    if (printWindow) {
+                                        printWindow.document.write(`
+                                            <!DOCTYPE html>
+                                            <html>
+                                            <head>
+                                                <title>Provider Handout - Print</title>
+                                                <style>
+                                                    @media print {
+                                                        @page {
+                                                            margin: 0;
+                                                            size: letter;
+                                                        }
+                                                        body {
+                                                            margin: 0;
+                                                            padding: 0;
+                                                        }
+                                                        img {
+                                                            width: 100vw;
+                                                            height: 100vh;
+                                                            object-fit: contain;
+                                                            display: block;
+                                                        }
+                                                    }
+                                                    body {
+                                                        margin: 0;
+                                                        padding: 0;
+                                                        display: flex;
+                                                        justify-content: center;
+                                                        align-items: center;
+                                                        min-height: 100vh;
+                                                    }
+                                                    img {
+                                                        max-width: 100%;
+                                                        max-height: 100vh;
+                                                        object-fit: contain;
+                                                    }
+                                                </style>
+                                            </head>
+                                            <body>
+                                                <img src="${require('../Assets/ProviderHandout.png')}" alt="Provider Handout" />
+                                                <script>
+                                                    window.onload = function() {
+                                                        window.print();
+                                                    }
+                                                </script>
+                                            </body>
+                                            </html>
+                                        `);
+                                        printWindow.document.close();
+                                    }
+                                }}
+                                className="provider-print-button"
+                            >
+                                Print
+                            </button>
+                        </div>
+                        <img
+                            src={require('../Assets/ProviderHandout.png')}
+                            alt="Provider Handout Preview"
+                            width="100%"
+                            height="500px"
+                            className="png-preview"
+                            style={{ objectFit: 'contain', maxHeight: '500px' }}
+                        />
                         </div>
                     </div>
                 ) : null}
