@@ -282,6 +282,8 @@ const SignupModal: React.FC<SignupModalProps> = ({
     try {
       const providerData = {
         name: formData.name,
+        registrant_name: formData.registrant_name,
+        affiliation: formData.affiliation,
         provider_type: formData.provider_type.map(type => type.name).join(", "),
         email: formData.email,
         username: formData.username,
@@ -310,6 +312,8 @@ New Provider Registration
 BASIC INFORMATION
 ----------------
 Provider/Company Name: ${providerData.name}
+Registrant Name: ${providerData.registrant_name}
+Affiliation: ${providerData.affiliation}
 Provider Type: ${providerData.provider_type}
 Email: ${providerData.email}
 Username: ${providerData.username}
@@ -869,7 +873,7 @@ In-Clinic Services: ${providerData.in_clinic_services}
                     </div>
                     <div className="form-group">
                       <label htmlFor={`location-in-home-waitlist-${index}`}>In-Home Waitlist</label>
-                      <p className="text-sm text-gray-500 mb-2">If you don't provide this service please select "No"</p>
+                      <p className="text-sm text-gray-500 mb-2">If you don't provide this service or don't have a waitlist please select "No". If you put 'Contact Us' please put 'Yes'.</p>
                       <select
                         id={`location-in-home-waitlist-${index}`}
                         value={location.in_home_waitlist === true ? "true" : location.in_home_waitlist === false ? "false" : ""}
@@ -887,7 +891,7 @@ In-Clinic Services: ${providerData.in_clinic_services}
                     </div>
                     <div className="form-group">
                       <label htmlFor={`location-in-clinic-waitlist-${index}`}>In-Clinic Waitlist</label>
-                      <p className="text-sm text-gray-500 mb-2">If you don't provide this service please select "No"</p>
+                      <p className="text-sm text-gray-500 mb-2">If you don't provide this service or don't have a waitlist please select "No". If you put 'Contact Us' please put 'Yes'.</p>
                       <select
                         id={`location-in-clinic-waitlist-${index}`}
                         value={location.in_clinic_waitlist === true ? "true" : location.in_clinic_waitlist === false ? "false" : ""}
