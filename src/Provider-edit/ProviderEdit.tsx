@@ -100,6 +100,9 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       const data = await response.json();
       const providerData = data.data?.[0] || {};
       
+      console.log('Refreshed provider data:', providerData); // Debug log
+      console.log('Provider locations:', providerData.attributes?.locations); // Debug log
+      
       // Ensure we have all required properties with defaults
       const safeProviderData = {
         ...providerData,
@@ -119,6 +122,8 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       setProviderState(safeProviderData.states || []);
       setSelectedInsurances(safeProviderData.attributes.insurance || []);
       setLocations(safeProviderData.attributes.locations || []);
+      
+      console.log('Updated locations state:', safeProviderData.attributes.locations); // Debug log
     } catch (error) {
       console.error('Error refreshing provider data:', error);
       toast.error('Failed to refresh provider data');
@@ -283,6 +288,10 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
   const handleSaveChanges = async () => {
     try {
       setIsLoading(true);
+      
+      // Ensure we preserve the current locations and don't overwrite them
+      const currentLocations = locations || currentProvider?.attributes?.locations || [];
+      
       const updatedAttributes = {
         ...editedProvider,
         provider_type: selectedProviderTypes.map(type => ({
@@ -291,10 +300,12 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
         })),
         insurance: selectedInsurances,
         counties_served: selectedCounties,
-        locations: locations,
+        locations: currentLocations, // Explicitly preserve locations
         states: providerState,
-        services: locations.map(location => location.services).flat(),
+        services: currentLocations.map(location => location.services || []).flat(),
       };
+
+      console.log('Saving provider with locations:', currentLocations); // Debug log
 
       const response = await fetch(
         `https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/providers/${loggedInProvider.id}`,
@@ -319,6 +330,8 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       }
 
       const responseData = await response.json();
+      console.log('Server response:', responseData); // Debug log
+      
       onUpdate(responseData.data.attributes);
       await refreshProviderData(); // Refresh the data from the server
       toast.success("Changes saved successfully!");

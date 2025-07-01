@@ -45,12 +45,14 @@ const CreateUser = ({ handleCloseForm }: { handleCloseForm: () => void }) => {
             console.log(data);
             toast.success("User created successfully");
             resetForm();
+            // Close form only after successful creation
+            handleCloseForm();
         })
         .catch(error => {
             console.error("Error creating user:", error);
             toast.error("Error creating user");
+            // Don't close form on error so user can fix and retry
         });
-        handleCloseForm();
     };
 
 

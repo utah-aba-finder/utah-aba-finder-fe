@@ -61,7 +61,12 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
   const [isCountiesModalOpen, setIsCountiesModalOpen] = useState(false);
   const [selectedCounties, setSelectedCounties] = useState<CountiesServed[]>([]);
   const [selectedInsurances, setSelectedInsurances] = useState<Insurance[]>([]);
-  const [locations, setLocations] = useState<ProviderLocation[]>([]);
+  const [locations, setLocations] = useState<ProviderLocation[]>(
+    provider.attributes.locations?.map(location => ({
+      ...location,
+      services: location.services || []
+    })) || []
+  );
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [services, setServices] = useState<Service[]>([]);
@@ -76,14 +81,17 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
 
   useEffect(() => {
     if (provider) {
+      console.log('SuperAdminEdit: Initializing provider with locations:', provider.attributes.locations); // Debug log
       setEditedProvider(provider.attributes);
       setProviderState(provider.states || []);
       setSelectedCounties(provider.attributes.counties_served || []);
       setSelectedInsurances(provider.attributes.insurance || []);
-      setLocations(provider.attributes.locations.map(location => ({
+      const mappedLocations = provider.attributes.locations.map(location => ({
         ...location,
         services: location.services || []
-      })) || []);
+      })) || [];
+      console.log('SuperAdminEdit: Setting locations to:', mappedLocations); // Debug log
+      setLocations(mappedLocations);
       setSelectedProviderTypes(provider.attributes.provider_type || []);
       setIsLoading(false);
     }
@@ -231,6 +239,8 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
+    console.log('SuperAdminEdit: Starting submit with locations:', locations); // Debug log
+    
     // Validate all locations first
     if (!validateLocations()) {
       return;
@@ -255,6 +265,8 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
         services: location.services
       }));
 
+      console.log('SuperAdminEdit: Filtered locations being sent:', filteredLocations); // Debug log
+
       const requestBody = {
         data: [{
           id: provider.id,
@@ -273,6 +285,8 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
           },
         }],
       };
+
+      console.log('SuperAdminEdit: Request body being sent:', requestBody); // Debug log
 
       const response = await fetch(
         `https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/admin/providers/${provider.id}`,

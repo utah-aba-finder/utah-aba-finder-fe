@@ -73,12 +73,19 @@ function App() {
   }, []);
 
   const handleProviderUpdate = (updatedProvider: ProviderAttributes) => {
+    console.log('App: Updating provider with data:', updatedProvider); // Debug log
+    console.log('App: Provider locations:', updatedProvider.locations); // Debug log
+    
     setAllProviders((prevProviders) =>
       prevProviders.map((provider) =>
         provider.id === updatedProvider.id
           ? {
               ...provider,
-              attributes: updatedProvider
+              attributes: {
+                ...updatedProvider,
+                // Ensure locations are preserved
+                locations: updatedProvider.locations || provider.attributes.locations || []
+              }
             }
           : provider
       )
