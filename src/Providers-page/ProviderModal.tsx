@@ -4,6 +4,7 @@ import GoogleMap from './GoogleMap';
 import { MapPin, Phone, Globe, Mail, Briefcase } from 'lucide-react'
 import { useEffect, useState } from 'react';
 import moment from 'moment';
+import GoogleReviewsSection from './GoogleReviewsSection';
 
 interface Location {
   name?: string | null;
@@ -269,7 +270,14 @@ const ProviderModal: React.FC<ProviderModalProps> = ({
           </div>
         </section>;
       case 'reviews':
-        return <section className="review-section">Client testimonial content will go here</section>;
+        return (
+          <GoogleReviewsSection 
+            providerName={provider.attributes.name || ''}
+            providerAddress={primaryLocation ? `${primaryLocation.address_1 || ''} ${primaryLocation.city || ''} ${primaryLocation.state || ''}` : ''}
+            providerWebsite={provider.attributes.website || undefined}
+            googleApiKey={process.env.REACT_APP_GOOGLE_PLACES_API_KEY || ''}
+          />
+        );
       case 'media':
         return <section className="media-section">Media content will go here</section>;
       default:

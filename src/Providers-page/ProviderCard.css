@@ -400,3 +400,24 @@
 .provider-cards-grid.animating {
     pointer-events: none;
 }
+
+/* Reviews Badge */
+.reviews-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: linear-gradient(135deg, #4285f4, #34a853);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    z-index: 10;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.reviews-badge-text {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}

@@ -50,7 +50,10 @@ const ProvidersPage: React.FC = () => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedStateId, setSelectedStateId] = useState<string>("");
   const [selectedStateAbbr, setSelectedStateAbbr] = useState<string | null>(null);
+  const [selectedHasReviews, setSelectedHasReviews] = useState<string>("");
   const [counties, setCounties] = useState<CountyData[]>([]);
+  const [providersWithReviews, setProvidersWithReviews] = useState<Set<number>>(new Set());
+  const [isCheckingReviews, setIsCheckingReviews] = useState(false);
   const providersPerPage = 10;
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [pageTransition, setPageTransition] = useState<"next" | "prev" | null>(
@@ -244,7 +247,8 @@ const ProvidersPage: React.FC = () => {
       spanish,
       service,
       waitlist,
-      age
+      age,
+      hasReviews
     }: {
       state: string;
       stateId: string;
@@ -256,6 +260,7 @@ const ProvidersPage: React.FC = () => {
       service: string;
       waitlist: string;
       age: string;
+      hasReviews: string;
     }) => {
       setSelectedStateAbbr(state);
       setIsSearchRefined(true);
@@ -382,10 +387,21 @@ const ProvidersPage: React.FC = () => {
               return nameA.localeCompare(nameB);
             });
 
-          setFilteredProviders(filtered);
+          // Apply reviews filter if selected
+          let finalFiltered = filtered;
+          if (hasReviews) {
+            setIsCheckingReviews(true);
+            try {
+              finalFiltered = await filterProvidersByReviews(filtered);
+            } finally {
+              setIsCheckingReviews(false);
+            }
+          }
+          
+          setFilteredProviders(finalFiltered);
           
           // Show message if no providers found after filtering
-          if (filtered.length === 0) {
+          if (finalFiltered.length === 0) {
             setShowError('No providers found matching your search criteria. Please try adjusting your filters.');
           } else {
             setShowError(''); // Clear error if providers found
@@ -614,6 +630,71 @@ const ProvidersPage: React.FC = () => {
     setSelectedAge(age);
   };
 
+  const handleReviewsChange = (hasReviews: string) => {
+    setSelectedHasReviews(hasReviews);
+  };
+
+  // Function to check if a provider has Google reviews
+  const checkProviderHasReviews = async (provider: ProviderAttributes): Promise<boolean> => {
+    try {
+      const googleApiKey = process.env.REACT_APP_GOOGLE_PLACES_API_KEY;
+      if (!googleApiKey) return false;
+
+      const { GooglePlacesAPI } = await import('../Utility/GooglePlacesAPI');
+      const googlePlaces = new GooglePlacesAPI(googleApiKey);
+      
+      const primaryLocation = provider.locations[0];
+      const address = primaryLocation ? `${primaryLocation.address_1 || ''} ${primaryLocation.city || ''} ${primaryLocation.state || ''}` : '';
+      
+      const result = await googlePlaces.searchAndGetReviews(
+        provider.name || '', 
+        address, 
+        provider.website || undefined
+      );
+      
+      return result.placeDetails !== null && result.reviews.length > 0;
+    } catch (error) {
+      console.error('Error checking reviews for provider:', provider.name, error);
+      return false;
+    }
+  };
+
+  // Function to filter providers based on reviews
+  const filterProvidersByReviews = async (providers: ProviderAttributes[]): Promise<ProviderAttributes[]> => {
+    if (!selectedHasReviews) return providers;
+
+    const reviewsMap = new Map<number, boolean>();
+    
+    // Check reviews for all providers in parallel
+    const reviewChecks = providers.map(async (provider) => {
+      const hasReviews = await checkProviderHasReviews(provider);
+      reviewsMap.set(provider.id, hasReviews);
+      return { provider, hasReviews };
+    });
+
+    await Promise.all(reviewChecks);
+
+    // Update the providers with reviews set
+    const providersWithReviewsSet = new Set<number>();
+    reviewsMap.forEach((hasReviews, providerId) => {
+      if (hasReviews) {
+        providersWithReviewsSet.add(providerId);
+      }
+    });
+    setProvidersWithReviews(providersWithReviewsSet);
+
+    // Filter based on selection
+    return providers.filter(provider => {
+      const hasReviews = reviewsMap.get(provider.id) || false;
+      if (selectedHasReviews === 'has_reviews') {
+        return hasReviews;
+      } else if (selectedHasReviews === 'no_reviews') {
+        return !hasReviews;
+      }
+      return true;
+    });
+  };
+
   const renderViewOnMapButton = (provider: ProviderAttributes) => {
     const isAddressAvailable =
       provider.locations.length > 0 && provider.locations[0]?.address_1;
@@ -770,6 +851,7 @@ const ProvidersPage: React.FC = () => {
             onServiceChange={handleServiceChange}
             onWaitListChange={handleWaitListChange}
             onAgeChange={handleAgeChange}
+            onReviewsChange={handleReviewsChange}
             onProviderTypeChange={handleProviderTypeChange}
             onReset={handleResetSearch}
           />
@@ -788,6 +870,17 @@ const ProvidersPage: React.FC = () => {
                 </div>
               ) : showError ? (
                 <div className="error-message-container">{showError}</div>
+              ) : isCheckingReviews ? (
+                <div className="flex items-center justify-center min-h-[400px]">
+                  <div className="text-center">
+                    <img
+                      src={gearImage}
+                      alt="Checking reviews..."
+                      className="loading-gear w-16 h-16 mx-auto mb-4"
+                    />
+                    <p className="text-lg text-gray-600">Checking Google reviews...</p>
+                  </div>
+                </div>
               ) : (
                 <div className="card-container">
                   {!isSearchRefined && (
@@ -795,6 +888,13 @@ const ProvidersPage: React.FC = () => {
                       <p className="text-center text-red-500">Currently showing all providers within the United States.</p>
                       <p className="text-center text-red-500">If you are looking for a provider in a specific state, please use the search bar to filter by state and provider type.</p>
                     </>
+                  )}
+                  {selectedHasReviews && providersWithReviews.size > 0 && (
+                    <div className="text-center mb-4">
+                      <p className="text-green-600 font-semibold">
+                        ⭐ {providersWithReviews.size} provider{providersWithReviews.size !== 1 ? 's' : ''} with Google reviews found
+                      </p>
+                    </div>
                   )}
                   <div
                     className={`provider-cards-grid ${pageTransition ? `page-${pageTransition}` : ""
@@ -816,6 +916,7 @@ const ProvidersPage: React.FC = () => {
                           )}
                           favoritedDate={favoriteDates[provider.id]}
                           selectedState={selectedStateAbbr === 'none' ? '' : selectedStateAbbr || ''}
+                          hasReviews={providersWithReviews.has(provider.id)}
                         />
                       </div>
                     ))}
