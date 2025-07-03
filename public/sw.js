@@ -1,5 +1,5 @@
 /* eslint-disable no-restricted-globals */
-const CACHE_NAME = 'autism-services-locator-v1.0.2';
+const CACHE_NAME = 'autism-services-locator-v1.0.3';
 const urlsToCache = [
   '/',
   '/index.html',

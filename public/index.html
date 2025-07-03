@@ -54,14 +54,6 @@
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        // Unregister any existing service workers first
-        navigator.serviceWorker.getRegistrations().then(function(registrations) {
-          for(let registration of registrations) {
-            registration.unregister();
-          }
-        });
-        
-        // Register new service worker
         navigator.serviceWorker.register('/sw.js', {
           scope: '/',
           updateViaCache: 'none'

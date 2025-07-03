@@ -10,88 +10,146 @@
             max-width: 600px;
             margin: 50px auto;
             padding: 20px;
-            line-height: 1.6;
+            background-color: #f5f5f5;
         }
-        .button {
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        button {
             background-color: #007bff;
             color: white;
-            padding: 12px 24px;
             border: none;
-            border-radius: 4px;
+            padding: 12px 24px;
+            border-radius: 5px;
             cursor: pointer;
             font-size: 16px;
             margin: 10px 5px;
         }
-        .button:hover {
+        button:hover {
             background-color: #0056b3;
         }
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
         .success {
-            color: green;
-            font-weight: bold;
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
         }
         .error {
-            color: red;
-            font-weight: bold;
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
         }
     </style>
 </head>
 <body>
-    <h1>Clear Browser Cache</h1>
-    <p>If you're experiencing certificate issues on mobile browsers, try clearing your browser cache:</p>
-    
-    <h2>For Mobile Browsers:</h2>
-    <ul>
-        <li><strong>Safari (iOS):</strong> Settings > Safari > Clear History and Website Data</li>
-        <li><strong>Chrome (Android):</strong> Settings > Privacy and Security > Clear browsing data</li>
-        <li><strong>Firefox (Mobile):</strong> Settings > Privacy and Security > Clear private data</li>
-    </ul>
-    
-    <h2>For Desktop Browsers:</h2>
-    <ul>
-        <li><strong>Chrome:</strong> Ctrl+Shift+Delete (Windows) or Cmd+Shift+Delete (Mac)</li>
-        <li><strong>Firefox:</strong> Ctrl+Shift+Delete (Windows) or Cmd+Shift+Delete (Mac)</li>
-        <li><strong>Safari:</strong> Develop > Empty Caches (enable Develop menu in Preferences > Advanced)</li>
-    </ul>
-    
-    <button class="button" onclick="clearServiceWorker()">Clear Service Worker Cache</button>
-    <button class="button" onclick="clearBrowserCache()">Clear Browser Cache</button>
-    <button class="button" onclick="goToMainSite()">Go to Main Site</button>
-    
-    <div id="status"></div>
-    
+    <div class="container">
+        <h1>Clear Cache & Service Worker</h1>
+        <p>If you're experiencing issues with the site on mobile browsers, try clearing the cache and service worker:</p>
+        
+        <button onclick="clearAllCaches()">Clear All Caches</button>
+        <button onclick="unregisterServiceWorker()">Unregister Service Worker</button>
+        <button onclick="clearAll()">Clear Everything & Reload</button>
+        
+        <div id="status" class="status"></div>
+        
+        <div style="margin-top: 30px;">
+            <h3>Manual Steps for Mobile Browsers:</h3>
+            <ol>
+                <li><strong>Safari (iOS):</strong> Settings → Safari → Clear History and Website Data</li>
+                <li><strong>Chrome (Android):</strong> Settings → Privacy and Security → Clear browsing data</li>
+                <li><strong>Firefox (Mobile):</strong> Settings → Privacy and Security → Clear private data</li>
+            </ol>
+        </div>
+    </div>
+
     <script>
-        function clearServiceWorker() {
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.getRegistrations().then(function(registrations) {
-                    for(let registration of registrations) {
-                        registration.unregister();
-                    }
-                    document.getElementById('status').innerHTML = '<p class="success">Service worker cache cleared successfully!</p>';
-                });
-            } else {
-                document.getElementById('status').innerHTML = '<p class="error">Service worker not supported in this browser.</p>';
-            }
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+            status.style.display = 'block';
         }
-        
-        function clearBrowserCache() {
-            if ('caches' in window) {
-                caches.keys().then(function(cacheNames) {
-                    return Promise.all(
-                        cacheNames.map(function(cacheName) {
-                            return caches.delete(cacheName);
-                        })
+
+        async function clearAllCaches() {
+            try {
+                if ('caches' in window) {
+                    const cacheNames = await caches.keys();
+                    await Promise.all(
+                        cacheNames.map(cacheName => caches.delete(cacheName))
                     );
-                }).then(function() {
-                    document.getElementById('status').innerHTML = '<p class="success">Browser cache cleared successfully!</p>';
-                });
-            } else {
-                document.getElementById('status').innerHTML = '<p class="error">Cache API not supported in this browser.</p>';
+                    showStatus(`Cleared ${cacheNames.length} caches successfully!`, 'success');
+                } else {
+                    showStatus('Cache API not supported in this browser', 'error');
+                }
+            } catch (error) {
+                showStatus(`Error clearing caches: ${error.message}`, 'error');
             }
         }
-        
-        function goToMainSite() {
-            window.location.href = '/';
+
+        async function unregisterServiceWorker() {
+            try {
+                if ('serviceWorker' in navigator) {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    await Promise.all(
+                        registrations.map(registration => registration.unregister())
+                    );
+                    showStatus(`Unregistered ${registrations.length} service workers!`, 'success');
+                } else {
+                    showStatus('Service Worker API not supported in this browser', 'error');
+                }
+            } catch (error) {
+                showStatus(`Error unregistering service workers: ${error.message}`, 'error');
+            }
         }
+
+        async function clearAll() {
+            try {
+                // Clear caches
+                if ('caches' in window) {
+                    const cacheNames = await caches.keys();
+                    await Promise.all(
+                        cacheNames.map(cacheName => caches.delete(cacheName))
+                    );
+                }
+
+                // Unregister service workers
+                if ('serviceWorker' in navigator) {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    await Promise.all(
+                        registrations.map(registration => registration.unregister())
+                    );
+                }
+
+                // Clear localStorage and sessionStorage
+                localStorage.clear();
+                sessionStorage.clear();
+
+                showStatus('All caches, service workers, and storage cleared! Reloading page...', 'success');
+                
+                // Reload after a short delay
+                setTimeout(() => {
+                    window.location.reload(true);
+                }, 2000);
+            } catch (error) {
+                showStatus(`Error during cleanup: ${error.message}`, 'error');
+            }
+        }
+
+        // Show initial status
+        showStatus('Ready to clear cache and service worker. Click a button above to proceed.', 'info');
     </script>
 </body>
 </html> 
