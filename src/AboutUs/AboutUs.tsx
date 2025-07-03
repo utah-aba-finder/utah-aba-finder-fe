@@ -1,7 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import LinkedinIcon from "../Assets/linkedin-icon.png";
-import smileIcon from "../Assets/smile-icon.png";
 import githubIcon from "../Assets/github-icon.png";
 import seongPic from "../Assets/seong-pic.jpg";
 import jordanPic from "../Assets/jordan-pic.jpg";
@@ -10,7 +9,6 @@ import cheePic from "../Assets/chee-pic.png";
 import austinPic from "../Assets/austin-pic.png";
 import intern1 from "../Assets/GarrettBowman.jpeg";
 import intern2 from "../Assets/KimEwing.jpeg";
-import intern3 from "../Assets/JarvisBailey.jpeg";
 
 import "./AboutUs.css";
 
