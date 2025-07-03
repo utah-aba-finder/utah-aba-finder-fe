@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clear Cache - Autism Services Locator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        .button:hover {
+            background-color: #0056b3;
+        }
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Clear Browser Cache</h1>
+    <p>If you're experiencing certificate issues on mobile browsers, try clearing your browser cache:</p>
+    
+    <h2>For Mobile Browsers:</h2>
+    <ul>
+        <li><strong>Safari (iOS):</strong> Settings > Safari > Clear History and Website Data</li>
+        <li><strong>Chrome (Android):</strong> Settings > Privacy and Security > Clear browsing data</li>
+        <li><strong>Firefox (Mobile):</strong> Settings > Privacy and Security > Clear private data</li>
+    </ul>
+    
+    <h2>For Desktop Browsers:</h2>
+    <ul>
+        <li><strong>Chrome:</strong> Ctrl+Shift+Delete (Windows) or Cmd+Shift+Delete (Mac)</li>
+        <li><strong>Firefox:</strong> Ctrl+Shift+Delete (Windows) or Cmd+Shift+Delete (Mac)</li>
+        <li><strong>Safari:</strong> Develop > Empty Caches (enable Develop menu in Preferences > Advanced)</li>
+    </ul>
+    
+    <button class="button" onclick="clearServiceWorker()">Clear Service Worker Cache</button>
+    <button class="button" onclick="clearBrowserCache()">Clear Browser Cache</button>
+    <button class="button" onclick="goToMainSite()">Go to Main Site</button>
+    
+    <div id="status"></div>
+    
+    <script>
+        function clearServiceWorker() {
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                    for(let registration of registrations) {
+                        registration.unregister();
+                    }
+                    document.getElementById('status').innerHTML = '<p class="success">Service worker cache cleared successfully!</p>';
+                });
+            } else {
+                document.getElementById('status').innerHTML = '<p class="error">Service worker not supported in this browser.</p>';
+            }
+        }
+        
+        function clearBrowserCache() {
+            if ('caches' in window) {
+                caches.keys().then(function(cacheNames) {
+                    return Promise.all(
+                        cacheNames.map(function(cacheName) {
+                            return caches.delete(cacheName);
+                        })
+                    );
+                }).then(function() {
+                    document.getElementById('status').innerHTML = '<p class="success">Browser cache cleared successfully!</p>';
+                });
+            } else {
+                document.getElementById('status').innerHTML = '<p class="error">Cache API not supported in this browser.</p>';
+            }
+        }
+        
+        function goToMainSite() {
+            window.location.href = '/';
+        }
+    </script>
+</body>
+</html> 
