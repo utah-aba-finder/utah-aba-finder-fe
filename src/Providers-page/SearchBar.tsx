@@ -18,6 +18,7 @@ interface SearchBarProps {
     providerType: string;
     stateId: string;
     state: string;
+    hasReviews: string;
   }) => void;
   onCountyChange: (county_name: string) => void;
   insuranceOptions: InsuranceData[];
@@ -26,6 +27,7 @@ interface SearchBarProps {
   onServiceChange: (service: string) => void;
   onWaitListChange: (waitlist: string) => void;
   onAgeChange: (age: string) => void;
+  onReviewsChange: (hasReviews: string) => void;
   onReset: () => void;
   providers: ProviderAttributes[];
   onProviderTypeChange: (providerType: string) => void;
@@ -41,6 +43,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
   onServiceChange,
   onWaitListChange,
   onAgeChange,
+  onReviewsChange,
   onReset,
   providers,
   totalProviders,
@@ -53,6 +56,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
   const [selectedService, setSelectedService] = useState<string>('');
   const [selectedWaitList, setSelectedWaitList] = useState<string>('');
   const [selectedAge, setSelectedAge] = useState<string>('');
+  const [selectedHasReviews, setSelectedHasReviews] = useState<string>('');
   const [showNotification, setShowNotification] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [selectedProviderType, setSelectedProviderType] = useState<string>('none');
@@ -129,6 +133,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
       providerType: selectedProviderType,
       stateId: selectedStateId,
       state: selectedState,
+      hasReviews: selectedHasReviews,
     });
     setShowNotification(true);
     setIsVisible(true);
@@ -143,6 +148,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
     selectedProviderType,
     selectedStateId,
     selectedState,
+    selectedHasReviews,
     onSearch,
   ]);
 
@@ -154,6 +160,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
     setSelectedService('');
     setSelectedWaitList('');
     setSelectedAge('');
+    setSelectedHasReviews('');
     setSelectedProviderType('none');
     setSelectedStateId('none');
     onReset();
@@ -163,6 +170,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
     onServiceChange('');
     onWaitListChange('');
     onAgeChange('');
+    onReviewsChange('');
     onProviderTypeChange('none');
     setSelectedState('none');
   };
@@ -361,6 +369,25 @@ const SearchBar: React.FC<SearchBarProps> = ({
                 <option value="">Spanish?</option>
                 <option value="yes">Yes</option>
               </select>
+            </div>
+
+            <div className="filter-item provider-reviews-dropdown">
+              <select
+                className="provider-reviews-select"
+                value={selectedHasReviews}
+                onChange={(e) => {
+                  setSelectedHasReviews(e.target.value);
+                  onReviewsChange(e.target.value);
+                }}
+                aria-label="Reviews Filter"
+              >
+                <option value="">All Providers</option>
+                <option value="has_reviews">Has Google Reviews</option>
+                <option value="no_reviews">No Google Reviews</option>
+              </select>
+              <small className="text-xs text-gray-500 mt-1 block">
+                Filter by Google review availability
+              </small>
             </div>
           </div>
         )}

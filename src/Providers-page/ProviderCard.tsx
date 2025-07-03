@@ -13,6 +13,7 @@ interface ProviderCardProps {
   isFavorited: boolean;
   favoritedDate?: string;
   selectedState: string;
+  hasReviews?: boolean;
 }
 
 const ProviderCard: React.FC<ProviderCardProps> = ({
@@ -22,7 +23,8 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
   onToggleFavorite,
   isFavorited,
   favoritedDate,
-  selectedState
+  selectedState,
+  hasReviews
 }) => {
 
   const handleToggleFavorite = (e: React.MouseEvent) => {
@@ -55,6 +57,11 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
     <div className={`searched-provider-card ${provider.locations.length > 1 ? 'multiple-locations' : ''}`}>
       <div className="provider-card">
         {/* <div className="featured-badge">Proud Sponsor</div> */}
+        {hasReviews && (
+          <div className="reviews-badge">
+            <span className="reviews-badge-text">⭐ Has Reviews</span>
+          </div>
+        )}
         <div className="card-logo-and-text">
           <div className="card-grid-logo">
             <img src={provider.logo || puzzleLogo} alt="Provider Logo" className="provider-logo" />
