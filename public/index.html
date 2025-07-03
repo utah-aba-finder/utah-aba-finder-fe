@@ -15,10 +15,16 @@
   <link rel="canonical" href="https://autismserviceslocator.com" />
   <meta name="google-site-verification" content="ftG66dc-9fNOYsJ_O3WsTTvOiZ-0Ui1STyeT-qiay3U" />
   
-  <!-- Cache-busting meta tags to prevent "under construction" issues on mobile -->
+  <!-- Security and cache control meta tags -->
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
+  <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+  <meta http-equiv="X-Frame-Options" content="DENY" />
+  <meta http-equiv="X-XSS-Protection" content="1; mode=block" />
+  <meta http-equiv="Strict-Transport-Security" content="max-age=31536000; includeSubDomains" />
+  <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
+  <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests" />
   
   <!--
       manifest.json provides metadata used when your web app is installed on a
@@ -44,12 +50,21 @@
     gtag('config', 'G-VXVLNVMD86');
   </script>
   
-  <!-- Service Worker Registration -->
+  <!-- Service Worker Registration with better error handling -->
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
+        // Unregister any existing service workers first
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          for(let registration of registrations) {
+            registration.unregister();
+          }
+        });
+        
+        // Register new service worker
         navigator.serviceWorker.register('/sw.js', {
-          scope: '/'
+          scope: '/',
+          updateViaCache: 'none'
         })
           .then((registration) => {
             console.log('SW registered successfully: ', registration);
@@ -61,6 +76,8 @@
                 if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
                   // New service worker available
                   console.log('New service worker available');
+                  // Force reload to use new service worker
+                  window.location.reload();
                 }
               });
             });

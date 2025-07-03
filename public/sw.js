@@ -1,5 +1,5 @@
 /* eslint-disable no-restricted-globals */
-const CACHE_NAME = 'autism-services-locator-v1.0.1';
+const CACHE_NAME = 'autism-services-locator-v1.0.2';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -32,14 +32,24 @@ self.addEventListener('fetch', event => {
     return;
   }
 
+  // Skip external resources that might cause certificate issues
+  const url = new URL(event.request.url);
+  if (url.hostname !== location.hostname && 
+      !url.hostname.includes('netlify.app') && 
+      !url.hostname.includes('autismserviceslocator.com')) {
+    return;
+  }
+
   event.respondWith(
-    fetch(event.request)
+    fetch(event.request, {
+      // Add cache control headers to prevent certificate caching issues
+      cache: 'no-cache',
+      credentials: 'same-origin'
+    })
       .then(response => {
-        // Clone the response before using it
-        const responseClone = response.clone();
-        
-        // Cache successful responses for static assets
+        // Only cache successful responses for static assets
         if (response.status === 200 && isCacheable(event.request)) {
+          const responseClone = response.clone();
           caches.open(CACHE_NAME)
             .then(cache => {
               cache.put(event.request, responseClone);
@@ -94,8 +104,9 @@ self.addEventListener('fetch', event => {
 function isCacheable(request) {
   const url = new URL(request.url);
   
-  // Cache static assets
-  if (url.pathname.includes('/static/') || 
+  // Only cache static assets from our domain
+  if (url.hostname === location.hostname && (
+      url.pathname.includes('/static/') || 
       url.pathname.includes('.js') || 
       url.pathname.includes('.css') ||
       url.pathname.includes('.png') ||
@@ -105,12 +116,12 @@ function isCacheable(request) {
       url.pathname.includes('.svg') ||
       url.pathname.includes('.ico') ||
       url.pathname.includes('.woff') ||
-      url.pathname.includes('.woff2')) {
+      url.pathname.includes('.woff2'))) {
     return true;
   }
   
-  // Don't cache API requests
-  if (url.pathname.includes('/api/')) {
+  // Don't cache API requests or external resources
+  if (url.pathname.includes('/api/') || url.hostname !== location.hostname) {
     return false;
   }
   
