@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Debug - Autism Services Locator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .warning { background-color: #fff3cd; color: #856404; }
+        .info { background-color: #d1ecf1; color: #0c5460; }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background-color: #0056b3; }
+        pre {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Mobile Debug Information</h1>
+        <p>This page helps diagnose mobile browser issues.</p>
+        
+        <div id="results"></div>
+        
+        <button onclick="runDiagnostics()">Run Diagnostics</button>
+        <button onclick="clearStorage()">Clear All Storage</button>
+        <button onclick="testServiceWorker()">Test Service Worker</button>
+        <button onclick="goToMainSite()">Go to Main Site</button>
+    </div>
+
+    <script>
+        function addResult(message, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.innerHTML = message;
+            results.appendChild(div);
+        }
+
+        function runDiagnostics() {
+            document.getElementById('results').innerHTML = '';
+            
+            // Basic browser info
+            addResult(`<strong>User Agent:</strong> ${navigator.userAgent}`, 'info');
+            addResult(`<strong>Platform:</strong> ${navigator.platform}`, 'info');
+            addResult(`<strong>Language:</strong> ${navigator.language}`, 'info');
+            
+            // Screen info
+            addResult(`<strong>Screen Size:</strong> ${screen.width}x${screen.height}`, 'info');
+            addResult(`<strong>Viewport:</strong> ${window.innerWidth}x${window.innerHeight}`, 'info');
+            
+            // JavaScript support
+            addResult(`<strong>JavaScript:</strong> ${typeof window !== 'undefined' ? 'Enabled' : 'Disabled'}`, 'success');
+            
+            // Local storage
+            try {
+                localStorage.setItem('test', 'test');
+                localStorage.removeItem('test');
+                addResult(`<strong>Local Storage:</strong> Available`, 'success');
+            } catch (e) {
+                addResult(`<strong>Local Storage:</strong> Not available - ${e.message}`, 'error');
+            }
+            
+            // Session storage
+            try {
+                sessionStorage.setItem('test', 'test');
+                sessionStorage.removeItem('test');
+                addResult(`<strong>Session Storage:</strong> Available`, 'success');
+            } catch (e) {
+                addResult(`<strong>Session Storage:</strong> Not available - ${e.message}`, 'error');
+            }
+            
+            // Service worker
+            if ('serviceWorker' in navigator) {
+                addResult(`<strong>Service Worker:</strong> Supported`, 'success');
+                navigator.serviceWorker.getRegistrations().then(registrations => {
+                    addResult(`<strong>Active Service Workers:</strong> ${registrations.length}`, registrations.length > 0 ? 'warning' : 'success');
+                });
+            } else {
+                addResult(`<strong>Service Worker:</strong> Not supported`, 'error');
+            }
+            
+            // Cache API
+            if ('caches' in window) {
+                addResult(`<strong>Cache API:</strong> Available`, 'success');
+                caches.keys().then(keys => {
+                    addResult(`<strong>Cached Items:</strong> ${keys.length}`, keys.length > 0 ? 'warning' : 'success');
+                });
+            } else {
+                addResult(`<strong>Cache API:</strong> Not available`, 'error');
+            }
+            
+            // Fetch API
+            if ('fetch' in window) {
+                addResult(`<strong>Fetch API:</strong> Available`, 'success');
+            } else {
+                addResult(`<strong>Fetch API:</strong> Not available`, 'error');
+            }
+            
+            // Console errors
+            const originalError = console.error;
+            const errors = [];
+            console.error = function(...args) {
+                errors.push(args.join(' '));
+                originalError.apply(console, args);
+            };
+            
+            setTimeout(() => {
+                if (errors.length > 0) {
+                    addResult(`<strong>Console Errors:</strong> ${errors.length} found`, 'error');
+                    errors.forEach(error => {
+                        addResult(`<pre>${error}</pre>`, 'error');
+                    });
+                } else {
+                    addResult(`<strong>Console Errors:</strong> None detected`, 'success');
+                }
+                console.error = originalError;
+            }, 1000);
+        }
+
+        function clearStorage() {
+            try {
+                // Clear localStorage
+                localStorage.clear();
+                addResult('Local storage cleared', 'success');
+                
+                // Clear sessionStorage
+                sessionStorage.clear();
+                addResult('Session storage cleared', 'success');
+                
+                // Clear caches
+                if ('caches' in window) {
+                    caches.keys().then(keys => {
+                        return Promise.all(keys.map(key => caches.delete(key)));
+                    }).then(() => {
+                        addResult('All caches cleared', 'success');
+                    });
+                }
+                
+                // Unregister service workers
+                if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.getRegistrations().then(registrations => {
+                        return Promise.all(registrations.map(registration => registration.unregister()));
+                    }).then(() => {
+                        addResult('Service workers unregistered', 'success');
+                    });
+                }
+                
+                addResult('All storage cleared successfully!', 'success');
+            } catch (e) {
+                addResult(`Error clearing storage: ${e.message}`, 'error');
+            }
+        }
+
+        function testServiceWorker() {
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        addResult(`Service worker registered: ${registration.scope}`, 'success');
+                    })
+                    .catch(error => {
+                        addResult(`Service worker registration failed: ${error.message}`, 'error');
+                    });
+            } else {
+                addResult('Service Worker API not supported', 'error');
+            }
+        }
+
+        function goToMainSite() {
+            window.location.href = '/';
+        }
+
+        // Run diagnostics on page load
+        window.addEventListener('load', () => {
+            addResult('Page loaded successfully', 'success');
+            runDiagnostics();
+        });
+    </script>
+</body>
+</html> 
