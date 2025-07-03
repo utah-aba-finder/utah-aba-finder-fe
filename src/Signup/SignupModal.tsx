@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { toast, ToastContainer } from "react-toastify";
-import {  X, Eye, EyeOff, Building2 } from "lucide-react";
+import {  X, Eye, EyeOff } from "lucide-react";
 import { CountiesServed, StateData, CountyData, Service } from "../Utility/Types";
 import { fetchStates, fetchCountiesByState } from "../Utility/ApiCall";
 import "react-toastify/dist/ReactToastify.css";

@@ -1,5 +1,5 @@
 import './AuthModal.css';
-import { Link, useParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../Provider-login/AuthProvider';
 import { X } from 'lucide-react';
 import { useState } from 'react';

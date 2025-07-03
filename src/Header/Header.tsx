@@ -43,12 +43,9 @@ const navigationItems = [
 const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [expandedItem, setExpandedItem] = useState<string | null>(null);
-  const [isTransitioning, setIsTransitioning] = useState(false);
 
   const handleMobileMenuToggle = () => {
-    setIsTransitioning(true);
     setIsMobileMenuOpen(!isMobileMenuOpen);
-    setTimeout(() => setIsTransitioning(false), 300);
   };
 
   return (

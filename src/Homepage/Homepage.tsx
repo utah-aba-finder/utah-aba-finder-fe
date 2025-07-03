@@ -10,7 +10,7 @@ import emailjs from 'emailjs-com';
 //sponsor images
 import wansutter from '../Assets/sponsor-images/wansutter.png';
 import ACU from '../Assets/sponsor-images/ACU.png'
-import { ChevronRight, DatabaseIcon, DraftingCompassIcon, Mail, PenTool, StethoscopeIcon, TowerControlIcon } from 'lucide-react';
+import { DraftingCompassIcon, Mail, StethoscopeIcon } from 'lucide-react';
 
 
 

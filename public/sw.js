@@ -1,10 +1,9 @@
 /* eslint-disable no-restricted-globals */
-const CACHE_NAME = 'autism-services-locator-v1.0.0';
+const CACHE_NAME = 'autism-services-locator-v1.0.1';
 const urlsToCache = [
   '/',
   '/index.html',
-  '/static/js/bundle.js',
-  '/static/css/main.css'
+  '/manifest.json'
 ];
 
 // Install event - cache resources
@@ -15,19 +14,108 @@ self.addEventListener('install', event => {
         console.log('Opened cache');
         return cache.addAll(urlsToCache);
       })
-  );
-});
-
-// Fetch event - serve from cache, fallback to network
-self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        // Return cached version or fetch from network
-        return response || fetch(event.request);
+      .catch(error => {
+        console.error('Cache installation failed:', error);
       })
   );
 });
+
+// Fetch event - network first, fallback to cache
+self.addEventListener('fetch', event => {
+  // Skip non-GET requests
+  if (event.request.method !== 'GET') {
+    return;
+  }
+
+  // Skip chrome-extension and other non-http requests
+  if (!event.request.url.startsWith('http')) {
+    return;
+  }
+
+  event.respondWith(
+    fetch(event.request)
+      .then(response => {
+        // Clone the response before using it
+        const responseClone = response.clone();
+        
+        // Cache successful responses for static assets
+        if (response.status === 200 && isCacheable(event.request)) {
+          caches.open(CACHE_NAME)
+            .then(cache => {
+              cache.put(event.request, responseClone);
+            })
+            .catch(error => {
+              console.error('Failed to cache response:', error);
+            });
+        }
+        
+        return response;
+      })
+      .catch(error => {
+        console.log('Network request failed, trying cache:', error);
+        
+        // Fallback to cache
+        return caches.match(event.request)
+          .then(cachedResponse => {
+            if (cachedResponse) {
+              console.log('Serving from cache:', event.request.url);
+              return cachedResponse;
+            }
+            
+            // If not in cache and it's a navigation request, return the cached index.html
+            if (event.request.mode === 'navigate') {
+              return caches.match('/index.html');
+            }
+            
+            // Return a fallback response for other requests
+            return new Response('Network error', {
+              status: 503,
+              statusText: 'Service Unavailable',
+              headers: new Headers({
+                'Content-Type': 'text/plain',
+              }),
+            });
+          })
+          .catch(cacheError => {
+            console.error('Cache fallback failed:', cacheError);
+            return new Response('Service Unavailable', {
+              status: 503,
+              statusText: 'Service Unavailable',
+              headers: new Headers({
+                'Content-Type': 'text/plain',
+              }),
+            });
+          });
+      })
+  );
+});
+
+// Helper function to determine if a request should be cached
+function isCacheable(request) {
+  const url = new URL(request.url);
+  
+  // Cache static assets
+  if (url.pathname.includes('/static/') || 
+      url.pathname.includes('.js') || 
+      url.pathname.includes('.css') ||
+      url.pathname.includes('.png') ||
+      url.pathname.includes('.jpg') ||
+      url.pathname.includes('.jpeg') ||
+      url.pathname.includes('.gif') ||
+      url.pathname.includes('.svg') ||
+      url.pathname.includes('.ico') ||
+      url.pathname.includes('.woff') ||
+      url.pathname.includes('.woff2')) {
+    return true;
+  }
+  
+  // Don't cache API requests
+  if (url.pathname.includes('/api/')) {
+    return false;
+  }
+  
+  return false;
+}
 
 // Activate event - clean up old caches
 self.addEventListener('activate', event => {
