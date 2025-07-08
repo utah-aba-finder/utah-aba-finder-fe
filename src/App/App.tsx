@@ -77,20 +77,36 @@ function App() {
     console.log('App: Updating provider with data:', updatedProvider); // Debug log
     console.log('App: Provider locations:', updatedProvider.locations); // Debug log
     
-    setAllProviders((prevProviders) =>
-      prevProviders.map((provider) =>
-        provider.id === updatedProvider.id
-          ? {
-              ...provider,
-              attributes: {
-                ...updatedProvider,
-                // Ensure locations are preserved
-                locations: updatedProvider.locations || provider.attributes.locations || []
-              }
-            }
-          : provider
-      )
-    );
+    try {
+      setAllProviders((prevProviders) => {
+        // Find the provider to update
+        const providerIndex = prevProviders.findIndex(
+          (provider) => provider.id === updatedProvider.id
+        );
+        
+        if (providerIndex === -1) {
+          console.log('App: Provider not found in allProviders list, skipping update');
+          return prevProviders; // Return unchanged if provider not found
+        }
+        
+        // Create updated providers array
+        const updatedProviders = [...prevProviders];
+        updatedProviders[providerIndex] = {
+          ...updatedProviders[providerIndex],
+          attributes: {
+            ...updatedProvider,
+            // Ensure locations are preserved
+            locations: updatedProvider.locations || updatedProviders[providerIndex].attributes.locations || []
+          }
+        };
+        
+        console.log('App: Successfully updated provider in allProviders');
+        return updatedProviders;
+      });
+    } catch (error) {
+      console.error('App: Error updating provider:', error);
+      // Don't let the error break the UI
+    }
   };
 
   return (

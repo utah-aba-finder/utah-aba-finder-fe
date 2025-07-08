@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { GooglePlacesAPI } from '../Utility/GooglePlacesAPI';
+import GoogleApiStatus from './GoogleApiStatus';
 
 const GoogleDebugTest: React.FC = () => {
   const [apiKey, setApiKey] = useState('');
@@ -107,6 +108,8 @@ const GoogleDebugTest: React.FC = () => {
   return (
     <div style={{ padding: '20px', maxWidth: '1000px', margin: '0 auto' }}>
       <h2>Google Places API Debug Test</h2>
+      
+      <GoogleApiStatus />
       
       <div style={{ marginBottom: '20px' }}>
         <h3>Environment Check</h3>

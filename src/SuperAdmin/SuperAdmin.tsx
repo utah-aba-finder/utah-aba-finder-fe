@@ -13,6 +13,7 @@ import {
   XCircle,
   Clock,
   ChevronDown,
+  Settings,
 } from "lucide-react";
 import { toast, ToastContainer } from "react-toastify";
 import { useAuth } from "../Provider-login/AuthProvider";
@@ -30,6 +31,7 @@ const SuperAdmin = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedTab, setSelectedTab] = useState("view");
   const [providers, setProviders] = useState<ProviderData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedProvider, setSelectedProvider] =
     useState<ProviderData | null>(null);
   const [openNewProviderForm, setOpenNewProviderForm] = useState(false);
@@ -151,6 +153,8 @@ const SuperAdmin = () => {
     } catch (error) {
       console.error("Error fetching providers:", error);
       toast.error("Failed to fetch providers");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -642,79 +646,97 @@ const SuperAdmin = () => {
                     </p>
                   </div>
 
-                  <div className="bg-white rounded-lg shadow">
-                    <div className="overflow-x-auto">
-                      <table className="min-w-full">
-                        <thead>
-                          <tr className="bg-gray-50">
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Provider Name
-                            </th>
-                            <th className="px-6 py-3 text-left max-w-[1rem] text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Type
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Locations
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Status
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Last Updated
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                          {filteredProviders.map((provider) => (
-                            <tr
-                              key={provider.id}
-                              className="hover:bg-gray-50 cursor-pointer"
-                              onClick={() => {
-                                setSelectedProvider(provider);
-                                setSelectedTab("edit");
-                              }}
-                            >
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="text-sm font-medium text-gray-900 truncate max-w-[10rem]">
-                                  {provider.attributes.name}
-                                </div>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="text-sm text-gray-500 max-w-[6rem] truncate">
-                                  {provider.attributes.provider_type?.map((type: { name: string }) => type.name).join(", ") || "Unknown"}
-                                </div>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="flex items-center text-sm text-gray-500">
-                                  <MapPin className="w-4 h-4 mr-1" />
-                                  {provider.attributes.locations?.length || 0}
-                                </div>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <div
-                                  className={`flex items-center text-sm ${getStatusColor(
-                                    provider.attributes.status
-                                  )}`}
-                                >
-                                  {getStatusIcon(provider.attributes.status)}
-                                  <span className="ml-1">
-                                    {provider.attributes.status || "Unknown"}
-                                  </span>
-                                </div>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {provider.attributes.updated_last
-                                  ? moment(
-                                      provider.attributes.updated_last
-                                    ).format("MM/DD/YYYY")
-                                  : "Never"}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                  {isLoading ? (
+                    <div className="bg-white rounded-lg shadow p-12">
+                      <div className="flex flex-col items-center justify-center space-y-4">
+                        <div className="animate-spin">
+                          <Settings className="h-12 w-12 text-blue-500" />
+                        </div>
+                        <div className="text-center">
+                          <h3 className="text-lg font-medium text-gray-900 mb-2">
+                            Loading Providers
+                          </h3>
+                          <p className="text-gray-500">
+                            Please wait while we fetch the provider data...
+                          </p>
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  ) : (
+                    <div className="bg-white rounded-lg shadow">
+                      <div className="overflow-x-auto">
+                        <table className="min-w-full">
+                          <thead>
+                            <tr className="bg-gray-50">
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Provider Name
+                              </th>
+                              <th className="px-6 py-3 text-left max-w-[1rem] text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Type
+                              </th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Locations
+                              </th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Status
+                              </th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Last Updated
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody className="bg-white divide-y divide-gray-200">
+                            {filteredProviders.map((provider) => (
+                              <tr
+                                key={provider.id}
+                                className="hover:bg-gray-50 cursor-pointer"
+                                onClick={() => {
+                                  setSelectedProvider(provider);
+                                  setSelectedTab("edit");
+                                }}
+                              >
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <div className="text-sm font-medium text-gray-900 truncate max-w-[10rem]">
+                                    {provider.attributes.name}
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <div className="text-sm text-gray-500 max-w-[6rem] truncate">
+                                    {provider.attributes.provider_type?.map((type: { name: string }) => type.name).join(", ") || "Unknown"}
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <div className="flex items-center text-sm text-gray-500">
+                                    <MapPin className="w-4 h-4 mr-1" />
+                                    {provider.attributes.locations?.length || 0}
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <div
+                                    className={`flex items-center text-sm ${getStatusColor(
+                                      provider.attributes.status
+                                    )}`}
+                                  >
+                                    {getStatusIcon(provider.attributes.status)}
+                                    <span className="ml-1">
+                                      {provider.attributes.status || "Unknown"}
+                                    </span>
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                  {provider.attributes.updated_last
+                                    ? moment(
+                                        provider.attributes.updated_last
+                                      ).format("MM/DD/YYYY")
+                                    : "Never"}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 

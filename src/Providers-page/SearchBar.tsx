@@ -216,7 +216,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
               aria-label="Select State"
               required
             >
-              <option value="none"> <MapPin size={18} /> Choose a state</option>
+              <option value="none">Choose a state</option>
               {providerStates.map((providerState) => (
                 <option 
                   key={providerState.id} 

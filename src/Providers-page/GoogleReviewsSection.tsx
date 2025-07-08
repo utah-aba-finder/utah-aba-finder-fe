@@ -21,7 +21,26 @@ function normalize(str: string) {
 
 // Helper to check if two strings are a close match
 function isCloseMatch(a: string, b: string) {
-  return normalize(a) === normalize(b);
+  const normalizedA = normalize(a);
+  const normalizedB = normalize(b);
+  
+  // Exact match
+  if (normalizedA === normalizedB) return true;
+  
+  // Check if one contains the other (for partial matches)
+  if (normalizedA.includes(normalizedB) || normalizedB.includes(normalizedA)) return true;
+  
+  // Check for common business name patterns
+  const wordsA = normalizedA.split(/\s+/);
+  const wordsB = normalizedB.split(/\s+/);
+  
+  // If both have multiple words, check if they share key words
+  if (wordsA.length > 1 && wordsB.length > 1) {
+    const commonWords = wordsA.filter(word => word.length > 2 && wordsB.includes(word));
+    if (commonWords.length >= Math.min(wordsA.length, wordsB.length) * 0.6) return true;
+  }
+  
+  return false;
 }
 
 const GoogleReviewsSection: React.FC<GoogleReviewsSectionProps> = ({ 
@@ -46,14 +65,48 @@ const GoogleReviewsSection: React.FC<GoogleReviewsSectionProps> = ({
       setLoading(true);
       setError(null);
 
+      console.log('GoogleReviewsSection: Starting to load reviews');
+      console.log('GoogleReviewsSection: Provider name:', providerName);
+      console.log('GoogleReviewsSection: Provider address:', providerAddress);
+      console.log('GoogleReviewsSection: Provider website:', providerWebsite);
+      console.log('GoogleReviewsSection: API key exists:', !!googleApiKey);
+      console.log('GoogleReviewsSection: API key length:', googleApiKey?.length || 0);
+      console.log('GoogleReviewsSection: API key first 10 chars:', googleApiKey?.substring(0, 10));
+
       if (!googleApiKey || googleApiKey.trim() === '') {
-        setError('Google Places API not configured.');
+        console.error('GoogleReviewsSection: No API key provided');
+        setError('Google Places API not configured. Please contact support.');
         setLoading(false);
         return;
       }
 
       const googlePlaces = new GooglePlacesAPI(googleApiKey);
+      
+      // First validate the API key
+      console.log('GoogleReviewsSection: Validating API key...');
+      const validation = await googlePlaces.validateAPIKey();
+      console.log('GoogleReviewsSection: API key validation result:', validation);
+      
+      if (!validation.valid) {
+        console.error('GoogleReviewsSection: API key validation failed:', validation.error);
+        setError(`Google Places API configuration error: ${validation.error}`);
+        setLoading(false);
+        return;
+      }
+
+      console.log('GoogleReviewsSection: API key validated successfully');
+      
+      console.log('GoogleReviewsSection: Starting search and get reviews...');
       const result = await googlePlaces.searchAndGetReviews(providerName, providerAddress, providerWebsite);
+      
+      console.log('GoogleReviewsSection: Search result:', {
+        placeDetails: !!result.placeDetails,
+        reviewsCount: result.reviews?.length || 0,
+        searchMethod: result.searchMethod,
+        errors: result.errors,
+        placeName: result.placeDetails?.name,
+        placeAddress: result.placeDetails?.formatted_address
+      });
 
       // Only show reviews if the match is strong
       if (result.placeDetails) {
@@ -78,23 +131,40 @@ const GoogleReviewsSection: React.FC<GoogleReviewsSectionProps> = ({
           websiteMatch = getDomain(providerWebsite) === getDomain(place.website);
         }
         
+        console.log('GoogleReviewsSection: Matching results:', {
+          nameMatch,
+          addressMatch,
+          websiteMatch,
+          providerName,
+          placeName: place.name,
+          providerAddress,
+          placeAddress: place.formatted_address,
+          providerWebsite,
+          placeWebsite: place.website,
+          normalizedProviderName: normalize(providerName),
+          normalizedPlaceName: normalize(place.name)
+        });
+        
         // Show reviews if there's a name match (more flexible)
         if (nameMatch) {
+          console.log('GoogleReviewsSection: Name match found, showing reviews');
           setPlaceDetails(place);
           setReviews(result.reviews);
         } else {
+          console.log('GoogleReviewsSection: No name match, not showing reviews');
           setPlaceDetails(null);
           setReviews([]);
-          setError(`No Google reviews found for ${providerName}`);
+          setError(`No Google reviews found for ${providerName}. The business name doesn't match any Google listing.`);
         }
       } else {
+        console.log('GoogleReviewsSection: No place details found');
         setPlaceDetails(null);
         setReviews([]);
-        setError(`No Google reviews found for ${providerName}`);
+        setError(`No Google Business listing found for ${providerName}. This provider may not have a Google Business profile.`);
       }
     } catch (err) {
-      console.error('Error loading Google reviews:', err);
-      setError(`Unable to load Google reviews for ${providerName}`);
+      console.error('GoogleReviewsSection: Error loading Google reviews:', err);
+      setError(`Unable to load Google reviews for ${providerName}. Please try again later.`);
     } finally {
       setLoading(false);
     }

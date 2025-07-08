@@ -30,12 +30,6 @@ export interface GoogleAPIError {
 export class GooglePlacesAPI {
   private apiKey: string;
   private baseUrl = 'https://maps.googleapis.com/maps/api/place';
-  private localProxy = 'http://localhost:3001/api/google-places';
-  private corsProxies = [
-    'https://api.allorigins.win/raw?url=',
-    'https://cors-anywhere.herokuapp.com/',
-    'https://thingproxy.freeboard.io/fetch/'
-  ];
 
   constructor(apiKey: string) {
     this.apiKey = apiKey;
@@ -52,50 +46,33 @@ export class GooglePlacesAPI {
     }
   }
 
-  // Make API request with CORS proxy
+  // Make API request through proxy server to avoid CORS issues
   private async makeRequest(url: string): Promise<any> {
     try {
-      // Try direct request first
-      const response = await fetch(url);
-      if (response.ok) {
-        return await response.json();
+      console.log('Proxying request to Google Places API:', url.replace(this.apiKey, '[API_KEY_HIDDEN]'));
+      
+      // Try proxy server first (for development)
+      const proxyUrl = process.env.NODE_ENV === 'production' 
+        ? '/api/google-places' 
+        : 'http://localhost:3001/api/google-places';
+      
+      const response = await fetch(proxyUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ url }),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+      
+      return await response.json();
     } catch (error) {
-      console.log('Direct request failed, trying CORS proxies...');
+      console.error('Error making request to Google:', error);
+      throw error;
     }
-
-    // Try multiple CORS proxies as fallback
-    for (const proxy of this.corsProxies) {
-      try {
-        let proxyUrl: string;
-        let headers: HeadersInit = {};
-
-        if (proxy.includes('allorigins.win')) {
-          proxyUrl = `${proxy}${encodeURIComponent(url)}`;
-        } else if (proxy.includes('cors-anywhere')) {
-          proxyUrl = `${proxy}${url}`;
-          headers = {
-            'Origin': 'http://localhost:3000',
-            'X-Requested-With': 'XMLHttpRequest'
-          };
-        } else {
-          proxyUrl = `${proxy}${url}`;
-        }
-
-        console.log('Trying CORS proxy:', proxyUrl.replace(this.apiKey, '[API_KEY_HIDDEN]'));
-        
-        const response = await fetch(proxyUrl, { headers });
-
-        if (response.ok) {
-          return await response.json();
-        }
-      } catch (error) {
-        console.log(`Proxy ${proxy} failed, trying next...`);
-        continue;
-      }
-    }
-
-    throw new Error('All CORS proxies failed');
   }
 
   // Validate API key by making a simple test request

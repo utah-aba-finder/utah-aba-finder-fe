@@ -47,6 +47,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
     }
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const { logout } = useAuth();
   const [editedProvider, setEditedProvider] = useState<ProviderAttributes>(loggedInProvider.attributes);
   const [providerState, setProviderState] = useState<string[]>(loggedInProvider.states || []);
@@ -100,8 +101,12 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       const data = await response.json();
       const providerData = data.data?.[0] || {};
       
-      console.log('Refreshed provider data:', providerData); // Debug log
-      console.log('Provider locations:', providerData.attributes?.locations); // Debug log
+      console.log('ProviderEdit: Raw provider data from backend:', providerData);
+      console.log('ProviderEdit: Provider attributes:', providerData.attributes);
+      console.log('ProviderEdit: Provider types:', providerData.attributes?.provider_type);
+      console.log('ProviderEdit: Locations:', providerData.attributes?.locations);
+      console.log('ProviderEdit: Insurance:', providerData.attributes?.insurance);
+      console.log('ProviderEdit: Counties served:', providerData.attributes?.counties_served);
       
       // Ensure we have all required properties with defaults
       const safeProviderData = {
@@ -123,7 +128,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       setSelectedInsurances(safeProviderData.attributes.insurance || []);
       setLocations(safeProviderData.attributes.locations || []);
       
-      console.log('Updated locations state:', safeProviderData.attributes.locations); // Debug log
+      console.log('ProviderEdit: Updated state with locations:', safeProviderData.attributes.locations);
     } catch (error) {
       console.error('Error refreshing provider data:', error);
       toast.error('Failed to refresh provider data');
@@ -287,7 +292,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
 
   const handleSaveChanges = async () => {
     try {
-      setIsLoading(true);
+      setIsSaving(true);
       
       // Ensure we preserve the current locations and don't overwrite them
       const currentLocations = locations || currentProvider?.attributes?.locations || [];
@@ -305,7 +310,23 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
         services: currentLocations.map(location => location.services || []).flat(),
       };
 
-      console.log('Saving provider with locations:', currentLocations); // Debug log
+      console.log('ProviderEdit: Saving provider with data:', {
+        providerId: loggedInProvider.id,
+        locations: currentLocations,
+        providerTypes: selectedProviderTypes,
+        insurance: selectedInsurances,
+        counties: selectedCounties
+      });
+
+      const requestBody = {
+        data: [{
+          id: loggedInProvider.id,
+          type: "provider",
+          attributes: updatedAttributes,
+        }],
+      };
+
+      console.log('ProviderEdit: Request body being sent:', requestBody);
 
       const response = await fetch(
         `https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/providers/${loggedInProvider.id}`,
@@ -315,33 +336,43 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
             "Content-Type": "application/json",
             Authorization: `Bearer ${sessionStorage.getItem("authToken")}`,
           },
-          body: JSON.stringify({
-            data: [{
-              id: loggedInProvider.id,
-              type: "provider",
-              attributes: updatedAttributes,
-            }],
-          }),
+          body: JSON.stringify(requestBody),
         }
       );
 
+      console.log('ProviderEdit: Response status:', response.status);
+
       if (!response.ok) {
-        throw new Error("Failed to update provider");
+        const errorData = await response.json();
+        console.error('ProviderEdit: Backend error response:', errorData);
+        throw new Error(`HTTP ${response.status}: ${errorData.message || response.statusText}`);
       }
 
       const responseData = await response.json();
-      console.log('Server response:', responseData); // Debug log
+      console.log('ProviderEdit: Server success response:', responseData);
       
-      onUpdate(responseData.data.attributes);
-      await refreshProviderData(); // Refresh the data from the server
+      // Only call onUpdate if we have valid data
+      if (responseData.data?.attributes) {
+        onUpdate(responseData.data.attributes);
+      }
+      
+      // Try to refresh data, but don't fail if it doesn't work
+      try {
+        await refreshProviderData();
+      } catch (refreshError) {
+        console.warn('ProviderEdit: Error refreshing data after save:', refreshError);
+        // Don't fail the save operation if refresh fails
+      }
+      
       toast.success("Changes saved successfully!");
       return true;
     } catch (error) {
-      console.error('Error saving changes:', error);
-      toast.error('Failed to save changes');
+      console.error('ProviderEdit: Error saving changes:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      toast.error(`Failed to save changes: ${errorMessage}`);
       return false;
     } finally {
-      setIsLoading(false);
+      setIsSaving(false);
     }
   };
 
@@ -424,6 +455,19 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
   return (
     <>
       <ToastContainer />
+      
+      {/* Loading overlay for save operations */}
+      {isSaving && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg">
+            <div className="flex items-center space-x-3">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
+              <span className="text-gray-700">Saving changes...</span>
+            </div>
+          </div>
+        </div>
+      )}
+      
       {authModalOpen && (
         <AuthModal
           onClose={() => setAuthModalOpen(false)}
@@ -719,15 +763,12 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                     </button>
                     <button
                       onClick={async () => {
-                        const success = await handleSaveChanges();
-                        if (success) {
-                          toast.success("Changes saved successfully!");
-                        }
+                        await handleSaveChanges();
                       }}
-                      disabled={isLoading}
+                      disabled={isSaving}
                       className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
                     >
-                      {isLoading ? "Saving..." : "Save Changes"}
+                      {isSaving ? "Saving..." : "Save Changes"}
                     </button>
                   </div>
                 </div>
@@ -947,15 +988,12 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                     </button>
                     <button
                       onClick={async () => {
-                        const success = await handleSaveChanges();
-                        if (success) {
-                          toast.success("Changes saved successfully!");
-                        }
+                        await handleSaveChanges();
                       }}
-                      disabled={isLoading}
+                      disabled={isSaving}
                       className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
                     >
-                      {isLoading ? "Saving..." : "Save Changes"}
+                      {isSaving ? "Saving..." : "Save Changes"}
                     </button>
                   </div>
                 </div>
@@ -1001,15 +1039,12 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                     </button>
                     <button
                       onClick={async () => {
-                        const success = await handleSaveChanges();
-                        if (success) {
-                          toast.success("Changes saved successfully!");
-                        }
+                        await handleSaveChanges();
                       }}
-                      disabled={isLoading}
+                      disabled={isSaving}
                       className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
                     >
-                      {isLoading ? "Saving..." : "Save Changes"}
+                      {isSaving ? "Saving..." : "Save Changes"}
                     </button>
                   </div>
                 </div>

@@ -135,7 +135,7 @@ const ProviderModal: React.FC<ProviderModalProps> = ({
               <div className="update-section">
                 <span className="last-update">Last Updated {moment(provider.attributes.updated_last).format('MM/DD/YYYY')}</span>
               </div>
-              <p className="provider-contact text">
+              <div className="provider-contact text">
                 <p><Phone style={{ marginRight: '8px' }} />
                   <strong>Phone: </strong>
                   {primaryLocation?.phone ? <a href={`tel:${primaryLocation.phone}`}>{primaryLocation.phone}</a> : 'Provider does not have a number for this location yet.'}
@@ -148,7 +148,7 @@ const ProviderModal: React.FC<ProviderModalProps> = ({
                   <strong>Email: </strong>
                   {provider.attributes.email ? <a href={`mailto:${provider.attributes.email}`} target="_blank" rel="noopener noreferrer">{provider.attributes.email}</a> : 'Provider does not have an email yet.'}
                 </p>
-              </p>
+              </div>
             </div>
             <div className="provider-details text">
               <p><strong>Counties Served:</strong> {
