@@ -81,6 +81,39 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
           ]
         : [];
 
+      console.log('EditLocation: Saving provider with data:', {
+        providerId: provider.id,
+        providerType: provider_type,
+        insurance: selectedInsurances,
+        counties: selectedCounties,
+        locations: locations
+      });
+
+      const requestBody = {
+        data: [
+          {
+            id: provider.id,
+            type: "provider",
+            attributes: {
+              ...formData,
+              id: provider.attributes.id,
+              provider_type,
+              insurance: selectedInsurances,
+              counties_served: selectedCounties,
+              locations: locations.map((location) => ({
+                ...location,
+                id: location.id || null,
+              })),
+              password: provider.attributes.password,
+              username: provider.attributes.username,
+              status: formData.status || provider.attributes.status,
+            },
+          },
+        ],
+      };
+
+      console.log('EditLocation: Request body being sent:', requestBody);
+
       const response = await fetch(
         `https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/providers/${provider.id}`,
         {
@@ -89,70 +122,64 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${sessionStorage.getItem("authToken")}`,
           },
-          body: JSON.stringify({
-            data: [
-              {
-                id: provider.id,
-                type: "provider",
-                attributes: {
-                  ...formData,
-                  id: provider.attributes.id,
-                  provider_type,
-                  insurance: selectedInsurances,
-                  counties_served: selectedCounties,
-                  locations: locations.map((location) => ({
-                    ...location,
-                    id: location.id || null,
-                  })),
-                  password: provider.attributes.password,
-                  username: provider.attributes.username,
-                  status: formData.status || provider.attributes.status,
-                },
-              },
-            ],
-          }),
+          body: JSON.stringify(requestBody),
         }
       );
+
+      console.log('EditLocation: Response status:', response.status);
 
       if (!response.ok) {
-        const errorData = (await response.json()) as ApiError;
-        throw new Error(errorData.message || "Failed to update provider");
+        const errorData = await response.json();
+        console.error('EditLocation: Backend error response:', errorData);
+        throw new Error(errorData.message || `HTTP ${response.status}: Failed to update provider`);
       }
 
-      const refreshResponse = await fetch(
-        `https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/providers/${provider.id}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${sessionStorage.getItem("authToken")}`,
-          },
-        }
-      );
+      const responseData = await response.json();
+      console.log('EditLocation: Server success response:', responseData);
 
-      if (!refreshResponse.ok) {
-        throw new Error("Failed to refresh provider data");
-      }
-
-      const refreshedData = await refreshResponse.json();
-      if (refreshedData.data?.[0]?.attributes) {
-        setFormData(refreshedData.data[0].attributes);
-        setSelectedInsurances(refreshedData.data[0].attributes.insurance || []);
-        setSelectedCounties(
-          refreshedData.data[0].attributes.counties_served || []
+      // Only refresh data if the save was successful
+      try {
+        const refreshResponse = await fetch(
+          `https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/providers/${provider.id}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${sessionStorage.getItem("authToken")}`,
+            },
+          }
         );
-        setLocations((refreshedData.data[0].attributes.locations || []).map((location: Location) => ({
-          ...location,
-          services: location.services || []
-        })));
 
-        onUpdate(refreshedData.data[0].attributes);
+        if (!refreshResponse.ok) {
+          console.warn('EditLocation: Failed to refresh provider data, but save was successful');
+          // Don't throw error here, just log warning
+        } else {
+          const refreshedData = await refreshResponse.json();
+          if (refreshedData.data?.[0]?.attributes) {
+            setFormData(refreshedData.data[0].attributes);
+            setSelectedInsurances(refreshedData.data[0].attributes.insurance || []);
+            setSelectedCounties(
+              refreshedData.data[0].attributes.counties_served || []
+            );
+            setLocations((refreshedData.data[0].attributes.locations || []).map((location: Location) => ({
+              ...location,
+              services: location.services || []
+            })));
+
+            // Only call onUpdate if we have valid data
+            onUpdate(refreshedData.data[0].attributes);
+          }
+        }
+      } catch (refreshError) {
+        console.warn('EditLocation: Error refreshing data after save:', refreshError);
+        // Don't fail the save operation if refresh fails
       }
+
+      toast.success("Changes saved successfully!");
     } catch (err) {
-      console.error("Error updating provider:", err);
-      toast.error(
-        err instanceof Error ? err.message : "Failed to update provider"
-      );
+      console.error("EditLocation: Error updating provider:", err);
+      const errorMessage = err instanceof Error ? err.message : "Failed to update provider";
+      toast.error(errorMessage);
     } finally {
       setIsSaving(false);
     }
@@ -205,7 +232,19 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
   }, [provider.states]);
 
   return (
-    <div className="w-full overflow-x-hidden">
+    <div className="w-full overflow-x-hidden relative">
+      {/* Loading overlay */}
+      {isSaving && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg">
+            <div className="flex items-center space-x-3">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
+              <span className="text-gray-700">Saving changes...</span>
+            </div>
+          </div>
+        </div>
+      )}
+      
       <div className="px-2 sm:px-4 py-6">
         {/* Header */}
         <div className="mb-6">

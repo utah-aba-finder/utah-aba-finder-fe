@@ -258,6 +258,57 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
         return;
       }
 
+      // Debug: Log the data being sent
+      const requestData = {
+        data: [
+          {
+            type: "provider",
+            states: [formData.state],
+            attributes: {
+              name: formData.name,
+              provider_type: formData.provider_type.map((type) => ({
+                id: getProviderTypeId(type),
+                name: type,
+              })),
+              locations: formData.locations.map((location) => ({
+                id: location.id,
+                name: location.name,
+                address_1: location.address_1,
+                address_2: location.address_2,
+                city: location.city,
+                state: location.state,
+                zip: location.zip,
+                phone: location.phone,
+                services: location.services
+              })),
+              website: formData.website,
+              email: formData.email,
+              cost: formData.cost,
+              insurance: selectedInsurances,
+              counties_served: selectedCounties,
+              min_age: parseInt(formData.min_age),
+              max_age: parseInt(formData.max_age),
+              waitlist: formData.waitlist,
+              telehealth_services: formData.telehealth_services,
+              spanish_speakers: formData.spanish_speakers,
+              at_home_services: formData.at_home_services,
+              in_clinic_services: formData.in_clinic_services,
+              logo: formData.logo,
+              status: formData.status,
+            },
+          },
+        ],
+      };
+
+      console.log('SuperAdminCreate: Sending data to backend:', requestData);
+      console.log('SuperAdminCreate: Provider types:', formData.provider_type);
+      console.log('SuperAdminCreate: Locations with services:', formData.locations.map(loc => ({
+        name: loc.name,
+        services: loc.services
+      })));
+      console.log('SuperAdminCreate: Selected insurances:', selectedInsurances);
+      console.log('SuperAdminCreate: Selected counties:', selectedCounties);
+
       const response = await fetch(
         `https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/admin/providers`,
         {
@@ -266,53 +317,18 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
             "Content-Type": "application/json",
             Authorization: `Bearer ${sessionStorage.getItem("authToken")}`,
           },
-          body: JSON.stringify({
-            data: [
-              {
-                type: "provider",
-                states: [formData.state],
-                attributes: {
-                  name: formData.name,
-                  provider_type: formData.provider_type.map((type) => ({
-                    id: getProviderTypeId(type),
-                    name: type,
-                  })),
-                  locations: formData.locations.map((location) => ({
-                    id: location.id,
-                    name: location.name,
-                    address_1: location.address_1,
-                    address_2: location.address_2,
-                    city: location.city,
-                    state: location.state,
-                    zip: location.zip,
-                    phone: location.phone,
-                    services: location.services
-                  })),
-                  website: formData.website,
-                  email: formData.email,
-                  cost: formData.cost,
-                  insurance: selectedInsurances,
-                  counties_served: selectedCounties,
-                  min_age: parseInt(formData.min_age),
-                  max_age: parseInt(formData.max_age),
-                  waitlist: formData.waitlist,
-                  telehealth_services: formData.telehealth_services,
-                  spanish_speakers: formData.spanish_speakers,
-                  at_home_services: formData.at_home_services,
-                  in_clinic_services: formData.in_clinic_services,
-                  logo: formData.logo,
-                  status: formData.status,
-                },
-              },
-            ],
-          }),
+          body: JSON.stringify(requestData),
         }
       );
 
       if (!response.ok) {
         const errorData = await response.json();
+        console.error('SuperAdminCreate: Backend error:', errorData);
         throw new Error(errorData.message || "Failed to create provider");
       }
+
+      const responseData = await response.json();
+      console.log('SuperAdminCreate: Backend response:', responseData);
 
       toast.success(`Provider ${formData.name} created successfully!`);
       onProviderCreated();

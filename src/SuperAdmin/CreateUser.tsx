@@ -23,6 +23,12 @@ const CreateUser = ({ handleCloseForm }: { handleCloseForm: () => void }) => {
             }
         };
 
+        console.log('Creating user with data:', {
+            email: email,
+            provider_id: providerId,
+            role: role,
+            password_length: password.length
+        });
 
         const resetForm = () => {
             setEmail("");
@@ -40,9 +46,21 @@ const CreateUser = ({ handleCloseForm }: { handleCloseForm: () => void }) => {
             },
             body: JSON.stringify(requestBody),
         })
-        .then(response => response.json())
+        .then(response => {
+            console.log('Create user response status:', response.status);
+            console.log('Create user response headers:', response.headers);
+            
+            if (!response.ok) {
+                return response.json().then(errorData => {
+                    console.error('Create user error response:', errorData);
+                    throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+                });
+            }
+            
+            return response.json();
+        })
         .then(data => {
-            console.log(data);
+            console.log('Create user success response:', data);
             toast.success("User created successfully");
             resetForm();
             // Close form only after successful creation
@@ -50,7 +68,7 @@ const CreateUser = ({ handleCloseForm }: { handleCloseForm: () => void }) => {
         })
         .catch(error => {
             console.error("Error creating user:", error);
-            toast.error("Error creating user");
+            toast.error(`Error creating user: ${error.message}`);
             // Don't close form on error so user can fix and retry
         });
     };

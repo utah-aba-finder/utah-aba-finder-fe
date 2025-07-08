@@ -30,6 +30,11 @@ export const LoginPage: React.FC = () => {
         setError('');
         setIsLoading(true);
 
+        console.log('Attempting login with:', {
+            email: username,
+            password_length: password.length
+        });
+
         try {
             const response = await fetch('https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/login', {
                 method: 'POST',
@@ -43,7 +48,12 @@ export const LoginPage: React.FC = () => {
                     }
                 }),
             });
+            
+            console.log('Login response status:', response.status);
+            console.log('Login response headers:', response.headers);
+            
             const data = await response.json();
+            console.log('Login response data:', data);
 
             if (!response.ok) {
                 let errorMessage = 'Login failed';
@@ -52,6 +62,11 @@ export const LoginPage: React.FC = () => {
                 } else if (data.error) {
                     errorMessage = data.error;
                 }
+                console.error('Login failed:', {
+                    status: response.status,
+                    statusText: response.statusText,
+                    data: data
+                });
                 throw new Error(errorMessage);
             }
 
