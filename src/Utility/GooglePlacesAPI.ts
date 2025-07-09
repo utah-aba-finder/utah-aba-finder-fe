@@ -50,11 +50,15 @@ export class GooglePlacesAPI {
   private async makeRequest(url: string): Promise<any> {
     try {
       console.log('Proxying request to Google Places API:', url.replace(this.apiKey, '[API_KEY_HIDDEN]'));
+      console.log('User agent:', navigator.userAgent);
+      console.log('Network type:', (navigator as any).connection ? (navigator as any).connection.effectiveType : 'unknown');
       
       // Try proxy server first (for development)
       const proxyUrl = process.env.NODE_ENV === 'production' 
         ? '/api/google-places' 
         : 'http://localhost:3001/api/google-places';
+      
+      console.log('Using proxy URL:', proxyUrl);
       
       const response = await fetch(proxyUrl, {
         method: 'POST',
@@ -62,15 +66,25 @@ export class GooglePlacesAPI {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ url }),
+        // Add timeout for mobile networks
+        signal: AbortSignal.timeout(30000) // 30 second timeout
       });
       
       if (!response.ok) {
+        console.error('Proxy response not ok:', response.status, response.statusText);
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
-      return await response.json();
+      const data = await response.json();
+      console.log('Google API response received successfully');
+      return data;
     } catch (error) {
       console.error('Error making request to Google:', error);
+      console.error('Error details:', {
+        name: (error as Error).name,
+        message: (error as Error).message,
+        stack: (error as Error).stack
+      });
       throw error;
     }
   }

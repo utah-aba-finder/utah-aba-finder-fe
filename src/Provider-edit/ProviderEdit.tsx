@@ -78,7 +78,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
     });
 
     setTimeout(() => {
-      logout();
+      logout('manual');
       clearProviderData();
     }, 2000);
   }, [logout, clearProviderData]);
@@ -217,6 +217,18 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       return () => clearInterval(timer);
     }
   }, [handleLogout]);
+
+  // Cleanup toasts when component unmounts
+  React.useEffect(() => {
+    return () => {
+      toast.dismiss("session-warning");
+      toast.dismiss("session-expired");
+      toast.dismiss("session-warning-five-min");
+      toast.dismiss("session-warning-one-min");
+      toast.dismiss("inactivity-warning");
+      toast.dismiss("inactivity-logout");
+    };
+  }, []);
 
   const handleProviderUpdate = useCallback(
     async (updatedAttributes: ProviderAttributes) => {
@@ -454,7 +466,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
 
   return (
     <>
-      <ToastContainer />
       
       {/* Loading overlay for save operations */}
       {isSaving && (

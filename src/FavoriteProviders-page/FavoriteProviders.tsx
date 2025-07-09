@@ -5,7 +5,7 @@ import ProviderModal from '../Providers-page/ProviderModal';
 import playblocks from '../Assets/playblocks.jpg';
 import './FavoriteProviders.css'
 import { Link } from 'react-router-dom';
-import { ToastContainer } from 'react-toastify';
+
 
 interface FavoriteDate {
     [providerId: number]: string;
@@ -96,7 +96,6 @@ const FavoriteProviders: React.FC = () => {
     return (
         <div className="favorite-providers-page">
             <section className="find-your-provider-section">
-                <ToastContainer />
                 <img src={playblocks} alt="Find Your Provider" className="banner-image" />
                 <h1 className="providers-banner-title">Favorite Providers</h1>
             </section>

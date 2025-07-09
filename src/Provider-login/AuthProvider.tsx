@@ -21,7 +21,7 @@ interface AuthContextType {
   loggedInProvider: any;
   setLoggedInProvider: (provider: any) => void;
   userRole: string;
-  logout: () => void;
+  logout: (reason?: 'inactivity' | 'session-expired' | 'manual') => void;
   initializeSession: (token: string) => void;
 }
 
@@ -38,21 +38,42 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   );
   const navigate = useNavigate();
 
-  const logout = useCallback(() => {
+  const logout = useCallback((reason?: 'inactivity' | 'session-expired' | 'manual') => {
+    // Clear all session-related toasts before logging out
+    toast.dismiss("session-warning-five-min");
+    toast.dismiss("session-warning-one-min");
+    toast.dismiss("session-expired");
+    toast.dismiss("inactivity-warning");
+    toast.dismiss("inactivity-logout");
+    
+    // Store logout reason in sessionStorage for the login page to check
+    if (reason) {
+      sessionStorage.setItem("logoutReason", reason);
+    }
+    
     setTokenState(null);
     setLoggedInProvider(null);
     sessionStorage.removeItem("authToken");
     sessionStorage.removeItem("tokenExpiry");
     localStorage.removeItem("authToken");
     navigate("/login");
-    toast.info("You have been logged out", {
-      position: "top-right",
-      autoClose: 5000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-    });
+    
+    // Only show toast for manual logout
+    if (reason === 'manual' || !reason) {
+      toast.info("You have been logged out", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+    }
+    
+    // Store logout reason for inactivity and session-expired
+    if (reason === 'inactivity' || reason === 'session-expired') {
+      sessionStorage.setItem("logoutReason", reason);
+    }
   }, [navigate]);
 
   const validateToken = (token: string): boolean => {
@@ -61,18 +82,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       const currentTime = Date.now() / 1000;
 
       if (!decoded.exp) {
-        console.error("Token missing expiration");
         return false;
       }
 
-      if (decoded.exp < currentTime) {
-        console.error("Token expired");
-        return false;
-      }
+              if (decoded.exp < currentTime) {
+          return false;
+        }
 
       return true;
     } catch (error) {
-      console.error("Token validation error:", error);
       return false;
     }
   };
@@ -80,7 +98,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const setToken = useCallback(
     (newToken: string | null) => {
       if (newToken && !validateToken(newToken)) {
-        console.error("Invalid token provided");
         logout();
         return;
       }
@@ -119,15 +136,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         const currentTime = Date.now();
         const timeUntilExpiration = expirationTime - currentTime;
   
-        console.log('Token Expiration Details:', {
-          currentTime: new Date(currentTime).toLocaleTimeString(),
-          expirationTime: new Date(expirationTime).toLocaleTimeString(),
-          timeUntilExpiration: Math.floor(timeUntilExpiration / 1000 / 60) + ' minutes',
-        });
+
   
         if (currentTime > expirationTime) {
-          console.log('Token already expired');
-          logout();
+          logout('session-expired');
           return;
         }
   
@@ -142,25 +154,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         const timeouts: NodeJS.Timeout[] = [];
   
         timeouts.push(setTimeout(() => {
-          clearExistingTimeouts();
-          toast.error("Session expired. Please log in again.", {
-            toastId: "session-expired",
-            position: "top-right",
-            autoClose: 5000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-          });
-          logout();
+          // Only show session expired toast if user is still logged in
+          if (token) {
+            clearExistingTimeouts();
+            toast.error("Session expired. Please log in again.", {
+              toastId: "session-expired",
+              position: "top-right",
+              autoClose: 5000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+            });
+            logout('session-expired');
+          }
         }, timeUntilExpiration));
   
         // 5-minute warning
         const fiveMinWarning = timeUntilExpiration - 5 * 60 * 1000;
         if (fiveMinWarning > 0) {
-          timeouts.push(setTimeout(() => {
-            if (!token) return; // Check if still logged in
-            console.log('Showing 5-minute warning');
+                  timeouts.push(setTimeout(() => {
+          // Only show warning if user is still logged in
+          if (token && sessionStorage.getItem("authToken")) {
             toast.warning(
               "Your session will expire in 5 minutes. Please save your work.",
               {
@@ -172,15 +187,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
                 draggable: true,
               }
             );
-          }, fiveMinWarning));
+          }
+        }, fiveMinWarning));
         }
   
         // 60-second warning
         const oneMinWarning = timeUntilExpiration - 60 * 1000;
         if (oneMinWarning > 0) {
-          timeouts.push(setTimeout(() => {
-            if (!token) return; // Check if still logged in
-            console.log('Showing 1-minute warning');
+                  timeouts.push(setTimeout(() => {
+          // Only show warning if user is still logged in
+          if (token && sessionStorage.getItem("authToken")) {
             toast.dismiss("session-warning-five-min");
             toast.warning(
               "Your session will expire in 60 seconds. Please save your work.",
@@ -193,7 +209,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
                 draggable: true,
               }
             );
-          }, oneMinWarning));
+          }
+        }, oneMinWarning));
         }
   
         return () => {
@@ -202,8 +219,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         };
   
       } catch (error) {
-        console.error("Error decoding token:", error);
-        logout();
+        logout('session-expired');
       }
     },
     [logout]
@@ -223,29 +239,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       toast.dismiss("inactivity-warning");
 
       warningTimeout = setTimeout(() => {
-        toast.warning(
-          "You will be logged out in 60 seconds due to inactivity",
-          {
-            toastId: "inactivity-warning",
-            position: "top-center",
-            autoClose: false,
-            closeOnClick: false,
-            closeButton: true,
-            draggable: false,
-          }
-        );
+        // Only show inactivity warning if user is still logged in
+        if (token && sessionStorage.getItem("authToken")) {
+          toast.warning(
+            "You will be logged out in 60 seconds due to inactivity",
+            {
+              toastId: "inactivity-warning",
+              position: "top-center",
+              autoClose: false,
+              closeOnClick: false,
+              closeButton: true,
+              draggable: false,
+            }
+          );
+        }
       }, 4 * 60 * 1000); 
 
       inactivityTimeout = setTimeout(() => {
-        toast.dismiss("inactivity-warning"); 
-        toast.error("Logging out due to inactivity", {
-          toastId: "inactivity-logout",
-          position: "top-center",
-          autoClose: 2000,
-        });
-        setTimeout(() => {
-          logout();
-        }, 1000); 
+        // Only show inactivity logout if user is still logged in
+        if (token && sessionStorage.getItem("authToken")) {
+          toast.dismiss("inactivity-warning"); 
+          toast.error("Logging out due to inactivity", {
+            toastId: "inactivity-logout",
+            position: "top-center",
+            autoClose: 2000,
+          });
+          setTimeout(() => {
+            logout('inactivity');
+          }, 1000); 
+        }
       }, 5 * 60 * 1000); 
     };
 

@@ -89,7 +89,7 @@ const SuperAdmin = () => {
     });
 
     setTimeout(() => {
-      logout();
+              logout('manual');
     }, 2000);
   }, [logout]);
 

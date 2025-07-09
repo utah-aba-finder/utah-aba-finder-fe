@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { toast, ToastContainer } from 'react-toastify';
+import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './ContactUs.css';
 import emailjs from 'emailjs-com';
@@ -30,7 +30,6 @@ const ContactUs: React.FC = () => {
 
     return (
         <div className='contact-page'>
-            <ToastContainer />
             <div className='contact-banner'>
                 <img src={teamBanner} className='contact-banner-pic' alt="Team Banner" />
                 <h1 className='contact-banner-title'>Contact Us</h1>
