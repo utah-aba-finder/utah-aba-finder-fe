@@ -278,10 +278,6 @@ const ProviderModal: React.FC<ProviderModalProps> = ({
             googleApiKey={process.env.REACT_APP_GOOGLE_PLACES_API_KEY || ''}
           />
         );
-      case 'media':
-        return <section className="media-section">Media content will go here</section>;
-      default:
-        return null;
     }
   };
 
@@ -327,14 +323,6 @@ const ProviderModal: React.FC<ProviderModalProps> = ({
                 tabIndex={0}
               >
                 Testimonials
-              </button>
-              <button
-                className={`tab-button ${activeTab === 'media' ? 'active' : ''}`}
-                onClick={() => setActiveTab('media')}
-                onKeyDown={(e) => handleKeyDown(e, 'media')}
-                tabIndex={0}
-              >
-                Media
               </button>
             </div>
             {renderTabContent()}

@@ -3,7 +3,6 @@ import './LoginPage.css'
 import { User, Lock, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from './AuthProvider';
 import { toast } from 'react-toastify';
-import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import gearImage from '../Assets/Gear@1x-0.5s-200px-200px.svg';
 import { fetchSingleProvider } from '../Utility/ApiCall';
@@ -14,7 +13,8 @@ export const LoginPage: React.FC = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
-    const [isLoading, setIsLoading] = useState(false)
+    const [isLoading, setIsLoading] = useState(false);
+    const [showInactivityMessage, setShowInactivityMessage] = useState(false);
     const { initializeSession, setLoggedInProvider } = useAuth();
     const navigate = useNavigate();
 
@@ -25,15 +25,22 @@ export const LoginPage: React.FC = () => {
         }
     }, [error]);
 
+    // Check for logout reason on component mount
+    useEffect(() => {
+        const logoutReason = sessionStorage.getItem("logoutReason");
+        if (logoutReason === 'inactivity' || logoutReason === 'session-expired') {
+            setShowInactivityMessage(true);
+            // Clear the logout reason so it doesn't show again
+            sessionStorage.removeItem("logoutReason");
+        }
+    }, []);
+
     const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setError('');
         setIsLoading(true);
 
-        console.log('Attempting login with:', {
-            email: username,
-            password_length: password.length
-        });
+
 
         try {
             const response = await fetch('https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/login', {
@@ -49,11 +56,7 @@ export const LoginPage: React.FC = () => {
                 }),
             });
             
-            console.log('Login response status:', response.status);
-            console.log('Login response headers:', response.headers);
-            
             const data = await response.json();
-            console.log('Login response data:', data);
 
             if (!response.ok) {
                 let errorMessage = 'Login failed';
@@ -62,11 +65,7 @@ export const LoginPage: React.FC = () => {
                 } else if (data.error) {
                     errorMessage = data.error;
                 }
-                console.error('Login failed:', {
-                    status: response.status,
-                    statusText: response.statusText,
-                    data: data
-                });
+
                 throw new Error(errorMessage);
             }
 
@@ -92,7 +91,6 @@ export const LoginPage: React.FC = () => {
                     toast.info('You are logged in as ' + providerDetails.attributes.name)
                     navigate(`/providerEdit/${providerId}`);
                 } else {
-                    console.error('Provider ID not found');
                     toast.error('Provider ID not found');
                     throw new Error('Provider ID not found');
                 }
@@ -104,7 +102,6 @@ export const LoginPage: React.FC = () => {
             setUsername('');
             setPassword('');
         } catch (err) {
-            console.error('Login error:', err);
             setError(err instanceof Error ? err.message : 'An unexpected error occurred');
             if (err) {
                 toast.error('Failed to login. Please check your username and password and try again.');
@@ -131,7 +128,21 @@ export const LoginPage: React.FC = () => {
 
     return (
         <div className='loginWrapper'>
-            <ToastContainer />
+            {showInactivityMessage && (
+                <div className="inactivity-message">
+                    <div className="inactivity-message-content">
+                        <h3>Session Expired</h3>
+                        <p>Your session has expired. Please log in again to continue.</p>
+                        <button 
+                            type="button" 
+                            onClick={() => setShowInactivityMessage(false)}
+                            className="inactivity-message-close"
+                        >
+                            ×
+                        </button>
+                    </div>
+                </div>
+            )}
             <div className='loginContainer'>
                 <form className='loginForm' onSubmit={handleLogin}>
                     <h2 className='loginFormTitle'>Provider Login</h2>

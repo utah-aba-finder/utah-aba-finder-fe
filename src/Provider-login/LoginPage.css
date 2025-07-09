@@ -28,6 +28,84 @@
     margin-top: 1rem;
 }
 
+.inactivity-message {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.inactivity-message-content {
+    background-color: white;
+    padding: 2rem;
+    border-radius: 10px;
+    max-width: 400px;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.inactivity-message-content h3 {
+    color: #d32f2f;
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.inactivity-message-content p {
+    color: #333;
+    margin-bottom: 1.5rem;
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+.inactivity-message-close {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #666;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+}
+
+.inactivity-message-close:hover {
+    background-color: #f0f0f0;
+    color: #333;
+}
+
+/* Mobile responsive styles for inactivity message */
+@media (max-width: 768px) {
+    .inactivity-message-content {
+        margin: 1rem;
+        padding: 1.5rem;
+        max-width: 90%;
+    }
+    
+    .inactivity-message-content h3 {
+        font-size: 1.3rem;
+    }
+    
+    .inactivity-message-content p {
+        font-size: 0.9rem;
+    }
+}
+
 
 .loginImageText {
     position: absolute;

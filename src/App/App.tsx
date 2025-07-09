@@ -33,6 +33,7 @@ import ServiceDisclaimer from "../Footer/servicedisclaimer";
 import Careers from "../Footer/Careers";
 import { handleMobileIssues } from "../Utility/cacheUtils";
 import GoogleDebugTest from "../Providers-page/GoogleDebugTest";
+import MobileDebugTest from "../Providers-page/MobileDebugTest";
 
 function App() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -141,6 +142,7 @@ function App() {
             <Route path="/servicedisclaimer" element={<ServiceDisclaimer />} />
             <Route path="/careers" element={<Careers />} />
             <Route path="/google-debug" element={<GoogleDebugTest />} />
+            <Route path="/mobile-debug" element={<MobileDebugTest />} />
             
             <Route
               path="/superAdmin/edit/:id"
