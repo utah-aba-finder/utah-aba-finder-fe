@@ -44,7 +44,9 @@ self.addEventListener('fetch', event => {
     fetch(event.request, {
       // Add cache control headers to prevent certificate caching issues
       cache: 'no-cache',
-      credentials: 'same-origin'
+      credentials: 'same-origin',
+      // Add mobile-friendly timeout
+      signal: AbortSignal.timeout(30000) // 30 second timeout for mobile
     })
       .then(response => {
         // Only cache successful responses for static assets
