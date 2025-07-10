@@ -9,10 +9,13 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Enable CORS for all routes
+// Enable CORS for all routes with mobile-friendly settings
 app.use(cors({
   origin: ['http://localhost:3000', 'https://autismserviceslocator.com', 'https://www.autismserviceslocator.com'],
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  maxAge: 86400 // Cache preflight for 24 hours
 }));
 
 // Parse JSON bodies
@@ -59,15 +62,36 @@ app.get('/api/google-places/*', async (req, res) => {
 
     console.log('Proxying request to Google Places API:', url.toString().replace(apiKey, '[API_KEY_HIDDEN]'));
 
-    // Make the request to Google Places API
-    const response = await fetch(url.toString());
-    const data = await response.json();
+    // Make the request to Google Places API with mobile-friendly timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
+    
+    try {
+      const response = await fetch(url.toString(), {
+        signal: controller.signal,
+        headers: {
+          'User-Agent': 'AutismServicesLocator/1.0'
+        }
+      });
+      clearTimeout(timeoutId);
+      const data = await response.json();
 
-    console.log('Google API response status:', response.status);
-    console.log('Google API response data:', data);
+      console.log('Google API response status:', response.status);
+      console.log('Google API response data:', data);
 
-    // Return the response
-    res.status(response.status).json(data);
+      // Return the response
+      res.status(response.status).json(data);
+    } catch (fetchError) {
+      clearTimeout(timeoutId);
+      if (fetchError.name === 'AbortError') {
+        console.error('Request timeout after 60 seconds');
+        return res.status(408).json({ 
+          status: 'ERROR', 
+          error_message: 'Request timeout - please try again' 
+        });
+      }
+      throw fetchError;
+    }
   } catch (error) {
     console.error('Proxy error:', error);
     console.error('Error stack:', error.stack);
@@ -114,15 +138,36 @@ app.post('/api/google-places', async (req, res) => {
 
     console.log('Proxying request to Google Places API:', googleUrl.toString().replace(apiKey, '[API_KEY_HIDDEN]'));
 
-    // Make the request to Google Places API
-    const response = await fetch(googleUrl.toString());
-    const data = await response.json();
+    // Make the request to Google Places API with mobile-friendly timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
+    
+    try {
+      const response = await fetch(googleUrl.toString(), {
+        signal: controller.signal,
+        headers: {
+          'User-Agent': 'AutismServicesLocator/1.0'
+        }
+      });
+            clearTimeout(timeoutId);
+      const data = await response.json();
 
-    console.log('Google API response status:', response.status);
-    console.log('Google API response data:', data);
+      console.log('Google API response status:', response.status);
+      console.log('Google API response data:', data);
 
-    // Return the response
-    res.status(response.status).json(data);
+      // Return the response
+      res.status(response.status).json(data);
+    } catch (fetchError) {
+      clearTimeout(timeoutId);
+      if (fetchError.name === 'AbortError') {
+        console.error('Request timeout after 60 seconds');
+        return res.status(408).json({ 
+          status: 'ERROR', 
+          error_message: 'Request timeout - please try again' 
+        });
+      }
+      throw fetchError;
+    }
   } catch (error) {
     console.error('Proxy error:', error);
     console.error('Error stack:', error.stack);

@@ -66,8 +66,8 @@ export class GooglePlacesAPI {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ url }),
-        // Add timeout for mobile networks
-        signal: AbortSignal.timeout(30000) // 30 second timeout
+        // Add longer timeout for mobile networks
+        signal: AbortSignal.timeout(60000) // 60 second timeout for mobile
       });
       
       if (!response.ok) {
