@@ -80,6 +80,13 @@ const GoogleReviewsSection: React.FC<GoogleReviewsSectionProps> = ({
         return;
       }
 
+      // Check if we're in production and handle accordingly
+      if (process.env.NODE_ENV === 'production') {
+        setError('Google reviews are not available in production yet. This feature is currently in development.');
+        setLoading(false);
+        return;
+      }
+
       const googlePlaces = new GooglePlacesAPI(googleApiKey);
       
       // First validate the API key

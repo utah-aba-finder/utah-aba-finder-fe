@@ -35,11 +35,23 @@ import { handleMobileIssues } from "../Utility/cacheUtils";
 import GoogleDebugTest from "../Providers-page/GoogleDebugTest";
 import MobileDebugTest from "../Providers-page/MobileDebugTest";
 
+// Simple test component to check if React loads
+const TestComponent = () => {
+  return (
+    <div style={{ padding: '20px', textAlign: 'center' }}>
+      <h1>React App is Loading!</h1>
+      <p>If you can see this, the React app is working.</p>
+      <p>Time: {new Date().toLocaleString()}</p>
+    </div>
+  );
+};
+
 function App() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [loggedInProvider, setLoggedInProvider] =
     useState<ProviderData | null>(null);
   const [allProviders, setAllProviders] = useState<ProviderData[]>([]);
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
 
   const clearProviderData = () => {
     setLoggedInProvider(null);
@@ -47,17 +59,40 @@ function App() {
 
   // Mobile-specific cache clearing and error handling
   useEffect(() => {
-    // Use the utility function to handle mobile issues
-    handleMobileIssues();
+    try {
+      // Use the utility function to handle mobile issues
+      handleMobileIssues();
 
-    // Force reload if there are any console errors related to cached content
-    const originalError = console.error;
-    console.error = (...args) => {
-      if (args[0] && typeof args[0] === 'string' && 
-          (args[0].includes('Failed to load') || args[0].includes('under construction'))) {
-        window.location.reload();
-      }
-      originalError.apply(console, args);
+      // Force reload if there are any console errors related to cached content
+      const originalError = console.error;
+      console.error = (...args) => {
+        if (args[0] && typeof args[0] === 'string' && 
+            (args[0].includes('Failed to load') || args[0].includes('under construction'))) {
+          window.location.reload();
+        }
+        originalError.apply(console, args);
+      };
+    } catch (error) {
+      console.error('Error in mobile cache handling:', error);
+    }
+  }, []);
+
+  // Network status monitoring
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOnline(true);
+    };
+
+    const handleOffline = () => {
+      setIsOnline(false);
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
     };
   }, []);
 
@@ -69,15 +104,15 @@ function App() {
         setAllProviders(data);
       } catch (error) {
         console.error("Error fetching providers:", error);
+        // Don't let provider fetch errors break the app
+        // Set empty array to prevent undefined errors
+        setAllProviders([]);
       }
     };
     fetchAllProviders();
   }, []);
 
   const handleProviderUpdate = (updatedProvider: ProviderAttributes) => {
-    console.log('App: Updating provider with data:', updatedProvider); // Debug log
-    console.log('App: Provider locations:', updatedProvider.locations); // Debug log
-    
     try {
       setAllProviders((prevProviders) => {
         // Find the provider to update
@@ -86,7 +121,6 @@ function App() {
         );
         
         if (providerIndex === -1) {
-          console.log('App: Provider not found in allProviders list, skipping update');
           return prevProviders; // Return unchanged if provider not found
         }
         
@@ -101,7 +135,6 @@ function App() {
           }
         };
         
-        console.log('App: Successfully updated provider in allProviders');
         return updatedProviders;
       });
     } catch (error) {
@@ -123,10 +156,27 @@ function App() {
         draggable
         pauseOnHover
       />
+      {!isOnline && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          backgroundColor: '#ff6b6b',
+          color: 'white',
+          textAlign: 'center',
+          padding: '8px',
+          zIndex: 9999,
+          fontSize: '14px'
+        }}>
+          ⚠️ No internet connection. Some features may not work properly.
+        </div>
+      )}
       <Header /> 
       <div className="main-content">
         <AuthProvider>
           <Routes>
+            <Route path="/test" element={<TestComponent />} />
             <Route path="/" element={<Homepage />} />
             <Route path="/information" element={<InformationPage />} />
             <Route path="/providers" element={<ProvidersPage />} />
@@ -199,8 +249,14 @@ function SuperAdminEditWrapper({
     return <div>Provider not found</div>;
   }
 
-  return <SuperAdminEdit provider={provider} onUpdate={onUpdate} />;
+  return (
+    <SuperAdminEdit
+      provider={provider}
+      onUpdate={onUpdate}
+    />
+  );
 }
+
 function ProviderEditWrapper({
   clearProviderData,
   onUpdate,
@@ -208,7 +264,14 @@ function ProviderEditWrapper({
   clearProviderData: () => void;
   onUpdate: (updatedProvider: ProviderAttributes) => void;
 }) {
+  const { id } = useParams();
+  const providerId = id ? parseInt(id) : 0;
   const { loggedInProvider } = useAuth();
+
+  if (!loggedInProvider) {
+    return <div>Please log in to edit provider information.</div>;
+  }
+
   return (
     <ProviderEdit
       loggedInProvider={loggedInProvider}
