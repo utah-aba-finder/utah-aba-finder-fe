@@ -49,16 +49,15 @@ export class GooglePlacesAPI {
   // Make API request through proxy server to avoid CORS issues
   private async makeRequest(url: string): Promise<any> {
     try {
-      console.log('Proxying request to Google Places API:', url.replace(this.apiKey, '[API_KEY_HIDDEN]'));
-      console.log('User agent:', navigator.userAgent);
-      console.log('Network type:', (navigator as any).connection ? (navigator as any).connection.effectiveType : 'unknown');
+      // In production, we need to handle this differently since there's no proxy server
+      if (process.env.NODE_ENV === 'production') {
+        // For production, we'll need to implement a serverless function or use a different approach
+        // For now, return an error indicating the feature is not available in production
+        throw new Error('Google Places API is not configured for production deployment. Please contact support.');
+      }
       
-      // Try proxy server first (for development)
-      const proxyUrl = process.env.NODE_ENV === 'production' 
-        ? '/api/google-places' 
-        : 'http://localhost:3001/api/google-places';
-      
-      console.log('Using proxy URL:', proxyUrl);
+      // Development: Use local proxy server
+      const proxyUrl = 'http://localhost:3001/api/google-places';
       
       const response = await fetch(proxyUrl, {
         method: 'POST',
@@ -71,20 +70,12 @@ export class GooglePlacesAPI {
       });
       
       if (!response.ok) {
-        console.error('Proxy response not ok:', response.status, response.statusText);
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
       const data = await response.json();
-      console.log('Google API response received successfully');
       return data;
     } catch (error) {
-      console.error('Error making request to Google:', error);
-      console.error('Error details:', {
-        name: (error as Error).name,
-        message: (error as Error).message,
-        stack: (error as Error).stack
-      });
       throw error;
     }
   }
@@ -157,26 +148,19 @@ export class GooglePlacesAPI {
       const searchQuery = `${providerName} ${address}`;
       const encodedQuery = encodeURIComponent(searchQuery);
       const url = `${this.baseUrl}/textsearch/json?query=${encodedQuery}&key=${this.apiKey}`;
-      
-      console.log('Searching by name and address:', searchQuery);
-      console.log('Name/address search URL:', url.replace(this.apiKey, '[API_KEY_HIDDEN]'));
 
       const data = await this.makeRequest(url);
-      console.log('Name/address search results:', data);
 
       if (data.status === 'REQUEST_DENIED') {
-        console.error('API request denied:', data.error_message);
         throw new Error(`API request denied: ${data.error_message}`);
       }
 
       if (data.status === 'ZERO_RESULTS') {
-        console.log('No places found for name/address search:', searchQuery);
         return null;
       }
 
       if (data.status === 'OK' && data.results.length > 0) {
         const place = data.results[0];
-        console.log('Selected place by name/address:', place);
         
         return {
           place_id: place.place_id,
@@ -189,10 +173,8 @@ export class GooglePlacesAPI {
         };
       }
 
-      console.log('No places found for name/address search:', searchQuery);
       return null;
     } catch (error) {
-      console.error('Error searching for place by name and address:', error);
       return null;
     }
   }
@@ -201,20 +183,14 @@ export class GooglePlacesAPI {
   async getPlaceDetails(placeId: string): Promise<GooglePlaceDetails | null> {
     try {
       const url = `${this.baseUrl}/details/json?place_id=${placeId}&fields=place_id,name,formatted_address,rating,user_ratings_total,reviews,website,formatted_phone_number&key=${this.apiKey}`;
-      
-      console.log('Getting place details for:', placeId);
-      console.log('Details URL:', url.replace(this.apiKey, '[API_KEY_HIDDEN]'));
 
       const data = await this.makeRequest(url);
-      console.log('Place details response:', data);
 
       if (data.status === 'REQUEST_DENIED') {
-        console.error('API request denied for place details:', data.error_message);
         throw new Error(`API request denied: ${data.error_message}`);
       }
 
       if (data.status === 'NOT_FOUND') {
-        console.log('Place not found:', placeId);
         return null;
       }
 
@@ -233,7 +209,6 @@ export class GooglePlacesAPI {
 
       return null;
     } catch (error) {
-      console.error('Error getting place details:', error);
       return null;
     }
   }
@@ -244,7 +219,6 @@ export class GooglePlacesAPI {
       const placeDetails = await this.getPlaceDetails(placeId);
       return placeDetails?.reviews || [];
     } catch (error) {
-      console.error('Error getting place reviews:', error);
       return [];
     }
   }

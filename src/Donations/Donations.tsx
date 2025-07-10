@@ -11,6 +11,9 @@ import VenmoLink from 'src/Assets/venmo.jpeg'
 
 const stripePromise = loadStripe('pk_live_51QLVtXJCAzcIvuNOwz9neiT1W3VFBfhOO1XwhxF44UsatLhu6ksdsuMqDjIbpnvzV89gidl2qWVbZRTEKxmBZDJE009Ya5sRCx', {
     apiVersion: '2020-08-27',
+}).catch(error => {
+    console.warn('Stripe failed to load:', error);
+    return null;
 });
 
 const appearance: Appearance = {
@@ -50,9 +53,16 @@ const Donations = () => {
                 <p>If you'd like to send it by mail you can send it to our P.O. Box: <br/> <strong>Autism Services Locator, 50, Riverton, UT, 84065</strong></p>
             </div>
             <div className='donateContainer'>
-                <Elements stripe={stripePromise} options={options}>
-                    <CheckoutForm />
-                </Elements>
+                {stripePromise ? (
+                    <Elements stripe={stripePromise} options={options}>
+                        <CheckoutForm />
+                    </Elements>
+                ) : (
+                    <div style={{ textAlign: 'center', padding: '20px' }}>
+                        <p>Online donations are temporarily unavailable.</p>
+                        <p>Please use PayPal or Venmo options below.</p>
+                    </div>
+                )}
                 <ToastContainer />
                 <div className='paypalContainer'>
                     <img src={PayPallLink} alt="PayPal QR Code" className='paypalLink' />
