@@ -107,6 +107,12 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       console.log('ProviderEdit: Locations:', providerData.attributes?.locations);
       console.log('ProviderEdit: Insurance:', providerData.attributes?.insurance);
       console.log('ProviderEdit: Counties served:', providerData.attributes?.counties_served);
+      console.log('ProviderEdit: Service fields:', {
+        telehealth_services: providerData.attributes?.telehealth_services,
+        spanish_speakers: providerData.attributes?.spanish_speakers,
+        at_home_services: providerData.attributes?.at_home_services,
+        in_clinic_services: providerData.attributes?.in_clinic_services,
+      });
       
       // Ensure we have all required properties with defaults
       const safeProviderData = {
@@ -121,7 +127,13 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       };
 
       setCurrentProvider(safeProviderData);
-      setEditedProvider(safeProviderData.attributes);
+      setEditedProvider({
+        ...safeProviderData.attributes,
+        telehealth_services: safeProviderData.attributes.telehealth_services || "Contact us",
+        spanish_speakers: safeProviderData.attributes.spanish_speakers || "Contact us",
+        at_home_services: safeProviderData.attributes.at_home_services || "Contact us",
+        in_clinic_services: safeProviderData.attributes.in_clinic_services || "Contact us",
+      });
       setSelectedProviderTypes(safeProviderData.attributes.provider_type || []);
       setSelectedCounties(safeProviderData.attributes.counties_served || []);
       setProviderState(safeProviderData.states || []);
@@ -376,6 +388,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
         // Don't fail the save operation if refresh fails
       }
       
+      // Show success toast only after everything is complete
       toast.success("Changes saved successfully!");
       return true;
     } catch (error) {

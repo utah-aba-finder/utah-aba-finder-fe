@@ -279,7 +279,10 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
                 state: location.state,
                 zip: location.zip,
                 phone: location.phone,
-                services: location.services
+                services: location.services.map(service => ({
+                  id: service.id,
+                  name: service.name
+                }))
               })),
               website: formData.website,
               email: formData.email,
@@ -289,10 +292,10 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
               min_age: parseInt(formData.min_age),
               max_age: parseInt(formData.max_age),
               waitlist: formData.waitlist,
-              telehealth_services: formData.telehealth_services,
-              spanish_speakers: formData.spanish_speakers,
-              at_home_services: formData.at_home_services,
-              in_clinic_services: formData.in_clinic_services,
+              telehealth_services: formData.telehealth_services || "Contact us",
+              spanish_speakers: formData.spanish_speakers || "Contact us",
+              at_home_services: formData.at_home_services || "Contact us",
+              in_clinic_services: formData.in_clinic_services || "Contact us",
               logo: formData.logo,
               status: formData.status,
             },
@@ -330,6 +333,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
       const responseData = await response.json();
       console.log('SuperAdminCreate: Backend response:', responseData);
 
+      // Show success toast after confirming the save was successful
       toast.success(`Provider ${formData.name} created successfully!`);
       onProviderCreated();
       setFormData({
