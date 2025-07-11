@@ -84,6 +84,7 @@ const SignupModal: React.FC<SignupModalProps> = ({
   });
   const [recaptchaValue, setRecaptchaValue] = useState<string | null>(null);
   const recaptchaRef = useRef<ReCAPTCHA>(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const servicesList = [
     { id: 1, name: "ABA Therapy" },
@@ -367,17 +368,7 @@ In-Clinic Services: ${providerData.in_clinic_services}
       );
 
       setShowConfetti(true);
-      toast.success(
-        "Provider information submitted successfully! We will review your application and get back to you soon.",
-        {
-          position: "top-center",
-          autoClose: 20000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-        }
-      );
+      setShowSuccessModal(true);
 
       // Reset all form fields
       setFormData({
@@ -430,10 +421,7 @@ In-Clinic Services: ${providerData.in_clinic_services}
       setError("");
       setIsProviderInfoSubmitted(true);
 
-      // Close the modal after a delay
-      setTimeout(() => {
-        handleCloseForm();
-      }, 3000);
+      // Don't close the modal automatically - let user close it manually
     } catch (error) {
       console.error("Error submitting provider info:", error);
       setError("There was an error submitting the provider information. Please try again.");
@@ -819,6 +807,7 @@ In-Clinic Services: ${providerData.in_clinic_services}
 
             {/* Locations Section */}
             <div className="space-y-4 sm:space-y-6">
+              <p className="text-sm text-red-500 mb-2">Please add any brick and mortar locations you have, if you serve multiple states via in-home services only please add the inidividual states below with the counties served and add in a phone number for the location with the in-home and in-clinic waitlist marked.</p>
               <h3 className="text-lg sm:text-xl font-semibold text-gray-900">Locations</h3>
               {formData.locations.map((location, index) => (
                 <div key={index} className="p-4 sm:p-6 border rounded-lg space-y-4 sm:space-y-6 bg-gray-50">
@@ -873,7 +862,7 @@ In-Clinic Services: ${providerData.in_clinic_services}
                     </div>
                     <div className="form-group">
                       <label htmlFor={`location-in-home-waitlist-${index}`}>In-Home Waitlist</label>
-                      <p className="text-sm text-gray-500 mb-2">If you don't provide this service or don't have a waitlist please select "No". If you put 'Contact Us' please put 'Yes'.</p>
+                      <p className="text-sm text-gray-500 mb-2">If you don't provide this service or don't have a waitlist please select "No". If you put 'Contact Us' for in-home services below please put 'Yes'.</p>
                       <select
                         id={`location-in-home-waitlist-${index}`}
                         value={location.in_home_waitlist === true ? "true" : location.in_home_waitlist === false ? "false" : ""}
@@ -891,7 +880,7 @@ In-Clinic Services: ${providerData.in_clinic_services}
                     </div>
                     <div className="form-group">
                       <label htmlFor={`location-in-clinic-waitlist-${index}`}>In-Clinic Waitlist</label>
-                      <p className="text-sm text-gray-500 mb-2">If you don't provide this service or don't have a waitlist please select "No". If you put 'Contact Us' please put 'Yes'.</p>
+                      <p className="text-sm text-gray-500 mb-2">If you don't provide this service or don't have a waitlist please select "No". If you put 'Contact Us' for in-clinic services below please put 'Yes'.</p>
                       <select
                         id={`location-in-clinic-waitlist-${index}`}
                         value={location.in_clinic_waitlist === true ? "true" : location.in_clinic_waitlist === false ? "false" : ""}
@@ -1337,6 +1326,39 @@ In-Clinic Services: ${providerData.in_clinic_services}
           </form>
         </div>
       </div>
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+            <div className="text-center">
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
+                <svg className="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                Registration Submitted Successfully!
+              </h3>
+              <div className="text-sm text-gray-600 mb-6 space-y-2">
+                <p>Thank you for registering with Autism Services Locator.</p>
+                <p className="font-medium text-gray-800">
+                  Please check your email (including spam/junk folder) for a confirmation email from <span className="text-blue-600">Registration@autismserviceslocator.com</span> within the next 72 hours for account approval.
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setShowSuccessModal(false);
+                  handleCloseForm();
+                }}
+                className="w-full inline-flex justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                Got it!
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

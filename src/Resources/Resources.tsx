@@ -47,11 +47,11 @@ const Resources = () => {
                     <div className="provider-info-container">
                         <div className="provider-actions">
                             <a 
-                                href={require('../Assets/ProviderHandout.png')}
-                                download="provider_handout.png"
-                                className="provider-info-link"
+                                href={require('../Assets/Autism_Services_Locator_Flyer_Families.pdf')}
+                                download="Autism_Services_Locator_Flyer_Families.pdf"
+                                className="provider-info-link"  
                             >
-                                Download Printable Image
+                                Download Printable PDF
                             </a>
                             <button 
                                 onClick={() => {
@@ -95,7 +95,7 @@ const Resources = () => {
                                                 </style>
                                             </head>
                                             <body>
-                                                <img src="${require('../Assets/ProviderHandout.png')}" alt="Provider Handout" />
+                                                <img src="${require('../Assets/Autism_Services_Locator_Flyer_Families.pdf')}" alt="Provider Handout" />
                                                 <script>
                                                     window.onload = function() {
                                                         window.print();
@@ -109,16 +109,15 @@ const Resources = () => {
                                 }}
                                 className="provider-print-button"
                             >
-                                Print
+                                Print PDF
                             </button>
                         </div>
-                        <img
-                            src={require('../Assets/ProviderHandout.png')}
-                            alt="Provider Handout Preview"
+                        <embed
+                            src={require('../Assets/Autism_Services_Locator_Flyer_Families.pdf')}
+                            type="application/pdf"
                             width="100%"
                             height="500px"
-                            className="png-preview"
-                            style={{ objectFit: 'contain', maxHeight: '500px' }}
+                            className="pdf-preview"
                         />
                         </div>
                     </div>

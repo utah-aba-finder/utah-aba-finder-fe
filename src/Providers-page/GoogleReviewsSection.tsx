@@ -54,8 +54,17 @@ const GoogleReviewsSection: React.FC<GoogleReviewsSectionProps> = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showAllReviews, setShowAllReviews] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
+    // Detect mobile device
+    const checkMobile = () => {
+      const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
+      const isMobileDevice = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent.toLowerCase());
+      setIsMobile(isMobileDevice);
+    };
+    
+    checkMobile();
     loadGoogleReviews();
     // eslint-disable-next-line
   }, [providerName, providerAddress, providerWebsite, googleApiKey]);
@@ -75,14 +84,14 @@ const GoogleReviewsSection: React.FC<GoogleReviewsSectionProps> = ({
 
       if (!googleApiKey || googleApiKey.trim() === '') {
         console.error('GoogleReviewsSection: No API key provided');
-        setError('Google Places API not configured. Please contact support.');
+        setError('Google reviews are not available at this time.');
         setLoading(false);
         return;
       }
 
       // Check if we're in production and handle accordingly
       if (process.env.NODE_ENV === 'production') {
-        setError('Google reviews are not available in production yet. This feature is currently in development.');
+        setError('Google reviews are not available at this time.');
         setLoading(false);
         return;
       }
@@ -96,7 +105,7 @@ const GoogleReviewsSection: React.FC<GoogleReviewsSectionProps> = ({
       
       if (!validation.valid) {
         console.error('GoogleReviewsSection: API key validation failed:', validation.error);
-        setError(`Google Places API configuration error: ${validation.error}`);
+        setError('Google reviews are not available at this time.');
         setLoading(false);
         return;
       }
@@ -161,17 +170,23 @@ const GoogleReviewsSection: React.FC<GoogleReviewsSectionProps> = ({
           console.log('GoogleReviewsSection: No name match, not showing reviews');
           setPlaceDetails(null);
           setReviews([]);
-          setError(`No Google reviews found for ${providerName}. The business name doesn't match any Google listing.`);
+          setError(`No Google reviews found for ${providerName}.`);
         }
       } else {
         console.log('GoogleReviewsSection: No place details found');
         setPlaceDetails(null);
         setReviews([]);
-        setError(`No Google Business listing found for ${providerName}. This provider may not have a Google Business profile.`);
+        setError(`No Google reviews found for ${providerName}.`);
       }
     } catch (err) {
       console.error('GoogleReviewsSection: Error loading Google reviews:', err);
-      setError(`Unable to load Google reviews for ${providerName}. Please try again later.`);
+      // Check if it's a network timeout or connection error
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      if (errorMessage.includes('timeout') || errorMessage.includes('network') || errorMessage.includes('fetch')) {
+        setError('Unable to load reviews at this time. Please check your internet connection and try again.');
+      } else {
+        setError('Google reviews are not available at this time.');
+      }
     } finally {
       setLoading(false);
     }
@@ -213,7 +228,16 @@ const GoogleReviewsSection: React.FC<GoogleReviewsSectionProps> = ({
       <div className="google-reviews-section">
         <div className="reviews-error">
           <MessageCircle size={24} />
-          <p>{error}</p>
+          {isMobile ? (
+            <div>
+              <p>Google reviews are available on desktop devices.</p>
+              <p className="text-sm text-gray-600 mt-2">
+                For the best experience viewing Google reviews, please visit this page on a desktop computer.
+              </p>
+            </div>
+          ) : (
+            <p>{error}</p>
+          )}
           <button onClick={loadGoogleReviews} className="retry-button">
             Try Again
           </button>
@@ -227,8 +251,19 @@ const GoogleReviewsSection: React.FC<GoogleReviewsSectionProps> = ({
       <div className="google-reviews-section">
         <div className="no-reviews">
           <MessageCircle size={24} />
-          <p>No Google reviews found for {providerName}</p>
-          <p>This provider may not have a Google Business listing yet.</p>
+          {isMobile ? (
+            <div>
+              <p>Google reviews are available on desktop devices.</p>
+              <p className="text-sm text-gray-600 mt-2">
+                For the best experience viewing Google reviews, please visit this page on a desktop computer.
+              </p>
+            </div>
+          ) : (
+            <>
+              <p>No Google reviews found for {providerName}</p>
+              <p>This provider may not have a Google Business listing yet.</p>
+            </>
+          )}
         </div>
       </div>
     );
