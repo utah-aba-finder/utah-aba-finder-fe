@@ -53,7 +53,7 @@ export class GooglePlacesAPI {
       if (process.env.NODE_ENV === 'production') {
         // For production, we'll need to implement a serverless function or use a different approach
         // For now, return an error indicating the feature is not available in production
-        throw new Error('Google Places API is not configured for production deployment. Please contact support.');
+        throw new Error('Google reviews are not available at this time.');
       }
       
       // Development: Use local proxy server
@@ -70,12 +70,21 @@ export class GooglePlacesAPI {
       });
       
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error(`Network error: ${response.status}`);
       }
       
       const data = await response.json();
       return data;
     } catch (error) {
+      // Provide user-friendly error messages
+      if (error instanceof Error) {
+        if (error.name === 'AbortError') {
+          throw new Error('Request timed out. Please check your internet connection.');
+        }
+        if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+          throw new Error('Network connection error. Please check your internet connection.');
+        }
+      }
       throw error;
     }
   }
@@ -87,12 +96,12 @@ export class GooglePlacesAPI {
       const data = await this.makeRequest(testUrl);
       
       if (data.status === 'REQUEST_DENIED') {
-        return { valid: false, error: data.error_message || 'API key is invalid or restricted' };
+        return { valid: false, error: 'API configuration error' };
       }
       
       return { valid: true };
     } catch (error) {
-      return { valid: false, error: 'Network error or API key validation failed' };
+      return { valid: false, error: 'Network error or configuration issue' };
     }
   }
 
@@ -107,7 +116,7 @@ export class GooglePlacesAPI {
 
       if (data.status === 'REQUEST_DENIED') {
         console.error('API request denied:', data.error_message);
-        throw new Error(`API request denied: ${data.error_message}`);
+        throw new Error('Search request denied');
       }
 
       if (data.status === 'ZERO_RESULTS') {
@@ -152,7 +161,7 @@ export class GooglePlacesAPI {
       const data = await this.makeRequest(url);
 
       if (data.status === 'REQUEST_DENIED') {
-        throw new Error(`API request denied: ${data.error_message}`);
+        throw new Error('Search request denied');
       }
 
       if (data.status === 'ZERO_RESULTS') {
@@ -187,7 +196,7 @@ export class GooglePlacesAPI {
       const data = await this.makeRequest(url);
 
       if (data.status === 'REQUEST_DENIED') {
-        throw new Error(`API request denied: ${data.error_message}`);
+        throw new Error('Details request denied');
       }
 
       if (data.status === 'NOT_FOUND') {
@@ -209,6 +218,7 @@ export class GooglePlacesAPI {
 
       return null;
     } catch (error) {
+      console.error('Error getting place details:', error);
       return null;
     }
   }
