@@ -35,6 +35,15 @@ interface ApiError {
 }
 
 const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
+  console.log('EditLocation: Received provider data:', provider);
+  console.log('EditLocation: Provider attributes:', provider.attributes);
+  console.log('EditLocation: Service fields in attributes:', {
+    telehealth_services: provider.attributes.telehealth_services,
+    spanish_speakers: provider.attributes.spanish_speakers,
+    at_home_services: provider.attributes.at_home_services,
+    in_clinic_services: provider.attributes.in_clinic_services,
+  });
+  
   const [formData, setFormData] = useState<ProviderAttributes>(
     provider.attributes
   );
@@ -175,6 +184,7 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
         // Don't fail the save operation if refresh fails
       }
 
+      // Show success toast only after everything is complete
       toast.success("Changes saved successfully!");
     } catch (err) {
       console.error("EditLocation: Error updating provider:", err);
@@ -753,9 +763,10 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
                           className="w-full pl-10 pr-3 py-2 rounded-lg border cursor-pointer border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                         >
                           <option value="">Select Option</option>
-                          <option value="yes">Yes</option>
-                          <option value="no">No</option>
-                          <option value="limited">Limited</option>
+                          <option value="Yes">Yes</option>
+                          <option value="No">No</option>
+                          <option value="Limited">Limited</option>
+                          <option value="Contact us">Contact us</option>
                         </select>
                       </div>
                     </div>
