@@ -27,6 +27,7 @@ const SignupModal: React.FC<SignupModalProps> = ({
     password: "",
     confirmPassword: "",
     registrant_name: "",
+    registrant_email: "",
     affiliation: "",
     locations: [
       {
@@ -226,7 +227,7 @@ const SignupModal: React.FC<SignupModalProps> = ({
     }
 
     // Basic information validation
-    if (!formData.name || !formData.email || !formData.username || !formData.password || !formData.confirmPassword || !formData.website || !formData.registrant_name || !formData.affiliation) {
+    if (!formData.name || !formData.email || !formData.username || !formData.password || !formData.confirmPassword || !formData.website || !formData.registrant_name || !formData.registrant_email || !formData.affiliation) {
       toast.error("Please fill out all basic information fields");
       return false;
     }
@@ -284,6 +285,7 @@ const SignupModal: React.FC<SignupModalProps> = ({
       const providerData = {
         name: formData.name,
         registrant_name: formData.registrant_name,
+        registrant_email: formData.registrant_email,
         affiliation: formData.affiliation,
         provider_type: formData.provider_type.map(type => type.name).join(", "),
         email: formData.email,
@@ -314,6 +316,7 @@ BASIC INFORMATION
 ----------------
 Provider/Company Name: ${providerData.name}
 Registrant Name: ${providerData.registrant_name}
+Registrant Email: ${providerData.registrant_email}  
 Affiliation: ${providerData.affiliation}
 Provider Type: ${providerData.provider_type}
 Email: ${providerData.email}
@@ -381,6 +384,7 @@ In-Clinic Services: ${providerData.in_clinic_services}
         password: "",
         confirmPassword: "",
         registrant_name: "",
+        registrant_email: "",
         affiliation: "",
         locations: [
           {
@@ -624,6 +628,20 @@ In-Clinic Services: ${providerData.in_clinic_services}
                     required
                   />
                 </div>
+                <div>
+                  <label className="block text-sm text-gray-600 mb-2">
+                    Registrant Email
+                  </label>
+                  <input
+                    type="email"
+                    name="registrant_email"
+                    placeholder="john.doe@example.com"
+                    value={formData.registrant_email}
+                    onChange={handleChange}
+                    className="w-full sm:w-3/4 px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  />
+                </div>
 
                 <div>
                   <label className="block text-sm text-gray-600 mb-2">
@@ -647,7 +665,7 @@ In-Clinic Services: ${providerData.in_clinic_services}
                   <input
                     type="email"
                     name="email"
-                    placeholder="john.doe@example.com"
+                    placeholder="info@aba.com"
                     value={formData.email}
                     onChange={handleChange}
                     className="w-full sm:w-3/4 px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -810,7 +828,7 @@ In-Clinic Services: ${providerData.in_clinic_services}
               <p className="text-sm text-red-500 mb-2">Please add any brick and mortar locations you have, if you serve multiple states via in-home services only please add the inidividual states below with the counties served and add in a phone number for the location with the in-home and in-clinic waitlist marked.</p>
               <h3 className="text-lg sm:text-xl font-semibold text-gray-900">Locations</h3>
               {formData.locations.map((location, index) => (
-                <div key={index} className="p-4 sm:p-6 border rounded-lg space-y-4 sm:space-y-6 bg-gray-50">
+                <div key={index} className="p-4 sm:p-6 border rounded-lg space-y-4 sm:space-y-6 bg-gray-50 grid grid-cols-1 gap-4">
                   <div className="flex justify-between items-center mb-4">
                     <h3 className="text-sm sm:text-lg font-semibold text-gray-900">
                       Location {index + 1}
@@ -896,99 +914,136 @@ In-Clinic Services: ${providerData.in_clinic_services}
                         <option value="false">No</option>
                       </select>
                     </div>
-                    <input
-                      type="text"
-                      placeholder="Address Line 1"
-                      value={location.address_1}
-                      onChange={(e) => handleLocationChange(index, "address_1", e.target.value)}
-                      className="w-3/4 px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Address Line 2"
-                      value={location.address_2}
-                      onChange={(e) => handleLocationChange(index, "address_2", e.target.value)}
-                      className="w-3/4 px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                    <input
-                      type="text"
-                      placeholder="City"
-                      value={location.city}
-                      onChange={(e) => handleLocationChange(index, "city", e.target.value)}
-                      className="w-3/4 px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                    <div className="grid grid-cols-2 gap-4">
-                      <input
-                        type="text"
-                        placeholder="State (XX)"
-                        value={location.state}
-                        onChange={(e) => {
-                          const input = e.target.value.toUpperCase();
-                          if (input.length <= 2 && /^[A-Z]*$/.test(input)) {
-                            handleLocationChange(index, "state", input);
-                          }
-                        }}
-                        maxLength={2}
-                        className="w-3/4 px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                      <input
-                        type="text"
-                        placeholder="ZIP"
-                        value={location.zip}
-                        onChange={(e) => {
-                          const input = e.target.value.replace(/\D/g, '');
-                          if (input.length <= 5) {
-                            handleLocationChange(index, "zip", input);
-                          }
-                        }}
-                        maxLength={5}
-                        className="w-3/4 px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
                   </div>
 
-                  {/* Services Section */}
-                  <div className="mt-6">
-                    <label className="block text-lg font-medium text-gray-700 mb-3">
-                      Services Offered at this Location
-                    </label>
-                    <div className="flex flex-wrap gap-3 mb-3">
-                      {location.services?.map((service) => (
-                        <div
-                          key={service.id}
-                          className="bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm flex items-center"
-                        >
-                          <span>{service.name}</span>
-                          <button
-                            type="button"
-                            onClick={() => handleServiceChange(index, service)}
-                            className="ml-2 border-none bg-transparent"
-                          >
-                            <X className="h-6 w-6 text-gray-500 hover:text-red-500 transition-colors cursor-pointer bg-transparent border-none" />
-                          </button>
+                  {/* Address and Services in two columns */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                    {/* Address Section */}
+                    <div>
+                      <h4 className="text-lg font-medium text-gray-700 mb-3">Address Information</h4>
+                      <div className="grid grid-cols-1 gap-4 p-4 flex justify-center">
+                        <div className="text-center">
+                          <label className="block text-sm text-gray-600 mb-2">
+                            Address Line 1
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="123 S Pine Street"
+                            value={location.address_1}
+                            onChange={(e) => handleLocationChange(index, "address_1", e.target.value)}
+                            className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
                         </div>
-                      ))}
+
+                        <div className="text-center">
+                          <label className="block text-sm text-gray-600 mb-2">
+                            Address Line 2
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="suite 201"
+                            value={location.address_2}
+                            onChange={(e) => handleLocationChange(index, "address_2", e.target.value)}
+                            className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+                        </div>
+
+                        <div className="text-center">
+                          <label className="block text-sm text-gray-600 mb-2">
+                            City
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="City"
+                            value={location.city}
+                            onChange={(e) => handleLocationChange(index, "city", e.target.value)}
+                            className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="text-center">
+                            <label className="block text-sm text-gray-600 mb-2">
+                              State
+                            </label>
+                            <input
+                              type="text"
+                              placeholder="State (XX)"
+                              value={location.state}
+                              onChange={(e) => {
+                                const input = e.target.value.toUpperCase();
+                                if (input.length <= 2 && /^[A-Z]*$/.test(input)) {
+                                  handleLocationChange(index, "state", input);
+                                }
+                              }}
+                              maxLength={2}
+                              className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                          </div>
+
+                          <div className="text-center">
+                            <label className="block text-sm text-gray-600 mb-2">
+                              ZIP
+                            </label>
+                            <input
+                              type="text"
+                              placeholder="ZIP"
+                              value={location.zip}
+                              onChange={(e) => {
+                                const input = e.target.value.replace(/\D/g, '');
+                                if (input.length <= 5) {
+                                  handleLocationChange(index, "zip", input);
+                                }
+                              }}
+                              maxLength={5}
+                              className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <select
-                      className="w-1/2 rounded-lg border border-gray-300 py-2.5 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
-                      value=""
-                      onChange={(e) => {
-                        const [id, name] = e.target.value.split('|');
-                        if (id && name) {
-                          handleServiceChange(index, { id: parseInt(id), name });
+
+                    {/* Services Section */}
+                    <div>
+                      <h4 className="text-lg font-medium text-gray-700 mb-3">Services Offered at this Location</h4>
+                      <div className="flex flex-wrap gap-3 mb-3">
+                        {location.services?.map((service) => (
+                          <div
+                            key={service.id}
+                            className="bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm flex items-center"
+                          >
+                            <span>{service.name}</span>
+                            <button
+                              type="button"
+                              onClick={() => handleServiceChange(index, service)}
+                              className="ml-2 border-none bg-transparent"
+                            >
+                              <X className="h-6 w-6 text-gray-500 hover:text-red-500 transition-colors cursor-pointer bg-transparent border-none" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                      <select
+                        className="w-full rounded-lg border border-gray-300 py-2.5 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
+                        value=""
+                        onChange={(e) => {
+                          const [id, name] = e.target.value.split('|');
+                          if (id && name) {
+                            handleServiceChange(index, { id: parseInt(id), name });
+                          }
+                        }}
+                      >
+                        <option value="">Add a service...</option>
+                        {servicesList
+                          .filter(service => !location.services?.some(s => s.id === service.id))
+                          .map(service => (
+                            <option key={service.id} value={`${service.id}|${service.name}`}>
+                              {service.name}
+                            </option>
+                          ))
                         }
-                      }}
-                    >
-                      <option value="">Add a service...</option>
-                      {servicesList
-                        .filter(service => !location.services?.some(s => s.id === service.id))
-                        .map(service => (
-                          <option key={service.id} value={`${service.id}|${service.name}`}>
-                            {service.name}
-                          </option>
-                        ))
-                      }
-                    </select>
+                      </select>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -1044,7 +1099,7 @@ In-Clinic Services: ${providerData.in_clinic_services}
 
                 {/* Selected States and Their Counties */}
                 {selectedStates.map(stateName => (
-                  <div key={stateName} className="bg-white p-4 rounded-lg border border-gray-200">
+                  <div key={stateName} className="bg-white p-4 rounded-lg border-2 border-blue-300 shadow-md">
                     <div className="flex justify-between items-center mb-4">
                       <h4 className="text-md font-medium text-gray-900">{stateName}</h4>
                       <button
@@ -1057,7 +1112,7 @@ In-Clinic Services: ${providerData.in_clinic_services}
                     </div>
                     
                     {/* Counties for this state */}
-                    <div className="space-y-4">
+                    <div className="space-y-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
                       <div className="flex gap-4">
                         <select
                           value={selectedCounty}
@@ -1070,7 +1125,7 @@ In-Clinic Services: ${providerData.in_clinic_services}
                               }
                             }
                           }}
-                          className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                          className="flex-1 rounded-md border-blue-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-white"
                         >
                           <option value="">Add counties in {stateName}...</option>
                           {stateCounties[stateName]?.filter(county => 
