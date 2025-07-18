@@ -89,12 +89,9 @@ const GoogleReviewsSection: React.FC<GoogleReviewsSectionProps> = ({
         return;
       }
 
-      // Check if we're in production and handle accordingly
-      if (process.env.NODE_ENV === 'production') {
-        setError('Google reviews are not available at this time.');
-        setLoading(false);
-        return;
-      }
+      // Note: Google reviews should work in both development and production
+      // The proxy server needs to be running for local development
+      // For production, the API calls should go through a backend service
 
       const googlePlaces = new GooglePlacesAPI(googleApiKey);
       

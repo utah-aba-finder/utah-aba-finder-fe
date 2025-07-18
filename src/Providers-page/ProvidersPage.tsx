@@ -10,6 +10,7 @@ import Joyride, { Step, STATUS } from "react-joyride";
 import { fetchProviders, fetchProvidersByStateIdAndProviderType, fetchInsurance, fetchCountiesByState } from "../Utility/ApiCall";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
+import SEO from "../Utility/SEO";
 interface FavoriteDate {
   [providerId: number]: string;
 }
@@ -62,8 +63,6 @@ const ProvidersPage: React.FC = () => {
   const [isAnimating, setIsAnimating] = useState(false);
   const [run, setRun] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
-  const [showModal, setShowModal] = useState(true);
-  const [dontShowAgain, setDontShowAgain] = useState(false);
   const [isSearchRefined, setIsSearchRefined] = useState(false);
   
   const [steps] = useState<Step[]>([
@@ -71,18 +70,18 @@ const ProvidersPage: React.FC = () => {
       target: ".provider-state-select",
       content: "First select the state you are looking for.",
       disableBeacon: true,
-      placement: "bottom",
+      placement: "top",
     },
     {
       target: ".provider-type-select",
       content: "Then select the type of provider you are looking for.",
-      placement: "bottom",
+      placement: "top",
     },
     {
       target: ".provider-map-searchbar",
       content:
         "Use this search section to find providers by name, county, insurance, spanish speaking, services and waitlist status.",
-      placement: "bottom",
+      placement: "top",
     },
     {
       target: ".provider-cards-grid",
@@ -597,29 +596,22 @@ const ProvidersPage: React.FC = () => {
     }
   };
 
-  const handleCheckboxChange = () => {
-    const newDontShowAgain = !dontShowAgain;
-    setDontShowAgain(newDontShowAgain);
-    localStorage.setItem('ProvidersModalDontShowAgain', newDontShowAgain.toString());
-    if (newDontShowAgain) {
-      setShowModal(false);
-    }
-  };
-
-  const closeModal = () => {
-    if (dontShowAgain) {
-      localStorage.setItem('ProvidersModalDontShowAgain', 'true');
-    }
-    const currentTime = new Date().getTime();
-    localStorage.setItem('ProvidersModalLastVisit', currentTime.toString());
-    setShowModal(false);
-  };
-
   const handlePreviousPage = () => {
     if (currentPage > 1 && !isAnimating) {
       setIsAnimating(true);
       setTimeout(() => {
         setCurrentPage(prevPage => prevPage - 1);
+        setIsAnimating(false);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }, 300);
+    }
+  };
+
+  const handlePageClick = (pageNumber: number) => {
+    if (pageNumber !== currentPage && !isAnimating) {
+      setIsAnimating(true);
+      setTimeout(() => {
+        setCurrentPage(pageNumber);
         setIsAnimating(false);
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }, 300);
@@ -735,53 +727,17 @@ const ProvidersPage: React.FC = () => {
     getInsuranceOptions();
   }, []);
 
-  useEffect(() => {
-    const dontShow = localStorage.getItem('ProvidersModalDontShowAgain');
-    const lastVisit = localStorage.getItem('ProvidersModalLastVisit');
-    const now = new Date().getTime();
-    const twentyFourHours = 24 * 60 * 60 * 1000;
 
-    if (dontShow === 'true' || (lastVisit && now - parseInt(lastVisit) < twentyFourHours)) {
-      setShowModal(false);
-    } else {
-      setShowModal(true);
-    }
-  }, []);
 
-  useEffect(() => {
-    if (dontShowAgain) {
-      localStorage.setItem('ProvidersModalDontShowAgain', 'true');
-      setShowModal(false);
-    }
-  }, [dontShowAgain]);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      toast.info(
-        <div>
-          <p>Are we missing something? Want to be added?</p>
-          <p>Contact us at:</p>
-          <p><a href="mailto:info@autismserviceslocator.com" className="text-blue-600 no-underline">info@autismserviceslocator.com</a></p>
-          <p>or register your account at:</p>
-          <p><a href="mailto:registration@autismserviceslocator.com" className="text-blue-600 no-underline">registration@autismserviceslocator.com</a></p>
-          <p>or signup <a href="/signup" className="text-blue-600 no-underline">HERE</a></p>
-        </div>,
-        {
-          position: "bottom-right",
-          autoClose: 10000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-        }
-      );
-    }, 5000);
-
-    return () => clearTimeout(timer);
-  }, []);
+  // Removed toast notification for better user experience
 
   return (
     <div className="providers-page">
+      <SEO
+        title="Find Your Provider - Pediatric Therapy Services"
+        description="Discover pediatric therapy services across the United States. Find providers specializing in speech therapy, occupational therapy, and physical therapy for children."
+        keywords="pediatric therapy, speech therapy, occupational therapy, physical therapy, children's therapy, therapy providers, therapy services"
+      />
       <section className="find-your-provider-section">
         <Joyride
           run={run}
@@ -805,40 +761,6 @@ const ProvidersPage: React.FC = () => {
       
       <main>
         <div className="provider-page-search-cards-section">
-          {showModal && (
-                    <div className="homepage-modal-overlay">
-                        <div className="homepage-modal">
-                            {/* <h2>Scheduled Maintenance!</h2> */}
-                            <div className="homepage-modal-content">
-                                <h1 className='text-center'>SPECIAL NOTE</h1>
-                                <p>By using our website, you agree to our <Link to="/servicedisclaimer" className='text-[#4A6FA5]'>Service Disclaimer</Link>.</p>
-                                <h2 className='text-center'>New Changes!</h2>
-                                <ul>
-                                    <li><strong>Nationwide Coverage:</strong> Our website is expanding to cover the entire <strong>United States</strong>! No matter where you are, you'll soon be able to find the right providers and resources near you.</li>
-                                    <br/>
-                                    <li><strong>Sponsorship Opportunities:</strong> Become a sponsor and support our mission! Sponsors will be featured in a special <strong>Sponsors Section</strong> on our site recognizing their contributions to the autism care community.</li>
-                                    <br />
-                                    <h3>** If you're a provider and would like to be added to our platform, please <Link to="/signup" className='text-[#4A6FA5]'>sign up</Link>, it's completely free!</h3>
-                                    <h3>Or if you and would like access to your information, please email us at <a href="mailto:registration@autismserviceslocator.com" className='text-[#4A6FA5]'>registration@autismserviceslocator.com</a></h3>
-                                    <br />
-                                </ul>
-                            </div>
-                            <div>
-                                <label>
-                                    <input
-                                        type="checkbox"
-                                        onChange={handleCheckboxChange}
-                                        checked={dontShowAgain}
-                                    />
-                                    Don't show this again
-                                </label>
-                            </div>
-
-                            <button className="homepage-modal-button" onClick={closeModal}>Go to Providers</button>
-                        </div>
-                    </div>
-                )}
-
           <SearchBar
             providers={filteredProviders}
             totalProviders={allProviders.length}
@@ -935,6 +857,39 @@ const ProvidersPage: React.FC = () => {
                             &lt; Previous
                           </button>
                         )}
+                        
+                        {/* Page Numbers */}
+                        <div className="page-numbers">
+                          {Array.from({ length: totalPages }, (_, index) => {
+                            const pageNumber = index + 1;
+                            const isCurrentPage = pageNumber === currentPage;
+                            
+                            // Show first page, last page, current page, and pages around current page
+                            if (
+                              pageNumber === 1 ||
+                              pageNumber === totalPages ||
+                              (pageNumber >= currentPage - 2 && pageNumber <= currentPage + 2)
+                            ) {
+                              return (
+                                <button
+                                  key={pageNumber}
+                                  className={`page-number-button ${isCurrentPage ? 'current-page' : ''}`}
+                                  onClick={() => handlePageClick(pageNumber)}
+                                  disabled={isCurrentPage}
+                                >
+                                  {pageNumber}
+                                </button>
+                              );
+                            } else if (
+                              pageNumber === currentPage - 3 ||
+                              pageNumber === currentPage + 3
+                            ) {
+                              return <span key={pageNumber} className="page-ellipsis">...</span>;
+                            }
+                            return null;
+                          })}
+                        </div>
+                        
                         {currentPage < totalPages && (
                           <button
                             className="pagination-button"

@@ -5,12 +5,32 @@
   <meta charset="utf-8" />
   <link rel="icon" href="%PUBLIC_URL%/ASL_5.2.png" type="image/png" sizes="32x32 48x48 96x96 192x192" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#000000" />
-  <meta name="description" content="Free Directory of Autism Services Providers in the United States. Find autism evaluations, ABA therapy, speech therapy, and occupational therapy services." />
-  <meta name="keywords" content="autism services, ABA therapy, autism providers, autism evaluation, speech therapy, occupational therapy" />
-  <meta property="og:title" content="Autism Services Locator" />
-  <meta property="og:description" content="Find autism service providers in the United States" />
+  <meta name="theme-color" content="#4A6FA5" />
+  <meta name="description" content="Free Directory of Autism Services Providers in the United States. Find autism evaluations, ABA therapy, speech therapy, and occupational therapy services near you." />
+  <meta name="keywords" content="autism services, ABA therapy, autism providers, autism evaluation, speech therapy, occupational therapy, autism spectrum disorder, ASD, autism treatment, autism resources" />
+  <meta name="author" content="Autism Services Locator" />
+  <meta name="robots" content="index, follow" />
+  <meta name="language" content="English" />
+  <meta name="revisit-after" content="7 days" />
+  
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Autism Services Locator - Find Autism Service Providers" />
+  <meta property="og:description" content="Free Directory of Autism Services Providers in the United States. Find autism evaluations, ABA therapy, speech therapy, and occupational therapy services." />
   <meta property="og:url" content="https://autismserviceslocator.com" />
+  <meta property="og:site_name" content="Autism Services Locator" />
+  <meta property="og:image" content="https://autismserviceslocator.com/ASL_5.2.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:locale" content="en_US" />
+  
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Autism Services Locator - Find Autism Service Providers" />
+  <meta name="twitter:description" content="Free Directory of Autism Services Providers in the United States. Find autism evaluations, ABA therapy, speech therapy, and occupational therapy services." />
+  <meta name="twitter:image" content="https://autismserviceslocator.com/ASL_5.2.png" />
+  <meta name="twitter:site" content="@autismserviceslocator" />
+  
   <link rel="apple-touch-icon" href="%PUBLIC_URL%/ASL_5.2.png" type="image/png" sizes="32x32 48x48 96x96 192x192" />
   <link rel="canonical" href="https://autismserviceslocator.com" />
   <meta name="google-site-verification" content="ftG66dc-9fNOYsJ_O3WsTTvOiZ-0Ui1STyeT-qiay3U" />
@@ -54,29 +74,38 @@
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js', {
-          scope: '/',
-          updateViaCache: 'none'
-        })
-          .then((registration) => {
-            console.log('SW registered successfully: ', registration);
-            
-            // Handle service worker updates
-            registration.addEventListener('updatefound', () => {
-              const newWorker = registration.installing;
-              newWorker.addEventListener('statechange', () => {
-                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                  // New service worker available
-                  console.log('New service worker available');
-                  // Force reload to use new service worker
-                  window.location.reload();
+        // Add error boundary for service worker registration
+        try {
+          navigator.serviceWorker.register('/sw.js', {
+            scope: '/',
+            updateViaCache: 'none'
+          })
+            .then((registration) => {
+              console.log('SW registered successfully: ', registration);
+              
+              // Handle service worker updates
+              registration.addEventListener('updatefound', () => {
+                const newWorker = registration.installing;
+                if (newWorker) {
+                  newWorker.addEventListener('statechange', () => {
+                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                      // New service worker available
+                      console.log('New service worker available');
+                      // Force reload to use new service worker
+                      window.location.reload();
+                    }
+                  });
                 }
               });
+            })
+            .catch((registrationError) => {
+              console.error('SW registration failed: ', registrationError);
+              // Don't let service worker errors break the app
             });
-          })
-          .catch((registrationError) => {
-            console.error('SW registration failed: ', registrationError);
-          });
+        } catch (error) {
+          console.error('Service worker registration error:', error);
+          // Don't let service worker errors break the app
+        }
       });
     }
   </script>
@@ -90,7 +119,7 @@
       work correctly both with client-side routing and a non-root public URL.
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
-  <title>Autism Services Locator</title>
+  <title>Autism Services Locator - Find Autism Service Providers</title>
 </head>
 
 <body>

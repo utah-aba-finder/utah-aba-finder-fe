@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Disable Service Worker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        .button:hover {
+            background-color: #0056b3;
+        }
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Service Worker Management</h1>
+    
+    <p>If you're experiencing issues with the website on mobile Safari, you can disable the service worker here.</p>
+    
+    <button class="button" onclick="disableServiceWorker()">Disable Service Worker</button>
+    <button class="button" onclick="enableServiceWorker()">Enable Service Worker</button>
+    <button class="button" onclick="clearCache()">Clear All Cache</button>
+    <button class="button" onclick="goHome()">Go to Homepage</button>
+    
+    <div id="status"></div>
+    
+    <script>
+        function showStatus(message, isError = false) {
+            const status = document.getElementById('status');
+            status.innerHTML = `<p class="${isError ? 'error' : 'success'}">${message}</p>`;
+        }
+        
+        async function disableServiceWorker() {
+            try {
+                if ('serviceWorker' in navigator) {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    
+                    for (let registration of registrations) {
+                        await registration.unregister();
+                    }
+                    
+                    // Clear all caches
+                    const cacheNames = await caches.keys();
+                    await Promise.all(cacheNames.map(name => caches.delete(name)));
+                    
+                    showStatus('Service worker disabled and cache cleared successfully!');
+                } else {
+                    showStatus('Service worker not supported in this browser.', true);
+                }
+            } catch (error) {
+                showStatus('Error disabling service worker: ' + error.message, true);
+            }
+        }
+        
+        async function enableServiceWorker() {
+            try {
+                if ('serviceWorker' in navigator) {
+                    await navigator.serviceWorker.register('/sw.js');
+                    showStatus('Service worker enabled successfully!');
+                } else {
+                    showStatus('Service worker not supported in this browser.', true);
+                }
+            } catch (error) {
+                showStatus('Error enabling service worker: ' + error.message, true);
+            }
+        }
+        
+        async function clearCache() {
+            try {
+                const cacheNames = await caches.keys();
+                await Promise.all(cacheNames.map(name => caches.delete(name)));
+                showStatus('All cache cleared successfully!');
+            } catch (error) {
+                showStatus('Error clearing cache: ' + error.message, true);
+            }
+        }
+        
+        function goHome() {
+            window.location.href = '/';
+        }
+    </script>
+</body>
+</html> 
