@@ -757,6 +757,87 @@
     }
 }
 
+/* Joyride walkthrough styling */
+.__floater {
+  z-index: 10000 !important;
+}
+
+.__floater__overlay {
+  z-index: 9999 !important;
+}
+
+.react-joyride__overlay {
+  z-index: 9999 !important;
+}
+
+.react-joyride__tooltip {
+  background-color: #4A6FA5 !important;
+  color: white !important;
+  border-radius: 10px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+  max-width: 300px !important;
+  font-size: 14px !important;
+  line-height: 1.4 !important;
+}
+
+.react-joyride__tooltip__main {
+  padding: 15px !important;
+}
+
+.react-joyride__tooltip__title {
+  color: white !important;
+  font-weight: 600 !important;
+  margin-bottom: 8px !important;
+}
+
+.react-joyride__tooltip__content {
+  color: white !important;
+}
+
+.react-joyride__tooltip__footer {
+  margin-top: 15px !important;
+}
+
+.react-joyride__tooltip__button {
+  background-color: white !important;
+  color: #4A6FA5 !important;
+  border: none !important;
+  border-radius: 5px !important;
+  padding: 8px 16px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.react-joyride__tooltip__button:hover {
+  background-color: #f0f0f0 !important;
+  transform: translateY(-1px) !important;
+}
+
+.react-joyride__tooltip__button--primary {
+  background-color: #4A6FA5 !important;
+  color: white !important;
+}
+
+.react-joyride__tooltip__button--primary:hover {
+  background-color: #3a5a8a !important;
+}
+
+.react-joyride__tooltip__button--secondary {
+  background-color: transparent !important;
+  color: white !important;
+  border: 1px solid white !important;
+}
+
+.react-joyride__tooltip__button--secondary:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.react-joyride__spotlight {
+  border-radius: 8px !important;
+  box-shadow: 0 0 0 4px rgba(74, 111, 165, 0.3) !important;
+}
+
 /* Provider signup animation */
 .provider-signup-container {
     position: relative;

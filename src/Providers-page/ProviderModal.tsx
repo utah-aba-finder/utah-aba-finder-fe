@@ -289,9 +289,9 @@ const ProviderModal: React.FC<ProviderModalProps> = ({
         </button>
         <div className="modal-grid">
           <div className="modal-grid-map">
-            <GoogleMap address={primaryLocation?.address_1
+            <GoogleMap address={mapAddress || (primaryLocation?.address_1
               ? `${primaryLocation.address_1}, ${primaryLocation.city}, ${primaryLocation.state} ${primaryLocation.zip}`
-              : provider.states?.[0] || ''}
+              : provider.states?.[0] || '')}
             />
           </div>
           <div className="modal-grid-text">

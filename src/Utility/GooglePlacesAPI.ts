@@ -49,15 +49,11 @@ export class GooglePlacesAPI {
   // Make API request through proxy server to avoid CORS issues
   private async makeRequest(url: string): Promise<any> {
     try {
-      // In production, we need to handle this differently since there's no proxy server
-      if (process.env.NODE_ENV === 'production') {
-        // For production, we'll need to implement a serverless function or use a different approach
-        // For now, return an error indicating the feature is not available in production
-        throw new Error('Google reviews are not available at this time.');
-      }
-      
-      // Development: Use local proxy server
-      const proxyUrl = 'http://localhost:3001/api/google-places';
+      // Use local proxy server in development, Netlify function in production
+      const isDevelopment = process.env.NODE_ENV === 'development';
+      const proxyUrl = isDevelopment 
+        ? 'http://localhost:3001/api/google-places'
+        : '/.netlify/functions/google-places';
       
       const response = await fetch(proxyUrl, {
         method: 'POST',

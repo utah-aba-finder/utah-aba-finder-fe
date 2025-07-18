@@ -2,23 +2,24 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import utah from '../Assets/williamsonFamily.jpeg';
 import './Homepage.css';
-import Joyride from 'react-joyride';
+import Joyride, { Step } from 'react-joyride';
 import love from '../Assets/love.jpg';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import emailjs from 'emailjs-com';
+import SEO from '../Utility/SEO';
 //sponsor images
 import wansutter from '../Assets/sponsor-images/wansutter.png';
 import ACU from '../Assets/sponsor-images/ACU.png'
 import { DraftingCompassIcon, Mail, StethoscopeIcon } from 'lucide-react';
-
+import StructuredData from '../Utility/StructuredData';
 
 
 type Props = {}
 
 interface State {
     run: boolean;
-    steps: Array<{ target: string; content: string; disableBeacon?: boolean }>;
+    steps: Step[];
     showModal: boolean;
     dontShowAgain: boolean;
     name: string;
@@ -39,24 +40,49 @@ class Homepage extends Component<Props, State> {
         steps: [
             {
                 target: '.discover-section-button',
-                content: 'Welcome to our website! Start your journey by a quick tour. Here you can find you desired providers.',
-                disableBeacon: true
+                content: 'Welcome to our website! Start your journey by clicking this button to find providers.',
+                disableBeacon: true,
+                placement: 'top'
             },
             {
                 target: '.sponsor-section',
                 content: 'See our sponsors who help make this website possible!',
+                placement: 'top'
             },
             {
-                target: '.begin-section',
-                content: 'Here you can find providers, screening tools, and contact us for any questions.',
+                target: '.begin-section-button1',
+                content: 'Click here to view all available providers.',
+                placement: 'top'
+            },
+            {
+                target: '.begin-section-button2',
+                content: 'Take screening tests to see if you or your child meet autism criteria.',
+                placement: 'top'
+            },
+            {
+                target: '.begin-section-button3',
+                content: 'Contact us for any questions or support.',
+                placement: 'top'
             },
             {
                 target: '.what-we-are-about',
-                content: 'Learn more about what we are all about!',
+                content: 'Learn more about our mission and what we do!',
+                placement: 'top'
             },
             {
                 target: 'header nav',
-                content: 'Click to view providers, Conduct Screening Tests, Donate, or contact us for any questions.',
+                content: 'Use the navbar to navigate through our other pages!',
+                placement: 'bottom'
+            },
+            {
+                target: 'button[aria-label="Toggle menu"]',
+                content: 'On mobile, tap this button to open the navigation menu.',
+                placement: 'bottom'
+            },
+            {
+                target: '.lg\\:hidden nav',
+                content: 'This is the mobile navigation menu with all our pages.',
+                placement: 'top'
             }
         ],
         showModal: false,
@@ -147,6 +173,54 @@ class Homepage extends Component<Props, State> {
 
         return (
             <div className="homepage-container">
+                <SEO 
+                    title="Find Autism Service Providers Near You"
+                    description="Get the care you deserve with our free directory of autism service providers. Find autism evaluations, ABA therapy, speech therapy, and occupational therapy services across the United States."
+                    keywords="autism services, ABA therapy, autism providers, autism evaluation, speech therapy, occupational therapy, autism spectrum disorder, ASD, autism treatment, autism resources, find autism providers"
+                    url="https://autismserviceslocator.com"
+                />
+                <StructuredData 
+                    type="Organization"
+                    data={{
+                        name: "Autism Services Locator",
+                        description: "Free Directory of Autism Services Providers in the United States",
+                        url: "https://autismserviceslocator.com",
+                        logo: "https://autismserviceslocator.com/ASL_5.2.png",
+                        sameAs: [
+                            "https://www.facebook.com/autismserviceslocator",
+                            "https://twitter.com/autismserviceslocator"
+                        ],
+                        contactPoint: {
+                            "@type": "ContactPoint",
+                            telephone: "+1-800-AUTISM",
+                            contactType: "customer service",
+                            availableLanguage: "English"
+                        },
+                        areaServed: {
+                            "@type": "Country",
+                            name: "United States"
+                        },
+                        serviceType: [
+                            "Autism Evaluations",
+                            "ABA Therapy",
+                            "Speech Therapy",
+                            "Occupational Therapy"
+                        ]
+                    }}
+                />
+                <StructuredData 
+                    type="WebSite"
+                    data={{
+                        name: "Autism Services Locator",
+                        description: "Find autism service providers across the United States",
+                        url: "https://autismserviceslocator.com",
+                        potentialAction: {
+                            "@type": "SearchAction",
+                            target: "https://autismserviceslocator.com/providers?search={search_term_string}",
+                            "query-input": "required name=search_term_string"
+                        }
+                    }}
+                />
                 <ToastContainer />
                 {/* Modal */}
                 {showModal && (
@@ -154,15 +228,15 @@ class Homepage extends Component<Props, State> {
                         <div className="homepage-modal">
                             {/* <h2>Scheduled Maintenance!</h2> */}
                             <div className="homepage-modal-content">
-                                <h1 className='text-center'>SPECIAL NOTE</h1>
+                                <h1 className='text-center'>Welcome to Autism Services Locator!</h1>
                                 <p>By using our website, you agree to our <Link to="/servicedisclaimer" className='text-[#4A6FA5]'>Service Disclaimer</Link>.</p>
-                                <h2 className='text-center'>New Changes!</h2>
+                                <h2 className='text-center'>What's New</h2>
                                 <ul>
                                     <li><strong>Nationwide Coverage:</strong> Our website is expanding to cover the entire <strong>United States</strong>! No matter where you are, you'll soon be able to find the right providers and resources near you.</li>
                                     <br/>
                                     <li><strong>Sponsorship Opportunities:</strong> Become a sponsor and support our mission! Sponsors will be featured in a special <strong>Sponsors Section</strong> on our site recognizing their contributions to the autism care community.</li>
                                     <br />
-                                    <h3>** If you're a provider and would like to be added to our platform, please <Link to="/signup" className='text-[#4A6FA5]'>sign up</Link>, it's completely free!</h3>
+                                    <h3>💡 <strong>Are you a provider?</strong> Join our platform for free! <Link to="/signup" className='text-[#4A6FA5]'>Sign up here</Link></h3>
                                     <br />
                                 </ul>
                             </div>
@@ -173,7 +247,7 @@ class Homepage extends Component<Props, State> {
                                         onChange={this.handleCheckboxChange}
                                         checked={dontShowAgain}
                                     />
-                                    Don't show this again
+                                    Remember my preference (don't show this message again)
                                 </label>
                             </div>
 
