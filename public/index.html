@@ -72,10 +72,20 @@
   
   <!-- Service Worker Registration with mobile-friendly settings -->
   <script>
+    // Detect mobile Safari
+    const isMobileSafari = /iPad|iPhone|iPod/.test(navigator.userAgent) && 
+                          /Safari/.test(navigator.userAgent) && 
+                          !/Chrome/.test(navigator.userAgent);
+    
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         // Add error boundary for service worker registration
         try {
+          // For mobile Safari, use a more conservative approach
+          if (isMobileSafari) {
+            console.log('Mobile Safari detected - using conservative service worker approach');
+          }
+          
           navigator.serviceWorker.register('/sw.js', {
             scope: '/',
             updateViaCache: 'none'
@@ -97,16 +107,30 @@
                   });
                 }
               });
+              
+              // Handle service worker errors
+              registration.addEventListener('error', (error) => {
+                console.error('Service worker error:', error);
+                // For mobile Safari, consider unregistering on error
+                if (isMobileSafari) {
+                  console.log('Mobile Safari error detected - consider visiting /disable-sw.html');
+                }
+              });
             })
             .catch((registrationError) => {
               console.error('SW registration failed: ', registrationError);
               // Don't let service worker errors break the app
+              if (isMobileSafari) {
+                console.log('Mobile Safari registration failed - consider visiting /disable-sw.html');
+              }
             });
         } catch (error) {
           console.error('Service worker registration error:', error);
           // Don't let service worker errors break the app
         }
       });
+    } else {
+      console.log('Service Worker not supported');
     }
   </script>
   
@@ -124,6 +148,12 @@
 
 <body>
   <div id="root"></div>
+  
+  <!-- Chat Agent -->
+  <script>
+  (function(){if(!window.chatbase||window.chatbase("getState")!=="initialized"){window.chatbase=(...arguments)=>{if(!window.chatbase.q){window.chatbase.q=[]}window.chatbase.q.push(arguments)};window.chatbase=new Proxy(window.chatbase,{get(target,prop){if(prop==="q"){return target.q}return(...args)=>target(prop,...args)}})}const onLoad=function(){const script=document.createElement("script");script.src="https://www.chatbase.co/embed.min.js";script.id="hgr2fsscH2mpEdUR-_KJX";script.domain="www.chatbase.co";document.body.appendChild(script)};if(document.readyState==="complete"){onLoad()}else{window.addEventListener("load",onLoad)}})();
+  </script>
+  
   <!--
       This HTML file is a template.
       If you open it directly in the browser, you will see an empty page.

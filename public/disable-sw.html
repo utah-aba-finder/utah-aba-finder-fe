@@ -3,103 +3,164 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Disable Service Worker</title>
+    <title>Service Worker Management - Autism Services Locator</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             max-width: 600px;
-            margin: 50px auto;
+            margin: 0 auto;
             padding: 20px;
-            line-height: 1.6;
+            background-color: #f7eee4;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #4A6FA5;
+            text-align: center;
         }
         .button {
-            background-color: #007bff;
+            background-color: #4A6FA5;
             color: white;
-            padding: 10px 20px;
+            padding: 12px 24px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            margin: 10px 5px;
+            margin: 10px;
+            font-size: 16px;
         }
         .button:hover {
-            background-color: #0056b3;
+            background-color: #3a5a8a;
+        }
+        .button.danger {
+            background-color: #dc3545;
+        }
+        .button.danger:hover {
+            background-color: #c82333;
+        }
+        .status {
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            font-weight: bold;
         }
         .success {
-            color: green;
-            font-weight: bold;
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
         }
         .error {
-            color: red;
-            font-weight: bold;
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .instructions {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
         }
     </style>
 </head>
 <body>
-    <h1>Service Worker Management</h1>
-    
-    <p>If you're experiencing issues with the website on mobile Safari, you can disable the service worker here.</p>
-    
-    <button class="button" onclick="disableServiceWorker()">Disable Service Worker</button>
-    <button class="button" onclick="enableServiceWorker()">Enable Service Worker</button>
-    <button class="button" onclick="clearCache()">Clear All Cache</button>
-    <button class="button" onclick="goHome()">Go to Homepage</button>
-    
-    <div id="status"></div>
-    
-    <script>
-        function showStatus(message, isError = false) {
-            const status = document.getElementById('status');
-            status.innerHTML = `<p class="${isError ? 'error' : 'success'}">${message}</p>`;
-        }
+    <div class="container">
+        <h1>Service Worker Management</h1>
         
+        <div class="instructions">
+            <h3>📱 Mobile Safari Users</h3>
+            <p>If you're experiencing "FetchEvent.respondWith received an error: Returned response is null" on mobile Safari, try these steps:</p>
+            <ol>
+                <li>Click "Disable Service Worker" below</li>
+                <li>Clear Safari cache: Settings → Safari → Clear History and Website Data</li>
+                <li>Restart Safari</li>
+                <li>Return to the main site</li>
+            </ol>
+        </div>
+
+        <div id="status"></div>
+        
+        <div style="text-align: center;">
+            <button class="button" onclick="disableServiceWorker()">Disable Service Worker</button>
+            <button class="button" onclick="enableServiceWorker()">Enable Service Worker</button>
+            <button class="button danger" onclick="clearAllCache()">Clear All Cache</button>
+        </div>
+        
+        <div style="text-align: center; margin-top: 20px;">
+            <a href="/" class="button">Return to Homepage</a>
+        </div>
+    </div>
+
+    <script>
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+
         async function disableServiceWorker() {
             try {
                 if ('serviceWorker' in navigator) {
                     const registrations = await navigator.serviceWorker.getRegistrations();
-                    
                     for (let registration of registrations) {
                         await registration.unregister();
                     }
-                    
-                    // Clear all caches
-                    const cacheNames = await caches.keys();
-                    await Promise.all(cacheNames.map(name => caches.delete(name)));
-                    
-                    showStatus('Service worker disabled and cache cleared successfully!');
+                    showStatus('Service Worker disabled successfully!', 'success');
                 } else {
-                    showStatus('Service worker not supported in this browser.', true);
+                    showStatus('Service Worker not supported in this browser.', 'error');
                 }
             } catch (error) {
-                showStatus('Error disabling service worker: ' + error.message, true);
+                showStatus('Error disabling Service Worker: ' + error.message, 'error');
             }
         }
-        
+
         async function enableServiceWorker() {
             try {
                 if ('serviceWorker' in navigator) {
                     await navigator.serviceWorker.register('/sw.js');
-                    showStatus('Service worker enabled successfully!');
+                    showStatus('Service Worker enabled successfully!', 'success');
                 } else {
-                    showStatus('Service worker not supported in this browser.', true);
+                    showStatus('Service Worker not supported in this browser.', 'error');
                 }
             } catch (error) {
-                showStatus('Error enabling service worker: ' + error.message, true);
+                showStatus('Error enabling Service Worker: ' + error.message, 'error');
             }
         }
-        
-        async function clearCache() {
+
+        async function clearAllCache() {
             try {
-                const cacheNames = await caches.keys();
-                await Promise.all(cacheNames.map(name => caches.delete(name)));
-                showStatus('All cache cleared successfully!');
+                if ('caches' in window) {
+                    const cacheNames = await caches.keys();
+                    await Promise.all(cacheNames.map(name => caches.delete(name)));
+                    showStatus('All cache cleared successfully!', 'success');
+                } else {
+                    showStatus('Cache API not supported in this browser.', 'error');
+                }
             } catch (error) {
-                showStatus('Error clearing cache: ' + error.message, true);
+                showStatus('Error clearing cache: ' + error.message, 'error');
             }
         }
-        
-        function goHome() {
-            window.location.href = '/';
-        }
+
+        // Check current service worker status
+        window.addEventListener('load', async () => {
+            if ('serviceWorker' in navigator) {
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                if (registrations.length > 0) {
+                    showStatus('Service Worker is currently active.', 'info');
+                } else {
+                    showStatus('Service Worker is currently disabled.', 'info');
+                }
+            } else {
+                showStatus('Service Worker not supported in this browser.', 'error');
+            }
+        });
     </script>
 </body>
 </html> 

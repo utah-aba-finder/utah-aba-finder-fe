@@ -127,15 +127,19 @@ class Homepage extends Component<Props, State> {
     componentDidMount() {
         const lastVisit = localStorage.getItem('lastVisit');
         const dontShow = localStorage.getItem('dontShowAgain');
+        const hasVisited = localStorage.getItem('hasVisited');
 
         const now = new Date().getTime();
         const twentyFourHours = 24 * 60 * 60 * 1000;
-        const hasVisited = localStorage.getItem('hasVisited');
+
+        // Show walkthrough first if user hasn't visited
         if (!hasVisited) {
             this.setState({ run: true });
-        }
-        if (!dontShow && (!lastVisit || now - parseInt(lastVisit) > twentyFourHours)) {
-            this.setState({ showModal: true });
+        } else {
+            // Only show modal if walkthrough has been completed and modal conditions are met
+            if (!dontShow && (!lastVisit || now - parseInt(lastVisit) > twentyFourHours)) {
+                this.setState({ showModal: true });
+            }
         }
     }
 
@@ -163,6 +167,16 @@ class Homepage extends Component<Props, State> {
 
         if (finishedStatuses.includes(status)) {
             localStorage.setItem('hasVisited', 'true');
+            
+            // After walkthrough is completed, check if modal should be shown
+            const lastVisit = localStorage.getItem('lastVisit');
+            const dontShow = localStorage.getItem('dontShowAgain');
+            const now = new Date().getTime();
+            const twentyFourHours = 24 * 60 * 60 * 1000;
+            
+            if (!dontShow && (!lastVisit || now - parseInt(lastVisit) > twentyFourHours)) {
+                this.setState({ showModal: true });
+            }
         }
     }
 
