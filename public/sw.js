@@ -1,5 +1,5 @@
 /* eslint-disable no-restricted-globals */
-const CACHE_NAME = 'autism-services-locator-v1.0.4';
+const CACHE_NAME = 'autism-services-locator-v1.0.5';
 
 // Install event - minimal caching
 self.addEventListener('install', event => {
@@ -19,15 +19,10 @@ self.addEventListener('install', event => {
   );
 });
 
-// Fetch event - simple network first with minimal fallback
+// Fetch event - network first, minimal fallback
 self.addEventListener('fetch', event => {
   // Skip non-GET requests
   if (event.request.method !== 'GET') {
-    return;
-  }
-
-  // Skip non-http requests
-  if (!event.request.url.startsWith('http')) {
     return;
   }
 
@@ -37,41 +32,49 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  event.respondWith(
-    fetch(event.request)
-      .then(response => {
-        // Only cache successful static asset responses
-        if (response.status === 200 && isStaticAsset(event.request)) {
-          const responseClone = response.clone();
-          caches.open(CACHE_NAME)
-            .then(cache => {
-              cache.put(event.request, responseClone);
-            })
-            .catch(error => {
-              console.error('Service Worker: Failed to cache response:', error);
-            });
-        }
-        return response;
-      })
-      .catch(error => {
-        console.log('Service Worker: Network failed, trying cache:', error);
-        
-        // Simple cache fallback only for navigation requests
-        if (event.request.mode === 'navigate') {
+  // For navigation requests, try network first, then cache
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request)
+        .catch(() => {
           return caches.match('/index.html');
-        }
-        
-        // For other requests, just let them fail naturally
-        return fetch(event.request);
-      })
-  );
+        })
+    );
+    return;
+  }
+
+  // For static assets, try cache first, then network
+  if (isStaticAsset(event.request)) {
+    event.respondWith(
+      caches.match(event.request)
+        .then(cachedResponse => {
+          if (cachedResponse) {
+            return cachedResponse;
+          }
+          return fetch(event.request)
+            .then(response => {
+              if (response.status === 200) {
+                const responseClone = response.clone();
+                caches.open(CACHE_NAME)
+                  .then(cache => {
+                    cache.put(event.request, responseClone);
+                  });
+              }
+              return response;
+            });
+        })
+    );
+    return;
+  }
+
+  // For all other requests, just pass through
+  return;
 });
 
 // Helper function to determine if a request is a static asset
 function isStaticAsset(request) {
   const url = new URL(request.url);
   
-  // Only cache static assets from our domain
   return url.hostname === location.hostname && (
     url.pathname.includes('/static/') || 
     url.pathname.includes('.js') || 

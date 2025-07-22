@@ -90,7 +90,7 @@
 .floating-donate-button {
     position: fixed;
     bottom: 20px;
-    right: 20px;
+    left: 20px;
     background-color: #f60808;
     color: whitesmoke;
     padding: 30px;
