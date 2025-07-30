@@ -43,6 +43,12 @@ export interface StatesServed {
     state: string[],
 }
 
+export interface ServiceDelivery {
+    in_home: boolean;
+    in_clinic: boolean;
+    telehealth: boolean;
+}
+
 export interface ProviderAttributes {
     id: number;
     name: string | null;
@@ -66,6 +72,9 @@ export interface ProviderAttributes {
     logo: string | null;
     updated_last: string | null;
     status: string | null;
+    // New fields from API update
+    in_home_only: boolean;
+    service_delivery: ServiceDelivery;
 }
 
 export interface InsuranceData {

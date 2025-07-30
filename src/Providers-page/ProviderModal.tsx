@@ -1,7 +1,7 @@
 import React from 'react';
 import './ProviderModal.css';
 import GoogleMap from './GoogleMap';
-import { MapPin, Phone, Globe, Mail, Briefcase } from 'lucide-react'
+import { MapPin, Phone, Globe, Mail, Briefcase, Home, Building, Monitor } from 'lucide-react'
 import { useEffect, useState } from 'react';
 import moment from 'moment';
 import GoogleReviewsSection from './GoogleReviewsSection';
@@ -27,6 +27,12 @@ interface ProviderType {
   name: string;
 }
 
+interface ServiceDelivery {
+  in_home: boolean;
+  in_clinic: boolean;
+  telehealth: boolean;
+}
+
 interface ProviderAttributes {
   name: string | null;
   locations: Location[];
@@ -46,6 +52,9 @@ interface ProviderAttributes {
   logo?: string | null;
   updated_last: string | null;
   states: string[];
+  // New fields from API update
+  in_home_only?: boolean;
+  service_delivery?: ServiceDelivery;
 }
 
 interface County {
@@ -102,26 +111,13 @@ const ProviderModal: React.FC<ProviderModalProps> = ({
   const handleClose = () => {
     setIsClosing(true);
     setTimeout(() => {
-      setIsVisible(false);
       onClose();
     }, 300);
   };
 
-  if (!provider) return null;
-
-  // Filter locations based on selected state
-  const filteredLocations = selectedState && selectedState !== 'none'
-    ? provider.attributes.locations.filter(location => {
-        if (!location.state || !selectedState) return false;
-        return location.state.trim().toUpperCase() === selectedState.trim().toUpperCase();
-      })
-    : provider.attributes.locations;
-
-  // Use the first matching location, or fall back to the first location if none match
-  const primaryLocation = filteredLocations[0] || provider.attributes.locations[0];
-
   const handleKeyDown = (e: React.KeyboardEvent, tabName: string) => {
     if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
       setActiveTab(tabName);
     }
   };
@@ -135,6 +131,41 @@ const ProviderModal: React.FC<ProviderModalProps> = ({
               <div className="update-section">
                 <span className="last-update">Last Updated {moment(provider.attributes.updated_last).format('MM/DD/YYYY')}</span>
               </div>
+              
+              {/* Service Delivery Information */}
+              <div className="service-delivery-section">
+                <h4><strong>Service Delivery Options:</strong></h4>
+                <div className="service-delivery-badges">
+                  {provider.attributes.in_home_only ? (
+                    <span className="service-badge in-home-only">
+                      <Home size={14} style={{ marginRight: '6px' }} />
+                      In-Home Services Only
+                    </span>
+                  ) : (
+                    <>
+                      {provider.attributes.service_delivery?.in_home && (
+                        <span className="service-badge in-home">
+                          <Home size={14} style={{ marginRight: '6px' }} />
+                          In-Home Services
+                        </span>
+                      )}
+                      {provider.attributes.service_delivery?.in_clinic && (
+                        <span className="service-badge in-clinic">
+                          <Building size={14} style={{ marginRight: '6px' }} />
+                          In-Clinic Services
+                        </span>
+                      )}
+                      {provider.attributes.service_delivery?.telehealth && (
+                        <span className="service-badge telehealth">
+                          <Monitor size={14} style={{ marginRight: '6px' }} />
+                          Telehealth Services
+                        </span>
+                      )}
+                    </>
+                  )}
+                </div>
+              </div>
+              
               <div className="provider-contact text">
                 <p><Phone style={{ marginRight: '8px' }} />
                   <strong>Phone: </strong>
@@ -205,7 +236,9 @@ const ProviderModal: React.FC<ProviderModalProps> = ({
                     <p>
                       <MapPin style={{ marginRight: '8px' }} />
                       <strong>Address: </strong>
-                      {location.address_1 ? (
+                      {provider.attributes.in_home_only ? (
+                        'In-Home Services Only - No Physical Location'
+                      ) : location.address_1 ? (
                         `${location.address_1}${location.address_2 ? `, ${location.address_2}` : ''}${location.city ? `, ${location.city}` : ''}${location.state ? `, ${location.state}` : ''} ${location.zip || ''}`
                       ) : (
                         'Physical address is not available for this provider.'
@@ -280,6 +313,19 @@ const ProviderModal: React.FC<ProviderModalProps> = ({
         );
     }
   };
+
+  if (!provider) return null;
+
+  // Filter locations based on selected state
+  const filteredLocations = selectedState && selectedState !== 'none'
+    ? provider.attributes.locations.filter(location => {
+        if (!location.state || !selectedState) return false;
+        return location.state.trim().toUpperCase() === selectedState.trim().toUpperCase();
+      })
+    : provider.attributes.locations;
+
+  // Use the first matching location, or fall back to the first location if none match
+  const primaryLocation = filteredLocations[0] || provider.attributes.locations[0];
 
   return (
     <div className={`modal-overlay ${isVisible ? 'show' : ''} ${isClosing ? 'hide' : ''}`}>

@@ -4,7 +4,7 @@ import { Building2, MapPin, DollarSign, Stethoscope, Plus, X } from "lucide-reac
 import CountiesModal from "../Provider-edit/CountiesModal";
 import { CountiesServed, Insurance, StateData, CountyData, Service } from "../Utility/Types";
 import InsuranceModal from "../Provider-edit/InsuranceModal";
-import { fetchStates, fetchCountiesByState, fetchProviders } from "../Utility/ApiCall";
+import { fetchStates, fetchCountiesByState, fetchProviders, validateLogoFile, uploadProviderLogo } from "../Utility/ApiCall";
 import "react-toastify/dist/ReactToastify.css";
 
 interface SuperAdminCreateProps {
@@ -52,6 +52,13 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
     in_clinic_services: "Contact us",
     logo: "",
     status: "",
+    // New fields from API update
+    in_home_only: false,
+    service_delivery: {
+      in_home: false,
+      in_clinic: false,
+      telehealth: false
+    }
   });
 
   const [isSaving, setIsSaving] = useState(false);
@@ -65,6 +72,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
   const [activeStateForCounties, setActiveStateForCounties] = useState<string>('');
   const [providerState, setProviderState] = useState<string[]>([]);
   const [selectedProviderTypes, setSelectedProviderTypes] = useState<string[]>([]);
+  const [selectedLogoFile, setSelectedLogoFile] = useState<File | null>(null);
 
   useEffect(() => {
     const loadStates = async () => {
@@ -298,6 +306,9 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
               in_clinic_services: formData.in_clinic_services || "Contact us",
               logo: formData.logo,
               status: formData.status,
+              // New fields from API update
+              in_home_only: formData.in_home_only,
+              service_delivery: formData.service_delivery,
             },
           },
         ],
@@ -332,6 +343,20 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
 
       const responseData = await response.json();
       console.log('SuperAdminCreate: Backend response:', responseData);
+
+      // Upload logo if selected
+      if (selectedLogoFile && responseData.data?.[0]?.id) {
+        try {
+          const logoResult = await uploadProviderLogo(responseData.data[0].id, selectedLogoFile);
+          if (logoResult.success) {
+            toast.success('Logo uploaded successfully');
+          } else {
+            toast.warning('Provider created but logo upload failed: ' + logoResult.error);
+          }
+        } catch (error) {
+          toast.warning('Provider created but logo upload failed');
+        }
+      }
 
       // Show success toast after confirming the save was successful
       toast.success(`Provider ${formData.name} created successfully!`);
@@ -372,8 +397,16 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
         in_clinic_services: "Contact us",
         logo: "",
         status: "",
+        // New fields from API update
+        in_home_only: false,
+        service_delivery: {
+          in_home: false,
+          in_clinic: false,
+          telehealth: false
+        }
       });
       setSelectedProviderTypes([]);
+      setSelectedLogoFile(null);
       setTimeout(() => {
         handleCloseForm();
       }, 3000);
@@ -664,13 +697,41 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
               <label className="block text-sm text-gray-600 mb-2">
                 Logo
               </label>
-              <input
-                type="text"
-                name="logo"
-                className="w-[95%] px-3 py-2 rounded-lg border border-gray-300 hover:cursor-text focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                value={formData.logo}
-                onChange={handleChange}
-              />
+              <div className="space-y-2">
+                {/* File upload input */}
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg,image/gif"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const validation = validateLogoFile(file);
+                      if (!validation.isValid) {
+                        toast.error(validation.error);
+                        return;
+                      }
+                      setSelectedLogoFile(file);
+                      toast.success('Logo file selected');
+                    }
+                  }}
+                  className="w-[95%] px-3 py-2 rounded-lg border border-gray-300 hover:cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                />
+                {selectedLogoFile && (
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm text-gray-600">Selected: {selectedLogoFile.name}</span>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedLogoFile(null)}
+                      className="text-red-600 hover:text-red-800 text-sm"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                )}
+                <p className="text-xs text-gray-500">
+                  Supported formats: PNG, JPEG, GIF. Max size: 5MB
+                </p>
+              </div>
             </div>
 
             <div>
@@ -1053,6 +1114,103 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
                   <option value="no">No</option>
                   <option value="contact us">Contact Us</option>
                 </select>
+              </div>
+
+              {/* New Service Delivery Fields */}
+              <div className="border-t pt-4">
+                <h4 className="text-sm font-medium text-gray-700 mb-3">Service Delivery Options</h4>
+                
+                {/* In-Home Only Toggle */}
+                <div className="mb-4">
+                  <label className="flex items-center space-x-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formData.in_home_only}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          in_home_only: e.target.checked,
+                          // If in-home only is checked, set service delivery accordingly
+                          service_delivery: e.target.checked 
+                            ? { in_home: true, in_clinic: false, telehealth: false }
+                            : formData.service_delivery
+                        })
+                      }
+                      className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                    />
+                    <span className="text-sm font-medium text-gray-700">
+                      In-Home Services Only (No physical locations required)
+                    </span>
+                  </label>
+                  <p className="text-xs text-gray-500 mt-1 ml-7">
+                    Check this if your provider offers only in-home services without physical clinic locations
+                  </p>
+                </div>
+
+                {/* Service Delivery Checkboxes - Only show if not in-home only */}
+                {!formData.in_home_only && (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="flex items-center space-x-3">
+                      <input
+                        type="checkbox"
+                        checked={formData.service_delivery.in_home}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            service_delivery: {
+                              ...formData.service_delivery,
+                              in_home: e.target.checked
+                            }
+                          })
+                        }
+                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                      />
+                      <label className="text-sm font-medium text-gray-700">
+                        In-Home Services
+                      </label>
+                    </div>
+                    
+                    <div className="flex items-center space-x-3">
+                      <input
+                        type="checkbox"
+                        checked={formData.service_delivery.in_clinic}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            service_delivery: {
+                              ...formData.service_delivery,
+                              in_clinic: e.target.checked
+                            }
+                          })
+                        }
+                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                      />
+                      <label className="text-sm font-medium text-gray-700">
+                        In-Clinic Services
+                      </label>
+                    </div>
+                    
+                    <div className="flex items-center space-x-3">
+                      <input
+                        type="checkbox"
+                        checked={formData.service_delivery.telehealth}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            service_delivery: {
+                              ...formData.service_delivery,
+                              telehealth: e.target.checked
+                            }
+                          })
+                        }
+                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                      />
+                      <label className="text-sm font-medium text-gray-700">
+                        Telehealth Services
+                      </label>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
