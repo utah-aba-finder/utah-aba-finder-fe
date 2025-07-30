@@ -154,7 +154,7 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
                   Website: </strong>
                 <a
                   href={provider.website 
-                    ? (provider.website.includes('http') || provider.website.includes('https') 
+                    ? (provider.website.startsWith('http://') || provider.website.startsWith('https://') 
                         ? provider.website 
                         : `https://${provider.website}`)
                     : undefined}
