@@ -102,18 +102,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       const data = await response.json();
       const providerData = data.data?.[0] || {};
       
-      console.log('ProviderEdit: Raw provider data from backend:', providerData);
-      console.log('ProviderEdit: Provider attributes:', providerData.attributes);
-      console.log('ProviderEdit: Provider types:', providerData.attributes?.provider_type);
-      console.log('ProviderEdit: Locations:', providerData.attributes?.locations);
-      console.log('ProviderEdit: Insurance:', providerData.attributes?.insurance);
-      console.log('ProviderEdit: Counties served:', providerData.attributes?.counties_served);
-      console.log('ProviderEdit: Service fields:', {
-        telehealth_services: providerData.attributes?.telehealth_services,
-        spanish_speakers: providerData.attributes?.spanish_speakers,
-        at_home_services: providerData.attributes?.at_home_services,
-        in_clinic_services: providerData.attributes?.in_clinic_services,
-      });
+      
       
       // Ensure we have all required properties with defaults
       const safeProviderData = {
@@ -141,7 +130,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       setSelectedInsurances(safeProviderData.attributes.insurance || []);
       setLocations(safeProviderData.attributes.locations || []);
       
-      console.log('ProviderEdit: Updated state with locations:', safeProviderData.attributes.locations);
+      
     } catch (error) {
       console.error('Error refreshing provider data:', error);
       toast.error('Failed to refresh provider data');
@@ -347,14 +336,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
         services: currentLocations.map(location => location.services || []).flat(),
       };
 
-      console.log('ProviderEdit: Saving provider with data:', {
-        providerId: loggedInProvider.id,
-        locations: currentLocations,
-        providerTypes: selectedProviderTypes,
-        insurance: selectedInsurances,
-        counties: selectedCounties
-      });
-
       const requestBody = {
         data: [{
           id: loggedInProvider.id,
@@ -363,7 +344,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
         }],
       };
 
-      console.log('ProviderEdit: Request body being sent:', requestBody);
+
 
       const response = await fetch(
         `https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/providers/${loggedInProvider.id}`,
@@ -377,7 +358,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
         }
       );
 
-      console.log('ProviderEdit: Response status:', response.status);
+
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -386,7 +367,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       }
 
       const responseData = await response.json();
-      console.log('ProviderEdit: Server success response:', responseData);
       
       // Only call onUpdate if we have valid data
       if (responseData.data?.attributes) {
@@ -722,8 +702,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
               )}
               {selectedTab === "edit" && (
                 <>
-                  {console.log('ProviderEdit: Rendering EditLocation with provider:', currentProvider)}
-                  {console.log('ProviderEdit: Current provider locations:', currentProvider.attributes.locations)}
                   <EditLocation
                     provider={currentProvider}
                     onUpdate={handleProviderUpdate}

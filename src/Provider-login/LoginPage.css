@@ -280,6 +280,33 @@ input:-webkit-autofill {
     height: 100%;
 }
 
+/* Add forgot password link styling */
+.forgot-password-container {
+  text-align: center;
+  margin: 1rem 0;
+}
+
+.forgot-password-link {
+  background: none;
+  border: none;
+  color: #3b82f6;
+  font-size: 0.875rem;
+  cursor: pointer;
+  text-decoration: underline;
+  transition: color 0.15s ease-in-out;
+  padding: 0;
+  margin: 0;
+}
+
+.forgot-password-link:hover {
+  color: #2563eb;
+}
+
+.forgot-password-link:focus {
+  outline: none;
+  text-decoration: none;
+}
+
 @media (max-width: 540px) {
     .loginForm {
         width: 60%;

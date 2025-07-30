@@ -18,14 +18,6 @@ interface ApiError {
 }
 
 const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
-  console.log('EditLocation: Received provider data:', provider);
-  console.log('EditLocation: Provider attributes:', provider.attributes);
-  console.log('EditLocation: Service fields in attributes:', {
-    telehealth_services: provider.attributes.telehealth_services,
-    spanish_speakers: provider.attributes.spanish_speakers,
-    at_home_services: provider.attributes.at_home_services,
-    in_clinic_services: provider.attributes.in_clinic_services,
-  });
   
   const [formData, setFormData] = useState<ProviderAttributes>(
     provider.attributes
@@ -39,9 +31,6 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
 
   // Ensure locations are properly initialized when provider changes
   useEffect(() => {
-    console.log('EditLocation: Provider changed, updating locations');
-    console.log('EditLocation: Provider locations:', provider.attributes.locations);
-    
     const updatedLocations = (provider.attributes.locations || []).map((location: Location) => ({
       ...location,
       services: location.services || []
@@ -89,14 +78,6 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
           ]
         : [];
 
-      console.log('EditLocation: Saving provider with data:', {
-        providerId: provider.id,
-        providerType: provider_type,
-        insurance: selectedInsurances,
-        counties: selectedCounties,
-        locations: locations
-      });
-
       const requestBody = {
         data: [
           {
@@ -120,8 +101,6 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
         ],
       };
 
-      console.log('EditLocation: Request body being sent:', requestBody);
-
       const response = await fetch(
         `https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/providers/${provider.id}`,
         {
@@ -134,8 +113,6 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
         }
       );
 
-      console.log('EditLocation: Response status:', response.status);
-
       if (!response.ok) {
         const errorData = await response.json();
         console.error('EditLocation: Backend error response:', errorData);
@@ -143,7 +120,6 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
       }
 
       const responseData = await response.json();
-      console.log('EditLocation: Server success response:', responseData);
 
       // Only refresh data if the save was successful
       try {
@@ -230,23 +206,17 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
   useEffect(() => {
     const loadStatesAndCounties = async () => {
       try {
-        console.log('EditLocation: Loading states and counties');
-        console.log('EditLocation: Provider states:', provider.states);
-        
         const states = await fetchStates();
         setAvailableStates(states);
-        console.log('EditLocation: Available states loaded:', states.length);
         
         if (provider.states && provider.states[0]) {
           const selectedState = states.find(
             state => state.attributes.name === provider.states[0]
           );
-          console.log('EditLocation: Selected state:', selectedState);
           
           if (selectedState) {
             const counties = await fetchCountiesByState(selectedState.id);
             setAvailableCounties(counties);
-            console.log('EditLocation: Counties loaded for state:', counties.length);
           }
         }
       } catch (error) {
@@ -446,11 +416,8 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
                             
                             try {
                               const result = await uploadProviderLogo(provider.id, file);
-                              console.log('Logo upload result:', result);
                               if (result.success) {
                                 if (result.updatedProvider?.attributes) {
-                                  console.log('Updated provider attributes:', result.updatedProvider.attributes);
-                                  console.log('Logo URL:', result.updatedProvider.attributes.logo);
                                   setFormData(result.updatedProvider.attributes);
                                   toast.success('Logo uploaded successfully');
                                 } else {
@@ -466,7 +433,6 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
                                   
                                   if (refreshResponse.ok) {
                                     const refreshData = await refreshResponse.json();
-                                    console.log('Refresh data:', refreshData);
                                     if (refreshData.data?.[0]?.attributes) {
                                       setFormData(refreshData.data[0].attributes);
                                       toast.success('Logo uploaded successfully');
@@ -474,10 +440,11 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
                                   }
                                 }
                               } else {
+                                console.error('EditLocation: Logo upload failed:', result.error);
                                 toast.error(result.error || 'Failed to upload logo');
                               }
                             } catch (error) {
-                              console.error('Logo upload error:', error);
+                              console.error('EditLocation: Logo upload error:', error);
                               toast.error('Failed to upload logo');
                             }
                           }

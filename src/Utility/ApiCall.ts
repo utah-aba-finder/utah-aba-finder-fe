@@ -189,26 +189,51 @@ export const validateLogoFile = (file: File): { isValid: boolean; error?: string
 
 export const uploadProviderLogo = async (providerId: number, logoFile: File): Promise<{ success: boolean; error?: string; updatedProvider?: any }> => {
   try {
+    console.log('Uploading logo for provider ID:', providerId);
+    console.log('Logo file:', logoFile.name, 'Size:', logoFile.size, 'Type:', logoFile.type);
+    
     const formData = new FormData();
     formData.append('logo', logoFile);
     
     const response = await fetch(
-      `https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/providers/${providerId}`,
+      `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${providerId}`,
       {
         method: 'PATCH',
         headers: {
-          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+          'Authorization': 'be6205db57ce01863f69372308c41e3a'
         },
         body: formData
       }
     );
 
+    console.log('Logo upload response status:', response.status);
+    console.log('Logo upload response headers:', response.headers);
+
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Failed to upload logo');
+      let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+      
+      try {
+        const errorText = await response.text();
+        if (errorText) {
+          try {
+            const errorData = JSON.parse(errorText);
+            errorMessage = errorData.message || errorMessage;
+          } catch (parseError) {
+            // If it's not JSON, use the raw text
+            errorMessage = errorText || errorMessage;
+          }
+        }
+      } catch (textError) {
+        // If we can't read the response text, use the status
+        console.warn('Could not read error response text:', textError);
+      }
+      
+      console.error('Logo upload error response:', errorMessage);
+      throw new Error(errorMessage);
     }
 
     const responseData = await response.json();
+    console.log('Logo upload success response:', responseData);
     return { 
       success: true, 
       updatedProvider: responseData.data?.[0] 
@@ -242,6 +267,67 @@ export const removeProviderLogo = async (providerId: number): Promise<{ success:
     return { success: true };
   } catch (error) {
     console.error('Error removing logo:', error);
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Unknown error occurred' 
+    };
+  }
+};
+
+export const uploadAdminProviderLogo = async (providerId: number, logoFile: File): Promise<{ success: boolean; error?: string; updatedProvider?: any }> => {
+  try {
+    console.log('Uploading logo for provider ID (admin):', providerId);
+    console.log('Logo file:', logoFile.name, 'Size:', logoFile.size, 'Type:', logoFile.type);
+    
+    const formData = new FormData();
+    formData.append('logo', logoFile);
+    
+    const response = await fetch(
+      `https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/providers/${providerId}`,
+      {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+          'X-Admin-Request': 'true', // Add admin header to indicate this is an admin request
+        },
+        body: formData
+      }
+    );
+
+    console.log('Admin logo upload response status:', response.status);
+    console.log('Admin logo upload response headers:', response.headers);
+
+    if (!response.ok) {
+      let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+      
+      try {
+        const errorText = await response.text();
+        if (errorText) {
+          try {
+            const errorData = JSON.parse(errorText);
+            errorMessage = errorData.message || errorMessage;
+          } catch (parseError) {
+            // If it's not JSON, use the raw text
+            errorMessage = errorText || errorMessage;
+          }
+        }
+      } catch (textError) {
+        // If we can't read the response text, use the status
+        console.warn('Could not read error response text:', textError);
+      }
+      
+      console.error('Admin logo upload error response:', errorMessage);
+      throw new Error(errorMessage);
+    }
+
+    const responseData = await response.json();
+    console.log('Admin logo upload success response:', responseData);
+    return { 
+      success: true, 
+      updatedProvider: responseData.data?.[0] 
+    };
+  } catch (error) {
+    console.error('Error uploading admin logo:', error);
     return { 
       success: false, 
       error: error instanceof Error ? error.message : 'Unknown error occurred' 
