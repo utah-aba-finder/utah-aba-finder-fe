@@ -44,6 +44,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       provider_type: loggedInProvider.attributes.provider_type || [],
       insurance: loggedInProvider.attributes.insurance || [],
       counties_served: loggedInProvider.attributes.counties_served || [],
+      locations: loggedInProvider.attributes.locations || [],
     }
   });
   const [isLoading, setIsLoading] = useState(false);
@@ -184,9 +185,21 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
 
   // Update provider data when loggedInProvider changes
   useEffect(() => {
-    setCurrentProvider(loggedInProvider);
+    setCurrentProvider({
+      ...loggedInProvider,
+      attributes: {
+        ...loggedInProvider.attributes,
+        provider_type: loggedInProvider.attributes.provider_type || [],
+        insurance: loggedInProvider.attributes.insurance || [],
+        counties_served: loggedInProvider.attributes.counties_served || [],
+        locations: loggedInProvider.attributes.locations || [],
+      }
+    });
     setProviderState(loggedInProvider.states || []);
     setSelectedCounties(loggedInProvider.attributes.counties_served || []);
+    setSelectedProviderTypes(loggedInProvider.attributes.provider_type || []);
+    setSelectedInsurances(loggedInProvider.attributes.insurance || []);
+    setLocations(loggedInProvider.attributes.locations || []);
   }, [loggedInProvider]);
 
   useEffect(() => {
@@ -708,10 +721,14 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                 <Dashboard provider={currentProvider} />
               )}
               {selectedTab === "edit" && (
-                <EditLocation
-                  provider={currentProvider}
-                  onUpdate={handleProviderUpdate}
-                />
+                <>
+                  {console.log('ProviderEdit: Rendering EditLocation with provider:', currentProvider)}
+                  {console.log('ProviderEdit: Current provider locations:', currentProvider.attributes.locations)}
+                  <EditLocation
+                    provider={currentProvider}
+                    onUpdate={handleProviderUpdate}
+                  />
+                </>
               )}
               {selectedTab === "create" && (
                 <CreateLocation

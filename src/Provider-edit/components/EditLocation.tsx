@@ -1,28 +1,11 @@
-import { FC, useState, useEffect } from "react";
-import {
-  Building2,
-  Mail,
-  Globe,
-  MapPin,
-  DollarSign,
-  Clock,
-  Stethoscope,
-  Languages,
-  X,
-} from "lucide-react";
+import React, { FC, useState, useEffect } from "react";
 import { toast } from "react-toastify";
+import { Building2, MapPin, Globe, Mail, DollarSign, Clock, Video, Home, Stethoscope, Languages, X } from "lucide-react";
 import moment from "moment";
-import {
-  ProviderData,
-  ProviderAttributes,
-  Location,
-  Insurance,
-  CountiesServed,
-  StateData,
-  CountyData,
-  Service,
-} from "../../Utility/Types";
-import { fetchStates, fetchCountiesByState } from "../../Utility/ApiCall";
+import InsuranceModal from "../InsuranceModal";
+import CountiesModal from "../CountiesModal";
+import { ProviderData, ProviderAttributes, Insurance, CountiesServed, Location, StateData, CountyData, Service } from "../../Utility/Types";
+import { fetchStates, fetchCountiesByState, validateLogoFile, uploadProviderLogo, removeProviderLogo } from "../../Utility/ApiCall";
 
 interface EditLocationProps {
   provider: ProviderData;
@@ -53,6 +36,22 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
       services: location.services || []
     }))
   );
+
+  // Ensure locations are properly initialized when provider changes
+  useEffect(() => {
+    console.log('EditLocation: Provider changed, updating locations');
+    console.log('EditLocation: Provider locations:', provider.attributes.locations);
+    
+    const updatedLocations = (provider.attributes.locations || []).map((location: Location) => ({
+      ...location,
+      services: location.services || []
+    }));
+    
+    setLocations(updatedLocations);
+    setFormData(provider.attributes);
+    setSelectedInsurances(provider.attributes.insurance || []);
+    setSelectedCounties(provider.attributes.counties_served || []);
+  }, [provider]);
   
   const [isInsuranceModalOpen, setIsInsuranceModalOpen] = useState(false);
   const [isCountiesModalOpen, setIsCountiesModalOpen] = useState(false);
@@ -210,7 +209,16 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
   };
 
   useEffect(() => {
-    setFormData(provider.attributes);
+    setFormData({
+      ...provider.attributes,
+      // Initialize new fields with defaults if they don't exist
+      in_home_only: provider.attributes.in_home_only || false,
+      service_delivery: provider.attributes.service_delivery || {
+        in_home: false,
+        in_clinic: false,
+        telehealth: false
+      }
+    });
     setLocations((provider.attributes.locations || []).map((location: Location) => ({
       ...location,
       services: location.services || []
@@ -222,15 +230,23 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
   useEffect(() => {
     const loadStatesAndCounties = async () => {
       try {
+        console.log('EditLocation: Loading states and counties');
+        console.log('EditLocation: Provider states:', provider.states);
+        
         const states = await fetchStates();
         setAvailableStates(states);
-        if (provider.states[0]) {
+        console.log('EditLocation: Available states loaded:', states.length);
+        
+        if (provider.states && provider.states[0]) {
           const selectedState = states.find(
             state => state.attributes.name === provider.states[0]
           );
+          console.log('EditLocation: Selected state:', selectedState);
+          
           if (selectedState) {
             const counties = await fetchCountiesByState(selectedState.id);
             setAvailableCounties(counties);
+            console.log('EditLocation: Counties loaded for state:', counties.length);
           }
         }
       } catch (error) {
@@ -382,16 +398,96 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
 
                   <div>
                     <label className="block text-sm text-gray-600 mb-2">
-                      Logo URL
+                      Logo
                     </label>
-                    <input
-                      type="text"
-                      value={formData.logo || ""}
-                      onChange={(e) =>
-                        setFormData({ ...formData, logo: e.target.value })
-                      }
-                      className="block w-[95%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm cursor-text"
-                    />
+                    <div className="space-y-2">
+                      {/* Current logo display */}
+                      {formData.logo && (
+                        <div className="flex items-center space-x-3 mb-2">
+                          <img 
+                            src={formData.logo} 
+                            alt="Current logo" 
+                            className="w-12 h-12 object-cover rounded border"
+                          />
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              try {
+                                const result = await removeProviderLogo(provider.id);
+                                if (result.success) {
+                                  setFormData({ ...formData, logo: null });
+                                  toast.success('Logo removed successfully');
+                                } else {
+                                  toast.error(result.error || 'Failed to remove logo');
+                                }
+                              } catch (error) {
+                                toast.error('Failed to remove logo');
+                              }
+                            }}
+                            className="text-red-600 hover:text-red-800 text-sm"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      )}
+                      
+                      {/* File upload input */}
+                      <input
+                        type="file"
+                        accept="image/png,image/jpeg,image/gif"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const validation = validateLogoFile(file);
+                            if (!validation.isValid) {
+                              toast.error(validation.error);
+                              return;
+                            }
+                            
+                            try {
+                              const result = await uploadProviderLogo(provider.id, file);
+                              console.log('Logo upload result:', result);
+                              if (result.success) {
+                                if (result.updatedProvider?.attributes) {
+                                  console.log('Updated provider attributes:', result.updatedProvider.attributes);
+                                  console.log('Logo URL:', result.updatedProvider.attributes.logo);
+                                  setFormData(result.updatedProvider.attributes);
+                                  toast.success('Logo uploaded successfully');
+                                } else {
+                                  // Fallback: refresh provider data to get the new logo URL
+                                  const refreshResponse = await fetch(
+                                    `https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/providers/${provider.id}`,
+                                    {
+                                      headers: {
+                                        'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+                                      },
+                                    }
+                                  );
+                                  
+                                  if (refreshResponse.ok) {
+                                    const refreshData = await refreshResponse.json();
+                                    console.log('Refresh data:', refreshData);
+                                    if (refreshData.data?.[0]?.attributes) {
+                                      setFormData(refreshData.data[0].attributes);
+                                      toast.success('Logo uploaded successfully');
+                                    }
+                                  }
+                                }
+                              } else {
+                                toast.error(result.error || 'Failed to upload logo');
+                              }
+                            } catch (error) {
+                              console.error('Logo upload error:', error);
+                              toast.error('Failed to upload logo');
+                            }
+                          }
+                        }}
+                        className="block w-[95%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm cursor-pointer"
+                      />
+                      <p className="text-xs text-gray-500">
+                        Supported formats: PNG, JPEG, GIF. Max size: 5MB
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -599,10 +695,11 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
                           className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm flex items-center"
                         >
                           <span>{service.name}</span>
-                            <X  
-                             onClick={() => handleServiceChange(index, service)}
-                             className="ml-2 hover:text-red-500 p-0 border-0 bg-transparent cursor-pointer"
-                           />
+                          <X 
+                            size={16}
+                            onClick={() => handleServiceChange(index, service)}
+                            className="ml-2 hover:text-red-500 p-0 border-0 bg-transparent cursor-pointer"
+                          />
                         </div>
                       ))}
                     </div>
@@ -777,6 +874,99 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
                   <label className="block text-sm font-medium text-gray-600 mb-4">
                     Service Delivery Options
                   </label>
+                  
+                  {/* In-Home Only Toggle */}
+                  <div className="mb-6">
+                    <label className="flex items-center space-x-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={formData.in_home_only || false}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            in_home_only: e.target.checked,
+                            // If in-home only is checked, set service delivery accordingly
+                            service_delivery: e.target.checked 
+                              ? { in_home: true, in_clinic: false, telehealth: false }
+                              : formData.service_delivery || { in_home: false, in_clinic: false, telehealth: false }
+                          })
+                        }
+                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                      />
+                      <span className="text-sm font-medium text-gray-700">
+                        In-Home Services Only (No physical locations required)
+                      </span>
+                    </label>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Check this if your provider offers only in-home services without physical clinic locations
+                    </p>
+                  </div>
+
+                  {/* Service Delivery Checkboxes - Only show if not in-home only */}
+                  {!formData.in_home_only && (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                      <div className="flex items-center space-x-3">
+                        <input
+                          type="checkbox"
+                          checked={formData.service_delivery?.in_home || false}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              service_delivery: {
+                                ...formData.service_delivery,
+                                in_home: e.target.checked
+                              }
+                            })
+                          }
+                          className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                        />
+                        <label className="text-sm font-medium text-gray-700">
+                          In-Home Services
+                        </label>
+                      </div>
+                      
+                      <div className="flex items-center space-x-3">
+                        <input
+                          type="checkbox"
+                          checked={formData.service_delivery?.in_clinic || false}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              service_delivery: {
+                                ...formData.service_delivery,
+                                in_clinic: e.target.checked
+                              }
+                            })
+                          }
+                          className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                        />
+                        <label className="text-sm font-medium text-gray-700">
+                          In-Clinic Services
+                        </label>
+                      </div>
+                      
+                      <div className="flex items-center space-x-3">
+                        <input
+                          type="checkbox"
+                          checked={formData.service_delivery?.telehealth || false}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              service_delivery: {
+                                ...formData.service_delivery,
+                                telehealth: e.target.checked
+                              }
+                            })
+                          }
+                          className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                        />
+                        <label className="text-sm font-medium text-gray-700">
+                          Telehealth Services
+                        </label>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="relative">
                       <label className="block text-sm text-gray-600 mb-2">

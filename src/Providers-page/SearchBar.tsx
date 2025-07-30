@@ -32,6 +32,7 @@ interface SearchBarProps {
   providers: ProviderAttributes[];
   onProviderTypeChange: (providerType: string) => void;
   totalProviders: number;
+  showSearchNotification?: boolean;
 }
 
 const SearchBar: React.FC<SearchBarProps> = ({
@@ -47,7 +48,8 @@ const SearchBar: React.FC<SearchBarProps> = ({
   onReset,
   providers,
   totalProviders,
-  onProviderTypeChange
+  onProviderTypeChange,
+  showSearchNotification = false
 }) => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedCounty, setSelectedCounty] = useState<string>('');
@@ -85,7 +87,9 @@ const SearchBar: React.FC<SearchBarProps> = ({
     const getCounties = async () => {
       if (selectedStateId !== 'none') {
         try {
+          console.log('Fetching counties for state:', selectedStateId);
           const countiesData = await fetchCountiesByState(parseInt(selectedStateId));
+          console.log('Counties data:', countiesData);
           setCounties(countiesData);
           // Only reset county if state changes and not during initial load
           if (selectedCounty !== '') {
@@ -122,6 +126,10 @@ const SearchBar: React.FC<SearchBarProps> = ({
   }, [showNotification, isVisible]);
 
   const handleSearch = useCallback(() => {
+    // Reset notification state
+    setShowNotification(false);
+    setIsVisible(false);
+    
     onSearch({
       query: searchQuery,
       county_name: selectedCounty,
@@ -135,8 +143,8 @@ const SearchBar: React.FC<SearchBarProps> = ({
       state: selectedState,
       hasReviews: selectedHasReviews,
     });
-    setShowNotification(true);
-    setIsVisible(true);
+    
+    // Don't show notification immediately - let the parent component control it
   }, [
     searchQuery,
     selectedCounty,
@@ -151,6 +159,14 @@ const SearchBar: React.FC<SearchBarProps> = ({
     selectedHasReviews,
     onSearch,
   ]);
+
+  // Show notification when parent component signals it's ready
+  useEffect(() => {
+    if (showSearchNotification) {
+      setShowNotification(true);
+      setIsVisible(true);
+    }
+  }, [showSearchNotification]);
 
   const handleReset = () => {
     setSearchQuery('');
@@ -301,9 +317,9 @@ const SearchBar: React.FC<SearchBarProps> = ({
                 }}
                 aria-label="Select County"
                 required
-                disabled={selectedStateId === 'none'}
+                disabled={selectedStateId === 'none' || selectedStateId === ''}
               >
-                <option value="">All Counties</option>
+                <option value="">All Counties ({counties.length} available)</option>
                 {counties.map((county) => (
                   <option key={county.id} value={county.attributes.name}>
                     {county.attributes.name}
@@ -319,6 +335,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
                 onChange={(e) => {
                   setSelectedAge(e.target.value);
                   onAgeChange(e.target.value);
+                  // Don't trigger auto-search for age changes
                 }}
                 aria-label="Select Age Group"
               >
@@ -334,10 +351,14 @@ const SearchBar: React.FC<SearchBarProps> = ({
               <select
                 className="provider-service-select"
                 value={selectedService}
-                onChange={(e) => setSelectedService(e.target.value)}
+                onChange={(e) => {
+                  setSelectedService(e.target.value);
+                  onServiceChange(e.target.value);
+                }}
                 aria-label="Select Service Type"
               >
                 <option value="">All Services</option>
+                <option value="in_home_only">In-Home Services Only</option>
                 <option value="telehealth">Telehealth Services</option>
                 <option value="at_home">At Home Services</option>
                 <option value="in_clinic">In Clinic Services</option>
@@ -348,7 +369,10 @@ const SearchBar: React.FC<SearchBarProps> = ({
               <select
                 className="provider-waitlist-select"
                 value={selectedWaitList}
-                onChange={(e) => setSelectedWaitList(e.target.value)}
+                onChange={(e) => {
+                  setSelectedWaitList(e.target.value);
+                  onWaitListChange(e.target.value);
+                }}
                 aria-label="Select Waitlist Status"
               >
                 <option value="">All Waitlist Status</option>
@@ -363,7 +387,10 @@ const SearchBar: React.FC<SearchBarProps> = ({
               <select
                 className="provider-spanish-select"
                 value={selectedSpanish}
-                onChange={(e) => setSelectedSpanish(e.target.value)}
+                onChange={(e) => {
+                  setSelectedSpanish(e.target.value);
+                  onSpanishChange(e.target.value);
+                }}
                 aria-label="Spanish Language Option"
               >
                 <option value="">Spanish?</option>
@@ -417,7 +444,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
           <div className={`bg-steelblue text-white p-4 rounded-lg shadow-lg transform transition-all duration-300 ease-in-out ${showNotification ? 'animate-jump-in' : 'animate-jump-out'}`}>
             <span className="font-bold">
               {providers.length === 0
-                ? `No ${selectedProviderType} providers found for the selected state make sure to check back periodically!`
+                ? `No ${selectedProviderType} providers found. Try adjusting your filters or check back later for new providers.`
                 : `Your search resulted in ${providers.length} ${selectedProviderType} providers`}
             </span>
           </div>

@@ -1,7 +1,7 @@
 import React from 'react';
 import puzzleLogo from '../Assets/puzzle.png';
 import { ProviderAttributes } from '../Utility/Types';
-import { MapPin, Phone, Mail, Globe, Eye, ToggleLeft, ToggleRight, Briefcase } from 'lucide-react';
+import { MapPin, Phone, Mail, Globe, Eye, ToggleLeft, ToggleRight, Briefcase, Home, Building, Monitor } from 'lucide-react';
 import './ProviderCard.css';
 import { toast } from 'react-toastify';
 
@@ -37,10 +37,14 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
     });
 
     if (isFavorited) {
-      toast.info(`${provider.name} removed from favorites`, { autoClose: 3000 });
+      setTimeout(() => {
+        toast.info(`${provider.name} removed from favorites`, { autoClose: 3000 });
+      }, 500); // 500ms delay
       onToggleFavorite(provider.id);
     } else {
-      toast.success(`${provider.name} added to favorites`, { autoClose: 3000 });
+      setTimeout(() => {
+        toast.success(`${provider.name} added to favorites`, { autoClose: 3000 });
+      }, 500); // 500ms delay
       onToggleFavorite(provider.id, currentDate);
     }
   };
@@ -52,6 +56,51 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
 
   // Use the first matching location, or fall back to the first location if none match
   const primaryLocation = filteredLocations[0] || provider.locations[0];
+
+  // Render service delivery badges
+  const renderServiceDeliveryBadges = () => {
+    const badges = [];
+    
+    if (provider.in_home_only) {
+      badges.push(
+        <span key="in-home-only" className="service-badge in-home-only">
+          <Home size={12} style={{ marginRight: '4px' }} />
+          In-Home Only
+        </span>
+      );
+    } else {
+      if (provider.service_delivery?.in_home) {
+        badges.push(
+          <span key="in-home" className="service-badge in-home">
+            <Home size={12} style={{ marginRight: '4px' }} />
+            In-Home
+          </span>
+        );
+      }
+      if (provider.service_delivery?.in_clinic) {
+        badges.push(
+          <span key="in-clinic" className="service-badge in-clinic">
+            <Building size={12} style={{ marginRight: '4px' }} />
+            In-Clinic
+          </span>
+        );
+      }
+      if (provider.service_delivery?.telehealth) {
+        badges.push(
+          <span key="telehealth" className="service-badge telehealth">
+            <Monitor size={12} style={{ marginRight: '4px' }} />
+            Telehealth
+          </span>
+        );
+      }
+    }
+    
+    return badges.length > 0 ? (
+      <div className="service-delivery-badges">
+        {badges}
+      </div>
+    ) : null;
+  };
 
   return (
     <div className={`searched-provider-card ${provider.locations.length > 1 ? 'multiple-locations' : ''}`}>
@@ -69,12 +118,18 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
           <div className="card-text-and-buttons">
             <div className="card-text text">
               <div className="card-name title">{provider.name}</div>
+              
+              {/* Service delivery badges */}
+              {renderServiceDeliveryBadges()}
+              
               <h4>
                 <strong>
                   <MapPin style={{ marginRight: '8px' }} />
                   <span>Address: </span>
                 </strong>
-                {primaryLocation ? (
+                {provider.in_home_only ? (
+                  'In-Home Services Only - No Physical Location'
+                ) : primaryLocation ? (
                   <>
                     {primaryLocation.address_1}
                     {primaryLocation?.address_2 && `, ${primaryLocation.address_2}`}

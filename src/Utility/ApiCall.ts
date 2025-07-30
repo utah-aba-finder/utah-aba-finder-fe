@@ -66,12 +66,17 @@ export const fetchStates = async (): Promise<StateData[]> => {
 };
 
 export const fetchCountiesByState = async (stateId: number): Promise<CountyData[]> => {
+  const authToken = sessionStorage.getItem("authToken");
+  const headers: Record<string, string> = {};
+  
+  if (authToken) {
+    headers.Authorization = `Bearer ${authToken}`;
+  }
+  
   const response = await fetch(
     `https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/states/${stateId}/counties`,
     {
-      headers: {
-        Authorization: `Bearer ${sessionStorage.getItem("authToken")}`,
-      },
+      headers,
     }
   );
   if (!response.ok) throw new Error("Failed to fetch counties");
@@ -92,19 +97,38 @@ export const fetchInsurance = async (): Promise<InsuranceData[]> => {
   return data.data;
 };
 
-export const fetchProvidersByStateIdAndProviderType = async(stateId: string, providerType: string): Promise<Providers> => {
-  const response = await fetch(
-    `https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/states/${stateId}/providers?provider_type=${providerType}`,
-    {
+// Test function to check API health
+export const testAPIHealth = async (): Promise<{ status: string; message: string }> => {
+  try {
+    console.log('Testing API health...');
+    
+    // Test basic providers endpoint
+    const response = await fetch('https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/providers', {
       headers: {
         Authorization: `Bearer ${sessionStorage.getItem("authToken")}`,
       },
+    });
+    
+    console.log('Basic providers endpoint status:', response.status);
+    
+    if (response.ok) {
+      return { status: 'healthy', message: 'API is working correctly' };
+    } else {
+      const errorText = await response.text();
+      return { status: 'error', message: `API returned ${response.status}: ${errorText}` };
     }
-  );
-  if(!response.ok) throw new Error("Failed to fetch providers");
-  const data = await response.json();
-  return data;
-}
+  } catch (error) {
+    console.error('API health check failed:', error);
+    return { status: 'error', message: `API health check failed: ${error instanceof Error ? error.message : 'Unknown error'}` };
+  }
+};
+
+export const fetchProvidersByStateIdAndProviderType = async (stateId: string, providerType: string) => {
+  const url = `https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/states/${stateId}/providers?provider_type=${encodeURIComponent(providerType)}`;
+  const response = await fetch(url);
+  if (!response.ok) throw new Error('Failed to fetch providers');
+  return response.json();
+};
 
 // Network connectivity utility
 export const checkNetworkConnectivity = (): Promise<boolean> => {
@@ -145,4 +169,82 @@ export const retryRequest = async <T>(
   }
   
   throw lastError;
+};
+
+// Logo upload utility functions
+export const validateLogoFile = (file: File): { isValid: boolean; error?: string } => {
+  const allowedTypes = ['image/png', 'image/jpeg', 'image/gif'];
+  const maxSize = 5 * 1024 * 1024; // 5MB
+  
+  if (!allowedTypes.includes(file.type)) {
+    return { isValid: false, error: 'Please select a PNG, JPEG, or GIF file' };
+  }
+  
+  if (file.size > maxSize) {
+    return { isValid: false, error: 'File size must be less than 5MB' };
+  }
+  
+  return { isValid: true };
+};
+
+export const uploadProviderLogo = async (providerId: number, logoFile: File): Promise<{ success: boolean; error?: string; updatedProvider?: any }> => {
+  try {
+    const formData = new FormData();
+    formData.append('logo', logoFile);
+    
+    const response = await fetch(
+      `https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/providers/${providerId}`,
+      {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+        },
+        body: formData
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to upload logo');
+    }
+
+    const responseData = await response.json();
+    return { 
+      success: true, 
+      updatedProvider: responseData.data?.[0] 
+    };
+  } catch (error) {
+    console.error('Error uploading logo:', error);
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Unknown error occurred' 
+    };
+  }
+};
+
+export const removeProviderLogo = async (providerId: number): Promise<{ success: boolean; error?: string }> => {
+  try {
+    const response = await fetch(
+      `https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/providers/${providerId}/remove_logo`,
+      {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+        }
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to remove logo');
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error removing logo:', error);
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Unknown error occurred' 
+    };
+  }
 };

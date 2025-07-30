@@ -509,3 +509,62 @@
         font-size: 14px;
     }
 }
+
+/* Service Delivery Badges */
+.service-delivery-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.service-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.service-badge.in-home-only {
+    background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+    color: white;
+}
+
+.service-badge.in-home {
+    background: linear-gradient(135deg, #4ecdc4, #44a08d);
+    color: white;
+}
+
+.service-badge.in-clinic {
+    background: linear-gradient(135deg, #45b7d1, #96c93d);
+    color: white;
+}
+
+.service-badge.telehealth {
+    background: linear-gradient(135deg, #a8e6cf, #dcedc1);
+    color: #2d5016;
+}
+
+.service-badge:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Responsive service badges */
+@media (max-width: 819px) {
+    .service-delivery-badges {
+        gap: 6px;
+        margin-bottom: 6px;
+    }
+    
+    .service-badge {
+        padding: 3px 6px;
+        font-size: 0.7rem;
+    }
+}

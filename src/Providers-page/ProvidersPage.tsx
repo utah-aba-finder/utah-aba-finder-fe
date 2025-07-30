@@ -7,7 +7,7 @@ import ProviderCard from "./ProviderCard";
 import { Providers, ProviderAttributes, InsuranceData, Insurance, CountiesServed as County, ProviderType as ProviderTypeInterface, ProviderData, CountyData, Location } from "../Utility/Types";
 import gearImage from "../Assets/Gear@1x-0.5s-200px-200px.svg";
 import Joyride, { Step, STATUS } from "react-joyride";
-import { fetchProviders, fetchProvidersByStateIdAndProviderType, fetchInsurance, fetchCountiesByState } from "../Utility/ApiCall";
+import { fetchProviders, fetchInsurance, fetchCountiesByState, testAPIHealth, fetchProvidersByStateIdAndProviderType } from "../Utility/ApiCall";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import SEO from "../Utility/SEO";
@@ -64,6 +64,8 @@ const ProvidersPage: React.FC = () => {
   const [run, setRun] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
   const [isSearchRefined, setIsSearchRefined] = useState(false);
+  const [showResultMessage, setShowResultMessage] = useState(false);
+  const [showSearchNotification, setShowSearchNotification] = useState(false);
   
   const [steps] = useState<Step[]>([
     {
@@ -97,12 +99,13 @@ const ProvidersPage: React.FC = () => {
     },
   ]);
   const [insuranceOptions, setInsuranceOptions] = useState<InsuranceData[]>([]);
+  const isMountedRef = useRef(false);
 
   useEffect(() => {
-    const hasVisited = localStorage.getItem("providersPageVisited");
-    if (!hasVisited) {
-      setRun(true);
-    }
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
   }, []);
 
   const handleJoyrideCallback = (data: any) => {
@@ -138,16 +141,28 @@ const ProvidersPage: React.FC = () => {
   }, []);
 
   const toggleFavorite = useCallback(
-    (providerId: number) => {
+    (providerId: number, date?: string) => {
+      console.log('toggleFavorite called with providerId:', providerId, 'date:', date);
+      
       setFavoriteProviders((prevFavorites) => {
-        const provider = allProviders.find((p) => p.id === providerId);
-        if (!provider) return prevFavorites;
+        // First try to find the provider in filtered providers, then in all providers
+        const provider = filteredProviders.find((p) => p.id === providerId) || 
+                        allProviders.find((p) => p.id === providerId);
+        
+        console.log('Found provider:', provider?.name, 'with id:', provider?.id);
+        
+        if (!provider) {
+          console.log('Provider not found for id:', providerId);
+          return prevFavorites;
+        }
 
-        const isFavorited = prevFavorites.some((fav) => fav.id === providerId);
+        const isFavorited = (prevFavorites ?? []).some((fav) => fav.id === providerId);
+        console.log('Current favorited state:', isFavorited);
 
         let newFavorites;
         if (isFavorited) {
           newFavorites = prevFavorites.filter((fav) => fav.id !== providerId);
+          console.log('Removing from favorites');
 
           setFavoriteDates((prevDates) => {
             const { [providerId]: _, ...rest } = prevDates;
@@ -156,8 +171,9 @@ const ProvidersPage: React.FC = () => {
           });
         } else {
           newFavorites = [...prevFavorites, provider];
+          console.log('Adding to favorites');
 
-          const currentDate = new Date().toLocaleDateString("en-US", {
+          const currentDate = date || new Date().toLocaleDateString("en-US", {
             month: "2-digit",
             day: "2-digit",
             year: "2-digit",
@@ -180,51 +196,88 @@ const ProvidersPage: React.FC = () => {
           JSON.stringify(sortedFavorites)
         );
 
+        console.log('New favorites count:', sortedFavorites.length);
         return sortedFavorites;
       });
     },
-    [allProviders]
+    [allProviders, filteredProviders]
   );
 
   useEffect(() => {
     const getProviders = async () => {
       try {
-        setShowError("");
-        setIsLoading(true);
-        if (errorTimeoutRef.current) {
-          clearTimeout(errorTimeoutRef.current);
-        }
-        const providersList: Providers = await fetchProviders();
-        const mappedProviders = providersList.data.map((provider: ProviderData) => ({
-          ...provider.attributes,
-          id: provider.id,
-        }));
-
-        const sortedProviders = mappedProviders.sort((a, b) => {
-          const nameA = a.name ?? "";
-          const nameB = b.name ?? "";
-          return nameA.localeCompare(nameB);
-        });
-        setAllProviders(sortedProviders);
-        setFilteredProviders(sortedProviders);
-
-        setMapAddress("Utah");
-        setIsLoading(false);
-        if (sortedProviders.length === 0) {
-          errorTimeoutRef.current = setTimeout(() => {
-            setShowError(
-              "We are currently experiencing issues displaying Providers. Please try again later."
-            );
-          }, 5000);
-        }
+        if (isMountedRef.current) setIsLoading(true);
+        
+        const providers = await fetchProviders();
+        setAllProviders(providers.data.map((p: ProviderData) => ({
+          id: p.attributes.id,
+          name: p.attributes.name,
+          locations: p.attributes.locations,
+          insurance: p.attributes.insurance,
+          counties_served: p.attributes.counties_served,
+          password: p.attributes.password,
+          username: p.attributes.username,
+          website: p.attributes.website,
+          email: p.attributes.email,
+          cost: p.attributes.cost,
+          min_age: p.attributes.min_age,
+          max_age: p.attributes.max_age,
+          waitlist: p.attributes.waitlist,
+          telehealth_services: p.attributes.telehealth_services,
+          spanish_speakers: p.attributes.spanish_speakers,
+          at_home_services: p.attributes.at_home_services,
+          in_clinic_services: p.attributes.in_clinic_services,
+          logo: p.attributes.logo,
+          // Missing required properties
+          states: p.states || [],
+          provider_type: p.attributes.provider_type || [],
+          updated_last: p.attributes.updated_last,
+          status: p.attributes.status,
+          // New fields from API update
+          in_home_only: p.attributes.in_home_only || false,
+          service_delivery: p.attributes.service_delivery || {
+            in_home: false,
+            in_clinic: false,
+            telehealth: false
+          }
+        })));
+        setFilteredProviders(providers.data.map((p: ProviderData) => ({
+          id: p.attributes.id,
+          name: p.attributes.name,
+          locations: p.attributes.locations,
+          insurance: p.attributes.insurance,
+          counties_served: p.attributes.counties_served,
+          password: p.attributes.password,
+          username: p.attributes.username,
+          website: p.attributes.website,
+          email: p.attributes.email,
+          cost: p.attributes.cost,
+          min_age: p.attributes.min_age,
+          max_age: p.attributes.max_age,
+          waitlist: p.attributes.waitlist,
+          telehealth_services: p.attributes.telehealth_services,
+          spanish_speakers: p.attributes.spanish_speakers,
+          at_home_services: p.attributes.at_home_services,
+          in_clinic_services: p.attributes.in_clinic_services,
+          logo: p.attributes.logo,
+          // Missing required properties
+          states: p.states || [],
+          provider_type: p.attributes.provider_type || [],
+          updated_last: p.attributes.updated_last,
+          status: p.attributes.status,
+          // New fields from API update
+          in_home_only: p.attributes.in_home_only || false,
+          service_delivery: p.attributes.service_delivery || {
+            in_home: false,
+            in_clinic: false,
+            telehealth: false
+          }
+        })));
       } catch (error) {
-        console.error("Error loading providers:", error);
-        setIsLoading(false);
-        errorTimeoutRef.current = setTimeout(() => {
-          setShowError(
-            "We are currently experiencing issues displaying Providers. Please try again later."
-          );
-        }, 5000);
+        console.error("Error fetching providers:", error);
+        setShowError("Failed to load providers. Please try again later.");
+      } finally {
+        if (isMountedRef.current) setIsLoading(false);
       }
     };
     getProviders();
@@ -235,191 +288,175 @@ const ProvidersPage: React.FC = () => {
     };
   }, []);
 
-  const handleSearch = useCallback(
-    async ({ 
-      state, 
-      stateId, 
-      providerType,
-      query,
-      county_name,
-      insurance,
-      spanish,
-      service,
-      waitlist,
-      age,
-      hasReviews
-    }: {
-      state: string;
-      stateId: string;
-      providerType: string;
-      query: string;
-      county_name: string;
-      insurance: string;
-      spanish: string;
-      service: string;
-      waitlist: string;
-      age: string;
-      hasReviews: string;
-    }) => {
-      setSelectedStateAbbr(state);
-      setIsSearchRefined(true);
-      try {
-        setIsLoading(true);
-        setFilteredProviders([]); // Reset filtered providers before new search
+  const handleSearch = async (searchParams: any) => {
+    console.log('handleSearch called, setting loading to true');
+    if (isMountedRef.current) setIsLoading(true);
+    setShowResultMessage(false); // Hide result message immediately when search starts
+    setIsSearchRefined(false); // Reset search refined state until we have results
+    setShowSearchNotification(false); // Reset search notification
+    try {
+      const { stateId, providerType, query, county_name, insurance, spanish, service, waitlist, age, hasReviews } = searchParams;
+      const results = await fetchProvidersByStateIdAndProviderType(stateId, providerType);
+      // Map API response to ProviderAttributes
+      const mappedProviders = results.data.map((p: any) => ({
+        id: p.attributes.id || p.id, // Use attributes.id if available, fallback to p.id
+        ...p.attributes,
+        states: p.states || [],
+        provider_type: p.attributes.provider_type || [],
+        updated_last: p.attributes.updated_last,
+        status: p.attributes.status,
+        in_home_only: p.attributes.in_home_only || false,
+        service_delivery: p.attributes.service_delivery || { in_home: false, in_clinic: false, telehealth: false }
+      }));
 
-        // If a state is selected, fetch its counties
-        if (stateId !== 'none') {
-          const countiesData = await fetchCountiesByState(parseInt(stateId));
-          setCounties(countiesData);
-        } else {
-          setCounties([]);
+      // Apply comprehensive filtering
+      let filteredResults = mappedProviders;
+      
+      // Name filter
+      if (query && query.trim()) {
+        const searchTerm = query.toLowerCase().trim();
+        filteredResults = filteredResults.filter((provider: ProviderAttributes) => 
+          provider.name && provider.name.toLowerCase().includes(searchTerm)
+        );
+      }
+
+      // County filter
+      if (county_name && county_name.trim()) {
+        filteredResults = filteredResults.filter((provider: ProviderAttributes) => 
+          provider.counties_served && provider.counties_served.some(county => 
+            county.county_name && county.county_name.toLowerCase().includes(county_name.toLowerCase())
+          )
+        );
+      }
+
+      // Insurance filter
+      if (insurance && insurance.trim()) {
+        filteredResults = filteredResults.filter((provider: ProviderAttributes) => 
+          provider.insurance && provider.insurance.some(ins => 
+            ins.name && ins.name.toLowerCase().includes(insurance.toLowerCase())
+          )
+        );
+      }
+
+      // Spanish speakers filter
+      if (spanish && spanish.toLowerCase() === 'yes') {
+        filteredResults = filteredResults.filter((provider: ProviderAttributes) => 
+          provider.spanish_speakers && provider.spanish_speakers.toLowerCase().includes('yes')
+        );
+      }
+
+      // Service filter
+      if (service && service.trim()) {
+        switch (service) {
+          case "in_home_only":
+            filteredResults = filteredResults.filter((provider: ProviderAttributes) => provider.in_home_only === true);
+            break;
+          case "telehealth":
+            filteredResults = filteredResults.filter((provider: ProviderAttributes) => provider.service_delivery?.telehealth === true);
+            break;
+          case "at_home":
+            filteredResults = filteredResults.filter((provider: ProviderAttributes) => provider.service_delivery?.in_home === true);
+            break;
+          case "in_clinic":
+            filteredResults = filteredResults.filter((provider: ProviderAttributes) => provider.service_delivery?.in_clinic === true);
+            break;
         }
+      }
 
-        // If both state and provider type are selected, use the specific API endpoint
-        if (stateId !== 'none' && providerType !== 'none') {
-          const response = await fetchProvidersByStateIdAndProviderType(stateId, providerType);
-          const providersToFilter = response.data.map(provider => ({
-            ...provider.attributes,
-            id: provider.id,
-          }));
-
-          // Show message if no providers found
-          if (providersToFilter.length === 0) {
-            setShowError(`We currently don't have any ${providerType} providers for this state, please check back periodically! Also ensure you have selected a state and provider type to see results!`);
-            setIsLoading(false);
-            return;
-          }
-
-          // Filter providers based on location-specific services or provider type
-          const filtered = providersToFilter
-            .filter((provider: ProviderAttributes) => {
-              // Check if provider has any physical locations
-              const hasPhysicalLocations = provider.locations.some(location => 
-                location.address_1 || location.city || location.state || location.zip
-              );
-
-              if (hasPhysicalLocations) {
-                // For providers with physical locations, check if they offer the service in the selected state
-                const hasServiceInState = provider.locations.some(location => {
-                  const isInSelectedState = location.state?.toUpperCase() === state.toUpperCase();
-                  const hasSelectedService = location.services?.some(service => 
-                    service.name === providerType
-                  );
-                  return isInSelectedState && hasSelectedService;
-                });
-
-                if (!hasServiceInState) return false;
-              } else {
-                // For providers without physical locations, check if they offer the service type
-                const hasProviderType = provider.provider_type.some(type => 
-                  type.name === providerType
-                );
-                if (!hasProviderType) return false;
-              }
-
-              // Apply additional filters
-              return (
-                provider.name?.toLowerCase().includes(query.toLowerCase()) &&
-                (!county_name ||
-                  provider.counties_served.some((c: County) =>
-                    c.county_name?.toLowerCase().includes(county_name.toLowerCase())
-                  )) &&
-                (!insurance ||
-                  provider.insurance.some((i: Insurance) =>
-                    i.name?.toLowerCase().includes(insurance.toLowerCase())
-                  )) &&
-                (spanish === "" ||
-                  (spanish === "no" &&
-                    (!provider.spanish_speakers ||
-                      provider.spanish_speakers.toLowerCase() === "no")) ||
-                  (spanish === "yes" &&
-                    (provider.spanish_speakers?.toLowerCase() === "yes" ||
-                      provider.spanish_speakers === null ||
-                      provider.spanish_speakers.toLowerCase() === "limited"))) &&
-                (!service ||
-                  (service === "telehealth" &&
-                    provider.telehealth_services?.toLowerCase() === "yes") ||
-                  (service === "at_home" &&
-                    provider.at_home_services?.toLowerCase() === "yes") ||
-                  (service === "in_clinic" &&
-                    provider.in_clinic_services?.toLowerCase() === "yes")) &&
-                (!waitlist ||
-                  (waitlist === "in_home_available" &&
-                    provider.locations.some((loc) => loc.in_home_waitlist === false)) ||
-                  (waitlist === "in_clinic_available" &&
-                    provider.locations.some((loc) => loc.in_clinic_waitlist === false)) ||
-                  (waitlist === "both_available" &&
-                    provider.locations.some((loc) => loc.in_home_waitlist === false && loc.in_clinic_waitlist === false)) ||
-                  (waitlist === "both_waitlist" &&
-                    provider.locations.some((loc) => loc.in_home_waitlist === true && loc.in_clinic_waitlist === true))) &&
-                (!age ||
-                  (provider.min_age !== null &&
-                    provider.max_age !== null &&
-                    ((age === "0-2" &&
-                      provider.min_age <= 0 &&
-                      provider.max_age >= 2) ||
-                      (age === "3-5" &&
-                        provider.min_age <= 3 &&
-                        provider.max_age >= 5) ||
-                      (age === "5-7" &&
-                        provider.min_age <= 5 &&
-                        provider.max_age >= 7) ||
-                      (age === "8-10" &&
-                        provider.min_age <= 8 &&
-                        provider.max_age >= 10) ||
-                      (age === "11-13" &&
-                        provider.min_age <= 11 &&
-                        provider.max_age >= 13) ||
-                      (age === "13-15" &&
-                        provider.min_age <= 13 &&
-                        provider.max_age >= 15) ||
-                      (age === "16-18" &&
-                        provider.min_age <= 16 &&
-                        provider.max_age >= 18) ||
-                      (age === "19+" &&
-                        provider.max_age >= 19))))
-              );
-            })
-            .sort((a: ProviderAttributes, b: ProviderAttributes) => {
-              const nameA = a.name || "";
-              const nameB = b.name || "";
-              return nameA.localeCompare(nameB);
-            });
-
-          // Apply reviews filter if selected
-          let finalFiltered = filtered;
-          if (hasReviews) {
-            setIsCheckingReviews(true);
-            try {
-              finalFiltered = await filterProvidersByReviews(filtered);
-            } finally {
-              setIsCheckingReviews(false);
-            }
-          }
-          
-          setFilteredProviders(finalFiltered);
-          
-          // Show message if no providers found after filtering
-          if (finalFiltered.length === 0) {
-            setShowError('No providers found matching your search criteria. Please try adjusting your filters.');
-          } else {
-            setShowError(''); // Clear error if providers found
-          }
-          
-          setCurrentPage(1);
-        } else if (stateId === 'none' || providerType === 'none') {
-          setShowError('Please select both a state and provider type to begin your search.');
+      // Waitlist filter
+      if (waitlist && waitlist.trim()) {
+        switch (waitlist) {
+          case "in_home_available":
+            filteredResults = filteredResults.filter((provider: ProviderAttributes) => 
+              provider.at_home_services && provider.at_home_services.toLowerCase().includes('yes')
+            );
+            break;
+          case "in_clinic_available":
+            filteredResults = filteredResults.filter((provider: ProviderAttributes) => 
+              provider.in_clinic_services && provider.in_clinic_services.toLowerCase().includes('yes')
+            );
+            break;
+          case "both_available":
+            filteredResults = filteredResults.filter((provider: ProviderAttributes) => 
+              provider.at_home_services && provider.at_home_services.toLowerCase().includes('yes') &&
+              provider.in_clinic_services && provider.in_clinic_services.toLowerCase().includes('yes')
+            );
+            break;
+          case "both_waitlist":
+            filteredResults = filteredResults.filter((provider: ProviderAttributes) => 
+              (provider.at_home_services && provider.at_home_services.toLowerCase().includes('no')) ||
+              (provider.in_clinic_services && provider.in_clinic_services.toLowerCase().includes('no'))
+            );
+            break;
         }
+      }
 
+      // Age filter
+      if (age && age.trim()) {
+        const [minAge, maxAge] = age.split('-').map((ageStr: string) => parseInt(ageStr, 10));
+        
+        filteredResults = filteredResults.filter((provider: ProviderAttributes) => {
+          const providerMinAge = provider.min_age ? parseInt(provider.min_age.toString(), 10) : 0;
+          const providerMaxAge = provider.max_age ? parseInt(provider.max_age.toString(), 10) : 99;
+          
+          // Check if the provider's age range overlaps with the selected age range
+          return providerMinAge <= maxAge && providerMaxAge >= minAge;
+        });
+      }
+
+      // Reviews filter
+      if (hasReviews && hasReviews.trim()) {
+        switch (hasReviews) {
+          case "has_reviews":
+            // This would need to be implemented with Google Places API
+            // For now, we'll skip this filter as it requires async checking
+            break;
+          case "no_reviews":
+            // This would need to be implemented with Google Places API
+            // For now, we'll skip this filter as it requires async checking
+            break;
+        }
+      }
+
+      if (isMountedRef.current) {
+        console.log('Setting filtered providers:', filteredResults.length, 'providers');
+        console.log('Filtered providers:', filteredResults);
+        setFilteredProviders(filteredResults);
+        setShowError(""); // Clear error if providers found
         setIsLoading(false);
-      } catch (error) {
-        console.error('Error during search:', error);
+        
+        // Set isSearchRefined to true only after we have processed the results
+        if (isMountedRef.current) {
+          // Small delay to ensure UI has updated before setting isSearchRefined
+          setTimeout(() => {
+            if (isMountedRef.current) {
+              setIsSearchRefined(true);
+              
+              // If we have results, delay the result message and search notification
+              if (filteredResults.length > 0) {
+                setTimeout(() => {
+                  if (isMountedRef.current) {
+                    setShowResultMessage(true);
+                    setShowSearchNotification(true);
+                  }
+                }, 800);
+              } else {
+                // If no results, show search notification immediately
+                setShowSearchNotification(true);
+              }
+            }
+          }, 50); // Small delay to ensure UI update
+        }
+      }
+      
+    } catch (err) {
+      console.log('handleSearch error, setting loading to false');
+      if (isMountedRef.current) {
         setShowError('Error filtering providers. Please try again.');
         setIsLoading(false);
       }
-    },
-    []
-  );
+    }
+  };
 
   // useEffect(() => {
   //   handleSearch({
@@ -470,6 +507,7 @@ const ProvidersPage: React.FC = () => {
     setCurrentPage(1);
     setShowError("");
     setIsSearchRefined(false);
+    setShowResultMessage(false);
   };
 
   const handleCountyChange = (county: string) => {
@@ -496,6 +534,8 @@ const ProvidersPage: React.FC = () => {
     setSelectedProviderType(type);
   };
 
+    // Removed automatic advanced filtering - users must click search button to see results
+
   const handleResults = (results: Providers) => {
     const mappedResults = results.data.map((p: ProviderData) => ({
       id: p.attributes.id,
@@ -516,24 +556,52 @@ const ProvidersPage: React.FC = () => {
       at_home_services: p.attributes.at_home_services,
       in_clinic_services: p.attributes.in_clinic_services,
       logo: p.attributes.logo,
+      // Missing required properties - map from top level or set defaults
+      states: p.states || ['Utah'], // Default to Utah if no states provided
+      provider_type: p.attributes.provider_type || [],
+      updated_last: p.attributes.updated_last,
+      status: p.attributes.status,
+      // New fields from API update
+      in_home_only: p.attributes.in_home_only || false,
+      service_delivery: p.attributes.service_delivery || {
+        in_home: false,
+        in_clinic: false,
+        telehealth: false
+      }
     }));
 
     const filteredResults = mappedResults.filter(
-      (provider) =>
-        (!selectedService ||
-          (selectedService === "telehealth" &&
-            provider.telehealth_services?.toLowerCase() === "yes") ||
-          (selectedService === "at_home" &&
-            provider.at_home_services?.toLowerCase() === "yes") ||
-          (selectedService === "in_clinic" &&
-            provider.in_clinic_services?.toLowerCase() === "yes")) &&
-        (!selectedWaitList ||
-          (selectedWaitList === "6 Months or Less" &&
-            (provider.waitlist
-              ? parseInt(provider.waitlist, 10) <= 6
-              : false)) ||
-          (selectedWaitList === "no" &&
-            provider.waitlist?.toLowerCase() === "no"))
+      (provider) => {
+        // Service filtering using new service_delivery structure
+        if (selectedService) {
+          switch (selectedService) {
+            case "in_home_only":
+              return provider.in_home_only === true;
+            case "telehealth":
+              return provider.service_delivery?.telehealth === true;
+            case "at_home":
+              return provider.service_delivery?.in_home === true;
+            case "in_clinic":
+              return provider.service_delivery?.in_clinic === true;
+            default:
+              return true;
+          }
+        }
+
+        // Waitlist filtering
+        if (selectedWaitList) {
+          switch (selectedWaitList) {
+            case "6 Months or Less":
+              return provider.waitlist && parseInt(provider.waitlist, 10) <= 6;
+            case "no":
+              return provider.waitlist?.toLowerCase() === "no";
+            default:
+              return true;
+          }
+        }
+
+        return true;
+      }
     );
 
     const sortedFilteredResults = filteredResults.sort((a, b) => {
@@ -542,18 +610,20 @@ const ProvidersPage: React.FC = () => {
       return nameA.localeCompare(nameB);
     });
 
-    setFilteredProviders(sortedFilteredResults as ProviderAttributes[]);
+    if (isMountedRef.current) setFilteredProviders(sortedFilteredResults as ProviderAttributes[]);
     setCurrentPage(1);
   };
 
   const filteredWithService = filteredProviders.filter((provider) => {
     switch (selectedService) {
+      case "in_home_only":
+        return provider.in_home_only === true;
       case "telehealth":
-        return provider.telehealth_services?.toLowerCase() === "yes";
+        return provider.service_delivery?.telehealth === true;
       case "at_home":
-        return provider.at_home_services?.toLowerCase() === "yes";
+        return provider.service_delivery?.in_home === true;
       case "in_clinic":
-        return provider.in_clinic_services?.toLowerCase() === "yes";
+        return provider.service_delivery?.in_clinic === true;
       default:
         return true;
     }
@@ -562,11 +632,11 @@ const ProvidersPage: React.FC = () => {
   const filteredWithoutService = filteredProviders.filter((provider) => {
     switch (selectedService) {
       case "telehealth":
-        return provider.telehealth_services === null;
+        return provider.service_delivery?.telehealth === false;
       case "at_home":
-        return provider.at_home_services === null;
+        return provider.service_delivery?.in_home === false;
       case "in_clinic":
-        return provider.in_clinic_services === null;
+        return provider.service_delivery?.in_clinic === false;
       default:
         return false;
     }
@@ -584,6 +654,19 @@ const ProvidersPage: React.FC = () => {
   );
 
   const totalPages = Math.ceil(combinedProviders.length / providersPerPage);
+
+  // Debug pagination
+  console.log('Pagination debug:', {
+    filteredWithService: filteredWithService.length,
+    filteredWithoutService: filteredWithoutService.length,
+    combinedProviders: combinedProviders.length,
+    currentPage,
+    providersPerPage,
+    indexOfFirstProvider,
+    indexOfLastProvider,
+    paginatedProviders: paginatedProviders.length,
+    totalPages
+  });
 
   const handleNextPage = () => {
     if (currentPage < totalPages && !isAnimating) {
@@ -776,6 +859,7 @@ const ProvidersPage: React.FC = () => {
             onReviewsChange={handleReviewsChange}
             onProviderTypeChange={handleProviderTypeChange}
             onReset={handleResetSearch}
+            showSearchNotification={showSearchNotification}
           />
           <section className="glass">
             <section className="searched-provider-map-locations-list-section">
@@ -811,13 +895,48 @@ const ProvidersPage: React.FC = () => {
                       <p className="text-center text-red-500">If you are looking for a provider in a specific state, please use the search bar to filter by state and provider type.</p>
                     </>
                   )}
-                  {selectedHasReviews && providersWithReviews.size > 0 && (
+                  {selectedHasReviews && providersWithReviews.size > 0 && showResultMessage && (
                     <div className="text-center mb-4">
                       <p className="text-green-600 font-semibold">
                         ⭐ {providersWithReviews.size} provider{providersWithReviews.size !== 1 ? 's' : ''} with Google reviews found
                       </p>
                     </div>
                   )}
+                  
+                  {/* No Results Message */}
+                  {isSearchRefined && combinedProviders.length === 0 && !isLoading && (
+                    <div className="text-center py-12 px-4">
+                      <div className="max-w-md mx-auto">
+                        <div className="mb-6">
+                          <svg className="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6m2 5.291A7.962 7.962 0 0112 15c-2.34 0-4.47-.881-6.08-2.33" />
+                          </svg>
+                        </div>
+                        <h3 className="text-xl font-semibold text-gray-700 mb-2">
+                          No providers found
+                        </h3>
+                        <p className="text-gray-600 mb-4">
+                          We couldn't find any {selectedProviderType} providers matching your current search criteria.
+                        </p>
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                          <h4 className="font-medium text-blue-800 mb-2">💡 Try these suggestions:</h4>
+                          <ul className="text-sm text-blue-700 space-y-1">
+                            <li>Expand your search area by selecting a different state</li>
+                            <li>Try a different provider type</li>
+                            <li>Remove some advanced filters to see more results</li>
+                            <li>Check back periodically as new providers are added regularly</li>
+                          </ul>
+                        </div>
+                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                          <h4 className="font-medium text-yellow-800 mb-2">📞 Need immediate help?</h4>
+                          <p className="text-sm text-yellow-700">
+                            Contact our support team for personalized assistance in finding the right provider for your needs.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
                   <div
                     className={`provider-cards-grid ${pageTransition ? `page-${pageTransition}` : ""
                       }`}
@@ -833,7 +952,7 @@ const ProvidersPage: React.FC = () => {
                           onViewDetails={handleProviderCardClick}
                           renderViewOnMapButton={renderViewOnMapButton}
                           onToggleFavorite={toggleFavorite}
-                          isFavorited={favoriteProviders.some(
+                          isFavorited={(favoriteProviders ?? []).some(
                             (fav) => fav.id === provider.id
                           )}
                           favoritedDate={favoriteDates[provider.id]}
