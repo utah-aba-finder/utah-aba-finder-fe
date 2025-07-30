@@ -54,7 +54,9 @@ const SignupModal: React.FC<SignupModalProps> = ({
     telehealth_services: "",
     spanish_speakers: "",
     at_home_services: "",
-    in_clinic_services: ""
+    in_clinic_services: "",
+    in_home_only: false,
+    logo: null as File | null
   });
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -188,6 +190,23 @@ const SignupModal: React.FC<SignupModalProps> = ({
     }
   };
 
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        toast.error('Please select an image file (JPEG, PNG, GIF, etc.)');
+        return;
+      }
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('Logo file size must be less than 5MB');
+        return;
+      }
+      setFormData((prev) => ({ ...prev, logo: file }));
+    }
+  };
+
   const handleLocationChange = (
     index: number,
     field: string,
@@ -305,7 +324,9 @@ const SignupModal: React.FC<SignupModalProps> = ({
         telehealth_services: formData.telehealth_services,
         spanish_speakers: formData.spanish_speakers,
         at_home_services: formData.at_home_services,
-        in_clinic_services: formData.in_clinic_services
+        in_clinic_services: formData.in_clinic_services,
+        in_home_only: formData.in_home_only,
+        logo: formData.logo
       };
 
       // Format the email message
@@ -356,17 +377,26 @@ Telehealth Services: ${providerData.telehealth_services}
 Spanish Speakers: ${providerData.spanish_speakers}
 At-Home Services: ${providerData.at_home_services}
 In-Clinic Services: ${providerData.in_clinic_services}
+In-Home Services Only: ${providerData.in_home_only ? "Yes" : "No"}
 `;
+
+      // Prepare email data
+      const emailData: any = {
+        to_email: 'registration@autismserviceslocator.com',
+        from_email: formData.email,
+        provider_data: formattedMessage,
+        message: formattedMessage
+      };
+
+      // Add logo if provided
+      if (formData.logo) {
+        emailData.logo_file = formData.logo;
+      }
 
       await emailjs.send(
         'service_b9y8kte',
         'template_a2x7i2h',
-        {
-          to_email: 'registration@autismserviceslocator.com',
-          from_email: formData.email,
-          provider_data: formattedMessage,
-          message: formattedMessage
-        },
+        emailData,
         '1FQP_qM9qMVxNGTmi'
       );
 
@@ -412,6 +442,8 @@ In-Clinic Services: ${providerData.in_clinic_services}
         spanish_speakers: "",
         at_home_services: "",
         in_clinic_services: "",
+        in_home_only: false,
+        logo: null,
       });
 
       // Reset other state variables
@@ -823,9 +855,56 @@ In-Clinic Services: ${providerData.in_clinic_services}
               </div>
             </div>
 
+            {/* Logo Upload Section */}
+            <div className="space-y-4 sm:space-y-6">
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-900">Company Logo (Optional)</h3>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Upload Logo</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleLogoChange}
+                  className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Accepted formats: JPEG, PNG, GIF. Maximum file size: 5MB.
+                </p>
+                {formData.logo && (
+                  <p className="text-sm text-green-600 mt-1">
+                    ✓ Logo selected: {formData.logo.name}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* In-Home Services Only Section */}
+            <div className="space-y-4 sm:space-y-6">
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-900">Service Delivery Type</h3>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">In-Home Services Only</label>
+                <select
+                  name="in_home_only"
+                  value={formData.in_home_only ? "true" : "false"}
+                  onChange={(e) => setFormData(prev => ({ ...prev, in_home_only: e.target.value === "true" }))}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                >
+                  <option value="false">No</option>
+                  <option value="true">Yes</option>
+                </select>
+                <p className="text-xs text-gray-500 mt-1">
+                  Select "Yes" if this provider only offers in-home services and has no physical clinic location.
+                </p>
+              </div>
+            </div>
+
             {/* Locations Section */}
             <div className="space-y-4 sm:space-y-6">
-              <p className="text-sm text-red-500 mb-2">Please add any brick and mortar locations you have, if you serve multiple states via in-home services only please add the inidividual states below with the counties served and add in a phone number for the location with the in-home and in-clinic waitlist marked.</p>
+              <p className="text-sm text-red-500 mb-2">
+                <strong>Important:</strong> If you only provide in-home services and have no physical clinic locations, you can skip adding locations below. However, please provide at least one phone number for contact purposes.
+              </p>
+              <p className="text-sm text-gray-600 mb-2">
+                For providers with physical locations: Please add any brick and mortar locations you have. If you serve multiple states via in-home services only, please add the individual states below with the counties served and add a phone number for the location with the in-home and in-clinic waitlist marked.
+              </p>
               <h3 className="text-lg sm:text-xl font-semibold text-gray-900">Locations</h3>
               {formData.locations.map((location, index) => (
                 <div key={index} className="p-4 sm:p-6 border rounded-lg space-y-4 sm:space-y-6 bg-gray-50 grid grid-cols-1 gap-4">
@@ -1347,6 +1426,8 @@ In-Clinic Services: ${providerData.in_clinic_services}
                     <option value="Contact us">Contact us</option>
                   </select>
                 </div>
+
+
               </div>
             </div>
 
