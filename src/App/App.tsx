@@ -195,7 +195,7 @@ function App() {
             <Route path="/careers" element={<Careers />} />
             <Route path="/google-debug" element={<GoogleDebugTest />} />
             <Route path="/mobile-debug" element={<MobileDebugTest />} />
-            <Route path="/password-reset" element={<PasswordReset />} />
+            <Route path="/reset-password" element={<PasswordReset />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             
             <Route

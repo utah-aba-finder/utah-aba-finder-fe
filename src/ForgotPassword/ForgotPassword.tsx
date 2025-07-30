@@ -33,10 +33,24 @@ const ForgotPassword: React.FC = () => {
         })
       });
 
-      const responseData = await response.json();
+      let responseData;
+      try {
+        const responseText = await response.text();
+        console.log('Password reset response status:', response.status);
+        console.log('Password reset response text:', responseText);
+        
+        if (responseText) {
+          responseData = JSON.parse(responseText);
+        } else {
+          responseData = {};
+        }
+      } catch (parseError) {
+        console.error('Failed to parse response:', parseError);
+        throw new Error('Invalid response from server');
+      }
 
       if (!response.ok) {
-        throw new Error(responseData.message || 'Failed to send password reset email');
+        throw new Error(responseData.message || `Failed to send password reset email (${response.status})`);
       }
 
       setIsSubmitted(true);
