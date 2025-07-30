@@ -175,6 +175,18 @@ export const LoginPage: React.FC = () => {
                         }
                     </div>
                     {error && <p className="error-message">Username or password incorrect, try again.</p>}
+                    
+                    {/* Forgot Password Link */}
+                    <div className="forgot-password-container">
+                        <button 
+                            type="button" 
+                            className="forgot-password-link"
+                            onClick={() => navigate('/forgot-password')}
+                        >
+                            Forgot Password?
+                        </button>
+                    </div>
+                    
                     <div className="submit-container">
                         <button type='button' id='signup' className='signupButton' onClick={() => navigate('/signup')}>Sign Up</button>
                         <button type='submit' id='login' className='loginButton'>Login</button>

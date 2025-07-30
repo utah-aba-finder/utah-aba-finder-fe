@@ -28,6 +28,7 @@ import {
   Service,
 } from "../Utility/Types";
 import { fetchStates, fetchCountiesByState } from "../Utility/ApiCall";
+import { validateLogoFile, uploadProviderLogo } from "../Utility/ApiCall";
 
 interface SuperAdminEditProps {
   provider: ProviderData;
@@ -78,10 +79,10 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
     provider.attributes.provider_type || []
   );
   const [activeStateForCounties, setActiveStateForCounties] = useState<string>(providerState[0] || '');
+  const [selectedLogoFile, setSelectedLogoFile] = useState<File | null>(null);
 
   useEffect(() => {
     if (provider) {
-      console.log('SuperAdminEdit: Initializing provider with locations:', provider.attributes.locations); // Debug log
       setEditedProvider({
         ...provider.attributes,
         // Initialize new fields with defaults if they don't exist
@@ -99,10 +100,9 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
         ...location,
         services: location.services || []
       })) || [];
-      console.log('SuperAdminEdit: Setting locations to:', mappedLocations); // Debug log
       setLocations(mappedLocations);
-      setSelectedProviderTypes(provider.attributes.provider_type || []);
-      setIsLoading(false);
+              setSelectedProviderTypes(provider.attributes.provider_type || []);
+        setIsLoading(false);
     }
   }, [provider]);
 
@@ -248,8 +248,6 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
-    console.log('SuperAdminEdit: Starting submit with locations:', locations); // Debug log
-    
     // Validate all locations first
     if (!validateLocations()) {
       return;
@@ -274,8 +272,6 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
         services: location.services
       }));
 
-      console.log('SuperAdminEdit: Filtered locations being sent:', filteredLocations); // Debug log
-
       const requestBody = {
         data: [{
           id: provider.id,
@@ -290,20 +286,18 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
             counties_served: selectedCounties,
             locations: filteredLocations,
             states: providerState,
-            services: filteredLocations.map(location => location.services).flat(),
+            services: filteredLocations.map(location => location.services).flat()
           },
         }],
       };
 
-      console.log('SuperAdminEdit: Request body being sent:', requestBody); // Debug log
-
       const response = await fetch(
-        `https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/admin/providers/${provider.id}`,
+        `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/providers/${provider.id}`,
         {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${sessionStorage.getItem("authToken")}`,
+            Authorization: 'be6205db57ce01863f69372308c41e3a',
           },
           body: JSON.stringify(requestBody),
         }
@@ -343,6 +337,23 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
       
       // Show success toast only after everything is confirmed successful
       toast.success(`Provider ${editedProvider?.name} updated successfully!`);
+      
+      // Handle logo upload separately if a file is selected
+      if (selectedLogoFile) {
+        try {
+          const logoResult = await uploadProviderLogo(provider.id, selectedLogoFile);
+          if (logoResult.success) {
+            toast.success('Logo uploaded successfully');
+            setSelectedLogoFile(null);
+          } else {
+            console.error('Logo upload failed:', logoResult.error);
+            toast.error(`Logo upload failed: ${logoResult.error}`);
+          }
+        } catch (logoError) {
+          console.error('Error uploading logo:', logoError);
+          toast.error('Failed to upload logo');
+        }
+      }
       
       if (setSelectedTab) {
         setSelectedTab("view");
@@ -600,15 +611,59 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
 
                       <div>
                         <label className="block text-sm text-gray-600 mb-2">
-                          Logo URL
+                          Logo
                         </label>
-                        <input
-                          type="text"
-                          name="logo"
-                          value={editedProvider.logo || ""}
-                          onChange={handleInputChange}
-                          className="block w-[95%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                        />
+                        <div className="space-y-2">
+                          {/* File upload input */}
+                          <div className="space-y-2">
+                            <div className="relative">
+                              <input
+                                type="file"
+                                accept="image/png,image/jpeg,image/gif"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0];
+                                  if (file) {
+                                    const validation = validateLogoFile(file);
+                                    if (!validation.isValid) {
+                                      toast.error(validation.error);
+                                      return;
+                                    }
+                                    setSelectedLogoFile(file);
+                                    toast.success('Logo file selected');
+                                  }
+                                }}
+                                className="w-full px-3 py-2 rounded-lg border-2 border-dashed border-gray-300 hover:border-blue-400 hover:cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-gray-50"
+                              />
+                              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                <span className="text-gray-500 text-sm">📁 Click to select logo file</span>
+                              </div>
+                            </div>
+                            <div className="flex justify-center">
+                              <button
+                                type="button"
+                                onClick={() => (document.querySelector('input[type="file"]') as HTMLInputElement)?.click()}
+                                className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                              >
+                                Choose Logo File
+                              </button>
+                            </div>
+                          </div>
+                          {selectedLogoFile && (
+                            <div className="flex items-center space-x-2">
+                              <span className="text-sm text-gray-600">Selected: {selectedLogoFile.name}</span>
+                              <button
+                                type="button"
+                                onClick={() => setSelectedLogoFile(null)}
+                                className="text-red-600 hover:text-red-800 text-sm"
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          )}
+                          <p className="text-xs text-gray-500">
+                            Supported formats: PNG, JPEG, GIF. Max size: 5MB
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </div>

@@ -314,15 +314,6 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
         ],
       };
 
-      console.log('SuperAdminCreate: Sending data to backend:', requestData);
-      console.log('SuperAdminCreate: Provider types:', formData.provider_type);
-      console.log('SuperAdminCreate: Locations with services:', formData.locations.map(loc => ({
-        name: loc.name,
-        services: loc.services
-      })));
-      console.log('SuperAdminCreate: Selected insurances:', selectedInsurances);
-      console.log('SuperAdminCreate: Selected counties:', selectedCounties);
-
       const response = await fetch(
         `https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/admin/providers`,
         {
@@ -342,20 +333,26 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
       }
 
       const responseData = await response.json();
-      console.log('SuperAdminCreate: Backend response:', responseData);
 
       // Upload logo if selected
       if (selectedLogoFile && responseData.data?.[0]?.id) {
+        console.log('Attempting to upload logo for provider ID:', responseData.data[0].id);
         try {
           const logoResult = await uploadProviderLogo(responseData.data[0].id, selectedLogoFile);
+          console.log('Logo upload result:', logoResult);
           if (logoResult.success) {
             toast.success('Logo uploaded successfully');
+            console.log('Updated provider data:', logoResult.updatedProvider);
           } else {
+            console.error('Logo upload failed:', logoResult.error);
             toast.warning('Provider created but logo upload failed: ' + logoResult.error);
           }
         } catch (error) {
+          console.error('Logo upload error:', error);
           toast.warning('Provider created but logo upload failed');
         }
+      } else {
+        console.log('No logo file selected or no provider ID available');
       }
 
       // Show success toast after confirming the save was successful

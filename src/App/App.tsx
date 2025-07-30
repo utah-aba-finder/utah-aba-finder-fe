@@ -34,6 +34,8 @@ import Careers from "../Footer/Careers";
 import { handleMobileIssues } from "../Utility/cacheUtils";
 import GoogleDebugTest from "../Providers-page/GoogleDebugTest";
 import MobileDebugTest from "../Providers-page/MobileDebugTest";
+import PasswordReset from "../PasswordReset/PasswordReset";
+import ForgotPassword from "../ForgotPassword/ForgotPassword";
 
 // Simple test component to check if React loads
 const TestComponent = () => {
@@ -193,6 +195,8 @@ function App() {
             <Route path="/careers" element={<Careers />} />
             <Route path="/google-debug" element={<GoogleDebugTest />} />
             <Route path="/mobile-debug" element={<MobileDebugTest />} />
+            <Route path="/password-reset" element={<PasswordReset />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
             
             <Route
               path="/superAdmin/edit/:id"
