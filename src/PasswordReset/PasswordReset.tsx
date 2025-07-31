@@ -14,7 +14,7 @@ const PasswordReset: React.FC = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
-  const resetToken = searchParams.get('token');
+  const resetToken = searchParams.get('reset_password_token');
 
   useEffect(() => {
     if (!resetToken) {
@@ -65,10 +65,24 @@ const PasswordReset: React.FC = () => {
         })
       });
 
-      const responseData = await response.json();
+      let responseData;
+      try {
+        const responseText = await response.text();
+        console.log('Password reset response status:', response.status);
+        console.log('Password reset response text:', responseText);
+        
+        if (responseText) {
+          responseData = JSON.parse(responseText);
+        } else {
+          responseData = {};
+        }
+      } catch (parseError) {
+        console.error('Failed to parse response:', parseError);
+        throw new Error('Invalid response from server');
+      }
 
       if (!response.ok) {
-        throw new Error(responseData.message || 'Failed to reset password');
+        throw new Error(responseData.message || `Failed to reset password (${response.status})`);
       }
 
       toast.success('Password reset successfully! You can now log in with your new password.');
