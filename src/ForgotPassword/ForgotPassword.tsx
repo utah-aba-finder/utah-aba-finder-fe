@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { User, ArrowLeft } from 'lucide-react';
+import { testPasswordReset } from '../Utility/ApiCall';
 import './ForgotPassword.css';
 
 const ForgotPassword: React.FC = () => {
@@ -11,25 +12,118 @@ const ForgotPassword: React.FC = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const navigate = useNavigate();
 
+
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!email) {
-      toast.error('Please enter your email address');
+      toast.error('📧 Please enter your email address', {
+        position: "top-center",
+        autoClose: 4000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        style: {
+          background: '#F59E0B',
+          color: 'white',
+          fontSize: '16px',
+          fontWeight: '500'
+        }
+      });
+      return;
+    }
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      toast.error('📧 Please enter a valid email address', {
+        position: "top-center",
+        autoClose: 4000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        style: {
+          background: '#F59E0B',
+          color: 'white',
+          fontSize: '16px',
+          fontWeight: '500'
+        }
+      });
       return;
     }
 
     setIsLoading(true);
 
     try {
-      const response = await fetch('https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/password_resets', {
+      // Trim whitespace from email
+      const trimmedEmail = email.trim();
+      console.log('Sending password reset request for email:', trimmedEmail);
+      
+      // First, test the password reset functionality
+      console.log('Testing password reset functionality...');
+      const testResult = await testPasswordReset(trimmedEmail);
+      console.log('Password reset test result:', testResult);
+      
+      if (!testResult.success) {
+        console.error('Password reset test failed:', testResult.error);
+        console.log('Test details:', testResult.details);
+        
+        // Show a more helpful error message
+        toast.error('Password reset functionality is not available. Please contact support for assistance.', {
+          position: "top-center",
+          autoClose: 8000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          style: {
+            background: '#EF4444',
+            color: 'white',
+            fontSize: '16px',
+            fontWeight: '500'
+          }
+        });
+        
+        // Show additional help information
+        setTimeout(() => {
+          toast.info('For immediate assistance, please contact the administrator or use the Contact Us page.', {
+            position: "top-center",
+            autoClose: 10000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            style: {
+              background: '#3B82F6',
+              color: 'white',
+              fontSize: '16px',
+              fontWeight: '500'
+            }
+          });
+        }, 2000);
+        
+        return;
+      }
+
+      // Use the working endpoint if found
+      const endpoint = testResult.workingEndpoint || 'https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/password_resets';
+      console.log('Using endpoint:', endpoint);
+
+      // If test passes, proceed with the actual request
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'be6205db57ce01863f69372308c41e3a'
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          email: email
+          email: trimmedEmail
         })
       });
 
@@ -50,14 +144,73 @@ const ForgotPassword: React.FC = () => {
       }
 
       if (!response.ok) {
-        throw new Error(responseData.message || `Failed to send password reset email (${response.status})`);
+        // Handle specific error cases
+        if (response.status === 422) {
+          throw new Error(responseData.message || 'Invalid request. Please check your email address.');
+        } else if (response.status === 404) {
+          throw new Error('Password reset service not found. Please contact support.');
+        } else if (response.status === 500) {
+          throw new Error('Server error. Please try again later or contact support.');
+        } else {
+          throw new Error(responseData.message || `Failed to send password reset email (${response.status})`);
+        }
+      }
+
+      // Check for success message in response data
+      if (response.ok && (responseData.message || responseData.error?.includes("If the email exists"))) {
+        // Success case - password reset instructions sent
+        setIsSubmitted(true);
+        toast.success('✅ Password reset email sent!', {
+          position: "top-center",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          style: {
+            background: '#10B981',
+            color: 'white',
+            fontSize: '16px',
+            fontWeight: '500'
+          }
+        });
+        return; // Exit early since we've handled success
       }
 
       setIsSubmitted(true);
-      toast.success('Password reset email sent! Please check your inbox.');
+      toast.success('✅ Password reset email sent!', {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        style: {
+          background: '#10B981',
+          color: 'white',
+          fontSize: '16px',
+          fontWeight: '500'
+        }
+      });
     } catch (error) {
       console.error('Password reset request error:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to send password reset email. Please try again.');
+      toast.error(error instanceof Error ? error.message : '❌ Failed to send password reset email. Please try again.', {
+        position: "top-center",
+        autoClose: 6000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        style: {
+          background: '#EF4444',
+          color: 'white',
+          fontSize: '16px',
+          fontWeight: '500'
+        }
+      });
     } finally {
       setIsLoading(false);
     }
@@ -181,6 +334,31 @@ const ForgotPassword: React.FC = () => {
                 Sign in
               </button>
             </p>
+            
+            <p className="mt-4 text-sm text-gray-500">
+              Need help?{' '}
+              <button
+                type="button"
+                onClick={() => navigate('/contact')}
+                className="text-blue-600 hover:text-blue-500 font-medium"
+              >
+                Contact Support
+              </button>
+            </p>
+            
+            {/* Debug button - remove in production */}
+            <button
+              type="button"
+              onClick={async () => {
+                console.log('=== DEBUG: Testing password reset ===');
+                const testResult = await testPasswordReset(email);
+                console.log('Debug test result:', testResult);
+                alert(`Debug result: ${JSON.stringify(testResult, null, 2)}`);
+              }}
+              className="mt-4 text-xs text-gray-400 hover:text-gray-600"
+            >
+              Debug: Test API
+            </button>
           </div>
         </form>
       </div>

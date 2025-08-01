@@ -148,7 +148,7 @@ function App() {
   return (
     <div className="App">
       <ToastContainer
-        position="top-right"
+        position="top-center"
         autoClose={5000}
         hideProgressBar={false}
         newestOnTop
@@ -157,6 +157,12 @@ function App() {
         pauseOnFocusLoss
         draggable
         pauseOnHover
+        theme="colored"
+        toastStyle={{
+          borderRadius: '8px',
+          fontSize: '14px',
+          fontWeight: '500'
+        }}
       />
       {!isOnline && (
         <div style={{
