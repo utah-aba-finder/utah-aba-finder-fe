@@ -71,9 +71,10 @@
     gap: .6em;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
     overflow: hidden;
     font-family: "Gotham", sans-serif;
+    position: relative;
 }
 
 .favorited-date {
@@ -107,7 +108,10 @@
     -webkit-box-orient: vertical;
     border-bottom: 1.5px solid #9ea3a8;
     transition: border-color 0.3s ease;
-    padding-bottom: 5px;
+    padding-bottom: 8px;
+    margin-bottom: 8px;
+    position: relative;
+    z-index: 1;
 }
 
 .card-text h2 {
@@ -142,6 +146,11 @@
 .card-text>* {
     text-indent: -27px;
     padding-left: 27px;
+}
+
+.card-text .service-delivery-badges {
+    text-indent: 0;
+    padding-left: 0;
 }
 
 .custom-link {
@@ -515,20 +524,26 @@
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-    margin-bottom: 8px;
+    margin-bottom: 12px;
+    margin-top: 8px;
+    position: relative;
+    z-index: 2;
+    padding-left: 0;
+    text-indent: 0;
 }
 
 .service-badge {
     display: inline-flex;
     align-items: center;
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-size: 0.75rem;
+    padding: 6px 10px;
+    border-radius: 15px;
+    font-size: 0.8rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
     transition: all 0.3s ease;
+    white-space: nowrap;
 }
 
 .service-badge.in-home-only {

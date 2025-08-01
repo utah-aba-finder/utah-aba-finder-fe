@@ -100,7 +100,7 @@ const CreateLocation: React.FC<CreateLocationProps> = ({
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`
+            'Authorization': 'be6205db57ce01863f69372308c41e3a'
           },
           body: JSON.stringify({
             data: [{

@@ -107,7 +107,7 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${sessionStorage.getItem("authToken")}`,
+            'Authorization': 'be6205db57ce01863f69372308c41e3a',
           },
           body: JSON.stringify(requestBody),
         }
@@ -129,7 +129,7 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
             method: "GET",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${sessionStorage.getItem("authToken")}`,
+              'Authorization': 'be6205db57ce01863f69372308c41e3a',
             },
           }
         );

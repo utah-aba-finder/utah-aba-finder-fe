@@ -142,27 +142,27 @@ const ProvidersPage: React.FC = () => {
 
   const toggleFavorite = useCallback(
     (providerId: number, date?: string) => {
-      console.log('toggleFavorite called with providerId:', providerId, 'date:', date);
+      // toggleFavorite called
       
       setFavoriteProviders((prevFavorites) => {
         // First try to find the provider in filtered providers, then in all providers
         const provider = filteredProviders.find((p) => p.id === providerId) || 
                         allProviders.find((p) => p.id === providerId);
         
-        console.log('Found provider:', provider?.name, 'with id:', provider?.id);
+        // Found provider
         
         if (!provider) {
-          console.log('Provider not found for id:', providerId);
+          // Provider not found
           return prevFavorites;
         }
 
         const isFavorited = (prevFavorites ?? []).some((fav) => fav.id === providerId);
-        console.log('Current favorited state:', isFavorited);
+        // Current favorited state checked
 
         let newFavorites;
         if (isFavorited) {
           newFavorites = prevFavorites.filter((fav) => fav.id !== providerId);
-          console.log('Removing from favorites');
+          // Removing from favorites
 
           setFavoriteDates((prevDates) => {
             const { [providerId]: _, ...rest } = prevDates;
@@ -171,7 +171,7 @@ const ProvidersPage: React.FC = () => {
           });
         } else {
           newFavorites = [...prevFavorites, provider];
-          console.log('Adding to favorites');
+          // Adding to favorites
 
           const currentDate = date || new Date().toLocaleDateString("en-US", {
             month: "2-digit",
@@ -196,7 +196,7 @@ const ProvidersPage: React.FC = () => {
           JSON.stringify(sortedFavorites)
         );
 
-        console.log('New favorites count:', sortedFavorites.length);
+        // New favorites count updated
         return sortedFavorites;
       });
     },
@@ -209,7 +209,16 @@ const ProvidersPage: React.FC = () => {
         if (isMountedRef.current) setIsLoading(true);
         
         const providers = await fetchProviders();
-        setAllProviders(providers.data.map((p: ProviderData) => ({
+        
+        // Add null check for providers.data
+        if (!providers || !providers.data || !Array.isArray(providers.data)) {
+          console.warn('Invalid providers data received:', providers);
+          setAllProviders([]);
+          setFilteredProviders([]);
+          return;
+        }
+        
+        const mappedProviders = providers.data.map((p: ProviderData) => ({
           id: p.attributes.id,
           name: p.attributes.name,
           locations: p.attributes.locations,
@@ -240,42 +249,15 @@ const ProvidersPage: React.FC = () => {
             in_clinic: false,
             telehealth: false
           }
-        })));
-        setFilteredProviders(providers.data.map((p: ProviderData) => ({
-          id: p.attributes.id,
-          name: p.attributes.name,
-          locations: p.attributes.locations,
-          insurance: p.attributes.insurance,
-          counties_served: p.attributes.counties_served,
-          password: p.attributes.password,
-          username: p.attributes.username,
-          website: p.attributes.website,
-          email: p.attributes.email,
-          cost: p.attributes.cost,
-          min_age: p.attributes.min_age,
-          max_age: p.attributes.max_age,
-          waitlist: p.attributes.waitlist,
-          telehealth_services: p.attributes.telehealth_services,
-          spanish_speakers: p.attributes.spanish_speakers,
-          at_home_services: p.attributes.at_home_services,
-          in_clinic_services: p.attributes.in_clinic_services,
-          logo: p.attributes.logo,
-          // Missing required properties
-          states: p.states || [],
-          provider_type: p.attributes.provider_type || [],
-          updated_last: p.attributes.updated_last,
-          status: p.attributes.status,
-          // New fields from API update
-          in_home_only: p.attributes.in_home_only || false,
-          service_delivery: p.attributes.service_delivery || {
-            in_home: false,
-            in_clinic: false,
-            telehealth: false
-          }
-        })));
+        }));
+        
+        setAllProviders(mappedProviders);
+        setFilteredProviders(mappedProviders);
       } catch (error) {
         console.error("Error fetching providers:", error);
         setShowError("Failed to load providers. Please try again later.");
+        setAllProviders([]);
+        setFilteredProviders([]);
       } finally {
         if (isMountedRef.current) setIsLoading(false);
       }
@@ -289,7 +271,6 @@ const ProvidersPage: React.FC = () => {
   }, []);
 
   const handleSearch = async (searchParams: any) => {
-    console.log('handleSearch called, setting loading to true');
     if (isMountedRef.current) setIsLoading(true);
     setShowResultMessage(false); // Hide result message immediately when search starts
     setIsSearchRefined(false); // Reset search refined state until we have results
@@ -297,6 +278,16 @@ const ProvidersPage: React.FC = () => {
     try {
       const { stateId, providerType, query, county_name, insurance, spanish, service, waitlist, age, hasReviews } = searchParams;
       const results = await fetchProvidersByStateIdAndProviderType(stateId, providerType);
+      
+      // Add null check for results.data
+      if (!results || !results.data || !Array.isArray(results.data)) {
+        console.warn('Invalid results data received in handleSearch:', results);
+        setFilteredProviders([]);
+        setCurrentPage(1);
+        if (isMountedRef.current) setIsLoading(false);
+        return;
+      }
+      
       // Map API response to ProviderAttributes
       const mappedProviders = results.data.map((p: any) => ({
         id: p.attributes.id || p.id, // Use attributes.id if available, fallback to p.id
@@ -352,13 +343,19 @@ const ProvidersPage: React.FC = () => {
             filteredResults = filteredResults.filter((provider: ProviderAttributes) => provider.in_home_only === true);
             break;
           case "telehealth":
-            filteredResults = filteredResults.filter((provider: ProviderAttributes) => provider.service_delivery?.telehealth === true);
+            filteredResults = filteredResults.filter((provider: ProviderAttributes) => 
+              provider.telehealth_services && provider.telehealth_services.toLowerCase().includes('yes')
+            );
             break;
           case "at_home":
-            filteredResults = filteredResults.filter((provider: ProviderAttributes) => provider.service_delivery?.in_home === true);
+            filteredResults = filteredResults.filter((provider: ProviderAttributes) => 
+              provider.at_home_services && provider.at_home_services.toLowerCase().includes('yes')
+            );
             break;
           case "in_clinic":
-            filteredResults = filteredResults.filter((provider: ProviderAttributes) => provider.service_delivery?.in_clinic === true);
+            filteredResults = filteredResults.filter((provider: ProviderAttributes) => 
+              provider.in_clinic_services && provider.in_clinic_services.toLowerCase().includes('yes')
+            );
             break;
         }
       }
@@ -419,8 +416,7 @@ const ProvidersPage: React.FC = () => {
       }
 
       if (isMountedRef.current) {
-        console.log('Setting filtered providers:', filteredResults.length, 'providers');
-        console.log('Filtered providers:', filteredResults);
+              // Removed excessive logging for performance
         setFilteredProviders(filteredResults);
         setShowError(""); // Clear error if providers found
         setIsLoading(false);
@@ -450,7 +446,7 @@ const ProvidersPage: React.FC = () => {
       }
       
     } catch (err) {
-      console.log('handleSearch error, setting loading to false');
+      // Error handled, setting loading to false
       if (isMountedRef.current) {
         setShowError('Error filtering providers. Please try again.');
         setIsLoading(false);
@@ -537,6 +533,14 @@ const ProvidersPage: React.FC = () => {
     // Removed automatic advanced filtering - users must click search button to see results
 
   const handleResults = (results: Providers) => {
+    // Add null check for results.data
+    if (!results || !results.data || !Array.isArray(results.data)) {
+      console.warn('Invalid results data received:', results);
+      setFilteredProviders([]);
+      setCurrentPage(1);
+      return;
+    }
+    
     const mappedResults = results.data.map((p: ProviderData) => ({
       id: p.attributes.id,
       name: p.attributes.name,
@@ -614,7 +618,7 @@ const ProvidersPage: React.FC = () => {
     setCurrentPage(1);
   };
 
-  const filteredWithService = filteredProviders.filter((provider) => {
+  const filteredWithService = (filteredProviders || []).filter((provider) => {
     switch (selectedService) {
       case "in_home_only":
         return provider.in_home_only === true;
@@ -629,7 +633,7 @@ const ProvidersPage: React.FC = () => {
     }
   });
 
-  const filteredWithoutService = filteredProviders.filter((provider) => {
+  const filteredWithoutService = (filteredProviders || []).filter((provider) => {
     switch (selectedService) {
       case "telehealth":
         return provider.service_delivery?.telehealth === false;
@@ -655,18 +659,7 @@ const ProvidersPage: React.FC = () => {
 
   const totalPages = Math.ceil(combinedProviders.length / providersPerPage);
 
-  // Debug pagination
-  console.log('Pagination debug:', {
-    filteredWithService: filteredWithService.length,
-    filteredWithoutService: filteredWithoutService.length,
-    combinedProviders: combinedProviders.length,
-    currentPage,
-    providersPerPage,
-    indexOfFirstProvider,
-    indexOfLastProvider,
-    paginatedProviders: paginatedProviders.length,
-    totalPages
-  });
+  // Debug pagination removed for performance
 
   const handleNextPage = () => {
     if (currentPage < totalPages && !isAnimating) {

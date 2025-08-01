@@ -55,8 +55,7 @@ const PasswordReset: React.FC = () => {
       const response = await fetch('https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/password_resets', {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'be6205db57ce01863f69372308c41e3a'
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           reset_password_token: resetToken,
@@ -82,14 +81,67 @@ const PasswordReset: React.FC = () => {
       }
 
       if (!response.ok) {
-        throw new Error(responseData.message || `Failed to reset password (${response.status})`);
+        // Handle specific error cases
+        if (response.status === 422) {
+          throw new Error('Invalid or expired reset link. Please request a new password reset.');
+        } else {
+          throw new Error(responseData.message || `Failed to reset password (${response.status})`);
+        }
       }
 
-      toast.success('Password reset successfully! You can now log in with your new password.');
+      toast.success('✅ Password reset successfully!', {
+        position: "top-center",
+        autoClose: 4000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        style: {
+          background: '#10B981',
+          color: 'white',
+          fontSize: '16px',
+          fontWeight: '500'
+        }
+      });
+      
+      // Show additional info toast
+      setTimeout(() => {
+        toast.info('🔐 You can now log in with your new password', {
+          position: "top-center",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          style: {
+            background: '#3B82F6',
+            color: 'white',
+            fontSize: '14px',
+            fontWeight: '400'
+          }
+        });
+      }, 500);
+      
       navigate('/login');
     } catch (error) {
       console.error('Password reset error:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to reset password. Please try again.');
+      toast.error(error instanceof Error ? error.message : '❌ Failed to reset password. Please try again.', {
+        position: "top-center",
+        autoClose: 6000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        style: {
+          background: '#EF4444',
+          color: 'white',
+          fontSize: '16px',
+          fontWeight: '500'
+        }
+      });
     } finally {
       setIsLoading(false);
     }

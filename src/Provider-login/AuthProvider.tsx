@@ -78,18 +78,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const validateToken = (token: string): boolean => {
     try {
-      const decoded = jwtDecode<TokenPayload>(token);
-      const currentTime = Date.now() / 1000;
+      // Check if this is a temporary token (base64 encoded user data)
+      try {
+        const decoded = JSON.parse(atob(token));
+        // If we can decode it as JSON, it's our temporary token
+        return true;
+      } catch {
+        // If not JSON, try to decode as JWT
+        const decoded = jwtDecode<TokenPayload>(token);
+        const currentTime = Date.now() / 1000;
 
-      if (!decoded.exp) {
-        return false;
-      }
-
-              if (decoded.exp < currentTime) {
+        if (!decoded.exp) {
           return false;
         }
 
-      return true;
+        if (decoded.exp < currentTime) {
+          return false;
+        }
+
+        return true;
+      }
     } catch (error) {
       return false;
     }
@@ -119,9 +127,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         return;
       }
 
-      const decoded = jwtDecode<TokenPayload>(newToken);
-      const expirationTime = decoded.exp * 1000;
-      sessionStorage.setItem("tokenExpiry", expirationTime.toString());
+      // Check if this is a temporary token
+      try {
+        const decoded = JSON.parse(atob(newToken));
+        // For temporary tokens, set a 24-hour expiration
+        const expirationTime = Date.now() + (24 * 60 * 60 * 1000);
+        sessionStorage.setItem("tokenExpiry", expirationTime.toString());
+
+      } catch {
+        // For JWT tokens, use the token's expiration
+        const decoded = jwtDecode<TokenPayload>(newToken);
+        const expirationTime = decoded.exp * 1000;
+        sessionStorage.setItem("tokenExpiry", expirationTime.toString());
+
+      }
 
       setToken(newToken);
     },
@@ -131,12 +150,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const checkTokenExpiration = useCallback(
     (token: string) => {
       try {
-        const decoded = jwtDecode<TokenPayload>(token);
-        const expirationTime = decoded.exp * 1000;
+        // Check if this is a temporary token first
+        let expirationTime: number;
+        let timeUntilExpiration: number;
+        
+        try {
+          const decoded = JSON.parse(atob(token));
+          // For temporary tokens, use the stored expiration time
+          const storedExpiry = sessionStorage.getItem("tokenExpiry");
+          expirationTime = storedExpiry ? parseInt(storedExpiry) : Date.now() + (24 * 60 * 60 * 1000);
+        } catch {
+          // For JWT tokens, decode and use token expiration
+          const decoded = jwtDecode<TokenPayload>(token);
+          expirationTime = decoded.exp * 1000;
+        }
+        
         const currentTime = Date.now();
-        const timeUntilExpiration = expirationTime - currentTime;
-  
-
+        timeUntilExpiration = expirationTime - currentTime;
   
         if (currentTime > expirationTime) {
           logout('session-expired');

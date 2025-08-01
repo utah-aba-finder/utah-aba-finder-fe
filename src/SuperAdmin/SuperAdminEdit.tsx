@@ -28,7 +28,7 @@ import {
   Service,
 } from "../Utility/Types";
 import { fetchStates, fetchCountiesByState } from "../Utility/ApiCall";
-import { validateLogoFile, uploadProviderLogo } from "../Utility/ApiCall";
+import { validateLogoFile, uploadProviderLogo, testLogoUpload, uploadLogoWithFallback } from "../Utility/ApiCall";
 
 interface SuperAdminEditProps {
   provider: ProviderData;
@@ -292,12 +292,12 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
       };
 
       const response = await fetch(
-        `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/providers/${provider.id}`,
+        `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${provider.id}`,
         {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
-            Authorization: 'be6205db57ce01863f69372308c41e3a',
+            'Authorization': 'be6205db57ce01863f69372308c41e3a',
           },
           body: JSON.stringify(requestBody),
         }
@@ -341,7 +341,26 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
       // Handle logo upload separately if a file is selected
       if (selectedLogoFile) {
         try {
-          const logoResult = await uploadProviderLogo(provider.id, selectedLogoFile);
+          // First, test the upload to get detailed error information
+          console.log('Testing logo upload for debugging...');
+          const testResult = await testLogoUpload(provider.id, selectedLogoFile);
+          console.log('Test result:', testResult);
+          
+          if (!testResult.success) {
+            console.error('Logo upload test failed:', testResult.error);
+            toast.error(`Logo upload test failed: ${testResult.error}`);
+            return;
+          }
+          
+          // If test passes, try the actual upload with fallback
+          let logoResult = await uploadProviderLogo(provider.id, selectedLogoFile);
+          
+          // If the main upload fails, try the fallback method
+          if (!logoResult.success) {
+            console.log('Main upload failed, trying fallback method...');
+            logoResult = await uploadLogoWithFallback(provider.id, selectedLogoFile);
+          }
+          
           if (logoResult.success) {
             toast.success('Logo uploaded successfully');
             setSelectedLogoFile(null);
@@ -615,8 +634,8 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                         </label>
                         <div className="space-y-2">
                           {/* File upload input */}
-                          <div className="space-y-2">
-                            <div className="relative">
+                          <div className="space-y-4">
+                            <div className="relative group">
                               <input
                                 type="file"
                                 accept="image/png,image/jpeg,image/gif"
@@ -632,29 +651,44 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                                     toast.success('Logo file selected');
                                   }
                                 }}
-                                className="w-full px-3 py-2 rounded-lg border-2 border-dashed border-gray-300 hover:border-blue-400 hover:cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-gray-50"
+                                className="w-full px-4 py-8 rounded-xl border-2 border-dashed border-gray-300 hover:border-blue-400 hover:cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-gray-50 transition-all duration-200 group-hover:bg-blue-50 group-hover:border-blue-400"
                               />
-                              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                <span className="text-gray-500 text-sm">📁 Click to select logo file</span>
+                              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                                <div className="text-3xl mb-2">📁</div>
+                                <span className="text-gray-600 text-sm font-medium">Click to select logo file</span>
+                                <span className="text-gray-400 text-xs mt-1">or drag and drop</span>
                               </div>
                             </div>
                             <div className="flex justify-center">
                               <button
                                 type="button"
                                 onClick={() => (document.querySelector('input[type="file"]') as HTMLInputElement)?.click()}
-                                className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                                className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-sm font-semibold rounded-xl hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                               >
+                                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                </svg>
                                 Choose Logo File
                               </button>
                             </div>
                           </div>
                           {selectedLogoFile && (
-                            <div className="flex items-center space-x-2">
-                              <span className="text-sm text-gray-600">Selected: {selectedLogoFile.name}</span>
+                            <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
+                              <div className="flex items-center space-x-3">
+                                <div className="text-green-600">
+                                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                  </svg>
+                                </div>
+                                <div>
+                                  <span className="text-sm font-medium text-green-800">Selected: {selectedLogoFile.name}</span>
+                                  <span className="text-xs text-green-600 block">{(selectedLogoFile.size / 1024 / 1024).toFixed(2)} MB</span>
+                                </div>
+                              </div>
                               <button
                                 type="button"
                                 onClick={() => setSelectedLogoFile(null)}
-                                className="text-red-600 hover:text-red-800 text-sm"
+                                className="text-red-600 hover:text-red-800 text-sm font-medium hover:bg-red-50 px-2 py-1 rounded transition-colors"
                               >
                                 Remove
                               </button>

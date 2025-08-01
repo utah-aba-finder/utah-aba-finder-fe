@@ -40,10 +40,10 @@ const CreateUser = ({ handleCloseForm }: { handleCloseForm: () => void }) => {
 
         fetch("https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/signup", {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${sessionStorage.getItem("authToken")}`,
-            },
+                    headers: {
+          "Content-Type": "application/json",
+          'Authorization': 'be6205db57ce01863f69372308c41e3a',
+        },
             body: JSON.stringify(requestBody),
         })
         .then(response => {

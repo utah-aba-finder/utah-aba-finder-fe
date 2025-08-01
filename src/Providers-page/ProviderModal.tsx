@@ -100,6 +100,8 @@ const ProviderModal: React.FC<ProviderModalProps> = ({
   selectedState,
   availableCounties = []
 }) => {
+
+
   const [isVisible, setIsVisible] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const [activeTab, setActiveTab] = useState('details');
@@ -143,19 +145,19 @@ const ProviderModal: React.FC<ProviderModalProps> = ({
                     </span>
                   ) : (
                     <>
-                      {provider.attributes.service_delivery?.in_home && (
+                      {provider.attributes.at_home_services && provider.attributes.at_home_services.toLowerCase().includes('yes') && (
                         <span className="service-badge in-home">
                           <Home size={14} style={{ marginRight: '6px' }} />
                           In-Home Services
                         </span>
                       )}
-                      {provider.attributes.service_delivery?.in_clinic && (
+                      {provider.attributes.in_clinic_services && provider.attributes.in_clinic_services.toLowerCase().includes('yes') && (
                         <span className="service-badge in-clinic">
                           <Building size={14} style={{ marginRight: '6px' }} />
                           In-Clinic Services
                         </span>
                       )}
-                      {provider.attributes.service_delivery?.telehealth && (
+                      {provider.attributes.telehealth_services && provider.attributes.telehealth_services.toLowerCase().includes('yes') && (
                         <span className="service-badge telehealth">
                           <Monitor size={14} style={{ marginRight: '6px' }} />
                           Telehealth Services
@@ -217,8 +219,8 @@ const ProviderModal: React.FC<ProviderModalProps> = ({
               }</p>
               <p><strong>Ages Served:</strong> {provider.attributes.min_age} - {provider.attributes.max_age} years</p>
               <p><strong>Telehealth Services:</strong> {provider.attributes.telehealth_services || 'Contact us'}</p>
-              <p><strong>At Home Services:</strong> {provider.attributes.provider_type.length > 0 ? (provider.attributes.at_home_services || 'Contact us') : provider.attributes.provider_type.length > 0 ? (provider.attributes.at_home_services || 'Not applicable') : null}</p>
-              <p><strong>In-Clinic Services:</strong> {provider.attributes.provider_type.length > 0 ? (provider.attributes.in_clinic_services || 'Contact us') : provider.attributes.provider_type.length > 0 && provider.attributes.locations?.some(location => location.address_1 && location.city && location.state && location.zip) ? 'Yes' : 'Not applicable'}</p>
+              <p><strong>At Home Services:</strong> {provider.attributes.at_home_services || 'Contact us'}</p>
+              <p><strong>In-Clinic Services:</strong> {provider.attributes.in_clinic_services || 'Contact us'}</p>
               <p><strong>Spanish Speakers:</strong> {provider.attributes.spanish_speakers || 'Contact us'}</p>
               <p><strong>Cost:</strong> {provider.attributes.cost || 'Contact us'}</p>
               <p><strong>Insurance:</strong> {provider.attributes.insurance.map(i => i.name).join(', ') || 'Contact us'}</p>
