@@ -50,12 +50,12 @@ const SuperAdminAddInsurances = ({handleCloseForm}: {handleCloseForm: () => void
             return;
         }
 
-        const API_BASE_URL = "https://uta-aba-finder-be-97eec9f967d0.herokuapp.com";
+        const API_BASE_URL = "https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com";
         
         try {
             const endpoint = editingInsurance 
-                ? `${API_BASE_URL}/api/v1/admin/insurances/${editingInsurance.id}`
-                : `${API_BASE_URL}/api/v1/admin/insurances`;
+                ? `${API_BASE_URL}/api/v1/insurances/${editingInsurance.id}`
+                : `${API_BASE_URL}/api/v1/insurances`;
             
             const method = editingInsurance ? "PATCH" : "POST";
             
@@ -71,10 +71,10 @@ const SuperAdminAddInsurances = ({handleCloseForm}: {handleCloseForm: () => void
 
             const response = await fetch(endpoint, {
                 method,
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${sessionStorage.getItem("authToken")}`,
-                },
+                        headers: {
+          "Content-Type": "application/json",
+          'Authorization': 'be6205db57ce01863f69372308c41e3a',
+        },
                 body: JSON.stringify(body)
             });
 
@@ -105,15 +105,15 @@ const SuperAdminAddInsurances = ({handleCloseForm}: {handleCloseForm: () => void
             return;
         }
 
-        const API_BASE_URL = "https://uta-aba-finder-be-97eec9f967d0.herokuapp.com";
+        const API_BASE_URL = "https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com";
         
         try {
             const response = await fetch(
-                `${API_BASE_URL}/api/v1/admin/insurances/${insurance.id}`,
+                `${API_BASE_URL}/api/v1/insurances/${insurance.id}`,
                 {
                     method: "DELETE",
                     headers: {
-                        Authorization: `Bearer ${sessionStorage.getItem("authToken")}`,
+                        'Authorization': 'be6205db57ce01863f69372308c41e3a',
                     }
                 }
             );

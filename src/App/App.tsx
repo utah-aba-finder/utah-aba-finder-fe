@@ -65,12 +65,19 @@ function App() {
       // Use the utility function to handle mobile issues
       handleMobileIssues();
 
-      // Force reload if there are any console errors related to cached content
+      // Only reload for specific cache-related errors, not all errors
       const originalError = console.error;
       console.error = (...args) => {
+        // Only reload for specific cache issues, not all errors
         if (args[0] && typeof args[0] === 'string' && 
             (args[0].includes('Failed to load') || args[0].includes('under construction'))) {
-          window.location.reload();
+          // Add a flag to prevent infinite reloads
+          if (!sessionStorage.getItem('reloadAttempted')) {
+            sessionStorage.setItem('reloadAttempted', 'true');
+            setTimeout(() => {
+              window.location.reload();
+            }, 1000);
+          }
         }
         originalError.apply(console, args);
       };
@@ -102,7 +109,8 @@ function App() {
     const fetchAllProviders = async () => {
       try {
         const providers: Providers = await fetchProviders();
-        const data = providers.data;
+        // Add null check and fallback for data property
+        const data = providers?.data || [];
         setAllProviders(data);
       } catch (error) {
         console.error("Error fetching providers:", error);
@@ -148,7 +156,7 @@ function App() {
   return (
     <div className="App">
       <ToastContainer
-        position="top-center"
+        position="top-right"
         autoClose={5000}
         hideProgressBar={false}
         newestOnTop
@@ -157,12 +165,6 @@ function App() {
         pauseOnFocusLoss
         draggable
         pauseOnHover
-        theme="colored"
-        toastStyle={{
-          borderRadius: '8px',
-          fontSize: '14px',
-          fontWeight: '500'
-        }}
       />
       {!isOnline && (
         <div style={{

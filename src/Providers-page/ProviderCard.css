@@ -18,11 +18,6 @@
     box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.3);
 }
 
-.provider-card:hover .service-badge {
-    transform: translateY(-1px) scale(1.02);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-}
-
 .provider-card:hover h2 {
     color: #fff;
 }
@@ -76,9 +71,10 @@
     gap: .6em;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
     overflow: hidden;
     font-family: "Gotham", sans-serif;
+    position: relative;
 }
 
 .favorited-date {
@@ -112,7 +108,10 @@
     -webkit-box-orient: vertical;
     border-bottom: 1.5px solid #9ea3a8;
     transition: border-color 0.3s ease;
-    padding-bottom: 5px;
+    padding-bottom: 8px;
+    margin-bottom: 8px;
+    position: relative;
+    z-index: 1;
 }
 
 .card-text h2 {
@@ -147,6 +146,11 @@
 .card-text>* {
     text-indent: -27px;
     padding-left: 27px;
+}
+
+.card-text .service-delivery-badges {
+    text-indent: 0;
+    padding-left: 0;
 }
 
 .custom-link {
@@ -519,90 +523,63 @@
 .service-delivery-badges {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 8px;
     margin-bottom: 12px;
-    padding: 8px 0;
+    margin-top: 8px;
+    position: relative;
+    z-index: 2;
+    padding-left: 0;
+    text-indent: 0;
 }
 
 .service-badge {
     display: inline-flex;
     align-items: center;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 0.7rem;
-    font-weight: 700;
+    padding: 6px 10px;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.8px;
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
     transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-.service-badge::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transition: left 0.5s ease;
-}
-
-.service-badge:hover::before {
-    left: 100%;
+    white-space: nowrap;
 }
 
 .service-badge.in-home-only {
     background: linear-gradient(135deg, #ff6b6b, #ee5a52);
     color: white;
-    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .service-badge.in-home {
     background: linear-gradient(135deg, #4ecdc4, #44a08d);
     color: white;
-    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .service-badge.in-clinic {
     background: linear-gradient(135deg, #45b7d1, #96c93d);
     color: white;
-    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .service-badge.telehealth {
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    color: white;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: linear-gradient(135deg, #a8e6cf, #dcedc1);
+    color: #2d5016;
 }
 
 .service-badge:hover {
-    transform: translateY(-2px) scale(1.05);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
-}
-
-.service-badge svg {
-    margin-right: 6px;
-    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 /* Responsive service badges */
 @media (max-width: 819px) {
     .service-delivery-badges {
-        gap: 8px;
-        margin-bottom: 10px;
-        padding: 6px 0;
+        gap: 6px;
+        margin-bottom: 6px;
     }
     
     .service-badge {
-        padding: 5px 10px;
-        font-size: 0.65rem;
-        letter-spacing: 0.6px;
-    }
-    
-    .service-badge svg {
-        margin-right: 4px;
+        padding: 3px 6px;
+        font-size: 0.7rem;
     }
 }

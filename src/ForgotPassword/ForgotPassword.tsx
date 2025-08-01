@@ -62,16 +62,11 @@ const ForgotPassword: React.FC = () => {
     try {
       // Trim whitespace from email
       const trimmedEmail = email.trim();
-      console.log('Sending password reset request for email:', trimmedEmail);
       
       // First, test the password reset functionality
-      console.log('Testing password reset functionality...');
       const testResult = await testPasswordReset(trimmedEmail);
-      console.log('Password reset test result:', testResult);
       
       if (!testResult.success) {
-        console.error('Password reset test failed:', testResult.error);
-        console.log('Test details:', testResult.details);
         
         // Check if it's a 404 error (endpoint not found)
         if (testResult.status === 404) {
@@ -132,7 +127,6 @@ const ForgotPassword: React.FC = () => {
 
       // Use the password reset endpoint
       const endpoint = 'https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/password_resets';
-      console.log('Using endpoint:', endpoint);
 
       // If test passes, proceed with the actual request
       const response = await fetch(endpoint, {
@@ -148,8 +142,6 @@ const ForgotPassword: React.FC = () => {
       let responseData;
       try {
         const responseText = await response.text();
-        console.log('Password reset response status:', response.status);
-        console.log('Password reset response text:', responseText);
         
         if (responseText) {
           responseData = JSON.parse(responseText);
@@ -201,21 +193,6 @@ const ForgotPassword: React.FC = () => {
       // If we reach here, something unexpected happened
       console.warn('Unexpected response:', responseData);
       setIsSubmitted(true);
-      toast.success('✅ Password reset email sent!', {
-        position: "top-center",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        style: {
-          background: '#10B981',
-          color: 'white',
-          fontSize: '16px',
-          fontWeight: '500'
-        }
-      });
     } catch (error) {
       console.error('Password reset request error:', error);
       toast.error(error instanceof Error ? error.message : '❌ Failed to send password reset email. Please try again.', {
@@ -255,7 +232,10 @@ const ForgotPassword: React.FC = () => {
               We've sent a password reset link to <strong>{email}</strong>
             </p>
             <p className="mt-4 text-center text-sm text-gray-500">
-              Click the link in the email to reset your password. The link will expire in 24 hours.
+              Please check your inbox and spam folder for an email from <strong>utahabalocator@gmail.com</strong>
+            </p>
+            <p className="mt-2 text-center text-sm text-gray-500">
+              Click the link in the email to reset your password. The link will expire in 6 hours.
             </p>
           </div>
           

@@ -292,12 +292,12 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
       };
 
       const response = await fetch(
-        `https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/admin/providers/${provider.id}`,
+        `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${provider.id}`,
         {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${sessionStorage.getItem("authToken")}`,
+            'Authorization': 'be6205db57ce01863f69372308c41e3a',
           },
           body: JSON.stringify(requestBody),
         }

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import puzzleLogo from '../Assets/puzzle.png';
 import { ProviderAttributes } from '../Utility/Types';
 import { MapPin, Phone, Mail, Globe, Eye, ToggleLeft, ToggleRight, Briefcase, Home, Building, Monitor } from 'lucide-react';
@@ -26,6 +26,17 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
   selectedState,
   hasReviews
 }) => {
+
+
+
+  // Debug: Check logo data
+  useEffect(() => {
+    if (provider.logo) {
+      console.log('ProviderCard - Provider has logo:', provider.logo);
+    } else {
+      console.log('ProviderCard - Provider has no logo for:', provider.name);
+    }
+  }, [provider.logo, provider.name]);
 
   const handleToggleFavorite = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -69,7 +80,7 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
         </span>
       );
     } else {
-      if (provider.service_delivery?.in_home) {
+      if (provider.at_home_services && provider.at_home_services.toLowerCase().includes('yes')) {
         badges.push(
           <span key="in-home" className="service-badge in-home">
             <Home size={12} style={{ marginRight: '4px' }} />
@@ -77,7 +88,7 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
           </span>
         );
       }
-      if (provider.service_delivery?.in_clinic) {
+      if (provider.in_clinic_services && provider.in_clinic_services.toLowerCase().includes('yes')) {
         badges.push(
           <span key="in-clinic" className="service-badge in-clinic">
             <Building size={12} style={{ marginRight: '4px' }} />
@@ -85,7 +96,7 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
           </span>
         );
       }
-      if (provider.service_delivery?.telehealth) {
+      if (provider.telehealth_services && provider.telehealth_services.toLowerCase().includes('yes')) {
         badges.push(
           <span key="telehealth" className="service-badge telehealth">
             <Monitor size={12} style={{ marginRight: '4px' }} />

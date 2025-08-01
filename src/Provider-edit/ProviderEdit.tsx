@@ -18,7 +18,7 @@ import {
 import moment from "moment";
 import "react-toastify/dist/ReactToastify.css";
 import { ProviderData, ProviderAttributes, Insurance, CountiesServed, Location, StateData, CountyData, ProviderType } from "../Utility/Types";
-import { fetchStates, fetchCountiesByState } from "../Utility/ApiCall";
+import { fetchStates, fetchCountiesByState, validateLogoFile, uploadProviderLogo } from "../Utility/ApiCall";
 import InsuranceModal from "./InsuranceModal";
 import CountiesModal from "./CountiesModal";
 
@@ -69,6 +69,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
   const [mapAddress, setMapAddress] = useState<string>('');
   const [selectedInsurances, setSelectedInsurances] = useState<Insurance[]>(loggedInProvider.attributes.insurance || []);
   const [locations, setLocations] = useState<Location[]>(loggedInProvider.attributes.locations || []);
+  const [selectedLogoFile, setSelectedLogoFile] = useState<File | null>(null);
 
   const handleLogout = useCallback(() => {
     toast.dismiss("session-warning");
@@ -87,10 +88,10 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
   const refreshProviderData = useCallback(async () => {
     try {
       const response = await fetch(
-        `https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/providers/${loggedInProvider.id}`,
+        `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${loggedInProvider.id}`,
         {
           headers: {
-            Authorization: `Bearer ${sessionStorage.getItem("authToken")}`,
+            'Authorization': 'be6205db57ce01863f69372308c41e3a',
           },
         }
       );
@@ -316,6 +317,32 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
     return typeMap[typeName] || 1;
   };
 
+  const handleLogoUpload = async () => {
+    if (!selectedLogoFile) {
+      toast.error('Please select a logo file first');
+      return;
+    }
+
+    try {
+      setIsSaving(true);
+      const result = await uploadProviderLogo(loggedInProvider.id, selectedLogoFile);
+      
+      if (result.success) {
+        toast.success('Logo uploaded successfully!');
+        setSelectedLogoFile(null);
+        // Refresh provider data to get the new logo URL
+        await refreshProviderData();
+      } else {
+        toast.error(`Failed to upload logo: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('Error uploading logo:', error);
+      toast.error('Failed to upload logo. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const handleSaveChanges = async () => {
     try {
       setIsSaving(true);
@@ -347,19 +374,17 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
 
 
       const response = await fetch(
-        `https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/providers/${loggedInProvider.id}`,
+        `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${loggedInProvider.id}`,
         {
-          method: "PATCH",
+          method: "PUT",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${sessionStorage.getItem("authToken")}`,
+            'Authorization': 'be6205db57ce01863f69372308c41e3a',
           },
           body: JSON.stringify(requestBody),
         }
       );
-
-
-
+      
       if (!response.ok) {
         const errorData = await response.json();
         console.error('ProviderEdit: Backend error response:', errorData);
@@ -731,6 +756,89 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                 <div className="space-y-6">
                   <div className="bg-white rounded-lg shadow p-6">
                     <h2 className="text-xl font-semibold mb-4">Provider Details</h2>
+                    
+                    {/* Logo Upload */}
+                    <div className="mb-6">
+                      <label className="block text-sm text-gray-600 mb-2">Provider Logo</label>
+                      <div className="space-y-4">
+                        {/* Current Logo Display */}
+                        {currentProvider?.attributes?.logo && (
+                          <div className="mb-4">
+                            <p className="text-sm text-gray-600 mb-2">Current Logo:</p>
+                            <img 
+                              src={currentProvider.attributes.logo} 
+                              alt="Current Provider Logo" 
+                              className="w-32 h-32 object-contain border border-gray-300 rounded-lg"
+                            />
+                          </div>
+                        )}
+                        
+                        {/* File upload input */}
+                        <div className="space-y-4">
+                          <div className="relative group">
+                            <input
+                              type="file"
+                              accept="image/png,image/jpeg,image/gif"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                  const validation = validateLogoFile(file);
+                                  if (!validation.isValid) {
+                                    toast.error(validation.error);
+                                    return;
+                                  }
+                                  setSelectedLogoFile(file);
+                                  toast.success('Logo file selected');
+                                }
+                              }}
+                              className="w-full px-4 py-8 rounded-xl border-2 border-dashed border-gray-300 hover:border-blue-400 hover:cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-gray-50 transition-all duration-200 group-hover:bg-blue-50 group-hover:border-blue-400"
+                            />
+                            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                              <div className="text-3xl mb-2">📁</div>
+                              <span className="text-gray-600 text-sm font-medium">Click to select logo file</span>
+                              <span className="text-gray-400 text-xs mt-1">or drag and drop</span>
+                            </div>
+                          </div>
+                          
+                          {selectedLogoFile && (
+                            <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
+                              <div className="flex items-center space-x-3">
+                                <div className="text-green-600">
+                                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                  </svg>
+                                </div>
+                                <div>
+                                  <span className="text-sm font-medium text-green-800">Selected: {selectedLogoFile.name}</span>
+                                  <span className="text-xs text-green-600 block">{(selectedLogoFile.size / 1024 / 1024).toFixed(2)} MB</span>
+                                </div>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => setSelectedLogoFile(null)}
+                                className="text-red-600 hover:text-red-800 text-sm font-medium hover:bg-red-50 px-2 py-1 rounded transition-colors"
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          )}
+                          
+                          {selectedLogoFile && (
+                            <button
+                              onClick={handleLogoUpload}
+                              disabled={isSaving}
+                              className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                            >
+                              {isSaving ? "Uploading..." : "Upload Logo"}
+                            </button>
+                          )}
+                          
+                          <p className="text-xs text-gray-500">
+                            Supported formats: PNG, JPEG, GIF. Max size: 5MB
+                          </p>
+                        </div>
+                      </div>
+                    </div>
                     
                     {/* Provider Types */}
                     <div>

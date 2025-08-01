@@ -24,7 +24,7 @@ import SuperAdminAddInsurances from "./SuperAdminAddInsurances";
 import moment from "moment";
 import CreateUser from "./CreateUser";
 import { ProviderData, ProviderAttributes } from "../Utility/Types";
-import { API_URL } from "../Utility/ApiCall";
+import { fetchProviders } from "../Utility/ApiCall";
 
 const SuperAdmin = () => {
   const { loggedInProvider, logout } = useAuth();
@@ -97,19 +97,30 @@ const SuperAdmin = () => {
   // Fetch providers
   const fetchAllProviders = async () => {
     try {
-      const response = await fetch(`${API_URL}/providers`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${sessionStorage.getItem("authToken")}`,
-        },
-      });
+      console.log("SuperAdmin: Using data API endpoint (approved providers only)");
+      
+      // Use the correct API app URL for data operations
+      const response = await fetch(
+        `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/providers`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            'Authorization': 'be6205db57ce01863f69372308c41e3a',
+          },
+        }
+      );
 
+      console.log('SuperAdmin fetch response status:', response.status);
+      
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorText = await response.text();
+        console.error('SuperAdmin fetch error:', errorText);
+        throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
       }
 
       const data = await response.json();
+      console.log('SuperAdmin fetch data:', data);
       
       if (!data || !data.data) {
         throw new Error("Invalid response format");
@@ -151,8 +162,182 @@ const SuperAdmin = () => {
       }
 
     } catch (error) {
-      console.error("Error fetching providers:", error);
-      toast.error("Failed to fetch providers");
+      console.error("Error fetching providers from admin endpoint:", error);
+      
+      // Try with API key authentication as fallback
+      try {
+        console.log("Trying admin endpoint with API key authentication...");
+        const apiKeyResponse = await fetch(
+          `https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/admin/providers`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              'Authorization': 'be6205db57ce01863f69372308c41e3a',
+            },
+          }
+        );
+        
+        // Also try with Bearer prefix for API key
+        if (!apiKeyResponse.ok) {
+          console.log("Trying admin endpoint with Bearer API key...");
+          const bearerApiKeyResponse = await fetch(
+            `https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/admin/providers`,
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+                'Authorization': 'Bearer be6205db57ce01863f69372308c41e3a',
+              },
+            }
+          );
+          
+          if (bearerApiKeyResponse.ok) {
+            const bearerData = await bearerApiKeyResponse.json();
+            console.log('Bearer API key fetch data:', bearerData);
+            
+            if (bearerData && bearerData.data) {
+              setProviders(bearerData.data);
+              
+              // Process states from the bearer data
+              const states = new Set<string>();
+              bearerData.data.forEach((provider: ProviderData) => {
+                provider.attributes.locations?.forEach(location => {
+                  if (location.state) {
+                    const cleanState = location.state.trim();
+                    const matchingState = US_STATES.find(state => 
+                      state.toLowerCase() === cleanState.toLowerCase() ||
+                      state.toLowerCase().includes(cleanState.toLowerCase()) ||
+                      cleanState.toLowerCase().includes(state.toLowerCase())
+                    );
+                    
+                    if (matchingState) {
+                      states.add(matchingState);
+                    }
+                  }
+                });
+              });
+              
+              const sortedStates = Array.from(states).sort();
+              setAvailableStates(sortedStates);
+              
+              // If we have a selected provider, update it with the fresh data
+              if (selectedProvider) {
+                const updatedProvider = bearerData.data.find(
+                  (p: ProviderData) => p.id === selectedProvider.id
+                );
+                if (updatedProvider) {
+                  setSelectedProvider(updatedProvider);
+                }
+              }
+              
+              console.log("Successfully fetched providers with Bearer API key");
+              return;
+            }
+          } else {
+            const errorText = await bearerApiKeyResponse.text();
+            console.error('Bearer API key fetch error:', errorText);
+          }
+        }
+        
+        console.log('API key response status:', apiKeyResponse.status);
+        
+        if (apiKeyResponse.ok) {
+          const apiKeyData = await apiKeyResponse.json();
+          console.log('API key fetch data:', apiKeyData);
+          
+          if (apiKeyData && apiKeyData.data) {
+            setProviders(apiKeyData.data);
+            
+            // Process states from the API key data
+            const states = new Set<string>();
+            apiKeyData.data.forEach((provider: ProviderData) => {
+              provider.attributes.locations?.forEach(location => {
+                if (location.state) {
+                  const cleanState = location.state.trim();
+                  const matchingState = US_STATES.find(state => 
+                    state.toLowerCase() === cleanState.toLowerCase() ||
+                    state.toLowerCase().includes(cleanState.toLowerCase()) ||
+                    cleanState.toLowerCase().includes(state.toLowerCase())
+                  );
+                  
+                  if (matchingState) {
+                    states.add(matchingState);
+                  }
+                }
+              });
+            });
+            
+            const sortedStates = Array.from(states).sort();
+            setAvailableStates(sortedStates);
+            
+            // If we have a selected provider, update it with the fresh data
+            if (selectedProvider) {
+              const updatedProvider = apiKeyData.data.find(
+                (p: ProviderData) => p.id === selectedProvider.id
+              );
+              if (updatedProvider) {
+                setSelectedProvider(updatedProvider);
+              }
+            }
+            
+            console.log("Successfully fetched providers with API key");
+            return;
+          }
+        } else {
+          const errorText = await apiKeyResponse.text();
+          console.error('API key fetch error:', errorText);
+        }
+      } catch (apiKeyError) {
+        console.error("Error fetching providers with API key:", apiKeyError);
+      }
+      
+      // Final fallback to data API endpoint
+      try {
+        console.log("Trying fallback to data API endpoint...");
+        const fallbackData = await fetchProviders();
+        
+        if (fallbackData && fallbackData.data) {
+          setProviders(fallbackData.data);
+          
+          // Process states from the fallback data
+          const states = new Set<string>();
+          fallbackData.data.forEach((provider: ProviderData) => {
+            provider.attributes.locations?.forEach(location => {
+              if (location.state) {
+                const cleanState = location.state.trim();
+                const matchingState = US_STATES.find(state => 
+                  state.toLowerCase() === cleanState.toLowerCase() ||
+                  state.toLowerCase().includes(cleanState.toLowerCase()) ||
+                  cleanState.toLowerCase().includes(state.toLowerCase())
+                );
+                
+                if (matchingState) {
+                  states.add(matchingState);
+                }
+              }
+            });
+          });
+          
+          const sortedStates = Array.from(states).sort();
+          setAvailableStates(sortedStates);
+          
+          // If we have a selected provider, update it with the fresh data
+          if (selectedProvider) {
+            const updatedProvider = fallbackData.data.find(
+              (p: ProviderData) => p.id === selectedProvider.id
+            );
+            if (updatedProvider) {
+              setSelectedProvider(updatedProvider);
+            }
+          }
+          
+          console.log("Successfully fetched providers from fallback endpoint");
+        }
+      } catch (fallbackError) {
+        console.error("Error fetching providers from fallback endpoint:", fallbackError);
+        toast.error("Failed to fetch providers from both endpoints");
+      }
     } finally {
       setIsLoading(false);
     }

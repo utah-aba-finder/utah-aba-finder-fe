@@ -43,6 +43,7 @@ export const LoginPage: React.FC = () => {
 
 
         try {
+            console.log('Attempting login for:', username);
             const response = await fetch('https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/login', {
                 method: 'POST',
                 headers: {
@@ -69,30 +70,63 @@ export const LoginPage: React.FC = () => {
                 throw new Error(errorMessage);
             }
 
+            // Check for Authorization header first
             const authHeader = response.headers.get('Authorization');
-            if (!authHeader) {
-                throw new Error('No Authorization header found in response');
+            let token = null;
+            
+            if (authHeader) {
+                token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : authHeader;
+            } else {
+                // If no Authorization header, create a session token from user data
+                token = btoa(JSON.stringify(data.user)); // Base64 encode user data as temporary token
             }
+            
 
-            const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : authHeader;
             initializeSession(token);
 
-            if (data.data.role === 'super_admin') {
-                setLoggedInProvider(data.data);
+            // Map role numbers to role strings
+            const roleMap: { [key: number]: string } = {
+                0: 'super_admin',      // Backend clarified: 0 is Superadmin
+                1: 'provider_admin'    // Backend clarified: 1 is Provider Admin
+            };
+            
+            const userRole = roleMap[data.user.role] || 'unknown';
+
+            
+            if (userRole === 'super_admin') {
+                setLoggedInProvider(data.user);
                 navigate('/superAdmin');
-            } else if (data.data.role === 'provider_admin') {
-                const providerId = data.data?.provider_id;
-                if (providerId) {
-                    const providerDetails = await fetchSingleProvider(providerId);
+            } else if (userRole === 'provider_admin') {
+                const providerId = data.user?.provider_id;
+
+                
+                if (providerId && providerId !== null) {
+                    try {
+                        const providerDetails = await fetchSingleProvider(providerId);
+                        setLoggedInProvider({
+                            ...providerDetails,
+                            role: 'provider_admin'
+                        });
+                        toast.info('You are logged in as ' + providerDetails.attributes.name)
+                        navigate(`/providerEdit/${providerId}`);
+                    } catch (error) {
+                        console.error('Error fetching provider details:', error);
+                        setLoggedInProvider({
+                            ...data.user,
+                            role: 'provider_admin'
+                        });
+                        toast.error('Error loading provider details. Please contact support.');
+                        navigate('/');
+                    }
+                } else {
+                    // For users without a provider_id, still allow them to access provider edit
                     setLoggedInProvider({
-                        ...providerDetails,
+                        ...data.user,
                         role: 'provider_admin'
                     });
-                    toast.info('You are logged in as ' + providerDetails.attributes.name)
-                    navigate(`/providerEdit/${providerId}`);
-                } else {
-                    toast.error('Provider ID not found');
-                    throw new Error('Provider ID not found');
+                    toast.info('You are logged in as ' + data.user.email);
+                    toast.info('You can create or manage your provider profile.');
+                    navigate('/providerEdit'); // Navigate to provider edit without ID
                 }
             } else {
                 toast.error('Unknown user role');
@@ -102,9 +136,19 @@ export const LoginPage: React.FC = () => {
             setUsername('');
             setPassword('');
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'An unexpected error occurred');
-            if (err) {
-                toast.error('Failed to login. Please check your username and password and try again.');
+            console.error('Login error:', err);
+            const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred';
+            setError(errorMessage);
+            
+            // Provide more specific error messages
+            if (errorMessage.includes('Invalid email or password')) {
+                toast.error('Invalid email or password. Please try again.');
+            } else if (errorMessage.includes('network') || errorMessage.includes('fetch')) {
+                toast.error('Network error. Please check your connection and try again.');
+            } else if (errorMessage.includes('Provider ID not found')) {
+                toast.error('Account configuration error. Please contact support.');
+            } else {
+                toast.error('Login failed. Please try again.');
             }
         } finally {
             setIsLoading(false);
