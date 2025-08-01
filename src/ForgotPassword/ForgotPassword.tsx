@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { User, ArrowLeft } from 'lucide-react';
-import { testPasswordReset } from '../Utility/ApiCall';
+import { testPasswordReset, testAvailableEndpoints } from '../Utility/ApiCall';
 import './ForgotPassword.css';
 
 const ForgotPassword: React.FC = () => {
@@ -73,47 +73,65 @@ const ForgotPassword: React.FC = () => {
         console.error('Password reset test failed:', testResult.error);
         console.log('Test details:', testResult.details);
         
-        // Show a more helpful error message
-        toast.error('Password reset functionality is not available. Please contact support for assistance.', {
-          position: "top-center",
-          autoClose: 8000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          style: {
-            background: '#EF4444',
-            color: 'white',
-            fontSize: '16px',
-            fontWeight: '500'
-          }
-        });
-        
-        // Show additional help information
-        setTimeout(() => {
-          toast.info('For immediate assistance, please contact the administrator or use the Contact Us page.', {
+        // Check if it's a 404 error (endpoint not found)
+        if (testResult.status === 404) {
+          toast.error('Password reset functionality is not available. Please contact support for assistance.', {
             position: "top-center",
-            autoClose: 10000,
+            autoClose: 8000,
             hideProgressBar: false,
             closeOnClick: true,
             pauseOnHover: true,
             draggable: true,
             progress: undefined,
             style: {
-              background: '#3B82F6',
+              background: '#EF4444',
               color: 'white',
               fontSize: '16px',
               fontWeight: '500'
             }
           });
-        }, 2000);
-        
+          
+          // Show additional help information
+          setTimeout(() => {
+            toast.info('For immediate assistance, please contact the administrator or use the Contact Us page.', {
+              position: "top-center",
+              autoClose: 10000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+              style: {
+                background: '#3B82F6',
+                color: 'white',
+                fontSize: '16px',
+                fontWeight: '500'
+              }
+            });
+          }, 2000);
+        } else {
+          // Show generic error message
+          toast.error(`Password reset failed: ${testResult.error}`, {
+            position: "top-center",
+            autoClose: 6000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            style: {
+              background: '#EF4444',
+              color: 'white',
+              fontSize: '16px',
+              fontWeight: '500'
+            }
+          });
+        }
         return;
       }
 
-      // Use the working endpoint if found
-      const endpoint = testResult.workingEndpoint || 'https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/password_resets';
+      // Use the password reset endpoint
+      const endpoint = 'https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/password_resets';
       console.log('Using endpoint:', endpoint);
 
       // If test passes, proceed with the actual request
@@ -152,11 +170,13 @@ const ForgotPassword: React.FC = () => {
         } else if (response.status === 500) {
           throw new Error('Server error. Please try again later or contact support.');
         } else {
-          throw new Error(responseData.message || `Failed to send password reset email (${response.status})`);
+          throw new Error(responseData.message || responseData.error || `Failed to send password reset email (${response.status})`);
         }
       }
 
-      // Check for success message in response data
+      // According to API docs, both success cases return 200 status
+      // Success case 1: "Password reset instructions sent to your email"
+      // Success case 2: "If the email exists, password reset instructions have been sent"
       if (response.ok && (responseData.message || responseData.error?.includes("If the email exists"))) {
         // Success case - password reset instructions sent
         setIsSubmitted(true);
@@ -178,6 +198,8 @@ const ForgotPassword: React.FC = () => {
         return; // Exit early since we've handled success
       }
 
+      // If we reach here, something unexpected happened
+      console.warn('Unexpected response:', responseData);
       setIsSubmitted(true);
       toast.success('✅ Password reset email sent!', {
         position: "top-center",
@@ -346,19 +368,34 @@ const ForgotPassword: React.FC = () => {
               </button>
             </p>
             
-            {/* Debug button - remove in production */}
-            <button
-              type="button"
-              onClick={async () => {
-                console.log('=== DEBUG: Testing password reset ===');
-                const testResult = await testPasswordReset(email);
-                console.log('Debug test result:', testResult);
-                alert(`Debug result: ${JSON.stringify(testResult, null, 2)}`);
-              }}
-              className="mt-4 text-xs text-gray-400 hover:text-gray-600"
-            >
-              Debug: Test API
-            </button>
+            {/* Debug buttons - remove in production */}
+            <div className="mt-4 space-y-2">
+              <button
+                type="button"
+                onClick={async () => {
+                  console.log('=== DEBUG: Testing password reset ===');
+                  const testResult = await testPasswordReset(email);
+                  console.log('Debug test result:', testResult);
+                  alert(`Debug result: ${JSON.stringify(testResult, null, 2)}`);
+                }}
+                className="text-xs text-gray-400 hover:text-gray-600"
+              >
+                Debug: Test Password Reset
+              </button>
+              
+              <button
+                type="button"
+                onClick={async () => {
+                  console.log('=== DEBUG: Testing available endpoints ===');
+                  const testResult = await testAvailableEndpoints();
+                  console.log('Available endpoints:', testResult);
+                  alert(`Available endpoints: ${JSON.stringify(testResult, null, 2)}`);
+                }}
+                className="text-xs text-gray-400 hover:text-gray-600 ml-4"
+              >
+                Debug: Test Available Endpoints
+              </button>
+            </div>
           </div>
         </form>
       </div>

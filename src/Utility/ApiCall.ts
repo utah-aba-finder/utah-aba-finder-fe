@@ -575,7 +575,7 @@ export const uploadAdminProviderLogo = async (providerId: number, logoFile: File
     console.log('Admin Request URL:', `https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/providers/${providerId}`);
     console.log('Admin Request method: PATCH');
     console.log('Admin FormData entries:');
-    for (let [key, value] of formData.entries()) {
+    for (let [key, value] of (formData as any).entries()) {
       console.log(`  ${key}:`, value instanceof File ? `${value.name} (${value.size} bytes, ${value.type})` : value);
     }
     
@@ -636,26 +636,81 @@ export const uploadAdminProviderLogo = async (providerId: number, logoFile: File
   }
 };
 
-export const testPasswordReset = async (email: string): Promise<{ success: boolean; error?: string; details?: any; workingEndpoint?: string }> => {
+export const testPasswordReset = async (email: string): Promise<{ success: boolean; error?: string; details?: any; status?: number }> => {
   try {
     console.log('=== TESTING PASSWORD RESET ===');
     console.log('Email:', email);
     
     // Test 1: Check if the API endpoint is reachable
-    const healthCheck = await fetch('https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/health', {
-      method: 'GET'
+    const healthCheck = await fetch('https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/up', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      }
     });
     
-    console.log('API health check status:', healthCheck.status);
+    if (!healthCheck.ok) {
+      return { 
+        success: false, 
+        error: 'API server is not reachable',
+        details: { status: healthCheck.status, statusText: healthCheck.statusText },
+        status: healthCheck.status
+      };
+    }
     
-    // Test 2: Try different password reset endpoints
+    // Test 2: Try the password reset endpoint
+    const resetResponse = await fetch('https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/password_resets', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: email.trim()
+      })
+    });
+    
+    let responseData;
+    try {
+      const responseText = await resetResponse.text();
+      if (responseText) {
+        responseData = JSON.parse(responseText);
+      } else {
+        responseData = {};
+      }
+    } catch (parseError) {
+      console.error('Failed to parse response:', parseError);
+      responseData = {};
+    }
+    
+    return { 
+      success: resetResponse.ok, 
+      error: resetResponse.ok ? undefined : responseData.error || `HTTP ${resetResponse.status}: ${resetResponse.statusText}`,
+      details: { status: resetResponse.status, statusText: resetResponse.statusText, data: responseData },
+      status: resetResponse.status
+    };
+    
+  } catch (error) {
+    console.error('Password reset test failed:', error);
+    return { 
+      success: false, 
+      error: 'Network error or server unavailable',
+      details: { error: error instanceof Error ? error.message : 'Unknown error' }
+    };
+  }
+};
+
+export const testAvailableEndpoints = async (): Promise<{ success: boolean; endpoints?: any; error?: string }> => {
+  try {
+    console.log('=== TESTING AVAILABLE ENDPOINTS ===');
+    
     const endpoints = [
+      'https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/',
+      'https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/up',
+      'https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/',
       'https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/password_resets',
-      'https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/password_resets',
-      'https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/auth/password_resets',
-      'https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/users/password_resets',
-      'https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/auth/forgot_password',
-      'https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/forgot_password'
+      'https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/auth',
+      'https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/users',
+      'https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/providers'
     ];
     
     const results = [];
@@ -665,13 +720,10 @@ export const testPasswordReset = async (email: string): Promise<{ success: boole
         console.log(`Testing endpoint: ${endpoint}`);
         
         const response = await fetch(endpoint, {
-          method: 'POST',
+          method: 'GET',
           headers: {
             'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            email: email.trim()
-          })
+          }
         });
         
         const result: {
@@ -679,8 +731,7 @@ export const testPasswordReset = async (email: string): Promise<{ success: boole
           status: number;
           statusText: string;
           ok: boolean;
-          error?: string;
-          data?: any;
+          data?: string;
         } = {
           endpoint,
           status: response.status,
@@ -688,33 +739,17 @@ export const testPasswordReset = async (email: string): Promise<{ success: boole
           ok: response.ok
         };
         
-        if (!response.ok) {
+        if (response.ok) {
           try {
-            const errorText = await response.text();
-            result.error = errorText;
+            const data = await response.text();
+            result.data = data.substring(0, 200) + (data.length > 200 ? '...' : '');
           } catch (e) {
-            result.error = 'Could not read error response';
-          }
-        } else {
-          try {
-            const data = await response.json();
-            result.data = data;
-          } catch (e) {
-            result.data = 'Could not parse response';
+            result.data = 'Could not read response';
           }
         }
         
         results.push(result);
         console.log(`Endpoint ${endpoint} result:`, result);
-        
-        // If we find a working endpoint, return it
-        if (response.ok) {
-          return {
-            success: true,
-            workingEndpoint: endpoint,
-            details: results
-          };
-        }
         
       } catch (error) {
         results.push({
@@ -726,19 +761,16 @@ export const testPasswordReset = async (email: string): Promise<{ success: boole
       }
     }
     
-    // If no working endpoint found, return the results
     return { 
-      success: false, 
-      error: 'No working password reset endpoint found',
-      details: results 
+      success: true, 
+      endpoints: results 
     };
     
   } catch (error) {
-    console.error('Password reset test error:', error);
+    console.error('Endpoint test error:', error);
     return { 
       success: false, 
-      error: error instanceof Error ? error.message : 'Unknown error occurred',
-      details: { error: error }
+      error: error instanceof Error ? error.message : 'Unknown error occurred'
     };
   }
 };
