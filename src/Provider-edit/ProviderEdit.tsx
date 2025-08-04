@@ -349,8 +349,14 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       formData.append('email', currentProvider.attributes.email || '');
       formData.append('website', currentProvider.attributes.website || '');
       
+      console.log('Uploading logo for provider:', {
+        providerId: loggedInProvider.id,
+        method: 'PUT',
+        authHeader: loggedInProvider.id.toString()
+      });
+
       const response = await fetch(`https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${loggedInProvider.id}`, {
-        method: 'PATCH',
+        method: 'PUT',
         headers: {
           'Authorization': loggedInProvider.id.toString(),
           // Don't set Content-Type header - browser will set it automatically with boundary
@@ -955,7 +961,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                                 try {
                                   setIsSaving(true);
                                   const response = await fetch(
-                                    `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/provider_self/remove_logo`,
+                                    `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${loggedInProvider.id}/remove_logo`,
                                     {
                                       method: 'DELETE',
                                       headers: {
