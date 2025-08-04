@@ -8,6 +8,9 @@ interface User {
   email: string;
   provider_id?: number;
   provider_name?: string;
+  role?: number;
+  created_at?: string;
+  updated_at?: string;
 }
 
 interface Provider {
@@ -21,11 +24,42 @@ const UserProviderLinking: React.FC = () => {
   const [selectedUser, setSelectedUser] = useState<number | null>(null);
   const [selectedProvider, setSelectedProvider] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedUsersForBulk, setSelectedUsersForBulk] = useState<number[]>([]);
+  const [showBulkAssignment, setShowBulkAssignment] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterRole, setFilterRole] = useState<string>('all');
 
   useEffect(() => {
     fetchUsers();
     fetchProviders();
   }, []);
+
+  // Filter users based on search term and role
+  const filteredUsers = users.filter(user => {
+    const matchesSearch = user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (user.provider_name && user.provider_name.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesRole = filterRole === 'all' || user.role?.toString() === filterRole;
+    return matchesSearch && matchesRole;
+  });
+
+  // Get unlinked users for bulk assignment
+  const unlinkedUsers = filteredUsers.filter(user => !user.provider_id);
+
+  const handleBulkAssignment = () => {
+    if (selectedUsersForBulk.length === 0 || !selectedProvider) {
+      toast.error('Please select users and a provider for bulk assignment');
+      return;
+    }
+
+    const userEmails = selectedUsersForBulk.map(userId => {
+      const user = users.find(u => u.id === userId);
+      return user?.email;
+    }).filter(Boolean) as string[];
+
+    bulkAssignUsers(userEmails, selectedProvider);
+    setSelectedUsersForBulk([]);
+    setShowBulkAssignment(false);
+  };
 
   const fetchUsers = async () => {
     try {
@@ -190,6 +224,54 @@ const UserProviderLinking: React.FC = () => {
     }
   };
 
+  const bulkAssignUsers = async (userEmails: string[], providerId: number) => {
+    setIsLoading(true);
+    try {
+      // For now, use individual assignments until bulk endpoint is available
+      let successfulAssignments = 0;
+      let failedAssignments: string[] = [];
+      
+      for (const email of userEmails) {
+        try {
+          const response = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/users/manual_link', {
+            method: 'POST',
+            headers: {
+              'Authorization': getAdminAuthHeader(),
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              user_email: email,
+              provider_id: providerId
+            })
+          });
+          
+          if (response.ok) {
+            successfulAssignments++;
+          } else {
+            failedAssignments.push(email);
+          }
+        } catch (error) {
+          failedAssignments.push(email);
+        }
+      }
+      
+      if (successfulAssignments > 0) {
+        toast.success(`Bulk assignment completed! ${successfulAssignments} users assigned successfully.`);
+      }
+      if (failedAssignments.length > 0) {
+        toast.warning(`${failedAssignments.length} assignments failed. Check console for details.`);
+        console.log('Failed assignments:', failedAssignments);
+      }
+      
+      fetchUsers(); // Refresh the user list
+    } catch (error) {
+      console.error('Error bulk assigning users:', error);
+      toast.error('Failed to bulk assign users');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const unlinkUserFromProvider = async (userId: number) => {
     setIsLoading(true);
     try {
@@ -210,8 +292,8 @@ const UserProviderLinking: React.FC = () => {
     }
   };
 
-  const connectedUsers = users.filter(user => user.provider_id);
-  const unconnectedUsers = users.filter(user => !user.provider_id);
+  const connectedUsers = filteredUsers.filter(user => user.provider_id);
+  const unconnectedUsers = filteredUsers.filter(user => !user.provider_id);
 
   return (
     <div className="min-h-screen bg-gray-100 p-8">
@@ -233,6 +315,114 @@ const UserProviderLinking: React.FC = () => {
             <p className="text-3xl font-bold text-red-600">{unconnectedUsers.length}</p>
           </div>
         </div>
+
+        {/* Search and Filter Section */}
+        <div className="bg-white p-6 rounded-lg shadow mb-8">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Search & Filter</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Search Users
+              </label>
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search by email or provider name..."
+                className="w-full p-2 border border-gray-300 rounded-md"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Filter by Role
+              </label>
+              <select
+                value={filterRole}
+                onChange={(e) => setFilterRole(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded-md"
+              >
+                <option value="all">All Roles</option>
+                <option value="0">Super Admin</option>
+                <option value="1">Provider Admin</option>
+                <option value="2">Regular User</option>
+              </select>
+            </div>
+            
+            <div className="flex items-end">
+              <button
+                onClick={() => setShowBulkAssignment(!showBulkAssignment)}
+                className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700"
+              >
+                {showBulkAssignment ? 'Hide Bulk Assignment' : 'Show Bulk Assignment'}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Bulk Assignment Section */}
+        {showBulkAssignment && (
+          <div className="bg-white p-6 rounded-lg shadow mb-8">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Bulk Assignment</h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Select Unlinked Users
+                </label>
+                <div className="max-h-40 overflow-y-auto border border-gray-300 rounded-md p-2">
+                  {unlinkedUsers.map(user => (
+                    <label key={user.id} className="flex items-center space-x-2 p-1">
+                      <input
+                        type="checkbox"
+                        checked={selectedUsersForBulk.includes(user.id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedUsersForBulk([...selectedUsersForBulk, user.id]);
+                          } else {
+                            setSelectedUsersForBulk(selectedUsersForBulk.filter(id => id !== user.id));
+                          }
+                        }}
+                        className="rounded"
+                      />
+                      <span className="text-sm">{user.email}</span>
+                    </label>
+                  ))}
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  Selected: {selectedUsersForBulk.length} users
+                </p>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Select Provider for Assignment
+                </label>
+                <select
+                  value={selectedProvider || ''}
+                  onChange={(e) => setSelectedProvider(Number(e.target.value) || null)}
+                  className="w-full p-2 border border-gray-300 rounded-md"
+                >
+                  <option value="">Choose a provider...</option>
+                  {providers.map(provider => (
+                    <option key={provider.id} value={provider.id}>
+                      {provider.name} (ID: {provider.id})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            
+            <button
+              onClick={handleBulkAssignment}
+              disabled={selectedUsersForBulk.length === 0 || !selectedProvider || isLoading}
+              className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? 'Assigning...' : `Assign ${selectedUsersForBulk.length} Users to Provider`}
+            </button>
+          </div>
+        )}
 
         {/* Manual Linking Section */}
         <div className="bg-white p-6 rounded-lg shadow mb-8">

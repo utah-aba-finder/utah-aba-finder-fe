@@ -127,6 +127,15 @@ const SuperAdmin = () => {
         name: p.attributes.name,
         logo: p.attributes.logo
       })));
+      
+      // Debug: Log all provider data structure
+      console.log('All providers data structure:', data.data?.slice(0, 3).map((p: any) => ({
+        id: p.id,
+        name: p.attributes?.name,
+        logo: p.attributes?.logo,
+        hasLogo: !!p.attributes?.logo,
+        attributesKeys: Object.keys(p.attributes || {})
+      })));
 
       // Update the providers state with the fresh data
       setProviders(data.data);
