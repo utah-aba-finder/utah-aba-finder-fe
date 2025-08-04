@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { Providers, StateData, CountyData, InsuranceData } from './Types';
-import { getAdminAuthHeader } from './config';
+import { getAdminAuthHeader, API_CONFIG } from './config';
 
 export const API_URL = "https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin";
 
@@ -27,13 +27,7 @@ export const fetchProviders = async (): Promise<Providers> => {
       data.data.forEach(provider => {
         const logoUrl = provider.attributes?.logo;
         
-        if (logoUrl) {
-          // Provider has a logo - ensure it's a valid URL
-          console.log(`Provider ${provider.attributes.name} has logo: ${logoUrl}`);
-        } else {
-          // Provider has no logo - will use placeholder
-          console.log(`Provider ${provider.attributes.name} has no logo`);
-        }
+        // Logo status logging removed for production
       });
     }
     
@@ -52,7 +46,6 @@ export const fetchProviders = async (): Promise<Providers> => {
 };
 
 export const fetchSingleProvider = async (providerId: number) => {
-  console.log("Fetching provider with ID:", providerId);
 
   try {
     const response = await fetch(`${API_URL_PROVIDERS}/${providerId}`, {
@@ -63,7 +56,7 @@ export const fetchSingleProvider = async (providerId: number) => {
       }
     });
 
-    console.log("Provider fetch response status:", response.status);
+
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -72,7 +65,6 @@ export const fetchSingleProvider = async (providerId: number) => {
     }
 
     const data = await response.json();
-    console.log("Provider fetch response data:", data);
     return data.data[0];
   } catch (error) {
     console.error('Error fetching single provider:', error);
@@ -243,11 +235,7 @@ export const uploadProviderLogo = async (providerId: number, logoFile: File): Pr
     const formData = new FormData();
     formData.append('logo', logoFile); // Only send the logo file
     
-    console.log('Sending multipart form data...');
-    console.log('FormData contents:');
-    for (let [key, value] of formData.entries()) {
-      console.log(`${key}:`, value instanceof File ? `${value.name} (${value.size} bytes, ${value.type})` : value);
-    }
+
 
     const response = await fetch(
       `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${providerId}`,
@@ -261,8 +249,7 @@ export const uploadProviderLogo = async (providerId: number, logoFile: File): Pr
       }
     );
 
-    console.log('Upload response status:', response.status);
-    console.log('Upload response headers:', response.headers);
+
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -271,7 +258,6 @@ export const uploadProviderLogo = async (providerId: number, logoFile: File): Pr
     }
 
     const result = await response.json();
-    console.log('Upload success response:', result);
 
     return { 
       success: true, 
@@ -328,217 +314,11 @@ export const removeProviderLogo = async (providerId: number): Promise<{ success:
   }
 };
 
-export const testLogoUpload = async (providerId: number, logoFile: File): Promise<{ success: boolean; error?: string; details?: any }> => {
-  try {
-    console.log('=== TESTING LOGO UPLOAD ===');
-    console.log('Provider ID:', providerId);
-    console.log('File details:', {
-      name: logoFile.name,
-      size: logoFile.size,
-      type: logoFile.type,
-      lastModified: logoFile.lastModified
-    });
-    
-    // Test 1: Check if provider exists
-    const providerResponse = await fetch(
-      `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${providerId}`,
-      {
-        method: 'GET',
-        headers: {
-          'Authorization': 'be6205db57ce01863f69372308c41e3a'
-        }
-      }
-    );
-    
-    console.log('Provider check status:', providerResponse.status);
-    if (!providerResponse.ok) {
-      const errorText = await providerResponse.text();
-      console.log('Provider check error:', errorText);
-      return { success: false, error: `Provider not found or accessible: ${providerResponse.status}` };
-    }
-    
-    // Test 2: Try different upload endpoints
-    const endpoints = [
-      `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${providerId}`,
-      `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${providerId}/logo`
-    ];
-    
-    const results: Array<{
-      endpoint: string;
-      status: number | string;
-      statusText?: string;
-      ok?: boolean;
-      error?: string;
-      data?: any;
-    }> = [];
-    
-    for (const endpoint of endpoints) {
-      try {
-        const formData = new FormData();
-        formData.append('logo', logoFile);
-        
-        console.log(`Testing endpoint: ${endpoint}`);
-        
-        const response = await fetch(endpoint, {
-          method: 'PATCH',
-          headers: {
-            'Authorization': 'be6205db57ce01863f69372308c41e3a'
-          },
-          body: formData
-        });
-        
-        const result: {
-          endpoint: string;
-          status: number;
-          statusText: string;
-          ok: boolean;
-          error?: string;
-          data?: any;
-        } = {
-          endpoint,
-          status: response.status,
-          statusText: response.statusText,
-          ok: response.ok
-        };
-        
-        if (!response.ok) {
-          try {
-            const errorText = await response.text();
-            result.error = errorText;
-          } catch (e) {
-            result.error = 'Could not read error response';
-          }
-        } else {
-          try {
-            const data = await response.json();
-            result.data = data;
-          } catch (e) {
-            result.data = 'Could not parse response';
-          }
-        }
-        
-        results.push(result);
-        console.log(`Endpoint ${endpoint} result:`, result);
-        
-      } catch (error) {
-        results.push({
-          endpoint,
-          error: error instanceof Error ? error.message : 'Unknown error',
-          status: 'ERROR'
-        });
-        console.log(`Endpoint ${endpoint} error:`, error);
-      }
-    }
-    
-    return { 
-      success: results.some(r => r.ok === true), 
-      details: results 
-    };
-    
-  } catch (error) {
-    console.error('Test logo upload error:', error);
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Unknown error occurred' 
-    };
-  }
-};
 
-export const uploadLogoWithFallback = async (providerId: number, logoFile: File): Promise<{ success: boolean; error?: string; updatedProvider?: any }> => {
-  try {
-    console.log('=== FALLBACK LOGO UPLOAD ===');
-    console.log('Provider ID:', providerId);
-    console.log('File:', logoFile.name, 'Size:', logoFile.size, 'Type:', logoFile.type);
-    
-    // Method 1: Try with smaller file size
-    if (logoFile.size > 1024 * 1024) { // If larger than 1MB
-      console.log('File is large, trying to compress...');
-      const compressedFile = await compressImage(logoFile);
-      console.log('Compressed file size:', compressedFile.size);
-      
-      const result = await uploadProviderLogo(providerId, compressedFile);
-      if (result.success) {
-        return result;
-      }
-    }
-    
-    // Method 2: Try with different content type
-    const formData = new FormData();
-    formData.append('logo', logoFile, logoFile.name);
-    formData.append('provider_id', providerId.toString());
-    
-    const response = await fetch(
-              `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/providers/${providerId}`,
-      {
-        method: 'POST', // Try POST instead of PATCH
-        headers: {
-          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`
-        },
-        body: formData
-      }
-    );
-    
-    if (response.ok) {
-      const responseData = await response.json();
-      return { success: true, updatedProvider: responseData.data?.[0] };
-    }
-    
-    return { success: false, error: 'All fallback methods failed' };
-    
-  } catch (error) {
-    console.error('Fallback upload error:', error);
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Unknown error occurred' 
-    };
-  }
-};
 
-// Helper function to compress image
-const compressImage = (file: File): Promise<File> => {
-  return new Promise((resolve) => {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d')!;
-    const img = new Image();
-    
-    img.onload = () => {
-      // Calculate new dimensions (max 800px width/height)
-      const maxSize = 800;
-      let { width, height } = img;
-      
-      if (width > height) {
-        if (width > maxSize) {
-          height = (height * maxSize) / width;
-          width = maxSize;
-        }
-      } else {
-        if (height > maxSize) {
-          width = (width * maxSize) / height;
-          height = maxSize;
-        }
-      }
-      
-      canvas.width = width;
-      canvas.height = height;
-      
-      // Draw and compress
-      ctx.drawImage(img, 0, 0, width, height);
-      canvas.toBlob((blob) => {
-        if (blob) {
-          const compressedFile = new File([blob], file.name, {
-            type: file.type,
-            lastModified: Date.now()
-          });
-          resolve(compressedFile);
-        } else {
-          resolve(file); // Fallback to original file
-        }
-      }, file.type, 0.7); // 70% quality
-    };
-    
-    img.src = URL.createObjectURL(file);
-  });
-};
+
+
+
 
 export const uploadAdminProviderLogo = async (providerId: number, logoFile: File): Promise<{ success: boolean; error?: string; updatedProvider?: any }> => {
   try {
@@ -549,13 +329,7 @@ export const uploadAdminProviderLogo = async (providerId: number, logoFile: File
     const formData = new FormData();
     formData.append('logo', logoFile); // Only send the logo file
     
-    // Debug request details
-    console.log('Admin Request URL:', `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/providers/${providerId}`);
-    console.log('Admin Request method: PATCH');
-    console.log('Admin FormData entries:');
-    for (let [key, value] of (formData as any).entries()) {
-      console.log(`  ${key}:`, value instanceof File ? `${value.name} (${value.size} bytes, ${value.type})` : value);
-    }
+
     
     const response = await fetch(
       `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/providers/${providerId}`,
@@ -569,25 +343,20 @@ export const uploadAdminProviderLogo = async (providerId: number, logoFile: File
       }
     );
 
-    console.log('Admin logo upload response status:', response.status);
-    console.log('Admin logo upload response headers:', response.headers);
+
 
     if (!response.ok) {
       let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
       
       try {
         const errorText = await response.text();
-        console.log('Admin Raw error response text:', errorText);
-        
         if (errorText) {
           try {
             const errorData = JSON.parse(errorText);
             errorMessage = errorData.message || errorData.error || errorMessage;
-            console.log('Admin Parsed error data:', errorData);
           } catch (parseError) {
             // If it's not JSON, use the raw text
             errorMessage = errorText || errorMessage;
-            console.log('Admin Error parsing JSON response:', parseError);
           }
         }
       } catch (textError) {
@@ -600,7 +369,6 @@ export const uploadAdminProviderLogo = async (providerId: number, logoFile: File
     }
 
     const responseData = await response.json();
-    console.log('Admin logo upload success response:', responseData);
     return { 
       success: true, 
       updatedProvider: responseData.data?.[0] 
@@ -634,7 +402,7 @@ export const testPasswordReset = async (email: string): Promise<{ success: boole
     }
     
     // Test 2: Try the password reset endpoint
-    const resetResponse = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/password_resets', {
+    const resetResponse = await fetch(`${API_CONFIG.BASE_API_URL}/v1/password_resets`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -674,15 +442,16 @@ export const testPasswordReset = async (email: string): Promise<{ success: boole
 
 export const testAvailableEndpoints = async (): Promise<{ success: boolean; endpoints?: any; error?: string }> => {
   try {
+    const baseUrl = API_CONFIG.BASE_API_URL;
     const endpoints = [
-      'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/',
-      'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/up',
-      'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/',
-      'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers',
-              'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/password_resets',
-        'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/login',
-        'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/auth',
-        'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/users'
+      `${baseUrl.replace('/api', '')}/`,
+      `${baseUrl.replace('/api', '')}/up`,
+      `${baseUrl}/v1/`,
+      `${baseUrl}/v1/providers`,
+      `${baseUrl}/v1/password_resets`,
+      `${baseUrl.replace('/api', '')}/login`,
+      `${baseUrl}/v1/auth`,
+      `${baseUrl}/v1/users`
     ];
     
     const results = [];
@@ -719,7 +488,6 @@ export const testAvailableEndpoints = async (): Promise<{ success: boolean; endp
         }
         
         results.push(result);
-        console.log(`Endpoint ${endpoint} result:`, result);
         
       } catch (error) {
         results.push({
@@ -727,7 +495,6 @@ export const testAvailableEndpoints = async (): Promise<{ success: boolean; endp
           error: error instanceof Error ? error.message : 'Unknown error',
           status: 'ERROR'
         });
-        console.log(`Endpoint ${endpoint} error:`, error);
       }
     }
     
@@ -737,7 +504,6 @@ export const testAvailableEndpoints = async (): Promise<{ success: boolean; endp
     };
     
   } catch (error) {
-    console.error('Endpoint test error:', error);
     return { 
       success: false, 
       error: error instanceof Error ? error.message : 'Unknown error occurred'

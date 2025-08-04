@@ -4,6 +4,7 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { User, ArrowLeft } from 'lucide-react';
 import { testPasswordReset, testAvailableEndpoints } from '../Utility/ApiCall';
+import { API_CONFIG } from '../Utility/config';
 import './ForgotPassword.css';
 
 const ForgotPassword: React.FC = () => {
@@ -348,34 +349,7 @@ const ForgotPassword: React.FC = () => {
               </button>
             </p>
             
-            {/* Debug buttons - remove in production */}
-            <div className="mt-4 space-y-2">
-              <button
-                type="button"
-                onClick={async () => {
-                  console.log('=== DEBUG: Testing password reset ===');
-                  const testResult = await testPasswordReset(email);
-                  console.log('Debug test result:', testResult);
-                  alert(`Debug result: ${JSON.stringify(testResult, null, 2)}`);
-                }}
-                className="text-xs text-gray-400 hover:text-gray-600"
-              >
-                Debug: Test Password Reset
-              </button>
-              
-              <button
-                type="button"
-                onClick={async () => {
-                  console.log('=== DEBUG: Testing available endpoints ===');
-                  const testResult = await testAvailableEndpoints();
-                  console.log('Available endpoints:', testResult);
-                  alert(`Available endpoints: ${JSON.stringify(testResult, null, 2)}`);
-                }}
-                className="text-xs text-gray-400 hover:text-gray-600 ml-4"
-              >
-                Debug: Test Available Endpoints
-              </button>
-            </div>
+
           </div>
         </form>
       </div>

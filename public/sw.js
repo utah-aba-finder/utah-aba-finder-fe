@@ -24,72 +24,67 @@ self.addEventListener('install', event => {
 
 // Fetch event - network first, minimal fallback
 self.addEventListener('fetch', event => {
+  // Always respond to the fetch event to prevent Safari errors
+  event.respondWith(handleFetch(event));
+});
+
+async function handleFetch(event) {
   // Only handle GET requests
   if (event.request.method !== 'GET') {
-    event.respondWith(fetch(event.request));
-    return;
+    return fetch(event.request);
   }
 
   const url = new URL(event.request.url);
 
   // Handle external requests
   if (url.hostname !== location.hostname) {
-    event.respondWith(fetch(event.request));
-    return;
+    return fetch(event.request);
   }
 
   // For navigation requests, try network first, then cache
   if (event.request.mode === 'navigate') {
-    event.respondWith(
-      fetch(event.request)
-        .then(response => {
-          // Cache successful navigation responses
-          if (response.status === 200) {
-            const responseClone = response.clone();
-            caches.open(CACHE_NAME).then(cache => {
-              cache.put(event.request, responseClone);
-            });
-          }
-          return response;
-        })
-        .catch(() => {
-          console.log('Service Worker: Navigation failed, serving cached index.html');
-          return caches.match('/index.html');
-        })
-    );
-    return;
+    try {
+      const response = await fetch(event.request);
+      // Cache successful navigation responses
+      if (response.status === 200) {
+        const responseClone = response.clone();
+        caches.open(CACHE_NAME).then(cache => {
+          cache.put(event.request, responseClone);
+        });
+      }
+      return response;
+    } catch (error) {
+      console.log('Service Worker: Navigation failed, serving cached index.html');
+      return caches.match('/index.html');
+    }
   }
 
   // For static assets, try cache first
   if (isStaticAsset(event.request)) {
-    event.respondWith(
-      caches.match(event.request).then(cachedResponse => {
-        if (cachedResponse) {
-          return cachedResponse;
-        }
-        return fetch(event.request)
-          .then(response => {
-            if (response.status === 200) {
-              const responseClone = response.clone();
-              caches.open(CACHE_NAME).then(cache => {
-                cache.put(event.request, responseClone);
-              });
-            }
-            return response;
-          })
-          .catch(error => {
-            console.error('Service Worker: Failed to fetch static asset:', error);
-            // Return a basic error response if fetch fails
-            return new Response('Failed to load resource', { status: 404 });
-          });
-      })
-    );
-    return;
+    const cachedResponse = await caches.match(event.request);
+    if (cachedResponse) {
+      return cachedResponse;
+    }
+    
+    try {
+      const response = await fetch(event.request);
+      if (response.status === 200) {
+        const responseClone = response.clone();
+        caches.open(CACHE_NAME).then(cache => {
+          cache.put(event.request, responseClone);
+        });
+      }
+      return response;
+    } catch (error) {
+      console.error('Service Worker: Failed to fetch static asset:', error);
+      // Return a basic error response if fetch fails
+      return new Response('Failed to load resource', { status: 404 });
+    }
   }
 
   // Default fetch fallback for other internal GET requests
-  event.respondWith(fetch(event.request));
-});
+  return fetch(event.request);
+}
 
 // Helper function to determine if a request is a static asset
 function isStaticAsset(request) {

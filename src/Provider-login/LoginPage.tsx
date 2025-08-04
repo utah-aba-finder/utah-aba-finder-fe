@@ -40,7 +40,6 @@ export const LoginPage: React.FC = () => {
         
         // Prevent double submission
         if (isLoading) {
-            console.log('Login already in progress, ignoring submission');
             return;
         }
         
@@ -50,7 +49,6 @@ export const LoginPage: React.FC = () => {
 
 
         try {
-            console.log('Attempting login with:', { email: username });
             
             const response = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/login', {
                 method: 'POST',
@@ -65,9 +63,7 @@ export const LoginPage: React.FC = () => {
                 }),
             });
             
-            console.log('Login response status:', response.status);
             const data = await response.json();
-            console.log('Login response data:', data);
 
             if (!response.ok) {
                 let errorMessage = 'Login failed';
@@ -77,11 +73,10 @@ export const LoginPage: React.FC = () => {
                     errorMessage = data.error;
                 }
 
-                console.log('Login failed with error:', errorMessage);
                 throw new Error(errorMessage);
             }
 
-            console.log('Login successful, processing user data...');
+
 
             // Check for Authorization header first
             const authHeader = response.headers.get('Authorization');
@@ -94,7 +89,6 @@ export const LoginPage: React.FC = () => {
                 token = btoa(JSON.stringify(data.user)); // Base64 encode user data as temporary token
             }
             
-            console.log('Initializing session with token:', token ? 'present' : 'missing');
             initializeSession(token);
 
             // Map role numbers to role strings
@@ -104,45 +98,35 @@ export const LoginPage: React.FC = () => {
             };
             
             const userRole = roleMap[data.user.role] || 'unknown';
-            console.log('User role determined:', userRole, 'from role number:', data.user.role);
 
             
             if (userRole === 'super_admin') {
-                console.log('Navigating to super admin dashboard');
                 setLoggedInProvider(data.user);
                 navigate('/superAdmin');
             } else if (userRole === 'provider_admin') {
-                console.log('Processing provider admin login');
                 const providerId = data.user?.provider_id;
-                console.log('Provider ID from user data:', providerId);
 
                 
                 if (providerId && providerId !== null) {
                     try {
-                        console.log('Fetching provider details for ID:', providerId);
                         const providerDetails = await fetchSingleProvider(providerId);
-                        console.log('Provider details fetched:', providerDetails);
                         setLoggedInProvider({
                             ...providerDetails,
                             role: 'provider_admin'
                         });
                         toast.info('You are logged in as ' + providerDetails.attributes.name)
-                        console.log('Navigating to provider edit page:', `/providerEdit/${providerId}`);
                         navigate(`/providerEdit/${providerId}`);
                     } catch (error) {
-                        console.error('Error fetching provider details:', error);
 
                         setLoggedInProvider({
                             ...data.user,
                             role: 'provider_admin'
                         });
                         toast.error('Error loading provider details. Please contact support.');
-                        console.log('Navigating to home page due to provider details error');
                         navigate('/');
                     }
                 } else {
                     // For users without a provider_id, still allow them to access provider edit
-                    console.log('No provider ID found, navigating to provider edit without ID');
                     setLoggedInProvider({
                         ...data.user,
                         role: 'provider_admin'
@@ -159,7 +143,6 @@ export const LoginPage: React.FC = () => {
             setUsername('');
             setPassword('');
         } catch (err) {
-            console.error('Login error:', err);
             const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred';
             setError(errorMessage);
             
