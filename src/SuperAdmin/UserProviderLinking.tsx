@@ -27,15 +27,26 @@ const UserProviderLinking: React.FC = () => {
 
   const fetchUsers = async () => {
     try {
+      console.log('Fetching users from:', 'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/users');
+      console.log('Using auth header:', getAdminAuthHeader());
+      
       const response = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/users', {
         headers: {
           'Authorization': getAdminAuthHeader(),
         }
       });
       
+      console.log('Response status:', response.status);
+      console.log('Response ok:', response.ok);
+      
       if (response.ok) {
         const data = await response.json();
+        console.log('Users API response:', data);
         setUsers(data.data || []);
+      } else {
+        const errorText = await response.text();
+        console.error('Users API error:', response.status, errorText);
+        toast.error(`Failed to fetch users: ${response.status}`);
       }
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -45,15 +56,24 @@ const UserProviderLinking: React.FC = () => {
 
   const fetchProviders = async () => {
     try {
+      console.log('Fetching providers from:', 'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/providers');
+      
       const response = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/providers', {
         headers: {
           'Authorization': getAdminAuthHeader(),
         }
       });
       
+      console.log('Providers response status:', response.status);
+      
       if (response.ok) {
         const data = await response.json();
+        console.log('Providers API response:', data);
         setProviders(data.data || []);
+      } else {
+        const errorText = await response.text();
+        console.error('Providers API error:', response.status, errorText);
+        toast.error(`Failed to fetch providers: ${response.status}`);
       }
     } catch (error) {
       console.error('Error fetching providers:', error);
