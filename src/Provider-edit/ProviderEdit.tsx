@@ -87,8 +87,14 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
 
   const refreshProviderData = useCallback(async () => {
     try {
+      console.log('Refreshing provider data:', {
+        url: `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${loggedInProvider.id}`,
+        providerId: loggedInProvider.id,
+        authHeader: loggedInProvider.id.toString()
+      });
+      
       const response = await fetch(
-        `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/provider_self`,
+        `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${loggedInProvider.id}`,
         {
           headers: {
             'Authorization': loggedInProvider.id.toString(),
@@ -96,7 +102,15 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
         }
       );
 
+      console.log('Refresh provider data response:', {
+        status: response.status,
+        ok: response.ok,
+        statusText: response.statusText
+      });
+
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Refresh provider data error:', errorText);
         throw new Error("Failed to refresh provider data");
       }
 
@@ -335,7 +349,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       formData.append('email', currentProvider.attributes.email || '');
       formData.append('website', currentProvider.attributes.website || '');
       
-      const response = await fetch(`https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/provider_self`, {
+      const response = await fetch(`https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${loggedInProvider.id}`, {
         method: 'PATCH',
         headers: {
           'Authorization': loggedInProvider.id.toString(),
@@ -397,8 +411,16 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
 
 
 
+      console.log('Saving provider changes:', {
+        url: `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${loggedInProvider.id}`,
+        method: 'PATCH',
+        providerId: loggedInProvider.id,
+        authHeader: loggedInProvider.id.toString(),
+        requestBody: requestBody
+      });
+
       const response = await fetch(
-        `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/provider_self`,
+        `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${loggedInProvider.id}`,
         {
           method: "PATCH",
           headers: {
@@ -409,8 +431,15 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
         }
       );
       
+      console.log('Save provider changes response:', {
+        status: response.status,
+        ok: response.ok,
+        statusText: response.statusText
+      });
+      
       if (!response.ok) {
         const errorData = await response.json();
+        console.error('Save provider changes error:', errorData);
 
         throw new Error(`HTTP ${response.status}: ${errorData.message || response.statusText}`);
       }

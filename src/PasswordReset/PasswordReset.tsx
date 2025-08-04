@@ -31,8 +31,9 @@ const PasswordReset: React.FC = () => {
   const validateToken = async () => {
     try {
       console.log('Validating token:', resetToken);
+      console.log('API URL being used:', `${API_CONFIG.BASE_API_URL}/api/v1/password_resets/validate_token?token=${resetToken}`);
       
-      const response = await fetch(`${API_CONFIG.BASE_API_URL}/v1/password_resets/validate_token?token=${resetToken}`, {
+      const response = await fetch(`${API_CONFIG.BASE_API_URL}/api/v1/password_resets/validate_token?token=${resetToken}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json'
@@ -40,10 +41,12 @@ const PasswordReset: React.FC = () => {
       });
 
       console.log('Token validation response status:', response.status);
+      console.log('Token validation response ok:', response.ok);
       
       if (!response.ok) {
         const errorText = await response.text();
         console.error('Token validation failed:', errorText);
+        console.error('Token validation response headers:', response.headers);
         toast.error('This reset link has expired. Please request a new password reset.');
         navigate('/forgot-password');
       } else {
@@ -51,6 +54,11 @@ const PasswordReset: React.FC = () => {
       }
     } catch (error) {
       console.error('Token validation error:', error);
+      console.error('Token validation error details:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        name: error instanceof Error ? error.name : 'Unknown',
+        stack: error instanceof Error ? error.stack : 'No stack trace'
+      });
       // Don't navigate away on network errors, let user try the reset
     }
   };
@@ -85,14 +93,15 @@ const PasswordReset: React.FC = () => {
 
     try {
       console.log('Password reset request:', {
-        url: `${API_CONFIG.BASE_API_URL}/v1/password_resets`,
+        url: `${API_CONFIG.BASE_API_URL}/api/v1/password_resets`,
         method: 'PATCH',
         token: resetToken,
         passwordLength: password.length,
-        confirmationLength: passwordConfirmation.length
+        confirmationLength: passwordConfirmation.length,
+        apiConfig: API_CONFIG
       });
 
-      const response = await fetch(`${API_CONFIG.BASE_API_URL}/v1/password_resets`, {
+      const response = await fetch(`${API_CONFIG.BASE_API_URL}/api/v1/password_resets`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json'

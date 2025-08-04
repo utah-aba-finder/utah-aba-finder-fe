@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { User, ArrowLeft } from 'lucide-react';
-import { testPasswordReset, testAvailableEndpoints } from '../Utility/ApiCall';
+import { testPasswordReset } from '../Utility/ApiCall';
 import { API_CONFIG } from '../Utility/config';
 import './ForgotPassword.css';
 
@@ -127,7 +127,14 @@ const ForgotPassword: React.FC = () => {
       }
 
       // Use the password reset endpoint
-      const endpoint = 'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/password_resets';
+      const endpoint = `${API_CONFIG.BASE_API_URL}/api/v1/password_resets`;
+      
+      console.log('ForgotPassword request:', {
+        url: endpoint,
+        method: 'POST',
+        email: trimmedEmail,
+        apiConfig: API_CONFIG
+      });
 
       // If test passes, proceed with the actual request
       const response = await fetch(endpoint, {
@@ -139,6 +146,9 @@ const ForgotPassword: React.FC = () => {
           email: trimmedEmail
         })
       });
+      
+      console.log('ForgotPassword response status:', response.status);
+      console.log('ForgotPassword response ok:', response.ok);
 
       let responseData;
       try {
@@ -155,6 +165,13 @@ const ForgotPassword: React.FC = () => {
       }
 
       if (!response.ok) {
+        console.error('ForgotPassword error response:', {
+          status: response.status,
+          statusText: response.statusText,
+          responseData: responseData,
+          headers: response.headers
+        });
+        
         // Handle specific error cases
         if (responseData.errors) {
           throw new Error(responseData.errors.join(', '));
