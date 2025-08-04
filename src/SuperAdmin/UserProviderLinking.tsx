@@ -55,6 +55,34 @@ const UserProviderLinking: React.FC = () => {
     }
   };
 
+  const fetchUnlinkedUsers = async () => {
+    try {
+      console.log('Fetching unlinked users from:', 'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/users/unlinked_users');
+      
+      const response = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/users/unlinked_users', {
+        headers: {
+          'Authorization': getAdminAuthHeader(),
+        }
+      });
+      
+      console.log('Unlinked users response status:', response.status);
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Unlinked users API response:', data);
+        // We could use this for additional functionality if needed
+        return data.users || [];
+      } else {
+        const errorText = await response.text();
+        console.error('Unlinked users API error:', response.status, errorText);
+        return [];
+      }
+    } catch (error) {
+      console.error('Error fetching unlinked users:', error);
+      return [];
+    }
+  };
+
   const fetchProviders = async () => {
     try {
       console.log('Fetching providers from:', 'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/users/providers_list');
@@ -126,6 +154,41 @@ const UserProviderLinking: React.FC = () => {
     }
   };
 
+  const switchUserProvider = async (userEmail: string, newProviderId: number | null) => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/users/switch_provider', {
+        method: 'POST',
+        headers: {
+          'Authorization': getAdminAuthHeader(),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_email: userEmail,
+          new_provider_id: newProviderId
+        })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          toast.success(`User switched successfully!`);
+          fetchUsers(); // Refresh the user list
+        } else {
+          toast.error(`Failed to switch user: ${result.message || 'Unknown error'}`);
+        }
+      } else {
+        const errorData = await response.json();
+        toast.error(`Failed to switch user: ${errorData.message || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Error switching user provider:', error);
+      toast.error('Failed to switch user provider');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const unlinkUserFromProvider = async (userId: number) => {
     setIsLoading(true);
     try {
@@ -136,27 +199,8 @@ const UserProviderLinking: React.FC = () => {
         return;
       }
 
-      // For unlinking, we can switch the user to provider_id null or use a special endpoint
-      // For now, let's use the switch_provider endpoint with null provider
-      const response = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/users/switch_provider', {
-        method: 'POST',
-        headers: {
-          'Authorization': getAdminAuthHeader(),
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          user_email: userObj.email,
-          new_provider_id: null
-        })
-      });
-
-      if (response.ok) {
-        toast.success('User successfully unlinked from provider!');
-        fetchUsers(); // Refresh the user list
-      } else {
-        const errorData = await response.json();
-        toast.error(`Failed to unlink user: ${errorData.message || 'Unknown error'}`);
-      }
+      // Use the switch provider endpoint to unlink (set to null)
+      await switchUserProvider(userObj.email, null);
     } catch (error) {
       console.error('Error unlinking user from provider:', error);
       toast.error('Failed to unlink user from provider');
