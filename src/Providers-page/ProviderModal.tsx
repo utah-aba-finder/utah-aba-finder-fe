@@ -5,6 +5,7 @@ import { MapPin, Phone, Globe, Mail, Briefcase, Home, Building, Monitor } from '
 import { useEffect, useState } from 'react';
 import moment from 'moment';
 import GoogleReviewsSection from './GoogleReviewsSection';
+import ProviderLogo from '../Utility/ProviderLogo';
 
 interface Location {
   name?: string | null;
@@ -100,11 +101,11 @@ const ProviderModal: React.FC<ProviderModalProps> = ({
   selectedState,
   availableCounties = []
 }) => {
-
-
   const [isVisible, setIsVisible] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const [activeTab, setActiveTab] = useState('details');
+  // Debug: Check logo data
+
 
   useEffect(() => {
     setTimeout(() => setIsVisible(true), 10);
@@ -173,17 +174,23 @@ const ProviderModal: React.FC<ProviderModalProps> = ({
                   <strong>Phone: </strong>
                   {primaryLocation?.phone ? <a href={`tel:${primaryLocation.phone}`}>{primaryLocation.phone}</a> : 'Provider does not have a number for this location yet.'}
                 </p>
-                <p><Globe style={{ marginRight: '8px' }} />
-                  <strong>Website: </strong>
-                  {provider.attributes.website ? <a href={provider.attributes.website} target="_blank" rel="noopener noreferrer">{provider.attributes.website}</a> : 'Provider does not have a website yet.'}
-                </p>
-                <p className="email-text"><Mail style={{ marginRight: '8px' }} />
-                  <strong>Email: </strong>
-                  {provider.attributes.email ? <a href={`mailto:${provider.attributes.email}`} target="_blank" rel="noopener noreferrer">{provider.attributes.email}</a> : 'Provider does not have an email yet.'}
-                </p>
+                {/* Only show website and email if provider is not in-home only */}
+                {!provider.attributes.in_home_only && (
+                  <>
+                    <p><Globe style={{ marginRight: '8px' }} />
+                      <strong>Website: </strong>
+                      {provider.attributes.website ? <a href={provider.attributes.website} target="_blank" rel="noopener noreferrer">{provider.attributes.website}</a> : 'Provider does not have a website yet.'}
+                    </p>
+                    <p className="email-text"><Mail style={{ marginRight: '8px' }} />
+                      <strong>Email: </strong>
+                      {provider.attributes.email ? <a href={`mailto:${provider.attributes.email}`} target="_blank" rel="noopener noreferrer">{provider.attributes.email}</a> : 'Provider does not have an email yet.'}
+                    </p>
+                  </>
+                )}
               </div>
             </div>
             <div className="provider-details text">
+              {/* Show counties served for all providers */}
               <p><strong>Counties Served:</strong> {
                 (() => {
                   // Filter counties based on selected state and available counties
@@ -217,13 +224,32 @@ const ProviderModal: React.FC<ProviderModalProps> = ({
                     : 'Not applicable for this provider';
                 })()
               }</p>
+              
+              {/* Show ages served for all providers */}
               <p><strong>Ages Served:</strong> {provider.attributes.min_age} - {provider.attributes.max_age} years</p>
-              <p><strong>Telehealth Services:</strong> {provider.attributes.telehealth_services || 'Contact us'}</p>
-              <p><strong>At Home Services:</strong> {provider.attributes.at_home_services || 'Contact us'}</p>
-              <p><strong>In-Clinic Services:</strong> {provider.attributes.in_clinic_services || 'Contact us'}</p>
-              <p><strong>Spanish Speakers:</strong> {provider.attributes.spanish_speakers || 'Contact us'}</p>
-              <p><strong>Cost:</strong> {provider.attributes.cost || 'Contact us'}</p>
+              
+              {/* Show insurance for all providers */}
               <p><strong>Insurance:</strong> {provider.attributes.insurance.map(i => i.name).join(', ') || 'Contact us'}</p>
+              
+              {/* Only show additional details for non-in-home-only providers */}
+              {!provider.attributes.in_home_only && (
+                <>
+                  <p><strong>Telehealth Services:</strong> {provider.attributes.telehealth_services || 'Contact us'}</p>
+                  <p><strong>At Home Services:</strong> {provider.attributes.at_home_services || 'Contact us'}</p>
+                  <p><strong>In-Clinic Services:</strong> {provider.attributes.in_clinic_services || 'Contact us'}</p>
+                  <p><strong>Spanish Speakers:</strong> {provider.attributes.spanish_speakers || 'Contact us'}</p>
+                  <p><strong>Cost:</strong> {provider.attributes.cost || 'Contact us'}</p>
+                </>
+              )}
+              
+              {/* Show simplified info for in-home-only providers */}
+              {provider.attributes.in_home_only && (
+                <>
+                  <p><strong>Service Type:</strong> In-Home Services Only</p>
+                  <p><strong>Spanish Speakers:</strong> {provider.attributes.spanish_speakers || 'Contact us'}</p>
+                  <p><strong>Cost:</strong> {provider.attributes.cost || 'Contact us'}</p>
+                </>
+              )}
             </div>
           </section>
         );
@@ -344,7 +370,11 @@ const ProviderModal: React.FC<ProviderModalProps> = ({
           </div>
           <div className="modal-grid-text">
             <section className="modal-logo">
-              <img src={provider.attributes.logo ?? undefined} alt={provider.attributes.name ?? undefined} className="modal-img" />
+              <ProviderLogo 
+                provider={provider.attributes} 
+                className="modal-img"
+                size="large"
+              />
               <h2 className="provider-name title">{provider.attributes.name}</h2>
             </section>
             <div className="modal-tabs">

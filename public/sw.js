@@ -17,18 +17,24 @@ self.addEventListener('install', event => {
         console.error('Service Worker: Cache installation failed:', error);
       })
   );
+  
+  // Force the service worker to activate immediately
+  self.skipWaiting();
 });
 
 // Fetch event - network first, minimal fallback
 self.addEventListener('fetch', event => {
-  // Skip non-GET requests
+  // Only handle GET requests
   if (event.request.method !== 'GET') {
+    event.respondWith(fetch(event.request));
     return;
   }
 
-  // Skip external resources
   const url = new URL(event.request.url);
+
+  // Handle external requests
   if (url.hostname !== location.hostname) {
+    event.respondWith(fetch(event.request));
     return;
   }
 
@@ -36,39 +42,53 @@ self.addEventListener('fetch', event => {
   if (event.request.mode === 'navigate') {
     event.respondWith(
       fetch(event.request)
+        .then(response => {
+          // Cache successful navigation responses
+          if (response.status === 200) {
+            const responseClone = response.clone();
+            caches.open(CACHE_NAME).then(cache => {
+              cache.put(event.request, responseClone);
+            });
+          }
+          return response;
+        })
         .catch(() => {
+          console.log('Service Worker: Navigation failed, serving cached index.html');
           return caches.match('/index.html');
         })
     );
     return;
   }
 
-  // For static assets, try cache first, then network
+  // For static assets, try cache first
   if (isStaticAsset(event.request)) {
     event.respondWith(
-      caches.match(event.request)
-        .then(cachedResponse => {
-          if (cachedResponse) {
-            return cachedResponse;
-          }
-          return fetch(event.request)
-            .then(response => {
-              if (response.status === 200) {
-                const responseClone = response.clone();
-                caches.open(CACHE_NAME)
-                  .then(cache => {
-                    cache.put(event.request, responseClone);
-                  });
-              }
-              return response;
-            });
-        })
+      caches.match(event.request).then(cachedResponse => {
+        if (cachedResponse) {
+          return cachedResponse;
+        }
+        return fetch(event.request)
+          .then(response => {
+            if (response.status === 200) {
+              const responseClone = response.clone();
+              caches.open(CACHE_NAME).then(cache => {
+                cache.put(event.request, responseClone);
+              });
+            }
+            return response;
+          })
+          .catch(error => {
+            console.error('Service Worker: Failed to fetch static asset:', error);
+            // Return a basic error response if fetch fails
+            return new Response('Failed to load resource', { status: 404 });
+          });
+      })
     );
     return;
   }
 
-  // For all other requests, just pass through
-  return;
+  // Default fetch fallback for other internal GET requests
+  event.respondWith(fetch(event.request));
 });
 
 // Helper function to determine if a request is a static asset
@@ -104,4 +124,7 @@ self.addEventListener('activate', event => {
       );
     })
   );
+  
+  // Take control of all clients immediately
+  event.waitUntil(self.clients.claim());
 }); 

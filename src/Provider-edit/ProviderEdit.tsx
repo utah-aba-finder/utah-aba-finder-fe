@@ -91,7 +91,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
         `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${loggedInProvider.id}`,
         {
           headers: {
-            'Authorization': 'be6205db57ce01863f69372308c41e3a',
+            'Authorization': loggedInProvider.id.toString(),
           },
         }
       );
@@ -133,7 +133,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       
       
     } catch (error) {
-      console.error('Error refreshing provider data:', error);
+
       toast.error('Failed to refresh provider data');
     }
   }, [loggedInProvider.id]);
@@ -165,7 +165,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
           setAvailableCounties(allCounties);
         }
       } catch (error) {
-        console.error('Error initializing states and counties:', error);
+  
         toast.error('Failed to load states and counties');
       }
     };
@@ -293,7 +293,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
         }
       }
     } catch (error) {
-      console.error('Error fetching counties:', error);
+      
       toast.error('Failed to fetch counties');
     } finally {
       setIsLoading(false);
@@ -325,18 +325,42 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
 
     try {
       setIsSaving(true);
-      const result = await uploadProviderLogo(loggedInProvider.id, selectedLogoFile);
       
-      if (result.success) {
-        toast.success('Logo uploaded successfully!');
-        setSelectedLogoFile(null);
-        // Refresh provider data to get the new logo URL
-        await refreshProviderData();
-      } else {
-        toast.error(`Failed to upload logo: ${result.error}`);
+      // Create FormData for multipart upload
+      const formData = new FormData();
+      formData.append('logo', selectedLogoFile);
+      
+      // Add other provider data if updating
+      formData.append('name', currentProvider.attributes.name || '');
+      formData.append('email', currentProvider.attributes.email || '');
+      formData.append('website', currentProvider.attributes.website || '');
+      
+      const response = await fetch(`https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${loggedInProvider.id}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': loggedInProvider.id.toString(),
+          // Don't set Content-Type header - browser will set it automatically with boundary
+        },
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+
+        toast.error(`Failed to upload logo: ${response.status} - ${errorText}`);
+        return;
       }
+      
+      const result = await response.json();
+      
+      toast.success('Logo uploaded successfully!');
+      setSelectedLogoFile(null);
+      
+      // Refresh provider data to get the new logo URL
+      await refreshProviderData();
+      
     } catch (error) {
-      console.error('Error uploading logo:', error);
+
       toast.error('Failed to upload logo. Please try again.');
     } finally {
       setIsSaving(false);
@@ -376,10 +400,10 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       const response = await fetch(
         `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${loggedInProvider.id}`,
         {
-          method: "PUT",
+          method: "PATCH",
           headers: {
             "Content-Type": "application/json",
-            'Authorization': 'be6205db57ce01863f69372308c41e3a',
+            'Authorization': loggedInProvider.id.toString(),
           },
           body: JSON.stringify(requestBody),
         }
@@ -387,7 +411,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('ProviderEdit: Backend error response:', errorData);
+
         throw new Error(`HTTP ${response.status}: ${errorData.message || response.statusText}`);
       }
 
@@ -402,7 +426,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       try {
         await refreshProviderData();
       } catch (refreshError) {
-        console.warn('ProviderEdit: Error refreshing data after save:', refreshError);
+
         // Don't fail the save operation if refresh fails
       }
       
@@ -410,7 +434,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       toast.success("Changes saved successfully!");
       return true;
     } catch (error) {
-      console.error('ProviderEdit: Error saving changes:', error);
+
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       toast.error(`Failed to save changes: ${errorMessage}`);
       return false;
@@ -497,6 +521,18 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
 
   return (
     <>
+      {/* Toast Container for notifications */}
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
       
       {/* Loading overlay for save operations */}
       {isSaving && (
@@ -705,14 +741,35 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                       </h1>
                     </div>
                     <div className="text-right">
-                      <div className="text-sm font-medium text-gray-700">
-                        {currentProvider.attributes.name}
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        Last updated:{" "}
-                        {moment(currentProvider.attributes.updated_last).format(
-                          "MM/DD/YYYY"
+                      <div className="flex items-center justify-end space-x-4">
+                        {currentProvider.attributes.logo ? (
+                          <div className="flex-shrink-0">
+                            <img 
+                              src={currentProvider.attributes.logo}
+                              alt={`${currentProvider.attributes.name} logo`}
+                              className="w-12 h-12 object-contain rounded border border-gray-200 shadow-sm"
+                              onError={(e) => {
+              
+                                e.currentTarget.style.display = 'none';
+                              }}
+                            />
+                          </div>
+                        ) : (
+                          <div className="w-12 h-12 bg-gray-100 rounded border border-gray-200 flex items-center justify-center flex-shrink-0">
+                            <span className="text-gray-400 text-lg">📷</span>
+                          </div>
                         )}
+                        <div className="text-right">
+                          <div className="text-sm font-medium text-gray-700">
+                            {currentProvider.attributes.name}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            Last updated:{" "}
+                            {moment(currentProvider.attributes.updated_last).format(
+                              "MM/DD/YYYY"
+                            )}
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -762,16 +819,36 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                       <label className="block text-sm text-gray-600 mb-2">Provider Logo</label>
                       <div className="space-y-4">
                         {/* Current Logo Display */}
-                        {currentProvider?.attributes?.logo && (
-                          <div className="mb-4">
-                            <p className="text-sm text-gray-600 mb-2">Current Logo:</p>
-                            <img 
-                              src={currentProvider.attributes.logo} 
-                              alt="Current Provider Logo" 
-                              className="w-32 h-32 object-contain border border-gray-300 rounded-lg"
-                            />
-                          </div>
-                        )}
+                        <div className="mb-4">
+                          <p className="text-sm text-gray-600 mb-2">Current Logo:</p>
+                          {currentProvider?.attributes?.logo ? (
+                            <div className="space-y-2">
+                              <img 
+                                src={currentProvider.attributes.logo} 
+                                alt="Current Provider Logo" 
+                                className="w-32 h-32 object-contain border border-gray-300 rounded-lg"
+                                onError={(e) => {
+                
+                                  e.currentTarget.style.display = 'none';
+                                  e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                                }}
+                              />
+                              <div className="hidden text-xs text-gray-500">
+                                Logo URL: {currentProvider.attributes.logo}
+                              </div>
+                              <div className="text-xs text-gray-500">
+                                ✅ Logo found - {currentProvider.attributes.logo ? 'Active Storage URL' : 'No URL'}
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="w-32 h-32 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center">
+                              <div className="text-center">
+                                <div className="text-gray-400 text-2xl mb-1">📷</div>
+                                <div className="text-xs text-gray-500">No logo uploaded</div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
                         
                         {/* File upload input */}
                         <div className="space-y-4">
@@ -781,14 +858,23 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                               accept="image/png,image/jpeg,image/gif"
                               onChange={(e) => {
                                 const file = e.target.files?.[0];
+                                
                                 if (file) {
-                                  const validation = validateLogoFile(file);
-                                  if (!validation.isValid) {
-                                    toast.error(validation.error);
+                                  // Validate file size (5MB limit)
+                                  if (file.size > 5 * 1024 * 1024) {
+                                    toast.error('File size must be less than 5MB');
                                     return;
                                   }
+                                  
+                                  // Validate file type
+                                  const allowedTypes = ['image/png', 'image/jpeg', 'image/gif'];
+                                  if (!allowedTypes.includes(file.type)) {
+                                    toast.error('Please select a PNG, JPEG, or GIF file');
+                                    return;
+                                  }
+                                  
                                   setSelectedLogoFile(file);
-                                  toast.success('Logo file selected');
+                                  toast.success('Logo file selected successfully');
                                 }
                               }}
                               className="w-full px-4 py-8 rounded-xl border-2 border-dashed border-gray-300 hover:border-blue-400 hover:cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-gray-50 transition-all duration-200 group-hover:bg-blue-50 group-hover:border-blue-400"
@@ -833,6 +919,44 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                             </button>
                           )}
                           
+                          {/* Logo removal button */}
+                          {currentProvider?.attributes?.logo && (
+                            <button
+                              onClick={async () => {
+                                try {
+                                  setIsSaving(true);
+                                  const response = await fetch(
+                                    `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${loggedInProvider.id}/remove_logo`,
+                                    {
+                                      method: 'DELETE',
+                                      headers: {
+                                        'Authorization': loggedInProvider.id.toString(),
+                                      }
+                                    }
+                                  );
+                                  
+                                  if (!response.ok) {
+                                    const errorText = await response.text();
+                                    toast.error(`Failed to remove logo: ${response.status} - ${errorText}`);
+                                    return;
+                                  }
+                                  
+                                  toast.success('Logo removed successfully!');
+                                  await refreshProviderData();
+                                } catch (error) {
+  
+                                  toast.error('Failed to remove logo. Please try again.');
+                                } finally {
+                                  setIsSaving(false);
+                                }
+                              }}
+                              disabled={isSaving}
+                              className="w-full px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 transition-colors"
+                            >
+                              {isSaving ? "Removing..." : "Remove Current Logo"}
+                            </button>
+                          )}
+                          
                           <p className="text-xs text-gray-500">
                             Supported formats: PNG, JPEG, GIF. Max size: 5MB
                           </p>
@@ -840,41 +964,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                       </div>
                     </div>
                     
-                    {/* Provider Types */}
-                    <div>
-                      <label className="block text-sm text-gray-600 mb-2">Provider Types</label>
-                      <div className="flex flex-wrap gap-2 mb-2">
-                        {(selectedProviderTypes || []).map((type) => (
-                          <div key={type?.id} className="bg-blue-100 text-blue-800 px-2 py-1 rounded-md flex items-center">
-                            <span>{type?.name || 'Unknown'}</span>
-                            <X 
-                              className="ml-2 w-4 h-4 cursor-pointer" 
-                              onClick={() => setSelectedProviderTypes(prev => prev.filter(t => t.id !== type.id))}
-                            />
-                          </div>
-                        ))}
-                      </div>
-                      <select
-                        onChange={(e) => {
-                          const type = e.target.value;
-                          if (!selectedProviderTypes.some(t => t.name === type)) {
-                            setSelectedProviderTypes(prev => [...prev, {
-                              id: getProviderTypeId(type),
-                              name: type
-                            }]);
-                          }
-                        }}
-                        className="block w-[95%] px-3 py-2 rounded-lg border border-gray-300"
-                      >
-                        <option value="">Add a provider type...</option>
-                        {["ABA Therapy", "Autism Evaluation", "Speech Therapy", "Occupational Therapy"]
-                          .filter(type => !selectedProviderTypes.some(t => t.name === type))
-                          .map(type => (
-                            <option key={type} value={type}>{type}</option>
-                          ))
-                        }
-                      </select>
-                    </div>
+                    {/* Provider Types - Removed duplicate, kept in provider-types tab */}
                   </div>
 
                   {/* Save and Discard Buttons */}
@@ -940,6 +1030,8 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                         ))}
                     </select>
                   </div>
+
+
                 </div>
               )}
               {selectedTab === "coverage" && (

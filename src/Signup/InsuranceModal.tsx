@@ -45,7 +45,7 @@ export const InsuranceModal: React.FC<InsuranceModalProps> = ({ isOpen, onClose,
 
                 setAllInsurances(sortedInsurances);
             } catch (error) {
-                console.error('Error loading providers:', error);
+        
             }
         };
 

@@ -30,11 +30,6 @@ const CountiesModal: React.FC<CountiesModalProps> = ({
     }, [selectedCounties, isOpen]);
 
     const handleSelect = (countyId: number, countyName: string) => {
-        console.log('Selected county:', {
-            id: countyId,
-            name: countyName,
-            state: availableCounties.find(c => c.id === countyId)?.attributes.state
-        });
 
         setLocalCheckedCounties(prev => {
             if (prev.some(c => c.county_id === countyId)) {
@@ -59,7 +54,7 @@ const CountiesModal: React.FC<CountiesModalProps> = ({
         onClose();
     };
 
-    console.log("Available counties in modal:", availableCounties); // Debug log
+    
 
     if (!isOpen) return null;
 

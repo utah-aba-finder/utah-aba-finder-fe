@@ -123,7 +123,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({
         }
 
         try {
-            const response = await fetch('https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/payments/create_payment_intent', {
+            const response = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/payments/create_payment_intent', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -173,7 +173,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({
                 alert('Thank you for your donation!');
             }
         } catch (error) {
-            console.error('Error:', error);
+            
             alert('Something went wrong. Please try again.');
         }
     };
@@ -193,7 +193,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({
 
             pr.on('paymentmethod', async (e) => {
                 try {
-                    const response = await fetch('https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/payments/create_payment_intent', {
+                    const response = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/payments/create_payment_intent', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
@@ -222,7 +222,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({
                         alert('Thank you for your donation!');
                     }
                 } catch (error) {
-                    console.error('Error:', error);
+                    
                     e.complete('fail');
                 }
             });

@@ -102,7 +102,7 @@ const SignupModal: React.FC<SignupModalProps> = ({
         const states = await fetchStates();
         setAvailableStates(states);
       } catch (error) {
-        console.error("Failed to load states:", error);
+
         toast.error("Failed to load states");
       }
     };
@@ -162,7 +162,7 @@ const SignupModal: React.FC<SignupModalProps> = ({
             setSelectedCounties([]);
           })
           .catch(error => {
-            console.error("Failed to load counties:", error);
+            
             toast.error("Failed to load counties");
           });
       }
@@ -459,7 +459,7 @@ In-Home Services Only: ${providerData.in_home_only ? "Yes" : "No"}
 
       // Don't close the modal automatically - let user close it manually
     } catch (error) {
-      console.error("Error submitting provider info:", error);
+      
       setError("There was an error submitting the provider information. Please try again.");
     }
   };
@@ -477,7 +477,7 @@ In-Home Services Only: ${providerData.in_home_only ? "Yes" : "No"}
           setSelectedStates(prev => [...prev, stateName]);
           setSelectedState(''); // Reset the select
         } catch (error) {
-          console.error("Failed to load counties:", error);
+  
           toast.error("Failed to load counties for selected state");
         }
       }

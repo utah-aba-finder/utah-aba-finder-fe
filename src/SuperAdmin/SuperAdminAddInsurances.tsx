@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { fetchInsurance } from '../Utility/ApiCall';
 import { toast, ToastContainer} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { getAdminAuthHeader } from "../Utility/config";
 
 const SuperAdminAddInsurances = ({handleCloseForm}: {handleCloseForm: () => void}) => { 
     const [searchInsurance, setSearchInsurance] = useState('');
@@ -73,7 +74,7 @@ const SuperAdminAddInsurances = ({handleCloseForm}: {handleCloseForm: () => void
                 method,
                         headers: {
           "Content-Type": "application/json",
-          'Authorization': 'be6205db57ce01863f69372308c41e3a',
+          'Authorization': getAdminAuthHeader(),
         },
                 body: JSON.stringify(body)
             });
@@ -90,7 +91,7 @@ const SuperAdminAddInsurances = ({handleCloseForm}: {handleCloseForm: () => void
             setInsuranceName('');
             setEditingInsurance(null);
         } catch (error) {
-            console.error("Error with insurance:", error);
+    
             toast.error(error instanceof Error ? error.message : "An error occurred");
         }
     }
@@ -113,7 +114,7 @@ const SuperAdminAddInsurances = ({handleCloseForm}: {handleCloseForm: () => void
                 {
                     method: "DELETE",
                     headers: {
-                        'Authorization': 'be6205db57ce01863f69372308c41e3a',
+                        'Authorization': getAdminAuthHeader(),
                     }
                 }
             );
@@ -126,7 +127,7 @@ const SuperAdminAddInsurances = ({handleCloseForm}: {handleCloseForm: () => void
             toast.success(`Insurance ${insurance.attributes.name} deleted successfully`);
             setInsurance(updatedInsurances);
         } catch (error) {
-            console.error("Error deleting insurance:", error);
+    
             toast.error("Failed to delete insurance");
         }
     }

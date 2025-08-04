@@ -1,9 +1,9 @@
-import React, { useEffect } from 'react';
-import puzzleLogo from '../Assets/puzzle.png';
+import React, { useEffect, useState } from 'react';
 import { ProviderAttributes } from '../Utility/Types';
 import { MapPin, Phone, Mail, Globe, Eye, ToggleLeft, ToggleRight, Briefcase, Home, Building, Monitor } from 'lucide-react';
 import './ProviderCard.css';
 import { toast } from 'react-toastify';
+import ProviderLogo from '../Utility/ProviderLogo';
 
 interface ProviderCardProps {
   provider: ProviderAttributes;
@@ -26,17 +26,8 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
   selectedState,
   hasReviews
 }) => {
-
-
-
   // Debug: Check logo data
-  useEffect(() => {
-    if (provider.logo) {
-      console.log('ProviderCard - Provider has logo:', provider.logo);
-    } else {
-      console.log('ProviderCard - Provider has no logo for:', provider.name);
-    }
-  }, [provider.logo, provider.name]);
+
 
   const handleToggleFavorite = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -124,7 +115,11 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
         )}
         <div className="card-logo-and-text">
           <div className="card-grid-logo">
-            <img src={provider.logo || puzzleLogo} alt="Provider Logo" className="provider-logo" />
+            <ProviderLogo 
+              provider={provider} 
+              className="provider-logo"
+              size="medium"
+            />
           </div>
           <div className="card-text-and-buttons">
             <div className="card-text text">
@@ -156,37 +151,43 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
                 <strong><Phone style={{ marginRight: '8px' }} />
                   Phone: </strong><a href={`tel:${primaryLocation?.phone}`} className='custom-link'>{primaryLocation?.phone || 'Phone number is not available.'}</a>
               </h4>
-              <h4>
-                <strong><Mail style={{ marginRight: '8px' }} />
-                  Email: </strong><a href={`mailto:${provider.email}`} className='custom-link'>{provider.email || 'Email is not available.'}</a>
-              </h4>
-              <h4>
-                <strong><Globe style={{ marginRight: '8px' }} />
-                  Website: </strong>
-                <a
-                  href={provider.website 
-                    ? (provider.website.startsWith('http://') || provider.website.startsWith('https://') 
-                        ? provider.website 
-                        : `https://${provider.website}`)
-                    : undefined}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="custom-link"
-                >
-                  {provider.website ?? 'Provider does not have a website yet.'}
-                </a>
-              </h4>
-              <h4>
-                <strong><Briefcase style={{ marginRight: '8px' }} />
-                  {primaryLocation?.services?.length > 0 ? 'Services at this location: ' : 'Provider Services: '} </strong>
-                {primaryLocation?.services?.length > 0 ? (
-                  primaryLocation.services.map(service => service.name).join(', ')
-                ) : provider.provider_type.length > 0 ? (
-                  provider.provider_type.map(type => type.name).join(', ')
-                ) : (
-                  'No services listed for this location.'
-                )}
-              </h4>
+              {/* Only show email and website if provider is not in-home only */}
+              {!provider.in_home_only && (
+                <>
+                  <h4>
+                    <strong><Mail style={{ marginRight: '8px' }} />
+                      Email: </strong><a href={`mailto:${provider.email}`} className='custom-link'>{provider.email || 'Email is not available.'}</a>
+                  </h4>
+                  <h4>
+                    <strong><Globe style={{ marginRight: '8px' }} />
+                      Website: </strong>
+                    <a
+                      href={provider.website 
+                        ? (provider.website.startsWith('http://') || provider.website.startsWith('https://') 
+                            ? provider.website 
+                            : `https://${provider.website}`)
+                        : undefined}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="custom-link"
+                    >
+                      {provider.website ?? 'Provider does not have a website yet.'}
+                    </a>
+                  </h4>
+                </>
+              )}
+              {/* Show services only for in-home providers */}
+              {provider.in_home_only && (
+                <h4>
+                  <strong><Briefcase style={{ marginRight: '8px' }} />
+                    Provider Services: </strong>
+                  {provider.provider_type.length > 0 ? (
+                    provider.provider_type.map(type => type.name).join(', ')
+                  ) : (
+                    'Services information not available.'
+                  )}
+                </h4>
+              )}
               {isFavorited && favoritedDate && (
                 <div className="favorited-date text">
                   Favorited on {favoritedDate}

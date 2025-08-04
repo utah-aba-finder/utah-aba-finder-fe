@@ -1,7 +1,8 @@
 import axios from 'axios';
 import { Providers, StateData, CountyData, InsuranceData } from './Types';
+import { getAdminAuthHeader } from './config';
 
-export const API_URL = "https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/admin";
+export const API_URL = "https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin";
 
 const API_URL_PROVIDERS = 'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers';
 
@@ -10,7 +11,7 @@ export const fetchProviders = async (): Promise<Providers> => {
     const response = await axios.get<Providers>(API_URL_PROVIDERS, {
       timeout: 10000, // 10 second timeout
       headers: {
-        'Authorization': 'be6205db57ce01863f69372308c41e3a',
+        'Authorization': getAdminAuthHeader(),
         'Cache-Control': 'no-cache',
         'Pragma': 'no-cache'
       }
@@ -21,9 +22,19 @@ export const fetchProviders = async (): Promise<Providers> => {
       return { data: [] };
     }
     
-    // Debug: Check if logo field is now being returned
+    // Process logo URLs in the response
     if (data.data && data.data.length > 0) {
-      console.log('fetchProviders - First provider logo:', data.data[0]?.attributes?.logo);
+      data.data.forEach(provider => {
+        const logoUrl = provider.attributes?.logo;
+        
+        if (logoUrl) {
+          // Provider has a logo - ensure it's a valid URL
+          console.log(`Provider ${provider.attributes.name} has logo: ${logoUrl}`);
+        } else {
+          // Provider has no logo - will use placeholder
+          console.log(`Provider ${provider.attributes.name} has no logo`);
+        }
+      });
     }
     
     return data;
@@ -46,17 +57,22 @@ export const fetchSingleProvider = async (providerId: number) => {
   try {
     const response = await fetch(`${API_URL_PROVIDERS}/${providerId}`, {
       headers: {
-        'Authorization': 'be6205db57ce01863f69372308c41e3a',
+        'Authorization': getAdminAuthHeader(),
         'Cache-Control': 'no-cache',
         'Pragma': 'no-cache'
       }
     });
 
+    console.log("Provider fetch response status:", response.status);
+
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Provider fetch failed:", errorText);
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
     const data = await response.json();
+    console.log("Provider fetch response data:", data);
     return data.data[0];
   } catch (error) {
     console.error('Error fetching single provider:', error);
@@ -69,7 +85,7 @@ export const fetchStates = async (): Promise<StateData[]> => {
     "https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/states",
     {
       headers: {
-        'Authorization': 'be6205db57ce01863f69372308c41e3a',
+        'Authorization': getAdminAuthHeader(),
       },
     }
   );
@@ -83,7 +99,7 @@ export const fetchCountiesByState = async (stateId: number): Promise<CountyData[
     `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/states/${stateId}/counties`,
     {
       headers: {
-        'Authorization': 'be6205db57ce01863f69372308c41e3a',
+        'Authorization': getAdminAuthHeader(),
       },
     }
   );
@@ -97,7 +113,7 @@ export const fetchInsurance = async (): Promise<InsuranceData[]> => {
     "https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/insurances",
     {
       headers: {
-        'Authorization': 'be6205db57ce01863f69372308c41e3a',
+        'Authorization': getAdminAuthHeader(),
       },
     }
   );
@@ -211,52 +227,35 @@ export const validateLogoFile = (file: File): { isValid: boolean; error?: string
   return { isValid: true };
 };
 
+// Enhanced logo upload function following the exact requirements
 export const uploadProviderLogo = async (providerId: number, logoFile: File): Promise<{ success: boolean; error?: string; updatedProvider?: any }> => {
   try {
     console.log('Uploading logo for provider ID:', providerId);
     console.log('Logo file:', logoFile.name, 'Size:', logoFile.size, 'Type:', logoFile.type);
     
-    // First, get the current provider data to include all required fields
-    const providerResponse = await fetch(
-      `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${providerId}`,
-      {
-        method: 'GET',
-        headers: {
-          'Authorization': 'be6205db57ce01863f69372308c41e3a'
-        }
-      }
-    );
-
-    if (!providerResponse.ok) {
-      const errorText = await providerResponse.text();
-      console.error('Failed to fetch provider:', errorText);
-      return { success: false, error: `Failed to fetch provider: ${providerResponse.status}` };
+    // Validate file before upload
+    const validation = validateLogoFile(logoFile);
+    if (!validation.isValid) {
+      return { success: false, error: validation.error };
     }
-
-    const providerData = await providerResponse.json();
-    const provider = providerData.data[0];
-
-    // Create FormData with flat keys (not nested JSON structure)
+    
+    // Create FormData for multipart upload (Active Storage format)
     const formData = new FormData();
-    formData.append('id', provider.id.toString());
-    formData.append('name', provider.attributes.name || '');
-    formData.append('email', provider.attributes.email || '');
-    formData.append('website', provider.attributes.website || '');
-    formData.append('logo', logoFile); // actual File object
-
-    console.log('Sending FormData with flat keys...');
+    formData.append('logo', logoFile); // Only send the logo file
+    
+    console.log('Sending multipart form data...');
     console.log('FormData contents:');
     for (let [key, value] of formData.entries()) {
-      console.log(`${key}:`, value);
+      console.log(`${key}:`, value instanceof File ? `${value.name} (${value.size} bytes, ${value.type})` : value);
     }
 
     const response = await fetch(
       `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${providerId}`,
       {
-        method: 'PATCH',
+        method: 'PUT',
         headers: {
-          'Authorization': 'be6205db57ce01863f69372308c41e3a'
-          // Don't set Content-Type - browser handles it for FormData
+          'Authorization': 'be6205db57ce01863f69372308c41e3a',
+          // Don't set Content-Type header - browser will set it automatically with boundary
         },
         body: formData
       }
@@ -272,6 +271,7 @@ export const uploadProviderLogo = async (providerId: number, logoFile: File): Pr
     }
 
     const result = await response.json();
+    console.log('Upload success response:', result);
 
     return { 
       success: true, 
@@ -286,25 +286,25 @@ export const uploadProviderLogo = async (providerId: number, logoFile: File): Pr
   }
 };
 
-// Helper function to convert file to base64
-const fileToBase64 = (file: File): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => {
-      const result = reader.result as string;
-      // Remove the data URL prefix to get just the base64 string
-      const base64 = result.split(',')[1];
-      resolve(base64);
-    };
-    reader.onerror = error => reject(error);
-  });
-};
+// Helper function to convert file to base64 (currently unused)
+// const fileToBase64 = (file: File): Promise<string> => {
+//   return new Promise((resolve, reject) => {
+//     const reader = new FileReader();
+//     reader.readAsDataURL(file);
+//     reader.onload = () => {
+//       const result = reader.result as string;
+//       // Remove the data URL prefix to get just the base64 string
+//       const base64 = result.split(',')[1];
+//       resolve(base64);
+//     };
+//     reader.onerror = error => reject(error);
+//   });
+// };
 
 export const removeProviderLogo = async (providerId: number): Promise<{ success: boolean; error?: string }> => {
   try {
     const response = await fetch(
-      `https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/providers/${providerId}/remove_logo`,
+              `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${providerId}/remove_logo`,
       {
         method: 'DELETE',
         headers: {
@@ -468,7 +468,7 @@ export const uploadLogoWithFallback = async (providerId: number, logoFile: File)
     formData.append('provider_id', providerId.toString());
     
     const response = await fetch(
-      `https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/admin/providers/${providerId}`,
+              `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/providers/${providerId}`,
       {
         method: 'POST', // Try POST instead of PATCH
         headers: {
@@ -545,36 +545,12 @@ export const uploadAdminProviderLogo = async (providerId: number, logoFile: File
     console.log('Uploading logo for provider ID (admin):', providerId);
     console.log('Logo file:', logoFile.name, 'Size:', logoFile.size, 'Type:', logoFile.type);
     
-    // First, get the current provider data to include all required fields
-    const providerResponse = await fetch(
-      `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${providerId}`,
-      {
-        method: 'GET',
-        headers: {
-          'Authorization': 'be6205db57ce01863f69372308c41e3a'
-        }
-      }
-    );
-
-    if (!providerResponse.ok) {
-      const errorText = await providerResponse.text();
-      console.error('Failed to fetch provider:', errorText);
-      return { success: false, error: `Failed to fetch provider: ${providerResponse.status}` };
-    }
-
-    const providerData = await providerResponse.json();
-    const provider = providerData.data[0];
-
-    // Create FormData with flat keys (not nested JSON structure)
+    // Create FormData with just the logo file (Active Storage format)
     const formData = new FormData();
-    formData.append('id', provider.id.toString());
-    formData.append('name', provider.attributes.name || '');
-    formData.append('email', provider.attributes.email || '');
-    formData.append('website', provider.attributes.website || '');
-    formData.append('logo', logoFile); // actual File object
+    formData.append('logo', logoFile); // Only send the logo file
     
     // Debug request details
-    console.log('Admin Request URL:', `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${providerId}`);
+    console.log('Admin Request URL:', `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/providers/${providerId}`);
     console.log('Admin Request method: PATCH');
     console.log('Admin FormData entries:');
     for (let [key, value] of (formData as any).entries()) {
@@ -582,7 +558,7 @@ export const uploadAdminProviderLogo = async (providerId: number, logoFile: File
     }
     
     const response = await fetch(
-      `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${providerId}`,
+      `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/providers/${providerId}`,
       {
         method: 'PATCH',
         headers: {
@@ -641,7 +617,7 @@ export const uploadAdminProviderLogo = async (providerId: number, logoFile: File
 export const testPasswordReset = async (email: string): Promise<{ success: boolean; error?: string; details?: any; status?: number }> => {
   try {
     // Test 1: Check if the API endpoint is reachable
-    const healthCheck = await fetch('https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/up', {
+    const healthCheck = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/up', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -658,7 +634,7 @@ export const testPasswordReset = async (email: string): Promise<{ success: boole
     }
     
     // Test 2: Try the password reset endpoint
-    const resetResponse = await fetch('https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/password_resets', {
+    const resetResponse = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/password_resets', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -703,10 +679,10 @@ export const testAvailableEndpoints = async (): Promise<{ success: boolean; endp
       'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/up',
       'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/',
       'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers',
-      'https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/password_resets',
-      'https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/login',
-      'https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/auth',
-      'https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/users'
+              'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/password_resets',
+        'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/login',
+        'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/auth',
+        'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/users'
     ];
     
     const results = [];

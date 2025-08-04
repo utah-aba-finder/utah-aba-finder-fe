@@ -212,7 +212,7 @@ const ProvidersPage: React.FC = () => {
         
         // Add null check for providers.data
         if (!providers || !providers.data || !Array.isArray(providers.data)) {
-          console.warn('Invalid providers data received:', providers);
+  
           setAllProviders([]);
           setFilteredProviders([]);
           return;
@@ -254,7 +254,7 @@ const ProvidersPage: React.FC = () => {
         setAllProviders(mappedProviders);
         setFilteredProviders(mappedProviders);
       } catch (error) {
-        console.error("Error fetching providers:", error);
+
         setShowError("Failed to load providers. Please try again later.");
         setAllProviders([]);
         setFilteredProviders([]);
@@ -281,7 +281,7 @@ const ProvidersPage: React.FC = () => {
       
       // Add null check for results.data
       if (!results || !results.data || !Array.isArray(results.data)) {
-        console.warn('Invalid results data received in handleSearch:', results);
+
         setFilteredProviders([]);
         setCurrentPage(1);
         if (isMountedRef.current) setIsLoading(false);
@@ -535,7 +535,7 @@ const ProvidersPage: React.FC = () => {
   const handleResults = (results: Providers) => {
     // Add null check for results.data
     if (!results || !results.data || !Array.isArray(results.data)) {
-      console.warn('Invalid results data received:', results);
+      
       setFilteredProviders([]);
       setCurrentPage(1);
       return;
@@ -722,7 +722,7 @@ const ProvidersPage: React.FC = () => {
       
       return result.placeDetails !== null && result.reviews.length > 0;
     } catch (error) {
-      console.error('Error checking reviews for provider:', provider.name, error);
+      
       return false;
     }
   };
@@ -797,7 +797,7 @@ const ProvidersPage: React.FC = () => {
         const insuranceData = await fetchInsurance();
         setInsuranceOptions(insuranceData);
       } catch (error) {
-        console.error('Error fetching insurance options:', error);
+
       }
     };
     getInsuranceOptions();

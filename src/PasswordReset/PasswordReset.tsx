@@ -52,7 +52,7 @@ const PasswordReset: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch('https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/password_resets', {
+              const response = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/password_resets', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -67,8 +67,8 @@ const PasswordReset: React.FC = () => {
       let responseData;
       try {
         const responseText = await response.text();
-        console.log('Password reset response status:', response.status);
-        console.log('Password reset response text:', responseText);
+
+        
         
         if (responseText) {
           responseData = JSON.parse(responseText);
@@ -76,7 +76,7 @@ const PasswordReset: React.FC = () => {
           responseData = {};
         }
       } catch (parseError) {
-        console.error('Failed to parse response:', parseError);
+        
         throw new Error('Invalid response from server');
       }
 
@@ -126,7 +126,7 @@ const PasswordReset: React.FC = () => {
       
       navigate('/login');
     } catch (error) {
-      console.error('Password reset error:', error);
+      
       toast.error(error instanceof Error ? error.message : '❌ Failed to reset password. Please try again.', {
         position: "top-center",
         autoClose: 6000,
