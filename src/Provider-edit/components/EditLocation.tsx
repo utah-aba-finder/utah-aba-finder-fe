@@ -103,7 +103,7 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
       };
 
       const response = await fetch(
-        `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/provider_self`,
+        `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${provider.id}`,
         {
           method: "PATCH",
           headers: {
@@ -125,7 +125,7 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
       // Only refresh data if the save was successful
       try {
         const refreshResponse = await fetch(
-          `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/provider_self`,
+          `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${provider.id}`,
           {
             method: "GET",
             headers: {

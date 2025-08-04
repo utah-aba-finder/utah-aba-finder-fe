@@ -96,7 +96,7 @@ const CreateLocation: React.FC<CreateLocationProps> = ({
     try {
       const updatedLocations = [newLocation, ...provider.attributes.locations];
       const response = await fetch(
-        `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/provider_self`,
+        `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${provider.id}`,
         {
           method: 'PATCH',
           headers: {

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { User, ArrowLeft } from 'lucide-react';
-import { testPasswordReset, testAvailableEndpoints } from '../Utility/ApiCall';
+import { testPasswordReset } from '../Utility/ApiCall';
 import { API_CONFIG } from '../Utility/config';
 import './ForgotPassword.css';
 
@@ -127,7 +127,7 @@ const ForgotPassword: React.FC = () => {
       }
 
       // Use the password reset endpoint
-      const endpoint = 'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/password_resets';
+      const endpoint = `${API_CONFIG.BASE_API_URL}/api/v1/password_resets`;
       
       console.log('ForgotPassword request:', {
         url: endpoint,

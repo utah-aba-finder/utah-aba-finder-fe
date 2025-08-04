@@ -17,9 +17,6 @@ export const API_CONFIG = {
 
 // Helper function to get admin authorization header
 export const getAdminAuthHeader = () => {
-  if (API_CONFIG.IS_PRODUCTION && !process.env.REACT_APP_ADMIN_API_KEY) {
-    console.warn('Admin API key not set in production environment');
-  }
   return API_CONFIG.ADMIN_API_KEY;
 };
 
