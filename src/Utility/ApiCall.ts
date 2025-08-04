@@ -402,7 +402,7 @@ export const testPasswordReset = async (email: string): Promise<{ success: boole
     }
     
     // Test 2: Try the password reset endpoint
-    const resetResponse = await fetch(`${API_CONFIG.BASE_API_URL}/v1/password_resets`, {
+    const resetResponse = await fetch(`${API_CONFIG.BASE_API_URL}/api/v1/password_resets`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -448,7 +448,7 @@ export const testAvailableEndpoints = async (): Promise<{ success: boolean; endp
       `${baseUrl.replace('/api', '')}/up`,
       `${baseUrl}/v1/`,
       `${baseUrl}/v1/providers`,
-      `${baseUrl}/v1/password_resets`,
+      `${baseUrl}/api/v1/password_resets`,
       `${baseUrl.replace('/api', '')}/login`,
       `${baseUrl}/v1/auth`,
       `${baseUrl}/v1/users`

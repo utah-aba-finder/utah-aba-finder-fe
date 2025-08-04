@@ -18,7 +18,10 @@ const PasswordReset: React.FC = () => {
   const resetToken = searchParams.get('reset_password_token');
 
   useEffect(() => {
+    console.log('PasswordReset component mounted with token:', resetToken);
+    
     if (!resetToken) {
+      console.error('No reset token found in URL');
       toast.error('Invalid password reset link. Please request a new one.');
       navigate('/login');
       return;
@@ -85,10 +88,15 @@ const PasswordReset: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    console.log('Password reset form submitted');
+    console.log('Form validation result:', validateForm());
+    
     if (!validateForm()) {
+      console.log('Form validation failed');
       return;
     }
 
+    console.log('Starting password reset process...');
     setIsLoading(true);
 
     try {
