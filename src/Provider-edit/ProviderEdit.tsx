@@ -366,6 +366,12 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       
       if (!response.ok) {
         const errorText = await response.text();
+        console.error('Logo upload error response:', {
+          status: response.status,
+          statusText: response.statusText,
+          errorText: errorText,
+          headers: response.headers
+        });
 
         toast.error(`Failed to upload logo: ${response.status} - ${errorText}`);
         return;
@@ -408,11 +414,9 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       };
 
       const requestBody = {
-        data: [{
-          id: loggedInProvider.id,
-          type: "provider",
+        data: {
           attributes: updatedAttributes,
-        }],
+        }
       };
 
 
@@ -444,8 +448,20 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       });
       
       if (!response.ok) {
-        const errorData = await response.json();
-        console.error('Save provider changes error:', errorData);
+        const errorText = await response.text();
+        console.error('Save provider changes error response:', {
+          status: response.status,
+          statusText: response.statusText,
+          errorText: errorText,
+          headers: response.headers
+        });
+
+        let errorData;
+        try {
+          errorData = JSON.parse(errorText);
+        } catch (e) {
+          errorData = { message: errorText };
+        }
 
         throw new Error(`HTTP ${response.status}: ${errorData.message || response.statusText}`);
       }
