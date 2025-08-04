@@ -104,17 +104,17 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
         authHeader: provider.id.toString()
       });
 
-      const response = await fetch(
-        `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${provider.id}`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            'Authorization': provider.id.toString(),
-          },
-          body: JSON.stringify(requestBody),
-        }
-      );
+                const response = await fetch(
+            `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${provider.id}`,
+            {
+              method: "PATCH",
+              headers: {
+                "Content-Type": "application/json",
+                'Authorization': provider.id.toString(),
+              },
+              body: JSON.stringify(requestBody),
+            }
+          );
 
       if (!response.ok) {
         const errorData = await response.json();
