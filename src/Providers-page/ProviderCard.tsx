@@ -151,31 +151,27 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
                 <strong><Phone style={{ marginRight: '8px' }} />
                   Phone: </strong><a href={`tel:${primaryLocation?.phone}`} className='custom-link'>{primaryLocation?.phone || 'Phone number is not available.'}</a>
               </h4>
-              {/* Only show email and website if provider is not in-home only */}
-              {!provider.in_home_only && (
-                <>
-                  <h4>
-                    <strong><Mail style={{ marginRight: '8px' }} />
-                      Email: </strong><a href={`mailto:${provider.email}`} className='custom-link'>{provider.email || 'Email is not available.'}</a>
-                  </h4>
-                  <h4>
-                    <strong><Globe style={{ marginRight: '8px' }} />
-                      Website: </strong>
-                    <a
-                      href={provider.website 
-                        ? (provider.website.startsWith('http://') || provider.website.startsWith('https://') 
-                            ? provider.website 
-                            : `https://${provider.website}`)
-                        : undefined}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="custom-link"
-                    >
-                      {provider.website ?? 'Provider does not have a website yet.'}
-                    </a>
-                  </h4>
-                </>
-              )}
+              {/* Show email and website for all providers */}
+              <h4>
+                <strong><Mail style={{ marginRight: '8px' }} />
+                  Email: </strong><a href={`mailto:${provider.email}`} className='custom-link'>{provider.email || 'Email is not available.'}</a>
+              </h4>
+              <h4>
+                <strong><Globe style={{ marginRight: '8px' }} />
+                  Website: </strong>
+                <a
+                  href={provider.website 
+                    ? (provider.website.startsWith('http://') || provider.website.startsWith('https://') 
+                        ? provider.website 
+                        : `https://${provider.website}`)
+                    : undefined}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="custom-link"
+                >
+                  {provider.website ?? 'Provider does not have a website yet.'}
+                </a>
+              </h4>
               {/* Show services only for in-home providers */}
               {provider.in_home_only && (
                 <h4>

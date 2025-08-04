@@ -103,12 +103,12 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
       };
 
       const response = await fetch(
-        `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${provider.id}`,
+        `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/provider_self`,
         {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
-            'Authorization': getAdminAuthHeader(),
+            'Authorization': provider.id.toString(),
           },
           body: JSON.stringify(requestBody),
         }
@@ -125,12 +125,12 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
       // Only refresh data if the save was successful
       try {
         const refreshResponse = await fetch(
-          `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${provider.id}`,
+          `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/provider_self`,
           {
             method: "GET",
             headers: {
               "Content-Type": "application/json",
-              'Authorization': getAdminAuthHeader(),
+              'Authorization': provider.id.toString(),
             },
           }
         );
@@ -424,10 +424,10 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
                                 } else {
                                   // Fallback: refresh provider data to get the new logo URL
                                   const refreshResponse = await fetch(
-                                    `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${provider.id}`,
+                                    `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/provider_self`,
                                     {
                                       headers: {
-                                        'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+                                        'Authorization': provider.id.toString(),
                                       },
                                     }
                                   );

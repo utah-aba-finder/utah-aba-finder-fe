@@ -21,8 +21,39 @@ const PasswordReset: React.FC = () => {
     if (!resetToken) {
       toast.error('Invalid password reset link. Please request a new one.');
       navigate('/login');
+      return;
     }
+
+    // Validate the token when component mounts
+    validateToken();
   }, [resetToken, navigate]);
+
+  const validateToken = async () => {
+    try {
+      console.log('Validating token:', resetToken);
+      
+      const response = await fetch(`${API_CONFIG.BASE_API_URL}/v1/password_resets/validate_token?token=${resetToken}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      console.log('Token validation response status:', response.status);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Token validation failed:', errorText);
+        toast.error('This reset link has expired. Please request a new password reset.');
+        navigate('/forgot-password');
+      } else {
+        console.log('Token validation successful');
+      }
+    } catch (error) {
+      console.error('Token validation error:', error);
+      // Don't navigate away on network errors, let user try the reset
+    }
+  };
 
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
@@ -53,7 +84,15 @@ const PasswordReset: React.FC = () => {
     setIsLoading(true);
 
     try {
-              const response = await fetch(`${API_CONFIG.BASE_API_URL}/v1/password_resets`, {
+      console.log('Password reset request:', {
+        url: `${API_CONFIG.BASE_API_URL}/v1/password_resets`,
+        method: 'PATCH',
+        token: resetToken,
+        passwordLength: password.length,
+        confirmationLength: passwordConfirmation.length
+      });
+
+      const response = await fetch(`${API_CONFIG.BASE_API_URL}/v1/password_resets`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json'
@@ -65,28 +104,36 @@ const PasswordReset: React.FC = () => {
         })
       });
 
+      console.log('Password reset response status:', response.status);
+      console.log('Password reset response ok:', response.ok);
+
       let responseData;
       try {
         const responseText = await response.text();
+        console.log('Password reset response text:', responseText);
 
-        
-        
         if (responseText) {
           responseData = JSON.parse(responseText);
+          console.log('Password reset response data:', responseData);
         } else {
           responseData = {};
+          console.log('Password reset response empty');
         }
       } catch (parseError) {
-        
+        console.error('Password reset response parse error:', parseError);
         throw new Error('Invalid response from server');
       }
 
       if (!response.ok) {
         // Handle specific error cases
-        if (response.status === 422) {
+        if (responseData.errors && responseData.errors.includes('Reset password token is invalid or expired')) {
+          toast.error('This reset link has expired. Please request a new password reset.');
+          navigate('/forgot-password');
+          return;
+        } else if (response.status === 422) {
           throw new Error('Invalid or expired reset link. Please request a new password reset.');
         } else {
-          throw new Error(responseData.message || `Failed to reset password (${response.status})`);
+          throw new Error(responseData.message || responseData.errors || `Failed to reset password (${response.status})`);
         }
       }
 

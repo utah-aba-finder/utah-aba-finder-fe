@@ -23,6 +23,7 @@ import SuperAdminCreate from "./SuperAdminCreate";
 import SuperAdminAddInsurances from "./SuperAdminAddInsurances";
 import moment from "moment";
 import CreateUser from "./CreateUser";
+import UserProviderLinking from "./UserProviderLinking";
 import { ProviderData, ProviderAttributes } from "../Utility/Types";
 // import { fetchProviders } from "../Utility/ApiCall";
 import { getAdminAuthHeader } from "../Utility/config";
@@ -440,6 +441,23 @@ const SuperAdmin = () => {
                 </li>
                 <li>
                   <button
+                    onClick={() => setSelectedTab("linking")}
+                    className={`
+            w-full flex items-center space-x-3 px-3 py-2 rounded-lg
+            transition-colors hover:cursor-pointer duration-200
+            ${
+              selectedTab === "linking"
+                ? "bg-[#4A6FA5] text-white"
+                : "text-gray-700 hover:bg-gray-100"
+            }
+          `}
+                  >
+                    <Users className="w-4 h-4" />
+                    <span className="text-sm">Link Users</span>
+                  </button>
+                </li>
+                <li>
+                  <button
                     onClick={() => setSelectedTab("billing")}
                     className={`
             w-full flex items-center space-x-3 px-3 py-2 rounded-lg
@@ -510,6 +528,7 @@ const SuperAdmin = () => {
                             {selectedTab === "billing" && "Billing Management"}
                             {selectedTab === "edit" && "Edit Provider"}
                             {selectedTab === "createUser" && "Create User"}
+                            {selectedTab === "linking" && "User-Provider Linking"}
                           </div>
                         )}
                       </div>
@@ -866,6 +885,10 @@ const SuperAdmin = () => {
                     setSelectedTab("view");
                   }}
                 />
+              )}
+
+              {selectedTab === "linking" && (
+                <UserProviderLinking />
               )}
 
               {selectedTab === "billing" && (

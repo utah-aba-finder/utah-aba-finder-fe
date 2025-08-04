@@ -88,7 +88,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
   const refreshProviderData = useCallback(async () => {
     try {
       const response = await fetch(
-        `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${loggedInProvider.id}`,
+        `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/provider_self`,
         {
           headers: {
             'Authorization': loggedInProvider.id.toString(),
@@ -335,8 +335,8 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       formData.append('email', currentProvider.attributes.email || '');
       formData.append('website', currentProvider.attributes.website || '');
       
-      const response = await fetch(`https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${loggedInProvider.id}`, {
-        method: 'PUT',
+      const response = await fetch(`https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/provider_self`, {
+        method: 'PATCH',
         headers: {
           'Authorization': loggedInProvider.id.toString(),
           // Don't set Content-Type header - browser will set it automatically with boundary
@@ -398,7 +398,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
 
 
       const response = await fetch(
-        `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${loggedInProvider.id}`,
+        `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/provider_self`,
         {
           method: "PATCH",
           headers: {
@@ -926,7 +926,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                                 try {
                                   setIsSaving(true);
                                   const response = await fetch(
-                                    `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${loggedInProvider.id}/remove_logo`,
+                                    `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/provider_self/remove_logo`,
                                     {
                                       method: 'DELETE',
                                       headers: {

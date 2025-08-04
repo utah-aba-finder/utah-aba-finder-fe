@@ -174,19 +174,15 @@ const ProviderModal: React.FC<ProviderModalProps> = ({
                   <strong>Phone: </strong>
                   {primaryLocation?.phone ? <a href={`tel:${primaryLocation.phone}`}>{primaryLocation.phone}</a> : 'Provider does not have a number for this location yet.'}
                 </p>
-                {/* Only show website and email if provider is not in-home only */}
-                {!provider.attributes.in_home_only && (
-                  <>
-                    <p><Globe style={{ marginRight: '8px' }} />
-                      <strong>Website: </strong>
-                      {provider.attributes.website ? <a href={provider.attributes.website} target="_blank" rel="noopener noreferrer">{provider.attributes.website}</a> : 'Provider does not have a website yet.'}
-                    </p>
-                    <p className="email-text"><Mail style={{ marginRight: '8px' }} />
-                      <strong>Email: </strong>
-                      {provider.attributes.email ? <a href={`mailto:${provider.attributes.email}`} target="_blank" rel="noopener noreferrer">{provider.attributes.email}</a> : 'Provider does not have an email yet.'}
-                    </p>
-                  </>
-                )}
+                {/* Show website and email for all providers */}
+                <p><Globe style={{ marginRight: '8px' }} />
+                  <strong>Website: </strong>
+                  {provider.attributes.website ? <a href={provider.attributes.website} target="_blank" rel="noopener noreferrer">{provider.attributes.website}</a> : 'Provider does not have a website yet.'}
+                </p>
+                <p className="email-text"><Mail style={{ marginRight: '8px' }} />
+                  <strong>Email: </strong>
+                  {provider.attributes.email ? <a href={`mailto:${provider.attributes.email}`} target="_blank" rel="noopener noreferrer">{provider.attributes.email}</a> : 'Provider does not have an email yet.'}
+                </p>
               </div>
             </div>
             <div className="provider-details text">

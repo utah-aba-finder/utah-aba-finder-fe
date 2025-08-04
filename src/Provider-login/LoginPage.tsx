@@ -105,6 +105,10 @@ export const LoginPage: React.FC = () => {
                 navigate('/superAdmin');
             } else if (userRole === 'provider_admin') {
                 const providerId = data.user?.provider_id;
+                
+                // Debug: Log the user data to see what we're getting
+                console.log('Provider login - User data:', data.user);
+                console.log('Provider login - Provider ID:', providerId);
 
                 
                 if (providerId && providerId !== null) {
@@ -126,14 +130,13 @@ export const LoginPage: React.FC = () => {
                         navigate('/');
                     }
                 } else {
-                    // For users without a provider_id, still allow them to access provider edit
+                    // For users without a provider_id, show an error and redirect to contact page
                     setLoggedInProvider({
                         ...data.user,
                         role: 'provider_admin'
                     });
-                    toast.info('You are logged in as ' + data.user.email);
-                    toast.info('You can create or manage your provider profile.');
-                    navigate('/providerEdit'); // Navigate to provider edit without ID
+                    toast.error('Account configuration error: No provider ID found. Please contact support.');
+                    navigate('/contact'); // Redirect to contact page instead of non-existent route
                 }
             } else {
                 toast.error('Unknown user role');
