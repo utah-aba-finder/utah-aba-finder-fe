@@ -6,6 +6,7 @@ interface User {
   id: number;
   email: string;
   provider_id?: number;
+  provider_name?: string;
 }
 
 interface Provider {
@@ -27,10 +28,10 @@ const UserProviderLinking: React.FC = () => {
 
   const fetchUsers = async () => {
     try {
-      console.log('Fetching users from:', 'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/users');
+      console.log('Fetching users from:', 'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/users/users_with_providers');
       console.log('Using auth header:', getAdminAuthHeader());
       
-      const response = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/users', {
+      const response = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/users/users_with_providers', {
         headers: {
           'Authorization': getAdminAuthHeader(),
         }
@@ -42,7 +43,7 @@ const UserProviderLinking: React.FC = () => {
       if (response.ok) {
         const data = await response.json();
         console.log('Users API response:', data);
-        setUsers(data.data || []);
+        setUsers(data.users || []);
       } else {
         const errorText = await response.text();
         console.error('Users API error:', response.status, errorText);
@@ -56,9 +57,9 @@ const UserProviderLinking: React.FC = () => {
 
   const fetchProviders = async () => {
     try {
-      console.log('Fetching providers from:', 'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/providers');
+      console.log('Fetching providers from:', 'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/users/providers_list');
       
-      const response = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/providers', {
+      const response = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/users/providers_list', {
         headers: {
           'Authorization': getAdminAuthHeader(),
         }
@@ -69,7 +70,7 @@ const UserProviderLinking: React.FC = () => {
       if (response.ok) {
         const data = await response.json();
         console.log('Providers API response:', data);
-        setProviders(data.data || []);
+        setProviders(data.providers || []);
       } else {
         const errorText = await response.text();
         console.error('Providers API error:', response.status, errorText);
@@ -89,13 +90,21 @@ const UserProviderLinking: React.FC = () => {
 
     setIsLoading(true);
     try {
-      const response = await fetch(`https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/users/${selectedUser}/link_to_provider`, {
+      // Find the user email from the selected user ID
+      const selectedUserObj = users.find(user => user.id === selectedUser);
+      if (!selectedUserObj) {
+        toast.error('Selected user not found');
+        return;
+      }
+
+      const response = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/users/manual_link', {
         method: 'POST',
         headers: {
           'Authorization': getAdminAuthHeader(),
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          user_email: selectedUserObj.email,
           provider_id: selectedProvider
         })
       });
@@ -120,11 +129,25 @@ const UserProviderLinking: React.FC = () => {
   const unlinkUserFromProvider = async (userId: number) => {
     setIsLoading(true);
     try {
-      const response = await fetch(`https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/users/${userId}/unlink_from_provider`, {
-        method: 'DELETE',
+      // Find the user email from the user ID
+      const userObj = users.find(user => user.id === userId);
+      if (!userObj) {
+        toast.error('User not found');
+        return;
+      }
+
+      // For unlinking, we can switch the user to provider_id null or use a special endpoint
+      // For now, let's use the switch_provider endpoint with null provider
+      const response = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/users/switch_provider', {
+        method: 'POST',
         headers: {
           'Authorization': getAdminAuthHeader(),
-        }
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_email: userObj.email,
+          new_provider_id: null
+        })
       });
 
       if (response.ok) {
@@ -231,14 +254,13 @@ const UserProviderLinking: React.FC = () => {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {connectedUsers.map(user => {
-                  const provider = providers.find(p => p.id === user.provider_id);
                   return (
                     <tr key={user.id}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {user.email} (ID: {user.id})
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {provider ? provider.name : `Provider ID: ${user.provider_id}`}
+                        {user.provider_name || `Provider ID: ${user.provider_id}`}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         <button
