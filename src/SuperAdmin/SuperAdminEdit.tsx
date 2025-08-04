@@ -28,7 +28,7 @@ import {
   Service,
 } from "../Utility/Types";
 import { fetchStates, fetchCountiesByState } from "../Utility/ApiCall";
-import { validateLogoFile, uploadProviderLogo, testLogoUpload, uploadLogoWithFallback, uploadAdminProviderLogo } from "../Utility/ApiCall";
+import { validateLogoFile, uploadProviderLogo, uploadAdminProviderLogo } from "../Utility/ApiCall";
 import { getAdminAuthHeader } from "../Utility/config";
 
 interface SuperAdminEditProps {
@@ -342,41 +342,21 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
       // Handle logo upload separately if a file is selected
       if (selectedLogoFile) {
         try {
-          // First, test the upload to get detailed error information
-
-          const testResult = await testLogoUpload(provider.id, selectedLogoFile);
-          
-          
-          if (!testResult.success) {
-            
-            toast.error(`Logo upload test failed: ${testResult.error}`);
-            return;
-          }
-          
-          // If test passes, try the admin upload first
+          // Try the admin upload first
           let logoResult = await uploadAdminProviderLogo(provider.id, selectedLogoFile);
           
           // If the admin upload fails, try the regular method
           if (!logoResult.success) {
-            
             logoResult = await uploadProviderLogo(provider.id, selectedLogoFile);
-          }
-          
-          // If the regular upload fails, try the fallback method
-          if (!logoResult.success) {
-            
-            logoResult = await uploadLogoWithFallback(provider.id, selectedLogoFile);
           }
           
           if (logoResult.success) {
             toast.success('Logo uploaded successfully');
             setSelectedLogoFile(null);
           } else {
-            
             toast.error(`Logo upload failed: ${logoResult.error}`);
           }
         } catch (logoError) {
-          
           toast.error('Failed to upload logo');
         }
       }

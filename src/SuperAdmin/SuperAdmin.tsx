@@ -121,6 +121,12 @@ const SuperAdmin = () => {
         throw new Error("Invalid response format");
       }
 
+      // Debug: Log logo URLs
+      console.log('Providers with logos:', data.data?.filter((p: any) => p.attributes?.logo).map((p: any) => ({
+        name: p.attributes.name,
+        logo: p.attributes.logo
+      })));
+
       // Update the providers state with the fresh data
       setProviders(data.data);
       
@@ -758,8 +764,11 @@ const SuperAdmin = () => {
                                           alt={`${provider.attributes.name} logo`}
                                           className="w-10 h-10 object-contain rounded border border-gray-200"
                                           onError={(e) => {
-                            
+                                            console.error('Logo failed to load:', provider.attributes.logo);
                                             e.currentTarget.style.display = 'none';
+                                          }}
+                                          onLoad={() => {
+                                            console.log('Logo loaded successfully:', provider.attributes.logo);
                                           }}
                                         />
                                         {/* Logo preview on hover */}
