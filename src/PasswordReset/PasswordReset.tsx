@@ -53,7 +53,7 @@ const PasswordReset: React.FC = () => {
 
     try {
               const response = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/password_resets', {
-        method: 'PUT',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json'
         },
