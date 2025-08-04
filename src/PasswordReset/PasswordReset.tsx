@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { API_CONFIG } from '../Utility/config';
 import './PasswordReset.css';
 
 const PasswordReset: React.FC = () => {
@@ -52,7 +53,7 @@ const PasswordReset: React.FC = () => {
     setIsLoading(true);
 
     try {
-              const response = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/password_resets', {
+              const response = await fetch(`${API_CONFIG.BASE_API_URL}/v1/password_resets`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json'
