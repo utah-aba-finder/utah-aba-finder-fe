@@ -82,7 +82,7 @@ function App() {
         originalError.apply(console, args);
       };
     } catch (error) {
-      console.error('Error in mobile cache handling:', error);
+  
     }
   }, []);
 
@@ -113,7 +113,7 @@ function App() {
         const data = providers?.data || [];
         setAllProviders(data);
       } catch (error) {
-        console.error("Error fetching providers:", error);
+
         // Don't let provider fetch errors break the app
         // Set empty array to prevent undefined errors
         setAllProviders([]);
@@ -148,7 +148,7 @@ function App() {
         return updatedProviders;
       });
     } catch (error) {
-      console.error('App: Error updating provider:', error);
+      
       // Don't let the error break the UI
     }
   };

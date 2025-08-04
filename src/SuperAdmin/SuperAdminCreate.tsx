@@ -5,6 +5,7 @@ import CountiesModal from "../Provider-edit/CountiesModal";
 import { CountiesServed, Insurance, StateData, CountyData, Service } from "../Utility/Types";
 import InsuranceModal from "../Provider-edit/InsuranceModal";
 import { fetchStates, fetchCountiesByState, fetchProviders, validateLogoFile, uploadProviderLogo } from "../Utility/ApiCall";
+import { getAdminAuthHeader } from "../Utility/config";
 import "react-toastify/dist/ReactToastify.css";
 
 interface SuperAdminCreateProps {
@@ -98,7 +99,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
             const counties = await fetchCountiesByState(selectedState.id);
             setAvailableCounties(counties);
           } catch (error) {
-            console.error("Failed to load counties:", error);
+            
             toast.error("Failed to load counties for selected state");
           }
         }
@@ -131,7 +132,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
             setSelectedCounties([]);
           })
           .catch(error => {
-            console.error("Failed to load counties:", error);
+            
             toast.error("Failed to load counties");
           });
       }
@@ -248,7 +249,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
       );
       return !!existingProvider;
     } catch (error) {
-      console.error("Error checking for duplicate provider:", error);
+      
       return false;
     }
   };
@@ -320,7 +321,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
           method: "POST",
                   headers: {
           "Content-Type": "application/json",
-          'Authorization': 'be6205db57ce01863f69372308c41e3a',
+                      'Authorization': getAdminAuthHeader(),
         },
           body: JSON.stringify(requestData),
         }
@@ -328,7 +329,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('SuperAdminCreate: Backend error:', errorData);
+
         throw new Error(errorData.message || "Failed to create provider");
       }
 
@@ -336,23 +337,23 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
 
       // Upload logo if selected
       if (selectedLogoFile && responseData.data?.[0]?.id) {
-        console.log('Attempting to upload logo for provider ID:', responseData.data[0].id);
+
         try {
           const logoResult = await uploadProviderLogo(responseData.data[0].id, selectedLogoFile);
-          console.log('Logo upload result:', logoResult);
+          
           if (logoResult.success) {
             toast.success('Logo uploaded successfully');
-            console.log('Updated provider data:', logoResult.updatedProvider);
+            
           } else {
-            console.error('Logo upload failed:', logoResult.error);
+            
             toast.warning('Provider created but logo upload failed: ' + logoResult.error);
           }
         } catch (error) {
-          console.error('Logo upload error:', error);
+          
           toast.warning('Provider created but logo upload failed');
         }
       } else {
-        console.log('No logo file selected or no provider ID available');
+
       }
 
       // Show success toast after confirming the save was successful
@@ -408,7 +409,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
         handleCloseForm();
       }, 3000);
     } catch (error) {
-      console.error("Error creating provider:", error);
+      
       setError("There was an error creating the provider. Please try again.");
     } finally {
       setIsSaving(false);

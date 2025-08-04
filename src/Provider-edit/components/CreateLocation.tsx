@@ -15,6 +15,7 @@ import {
 } from "../../Utility/Types";
 import { fetchStates, fetchCountiesByState } from "../../Utility/ApiCall";
 import { Building2, MapPin, Phone, X } from 'lucide-react';
+import { getAdminAuthHeader } from "../../Utility/config";
 
 interface CreateLocationProps {
   provider: ProviderData;
@@ -66,7 +67,7 @@ const CreateLocation: React.FC<CreateLocationProps> = ({
           }
         }
       } catch (error) {
-        console.error("Failed to load states/counties:", error);
+
         toast.error("Failed to load location data");
       }
     };
@@ -95,12 +96,12 @@ const CreateLocation: React.FC<CreateLocationProps> = ({
     try {
       const updatedLocations = [newLocation, ...provider.attributes.locations];
       const response = await fetch(
-        `https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/providers/${provider.id}`,
+        `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${provider.id}`,
         {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'be6205db57ce01863f69372308c41e3a'
+            'Authorization': getAdminAuthHeader()
           },
           body: JSON.stringify({
             data: [{
@@ -124,7 +125,7 @@ const CreateLocation: React.FC<CreateLocationProps> = ({
       toast.success('Location created successfully!');
       setSelectedTab('edit');
     } catch (error) {
-      console.error('Error creating location:', error);
+      
       toast.error('Failed to create location');
     } finally {
       setIsSaving(false);

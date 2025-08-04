@@ -126,7 +126,7 @@ const ForgotPassword: React.FC = () => {
       }
 
       // Use the password reset endpoint
-      const endpoint = 'https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/password_resets';
+              const endpoint = 'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/password_resets';
 
       // If test passes, proceed with the actual request
       const response = await fetch(endpoint, {

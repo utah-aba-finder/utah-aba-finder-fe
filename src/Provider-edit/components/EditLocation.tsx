@@ -6,6 +6,7 @@ import InsuranceModal from "../InsuranceModal";
 import CountiesModal from "../CountiesModal";
 import { ProviderData, ProviderAttributes, Insurance, CountiesServed, Location, StateData, CountyData, Service } from "../../Utility/Types";
 import { fetchStates, fetchCountiesByState, validateLogoFile, uploadProviderLogo, removeProviderLogo } from "../../Utility/ApiCall";
+import { getAdminAuthHeader } from "../../Utility/config";
 
 interface EditLocationProps {
   provider: ProviderData;
@@ -102,12 +103,12 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
       };
 
       const response = await fetch(
-        `https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/providers/${provider.id}`,
+        `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${provider.id}`,
         {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
-            'Authorization': 'be6205db57ce01863f69372308c41e3a',
+            'Authorization': getAdminAuthHeader(),
           },
           body: JSON.stringify(requestBody),
         }
@@ -115,7 +116,7 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('EditLocation: Backend error response:', errorData);
+
         throw new Error(errorData.message || `HTTP ${response.status}: Failed to update provider`);
       }
 
@@ -124,18 +125,18 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
       // Only refresh data if the save was successful
       try {
         const refreshResponse = await fetch(
-          `https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/providers/${provider.id}`,
+          `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${provider.id}`,
           {
             method: "GET",
             headers: {
               "Content-Type": "application/json",
-              'Authorization': 'be6205db57ce01863f69372308c41e3a',
+              'Authorization': getAdminAuthHeader(),
             },
           }
         );
 
         if (!refreshResponse.ok) {
-          console.warn('EditLocation: Failed to refresh provider data, but save was successful');
+
           // Don't throw error here, just log warning
         } else {
           const refreshedData = await refreshResponse.json();
@@ -155,14 +156,14 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
           }
         }
       } catch (refreshError) {
-        console.warn('EditLocation: Error refreshing data after save:', refreshError);
+
         // Don't fail the save operation if refresh fails
       }
 
       // Show success toast only after everything is complete
       toast.success("Changes saved successfully!");
     } catch (err) {
-      console.error("EditLocation: Error updating provider:", err);
+
       const errorMessage = err instanceof Error ? err.message : "Failed to update provider";
       toast.error(errorMessage);
     } finally {
@@ -220,7 +221,7 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
           }
         }
       } catch (error) {
-        console.error("Failed to load states/counties:", error);
+
         toast.error("Failed to load location data");
       }
     };
@@ -423,7 +424,7 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
                                 } else {
                                   // Fallback: refresh provider data to get the new logo URL
                                   const refreshResponse = await fetch(
-                                    `https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/providers/${provider.id}`,
+                                    `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${provider.id}`,
                                     {
                                       headers: {
                                         'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
@@ -440,11 +441,11 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
                                   }
                                 }
                               } else {
-                                console.error('EditLocation: Logo upload failed:', result.error);
+
                                 toast.error(result.error || 'Failed to upload logo');
                               }
                             } catch (error) {
-                              console.error('EditLocation: Logo upload error:', error);
+
                               toast.error('Failed to upload logo');
                             }
                           }
@@ -934,86 +935,7 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
                     </div>
                   )}
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="relative">
-                      <label className="block text-sm text-gray-600 mb-2">
-                        Telehealth Services
-                      </label>
-                      <div className="relative">
-                        <div className="p-1.5 bg-blue-50 rounded absolute left-3 top-1/2 transform -translate-y-1/2">
-                          <Globe className="w-3.5 h-3.5 text-blue-600" />
-                        </div>
-                        <select
-                          value={formData.telehealth_services || ""}
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              telehealth_services: e.target.value,
-                            })
-                          }
-                          className="w-full pl-11 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white cursor-pointer"
-                        >
-                          <option value="">Select...</option>
-                          <option value="yes">Yes</option>
-                          <option value="no">No</option>
-                          <option value="limited">Limited</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div className="relative">
-                      <label className="block text-sm text-gray-600 mb-2">
-                        In-Clinic Services
-                      </label>
-                      <div className="relative">
-                        <div className="p-1.5 bg-blue-50 rounded absolute left-3 top-1/2 transform -translate-y-1/2">
-                          <Building2 className="w-3.5 h-3.5 text-blue-600" />
-                        </div>
-                        <select
-                          value={formData.in_clinic_services || ""}
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              in_clinic_services: e.target.value,
-                            })
-                          }
-                          className="w-full pl-11 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white cursor-pointer"
-                        >
-                          <option value="">Select...</option>
-                          <option value="yes">Yes</option>
-                          <option value="no">No</option>
-                          <option value="limited">Limited</option>
-                          <option value="contact us">Contact us</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div className="relative">
-                      <label className="block text-sm text-gray-600 mb-2">
-                        At-Home Services
-                      </label>
-                      <div className="relative">
-                        <div className="p-1.5 bg-blue-50 rounded absolute left-3 top-1/2 transform -translate-y-1/2">
-                          <MapPin className="w-3.5 h-3.5 text-blue-600" />
-                        </div>
-                        <select
-                          value={formData.at_home_services || ""}
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              at_home_services: e.target.value,
-                            })
-                          }
-                          className="w-full pl-11 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white cursor-pointer"
-                        >
-                          <option value="">Select...</option>
-                          <option value="yes">Yes</option>
-                          <option value="no">No</option>
-                          <option value="contact us">Contact us</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
+                  {/* Removed duplicate service dropdowns - keeping only the checkboxes above */}
                 </div>
               </div>
             </div>

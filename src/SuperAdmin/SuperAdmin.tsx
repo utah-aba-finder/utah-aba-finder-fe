@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
   Users,
   PlusCircle,
@@ -24,7 +24,8 @@ import SuperAdminAddInsurances from "./SuperAdminAddInsurances";
 import moment from "moment";
 import CreateUser from "./CreateUser";
 import { ProviderData, ProviderAttributes } from "../Utility/Types";
-import { fetchProviders } from "../Utility/ApiCall";
+// import { fetchProviders } from "../Utility/ApiCall";
+import { getAdminAuthHeader } from "../Utility/config";
 
 const SuperAdmin = () => {
   const { loggedInProvider, logout } = useAuth();
@@ -47,9 +48,10 @@ const SuperAdmin = () => {
   const [stateFilter, setStateFilter] = useState<string>("all");
   const [serviceFilter, setServiceFilter] = useState<string>("all");
   const [locationCountFilter, setLocationCountFilter] = useState<string>("all");
+  const [logoFilter, setLogoFilter] = useState<"all" | "with_logo" | "without_logo">("all");
 
   // Hardcoded list of all US states
-  const US_STATES = [
+  const US_STATES = useMemo(() => [
     "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut",
     "Delaware", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa",
     "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan",
@@ -58,10 +60,10 @@ const SuperAdmin = () => {
     "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota",
     "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia",
     "Wisconsin", "Wyoming"
-  ];
+  ], []);
 
   // Extract states that are actually used by providers
-  const [availableStates, setAvailableStates] = useState<string[]>([]);
+  // const [availableStates, setAvailableStates] = useState<string[]>([]);
 
   // Add this constant for available services
   const AVAILABLE_SERVICES = [
@@ -95,10 +97,8 @@ const SuperAdmin = () => {
 
 
   // Fetch providers
-  const fetchAllProviders = async () => {
+  const fetchAllProviders = useCallback(async () => {
     try {
-      console.log("SuperAdmin: Using data API endpoint (approved providers only)");
-      
       // Use the correct API app URL for data operations
       const response = await fetch(
         `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/providers`,
@@ -106,21 +106,16 @@ const SuperAdmin = () => {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            'Authorization': 'be6205db57ce01863f69372308c41e3a',
+            'Authorization': getAdminAuthHeader(),
           },
         }
       );
 
-      console.log('SuperAdmin fetch response status:', response.status);
-      
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('SuperAdmin fetch error:', errorText);
-        throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const data = await response.json();
-      console.log('SuperAdmin fetch data:', data);
       
       if (!data || !data.data) {
         throw new Error("Invalid response format");
@@ -129,7 +124,7 @@ const SuperAdmin = () => {
       // Update the providers state with the fresh data
       setProviders(data.data);
       
-      // Process states from the new data
+      // Process states from the data (only once)
       const states = new Set<string>();
       data.data.forEach((provider: ProviderData) => {
         provider.attributes.locations?.forEach(location => {
@@ -148,8 +143,7 @@ const SuperAdmin = () => {
         });
       });
       
-      const sortedStates = Array.from(states).sort();
-      setAvailableStates(sortedStates);
+      // const sortedStates = Array.from(states).sort(); // Not used
       
       // If we have a selected provider, update it with the fresh data
       if (selectedProvider) {
@@ -157,207 +151,35 @@ const SuperAdmin = () => {
           (p: ProviderData) => p.id === selectedProvider.id
         );
         if (updatedProvider) {
-          setSelectedProvider(updatedProvider);
+          // Add a small delay to prevent rapid state updates
+          setTimeout(() => {
+            setSelectedProvider(updatedProvider);
+          }, 100);
         }
       }
 
     } catch (error) {
-      console.error("Error fetching providers from admin endpoint:", error);
-      
-      // Try with API key authentication as fallback
-      try {
-        console.log("Trying admin endpoint with API key authentication...");
-        const apiKeyResponse = await fetch(
-          `https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/admin/providers`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              'Authorization': 'be6205db57ce01863f69372308c41e3a',
-            },
-          }
-        );
-        
-        // Also try with Bearer prefix for API key
-        if (!apiKeyResponse.ok) {
-          console.log("Trying admin endpoint with Bearer API key...");
-          const bearerApiKeyResponse = await fetch(
-            `https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/api/v1/admin/providers`,
-            {
-              method: "GET",
-              headers: {
-                "Content-Type": "application/json",
-                'Authorization': 'Bearer be6205db57ce01863f69372308c41e3a',
-              },
-            }
-          );
-          
-          if (bearerApiKeyResponse.ok) {
-            const bearerData = await bearerApiKeyResponse.json();
-            console.log('Bearer API key fetch data:', bearerData);
-            
-            if (bearerData && bearerData.data) {
-              setProviders(bearerData.data);
-              
-              // Process states from the bearer data
-              const states = new Set<string>();
-              bearerData.data.forEach((provider: ProviderData) => {
-                provider.attributes.locations?.forEach(location => {
-                  if (location.state) {
-                    const cleanState = location.state.trim();
-                    const matchingState = US_STATES.find(state => 
-                      state.toLowerCase() === cleanState.toLowerCase() ||
-                      state.toLowerCase().includes(cleanState.toLowerCase()) ||
-                      cleanState.toLowerCase().includes(state.toLowerCase())
-                    );
-                    
-                    if (matchingState) {
-                      states.add(matchingState);
-                    }
-                  }
-                });
-              });
-              
-              const sortedStates = Array.from(states).sort();
-              setAvailableStates(sortedStates);
-              
-              // If we have a selected provider, update it with the fresh data
-              if (selectedProvider) {
-                const updatedProvider = bearerData.data.find(
-                  (p: ProviderData) => p.id === selectedProvider.id
-                );
-                if (updatedProvider) {
-                  setSelectedProvider(updatedProvider);
-                }
-              }
-              
-              console.log("Successfully fetched providers with Bearer API key");
-              return;
-            }
-          } else {
-            const errorText = await bearerApiKeyResponse.text();
-            console.error('Bearer API key fetch error:', errorText);
-          }
-        }
-        
-        console.log('API key response status:', apiKeyResponse.status);
-        
-        if (apiKeyResponse.ok) {
-          const apiKeyData = await apiKeyResponse.json();
-          console.log('API key fetch data:', apiKeyData);
-          
-          if (apiKeyData && apiKeyData.data) {
-            setProviders(apiKeyData.data);
-            
-            // Process states from the API key data
-            const states = new Set<string>();
-            apiKeyData.data.forEach((provider: ProviderData) => {
-              provider.attributes.locations?.forEach(location => {
-                if (location.state) {
-                  const cleanState = location.state.trim();
-                  const matchingState = US_STATES.find(state => 
-                    state.toLowerCase() === cleanState.toLowerCase() ||
-                    state.toLowerCase().includes(cleanState.toLowerCase()) ||
-                    cleanState.toLowerCase().includes(state.toLowerCase())
-                  );
-                  
-                  if (matchingState) {
-                    states.add(matchingState);
-                  }
-                }
-              });
-            });
-            
-            const sortedStates = Array.from(states).sort();
-            setAvailableStates(sortedStates);
-            
-            // If we have a selected provider, update it with the fresh data
-            if (selectedProvider) {
-              const updatedProvider = apiKeyData.data.find(
-                (p: ProviderData) => p.id === selectedProvider.id
-              );
-              if (updatedProvider) {
-                setSelectedProvider(updatedProvider);
-              }
-            }
-            
-            console.log("Successfully fetched providers with API key");
-            return;
-          }
-        } else {
-          const errorText = await apiKeyResponse.text();
-          console.error('API key fetch error:', errorText);
-        }
-      } catch (apiKeyError) {
-        console.error("Error fetching providers with API key:", apiKeyError);
-      }
-      
-      // Final fallback to data API endpoint
-      try {
-        console.log("Trying fallback to data API endpoint...");
-        const fallbackData = await fetchProviders();
-        
-        if (fallbackData && fallbackData.data) {
-          setProviders(fallbackData.data);
-          
-          // Process states from the fallback data
-          const states = new Set<string>();
-          fallbackData.data.forEach((provider: ProviderData) => {
-            provider.attributes.locations?.forEach(location => {
-              if (location.state) {
-                const cleanState = location.state.trim();
-                const matchingState = US_STATES.find(state => 
-                  state.toLowerCase() === cleanState.toLowerCase() ||
-                  state.toLowerCase().includes(cleanState.toLowerCase()) ||
-                  cleanState.toLowerCase().includes(state.toLowerCase())
-                );
-                
-                if (matchingState) {
-                  states.add(matchingState);
-                }
-              }
-            });
-          });
-          
-          const sortedStates = Array.from(states).sort();
-          setAvailableStates(sortedStates);
-          
-          // If we have a selected provider, update it with the fresh data
-          if (selectedProvider) {
-            const updatedProvider = fallbackData.data.find(
-              (p: ProviderData) => p.id === selectedProvider.id
-            );
-            if (updatedProvider) {
-              setSelectedProvider(updatedProvider);
-            }
-          }
-          
-          console.log("Successfully fetched providers from fallback endpoint");
-        }
-      } catch (fallbackError) {
-        console.error("Error fetching providers from fallback endpoint:", fallbackError);
-        toast.error("Failed to fetch providers from both endpoints");
-      }
+      console.error('Error fetching providers:', error);
+      toast.error("Failed to fetch providers");
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [selectedProvider, US_STATES]);
 
   useEffect(() => {
+    setIsLoading(true);
     fetchAllProviders();
   }, []); // Only run once on mount
 
   const handleProviderUpdate = async (updatedProvider: ProviderAttributes) => {
     try {
       if (!updatedProvider) {
-        console.error("Received undefined updatedProvider");
         return;
       }
 
-      // First update the local state
+      // Update the local state immediately
       setProviders((prevProviders) => {
         if (!selectedProvider?.id) {
-          console.error("No selected provider ID");
           return prevProviders;
         }
 
@@ -373,16 +195,21 @@ const SuperAdmin = () => {
         });
       });
 
-      // Then fetch fresh data from the server
-      await fetchAllProviders();
+      // Update selected provider with new data
+      if (selectedProvider) {
+        setSelectedProvider({
+          ...selectedProvider,
+          attributes: updatedProvider
+        });
+      }
 
       // Switch back to view tab after a short delay
       setTimeout(() => {
         setSelectedTab("view");
-      }, 1000);
+      }, 500);
 
     } catch (error) {
-      console.error("Error in handleProviderUpdate:", error);
+      console.error('Error updating provider:', error);
       toast.error("Failed to update provider");
     }
   };
@@ -435,7 +262,14 @@ const SuperAdmin = () => {
       return true;
     })();
 
-    const result = nameMatch && typeMatch && statusMatch && stateMatch && serviceMatch && locationCountMatch;
+    const logoMatch = (() => {
+      if (logoFilter === "all") return true;
+      if (logoFilter === "with_logo") return !!provider.attributes.logo;
+      if (logoFilter === "without_logo") return !provider.attributes.logo;
+      return true;
+    })();
+
+    const result = nameMatch && typeMatch && statusMatch && stateMatch && serviceMatch && locationCountMatch && logoMatch;
     return result;
   }).sort((a, b) => {
     const nameA = a.attributes.name?.toLowerCase() || "";
@@ -802,6 +636,28 @@ const SuperAdmin = () => {
                             <ChevronDown className="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 transform -translate-y-1/2 pointer-events-none" />
                           </div>
                         </div>
+
+                        {/* Logo Filter */}
+                        <div className="w-[calc(50%-0.375rem)] sm:w-32 flex-shrink-0">
+                          <div className="relative">
+                            <select
+                              value={logoFilter}
+                              onChange={(e) =>
+                                setLogoFilter(
+                                  e.target.value as "all" | "with_logo" | "without_logo"
+                                )
+                              }
+                              className="w-full pl-2.5 pr-8 py-1.5 rounded-lg border border-gray-300 bg-white 
+                             focus:outline-none focus:ring-2 focus:ring-blue-500 
+                             appearance-none cursor-pointer text-gray-700 text-sm"
+                            >
+                              <option value="all">All Logos</option>
+                              <option value="with_logo">With Logo</option>
+                              <option value="without_logo">Without Logo</option>
+                            </select>
+                            <ChevronDown className="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 transform -translate-y-1/2 pointer-events-none" />
+                          </div>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -828,6 +684,11 @@ const SuperAdmin = () => {
                         ? `Speech Therapy Providers: ${filteredProviders.length}`
                         : `Occupational Therapy Providers: ${filteredProviders.length}`}
                       {searchTerm && ` (Filtered)`}
+                      {(() => {
+                        const withLogos = providers.filter(p => p.attributes?.logo).length;
+                        const withoutLogos = providers.filter(p => !p.attributes?.logo).length;
+                        return ` • ${withLogos} with logos, ${withoutLogos} without logos`;
+                      })()}
                     </p>
                   </div>
 
@@ -856,6 +717,9 @@ const SuperAdmin = () => {
                               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Provider Name
                               </th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Logo
+                              </th>
                               <th className="px-6 py-3 text-left max-w-[1rem] text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Type
                               </th>
@@ -883,6 +747,40 @@ const SuperAdmin = () => {
                                 <td className="px-6 py-4 whitespace-nowrap">
                                   <div className="text-sm font-medium text-gray-900 truncate max-w-[10rem]">
                                     {provider.attributes.name}
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <div className="flex items-center justify-center">
+                                    {provider.attributes.logo ? (
+                                      <div className="relative group">
+                                        <img 
+                                          src={provider.attributes.logo}
+                                          alt={`${provider.attributes.name} logo`}
+                                          className="w-10 h-10 object-contain rounded border border-gray-200"
+                                          onError={(e) => {
+                            
+                                            e.currentTarget.style.display = 'none';
+                                          }}
+                                        />
+                                        {/* Logo preview on hover */}
+                                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10">
+                                          <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-2">
+                                            <img 
+                                              src={provider.attributes.logo}
+                                              alt={`${provider.attributes.name} logo`}
+                                              className="w-32 h-32 object-contain"
+                                            />
+                                            <div className="text-xs text-gray-600 mt-1 text-center">
+                                              {provider.attributes.name}
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      <div className="w-10 h-10 bg-gray-100 rounded border border-gray-200 flex items-center justify-center">
+                                        <span className="text-gray-400 text-sm">📷</span>
+                                      </div>
+                                    )}
                                   </div>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap">

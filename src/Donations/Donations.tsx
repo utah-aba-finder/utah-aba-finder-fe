@@ -12,7 +12,7 @@ import VenmoLink from 'src/Assets/venmo.jpeg'
 const stripePromise = loadStripe('pk_live_51QLVtXJCAzcIvuNOwz9neiT1W3VFBfhOO1XwhxF44UsatLhu6ksdsuMqDjIbpnvzV89gidl2qWVbZRTEKxmBZDJE009Ya5sRCx', {
     apiVersion: '2020-08-27',
 }).catch(error => {
-    console.warn('Stripe failed to load:', error);
+    
     return null;
 });
 

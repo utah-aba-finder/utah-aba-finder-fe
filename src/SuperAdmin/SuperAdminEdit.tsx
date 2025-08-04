@@ -28,7 +28,8 @@ import {
   Service,
 } from "../Utility/Types";
 import { fetchStates, fetchCountiesByState } from "../Utility/ApiCall";
-import { validateLogoFile, uploadProviderLogo, testLogoUpload, uploadLogoWithFallback } from "../Utility/ApiCall";
+import { validateLogoFile, uploadProviderLogo, testLogoUpload, uploadLogoWithFallback, uploadAdminProviderLogo } from "../Utility/ApiCall";
+import { getAdminAuthHeader } from "../Utility/config";
 
 interface SuperAdminEditProps {
   provider: ProviderData;
@@ -126,7 +127,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
           }
         }
       } catch (error) {
-        console.error("Failed to load initial data:", error);
+
         toast.error("Failed to load states and counties");
       }
     };
@@ -292,12 +293,12 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
       };
 
       const response = await fetch(
-        `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${provider.id}`,
+        `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/providers/${provider.id}`,
         {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
-            'Authorization': 'be6205db57ce01863f69372308c41e3a',
+            'Authorization': getAdminAuthHeader(),
           },
           body: JSON.stringify(requestBody),
         }
@@ -306,8 +307,8 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
       const responseText = await response.text();
 
       if (!response.ok) {
-        console.error('Response status:', response.status);
-        console.error('Response text:', responseText);
+
+        
         throw new Error(`Failed to update provider: ${response.status} - ${responseText}`);
       }
 
@@ -315,13 +316,13 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
       try {
         responseData = JSON.parse(responseText);
       } catch (parseError) {
-        console.error('Failed to parse response:', parseError);
+
         throw new Error('Invalid JSON response from server');
       }
       
       // Check if response has the expected structure
       if (!responseData?.data?.[0]?.attributes) {
-        console.error('Invalid response structure:', JSON.stringify(responseData, null, 2));
+        
         throw new Error('Invalid response format from server - missing provider data');
       }
 
@@ -330,7 +331,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
       // Verify that all locations were saved
       const savedLocations = updatedProvider.attributes.locations || [];
       if (savedLocations.length !== filteredLocations.length) {
-        console.warn(`Location count mismatch. Expected ${filteredLocations.length}, got ${savedLocations.length}`);
+        
       }
       
       onUpdate(updatedProvider.attributes);
@@ -342,22 +343,28 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
       if (selectedLogoFile) {
         try {
           // First, test the upload to get detailed error information
-          console.log('Testing logo upload for debugging...');
+
           const testResult = await testLogoUpload(provider.id, selectedLogoFile);
-          console.log('Test result:', testResult);
+          
           
           if (!testResult.success) {
-            console.error('Logo upload test failed:', testResult.error);
+            
             toast.error(`Logo upload test failed: ${testResult.error}`);
             return;
           }
           
-          // If test passes, try the actual upload with fallback
-          let logoResult = await uploadProviderLogo(provider.id, selectedLogoFile);
+          // If test passes, try the admin upload first
+          let logoResult = await uploadAdminProviderLogo(provider.id, selectedLogoFile);
           
-          // If the main upload fails, try the fallback method
+          // If the admin upload fails, try the regular method
           if (!logoResult.success) {
-            console.log('Main upload failed, trying fallback method...');
+            
+            logoResult = await uploadProviderLogo(provider.id, selectedLogoFile);
+          }
+          
+          // If the regular upload fails, try the fallback method
+          if (!logoResult.success) {
+            
             logoResult = await uploadLogoWithFallback(provider.id, selectedLogoFile);
           }
           
@@ -365,11 +372,11 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
             toast.success('Logo uploaded successfully');
             setSelectedLogoFile(null);
           } else {
-            console.error('Logo upload failed:', logoResult.error);
+            
             toast.error(`Logo upload failed: ${logoResult.error}`);
           }
         } catch (logoError) {
-          console.error('Error uploading logo:', logoError);
+          
           toast.error('Failed to upload logo');
         }
       }
@@ -378,7 +385,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
         setSelectedTab("view");
       }
     } catch (error) {
-      console.error("Error updating provider:", error);
+      
       toast.error(error instanceof Error ? error.message : "Failed to update provider", {
         position: "top-right",
         autoClose: 5000,
@@ -434,16 +441,37 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
           <div className="px-2 sm:px-4 py-6">
             {/* Header */}
             <div className="mb-6">
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                Editing: <span className="text-blue-600">{editedProvider.name}</span>
-              </h1>
-              <h2 className="text-lg font-semibold text-gray-900 mb-2">ID:{provider.id}</h2>
-              <p className="text-sm text-gray-500">
-                Last updated:{" "}
-                {editedProvider.updated_last
-                  ? moment(editedProvider.updated_last).format("MM/DD/YYYY")
-                  : "N/A"}
-              </p>
+              <div className="flex items-start space-x-6 mb-4">
+                {provider.attributes.logo ? (
+                  <div className="flex-shrink-0">
+                    <img 
+                      src={provider.attributes.logo}
+                      alt={`${editedProvider.name} logo`}
+                      className="w-24 h-24 object-contain rounded-lg border border-gray-200 shadow-sm"
+                      onError={(e) => {
+        
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+                  </div>
+                ) : (
+                  <div className="w-24 h-24 bg-gray-100 rounded-lg border border-gray-200 flex items-center justify-center flex-shrink-0">
+                    <span className="text-gray-400 text-3xl">📷</span>
+                  </div>
+                )}
+                <div className="flex-1">
+                  <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                    Editing: <span className="text-blue-600">{editedProvider.name}</span>
+                  </h1>
+                  <h2 className="text-lg font-semibold text-gray-900 mb-1">ID: {provider.id}</h2>
+                  <p className="text-sm text-gray-500">
+                    Last updated:{" "}
+                    {editedProvider.updated_last
+                      ? moment(editedProvider.updated_last).format("MM/DD/YYYY")
+                      : "N/A"}
+                  </p>
+                </div>
+              </div>
             </div>
 
             {/* Tab Navigation */}
@@ -1121,69 +1149,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                               </div>
                             )}
 
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                              <div className="relative">
-                                <label className="block text-sm text-gray-600 mb-2">Telehealth Services</label>
-                                <div className="relative">
-                                  <div className="p-1.5 bg-blue-50 rounded absolute left-3 top-1/2 transform -translate-y-1/2">
-                                    <Video className="w-3.5 h-3.5 text-blue-600" />
-                                  </div>
-                                  <select
-                                    name="telehealth_services"
-                                    value={editedProvider.telehealth_services || ""}
-                                    onChange={handleInputChange}
-                                    className="w-full pl-11 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white"
-                                  >
-                                    <option value="">Select...</option>
-                                    <option value="Yes">Yes</option>
-                                    <option value="No">No</option>
-                                    <option value="Limited">Limited</option>
-                                    <option value="Contact Us">Contact Us</option>
-                                  </select>
-                                </div>
-                              </div>
-
-                              <div className="relative">
-                                <label className="block text-sm text-gray-600 mb-2">In-Clinic Services</label>
-                                <div className="relative">
-                                  <div className="p-1.5 bg-blue-50 rounded absolute left-3 top-1/2 transform -translate-y-1/2">
-                                    <Building2 className="w-3.5 h-3.5 text-blue-600" />
-                                  </div>
-                                  <select
-                                    name="in_clinic_services"
-                                    value={editedProvider.in_clinic_services || ""}
-                                    onChange={handleInputChange}
-                                    className="w-full pl-11 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white"
-                                  >
-                                    <option value="">Select...</option>
-                                    <option value="Yes">Yes</option>
-                                    <option value="No">No</option>
-                                    <option value="Limited">Limited</option>
-                                    <option value="Contact Us">Contact Us</option>
-                                  </select>
-                                </div>
-                              </div>
-
-                              <div className="relative">
-                                <label className="block text-sm text-gray-600 mb-2">At-Home Services</label>
-                                <div className="relative">
-                                  <div className="p-1.5 bg-blue-50 rounded absolute left-3 top-1/2 transform -translate-y-1/2">
-                                    <Home className="w-3.5 h-3.5 text-blue-600" />
-                                  </div>
-                                  <select
-                                    name="at_home_services"
-                                    value={editedProvider.at_home_services || ""}
-                                    onChange={handleInputChange}
-                                    className="w-full pl-11 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white"
-                                  >
-                                    <option value="">Select...</option>
-                                    <option value="Yes">Yes</option>
-                                    <option value="No">No</option>
-                                    <option value="Contact Us">Contact Us</option>
-                                  </select>
-                                </div>
-                              </div>
-                            </div>
+                            {/* Removed duplicate service dropdowns - keeping only the checkboxes above */}
                           </div>
                       </div>
                     </div>

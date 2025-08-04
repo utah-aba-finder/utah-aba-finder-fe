@@ -3,7 +3,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import './SearchBar.css';
 import { CountyData, Providers, ProviderAttributes, InsuranceData } from '../Utility/Types';
 import { fetchCountiesByState, fetchStates } from '../Utility/ApiCall';
-import { ChevronDown, ChevronUp, Search, RotateCcw, MapPin } from 'lucide-react';
+import { ChevronDown, ChevronUp, Search, RotateCcw } from 'lucide-react';
 
 interface SearchBarProps {
   onResults: (results: Providers) => void;
@@ -38,7 +38,7 @@ interface SearchBarProps {
 const SearchBar: React.FC<SearchBarProps> = ({
   onSearch,
   onCountyChange,
-  insuranceOptions,
+  insuranceOptions = [],
   onInsuranceChange,
   onSpanishChange,
   onServiceChange,
@@ -46,7 +46,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
   onAgeChange,
   onReviewsChange,
   onReset,
-  providers,
+  providers = [],
   totalProviders,
   onProviderTypeChange,
   showSearchNotification = false
@@ -87,9 +87,9 @@ const SearchBar: React.FC<SearchBarProps> = ({
     const getCounties = async () => {
       if (selectedStateId !== 'none') {
         try {
-          console.log('Fetching counties for state:', selectedStateId);
+  
           const countiesData = await fetchCountiesByState(parseInt(selectedStateId));
-          console.log('Counties data:', countiesData);
+          
           setCounties(countiesData);
           // Only reset county if state changes and not during initial load
           if (selectedCounty !== '') {
@@ -97,7 +97,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
             onCountyChange('');
           }
         } catch (err) {
-          console.error('Error fetching counties:', err);
+  
           setCounties([]);
           setError('Error loading counties. Please try again later.');
         }
@@ -233,14 +233,16 @@ const SearchBar: React.FC<SearchBarProps> = ({
               required
             >
               <option value="none">Choose a state</option>
-              {providerStates.map((providerState) => (
-                <option 
-                  key={providerState.id} 
-                  value={providerState.id}
-                >
-                  {providerState.attributes.name}
-                </option>
-              ))}
+              {providerStates && providerStates.length > 0
+                ? providerStates.map((providerState) => (
+                    <option 
+                      key={providerState.id} 
+                      value={providerState.id}
+                    >
+                      {providerState.attributes.name}
+                    </option>
+                  ))
+                : null}
             </select>
           </div>
 
@@ -273,9 +275,11 @@ const SearchBar: React.FC<SearchBarProps> = ({
               list="provider-names"
             />
             <datalist id="provider-names">
-              {providers.map((provider, index) => (
-                <option key={index} value={provider.name ?? ''} />
-              ))}
+              {providers && providers.length > 0
+                ? providers.map((provider, index) => (
+                    <option key={index} value={provider.name ?? ''} />
+                  ))
+                : null}
             </datalist>
           </div>
 
@@ -294,12 +298,14 @@ const SearchBar: React.FC<SearchBarProps> = ({
             />
             <datalist id="insurance-options">
               <option value="">All Insurance</option>
-              {insuranceOptions
-                .filter((insurance) => insurance.attributes.name !== 'Contact us')
-                .sort((a, b) => a.attributes.name.localeCompare(b.attributes.name))
-                .map((insurance, index) => (
-                  <option key={index} value={insurance.attributes.name} />
-                ))}
+              {insuranceOptions && insuranceOptions.length > 0
+                ? insuranceOptions
+                    .filter((insurance) => insurance.attributes.name !== 'Contact us')
+                    .sort((a, b) => a.attributes.name.localeCompare(b.attributes.name))
+                    .map((insurance, index) => (
+                      <option key={index} value={insurance.attributes.name} />
+                    ))
+                : null}
             </datalist>
           </div>
         </div>
@@ -319,12 +325,14 @@ const SearchBar: React.FC<SearchBarProps> = ({
                 required
                 disabled={selectedStateId === 'none' || selectedStateId === ''}
               >
-                <option value="">All Counties ({counties.length} available)</option>
-                {counties.map((county) => (
-                  <option key={county.id} value={county.attributes.name}>
-                    {county.attributes.name}
-                  </option>
-                ))}
+                <option value="">All Counties ({counties ? counties.length : 0} available)</option>
+                {counties && counties.length > 0
+                  ? counties.map((county) => (
+                      <option key={county.id} value={county.attributes.name}>
+                        {county.attributes.name}
+                      </option>
+                    ))
+                  : null}
               </select>
             </div>
 
@@ -443,7 +451,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
         <div className="fixed inset-0 flex items-center justify-center z-50">
           <div className={`bg-steelblue text-white p-4 rounded-lg shadow-lg transform transition-all duration-300 ease-in-out ${showNotification ? 'animate-jump-in' : 'animate-jump-out'}`}>
             <span className="font-bold">
-              {providers.length === 0
+              {!providers || providers.length === 0
                 ? `No ${selectedProviderType} providers found. Try adjusting your filters or check back later for new providers.`
                 : `Your search resulted in ${providers.length} ${selectedProviderType} providers`}
             </span>

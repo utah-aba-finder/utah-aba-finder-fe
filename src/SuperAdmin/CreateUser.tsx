@@ -1,6 +1,7 @@
 import { EyeIcon, EyeOffIcon } from "lucide-react";
 import { useState, useEffect,  } from "react";
 import { toast } from "react-toastify";
+import { getAdminAuthHeader } from "../Utility/config";
 
 const CreateUser = ({ handleCloseForm }: { handleCloseForm: () => void }) => {
     const [email, setEmail] = useState("");
@@ -23,13 +24,6 @@ const CreateUser = ({ handleCloseForm }: { handleCloseForm: () => void }) => {
             }
         };
 
-        console.log('Creating user with data:', {
-            email: email,
-            provider_id: providerId,
-            role: role,
-            password_length: password.length
-        });
-
         const resetForm = () => {
             setEmail("");
             setPassword("");
@@ -38,21 +32,21 @@ const CreateUser = ({ handleCloseForm }: { handleCloseForm: () => void }) => {
             setRole("provider_admin");
         };
 
-        fetch("https://uta-aba-finder-be-97eec9f967d0.herokuapp.com/signup", {
+        fetch("https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/signup", {
             method: "POST",
                     headers: {
           "Content-Type": "application/json",
-          'Authorization': 'be6205db57ce01863f69372308c41e3a',
+          'Authorization': getAdminAuthHeader(),
         },
             body: JSON.stringify(requestBody),
         })
         .then(response => {
-            console.log('Create user response status:', response.status);
-            console.log('Create user response headers:', response.headers);
+  
+
             
             if (!response.ok) {
                 return response.json().then(errorData => {
-                    console.error('Create user error response:', errorData);
+      
                     throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
                 });
             }
@@ -60,14 +54,14 @@ const CreateUser = ({ handleCloseForm }: { handleCloseForm: () => void }) => {
             return response.json();
         })
         .then(data => {
-            console.log('Create user success response:', data);
+            
             toast.success("User created successfully");
             resetForm();
             // Close form only after successful creation
             handleCloseForm();
         })
         .catch(error => {
-            console.error("Error creating user:", error);
+    
             toast.error(`Error creating user: ${error.message}`);
             // Don't close form on error so user can fix and retry
         });
