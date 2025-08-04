@@ -28,10 +28,27 @@ const UserProviderLinking: React.FC = () => {
   const [showBulkAssignment, setShowBulkAssignment] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRole, setFilterRole] = useState<string>('all');
+  const [providerSearchTerm, setProviderSearchTerm] = useState('');
+  const [showProviderDropdown, setShowProviderDropdown] = useState(false);
 
   useEffect(() => {
     fetchUsers();
     fetchProviders();
+  }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (!target.closest('.provider-dropdown')) {
+        setShowProviderDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, []);
 
   // Filter users based on search term and role
@@ -44,6 +61,14 @@ const UserProviderLinking: React.FC = () => {
 
   // Get unlinked users for bulk assignment
   const unlinkedUsers = filteredUsers.filter(user => !user.provider_id);
+
+  // Filter and sort providers
+  const filteredAndSortedProviders = providers
+    .filter(provider => 
+      provider.name.toLowerCase().includes(providerSearchTerm.toLowerCase()) ||
+      provider.id.toString().includes(providerSearchTerm)
+    )
+    .sort((a, b) => a.name.localeCompare(b.name));
 
   const handleBulkAssignment = () => {
     if (selectedUsersForBulk.length === 0 || !selectedProvider) {
@@ -177,6 +202,7 @@ const UserProviderLinking: React.FC = () => {
         fetchUsers(); // Refresh the user list
         setSelectedUser(null);
         setSelectedProvider(null);
+        setProviderSearchTerm(''); // Clear the search term
       } else {
         const errorData = await response.json();
         toast.error(`Failed to link user: ${errorData.message || 'Unknown error'}`);
@@ -264,6 +290,8 @@ const UserProviderLinking: React.FC = () => {
       }
       
       fetchUsers(); // Refresh the user list
+      setProviderSearchTerm(''); // Clear the search term
+      setSelectedProvider(null);
     } catch (error) {
       console.error('Error bulk assigning users:', error);
       toast.error('Failed to bulk assign users');
@@ -395,22 +423,68 @@ const UserProviderLinking: React.FC = () => {
                 </p>
               </div>
               
-              <div>
+              <div className="relative">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Select Provider for Assignment
                 </label>
-                <select
-                  value={selectedProvider || ''}
-                  onChange={(e) => setSelectedProvider(Number(e.target.value) || null)}
-                  className="w-full p-2 border border-gray-300 rounded-md"
-                >
-                  <option value="">Choose a provider...</option>
-                  {providers.map(provider => (
-                    <option key={provider.id} value={provider.id}>
-                      {provider.name} (ID: {provider.id})
-                    </option>
-                  ))}
-                </select>
+                <div className="relative provider-dropdown">
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={providerSearchTerm}
+                      onChange={(e) => setProviderSearchTerm(e.target.value)}
+                      onFocus={() => setShowProviderDropdown(true)}
+                      placeholder="Search providers..."
+                      className="w-full p-2 border border-gray-300 rounded-md pr-8"
+                    />
+                    {providerSearchTerm && (
+                      <button
+                        onClick={() => {
+                          setProviderSearchTerm('');
+                          setSelectedProvider(null);
+                        }}
+                        className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+                  {showProviderDropdown && (
+                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                      <div className="p-2">
+                        <div className="text-sm text-gray-500 mb-2">
+                          {filteredAndSortedProviders.length} providers found
+                        </div>
+                        {filteredAndSortedProviders.map(provider => (
+                          <div
+                            key={provider.id}
+                            onClick={() => {
+                              setSelectedProvider(provider.id);
+                              setProviderSearchTerm(provider.name);
+                              setShowProviderDropdown(false);
+                            }}
+                            className="p-2 hover:bg-gray-100 cursor-pointer rounded"
+                          >
+                            <div className="font-medium">{provider.name}</div>
+                            <div className="text-sm text-gray-500">ID: {provider.id}</div>
+                          </div>
+                        ))}
+                        {filteredAndSortedProviders.length === 0 && (
+                          <div className="p-2 text-gray-500 text-sm">
+                            No providers found matching "{providerSearchTerm}"
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+                {selectedProvider && (
+                  <div className="mt-2 p-2 bg-blue-50 rounded-md">
+                    <div className="text-sm">
+                      <span className="font-medium">Selected:</span> {providers.find(p => p.id === selectedProvider)?.name}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
             
@@ -447,22 +521,68 @@ const UserProviderLinking: React.FC = () => {
               </select>
             </div>
             
-            <div>
+            <div className="relative">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Select Provider
               </label>
-              <select
-                value={selectedProvider || ''}
-                onChange={(e) => setSelectedProvider(Number(e.target.value) || null)}
-                className="w-full p-2 border border-gray-300 rounded-md"
-              >
-                <option value="">Choose a provider...</option>
-                {providers.map(provider => (
-                  <option key={provider.id} value={provider.id}>
-                    {provider.name} (ID: {provider.id})
-                  </option>
-                ))}
-              </select>
+                              <div className="relative provider-dropdown">
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={providerSearchTerm}
+                      onChange={(e) => setProviderSearchTerm(e.target.value)}
+                      onFocus={() => setShowProviderDropdown(true)}
+                      placeholder="Search providers..."
+                      className="w-full p-2 border border-gray-300 rounded-md pr-8"
+                    />
+                    {providerSearchTerm && (
+                      <button
+                        onClick={() => {
+                          setProviderSearchTerm('');
+                          setSelectedProvider(null);
+                        }}
+                        className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+                {showProviderDropdown && (
+                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                    <div className="p-2">
+                      <div className="text-sm text-gray-500 mb-2">
+                        {filteredAndSortedProviders.length} providers found
+                      </div>
+                      {filteredAndSortedProviders.map(provider => (
+                        <div
+                          key={provider.id}
+                          onClick={() => {
+                            setSelectedProvider(provider.id);
+                            setProviderSearchTerm(provider.name);
+                            setShowProviderDropdown(false);
+                          }}
+                          className="p-2 hover:bg-gray-100 cursor-pointer rounded"
+                        >
+                          <div className="font-medium">{provider.name}</div>
+                          <div className="text-sm text-gray-500">ID: {provider.id}</div>
+                        </div>
+                      ))}
+                      {filteredAndSortedProviders.length === 0 && (
+                        <div className="p-2 text-gray-500 text-sm">
+                          No providers found matching "{providerSearchTerm}"
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+              {selectedProvider && (
+                <div className="mt-2 p-2 bg-blue-50 rounded-md">
+                  <div className="text-sm">
+                    <span className="font-medium">Selected:</span> {providers.find(p => p.id === selectedProvider)?.name}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
           
