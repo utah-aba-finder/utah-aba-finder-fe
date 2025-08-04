@@ -44,8 +44,8 @@ const PasswordReset: React.FC = () => {
       if (!response.ok) {
         const errorText = await response.text();
         console.error('Token validation failed:', errorText);
-        toast.error('Invalid or expired reset link. Please request a new password reset.');
-        navigate('/login');
+        toast.error('This reset link has expired. Please request a new password reset.');
+        navigate('/forgot-password');
       } else {
         console.log('Token validation successful');
       }
@@ -126,10 +126,14 @@ const PasswordReset: React.FC = () => {
 
       if (!response.ok) {
         // Handle specific error cases
-        if (response.status === 422) {
+        if (responseData.errors && responseData.errors.includes('Reset password token is invalid or expired')) {
+          toast.error('This reset link has expired. Please request a new password reset.');
+          navigate('/forgot-password');
+          return;
+        } else if (response.status === 422) {
           throw new Error('Invalid or expired reset link. Please request a new password reset.');
         } else {
-          throw new Error(responseData.message || `Failed to reset password (${response.status})`);
+          throw new Error(responseData.message || responseData.errors || `Failed to reset password (${response.status})`);
         }
       }
 

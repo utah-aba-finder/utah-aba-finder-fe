@@ -127,7 +127,7 @@ const ForgotPassword: React.FC = () => {
       }
 
       // Use the password reset endpoint
-              const endpoint = 'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/password_resets';
+      const endpoint = 'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/password_resets';
 
       // If test passes, proceed with the actual request
       const response = await fetch(endpoint, {
@@ -156,7 +156,9 @@ const ForgotPassword: React.FC = () => {
 
       if (!response.ok) {
         // Handle specific error cases
-        if (response.status === 422) {
+        if (responseData.errors) {
+          throw new Error(responseData.errors.join(', '));
+        } else if (response.status === 422) {
           throw new Error(responseData.message || 'Invalid request. Please check your email address.');
         } else if (response.status === 404) {
           throw new Error('Password reset service not found. Please contact support.');
