@@ -31,9 +31,9 @@ const PasswordReset: React.FC = () => {
   const validateToken = async () => {
     try {
       console.log('Validating token:', resetToken);
-      console.log('API URL being used:', `${API_CONFIG.BASE_API_URL}/v1/password_resets/validate_token?token=${resetToken}`);
+      console.log('API URL being used:', `${API_CONFIG.BASE_API_URL}/api/v1/password_resets/validate_token?token=${resetToken}`);
       
-      const response = await fetch(`${API_CONFIG.BASE_API_URL}/v1/password_resets/validate_token?token=${resetToken}`, {
+      const response = await fetch(`${API_CONFIG.BASE_API_URL}/api/v1/password_resets/validate_token?token=${resetToken}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json'
@@ -93,7 +93,7 @@ const PasswordReset: React.FC = () => {
 
     try {
       console.log('Password reset request:', {
-        url: `${API_CONFIG.BASE_API_URL}/v1/password_resets`,
+        url: `${API_CONFIG.BASE_API_URL}/api/v1/password_resets`,
         method: 'PATCH',
         token: resetToken,
         passwordLength: password.length,
@@ -101,7 +101,7 @@ const PasswordReset: React.FC = () => {
         apiConfig: API_CONFIG
       });
 
-      const response = await fetch(`${API_CONFIG.BASE_API_URL}/v1/password_resets`, {
+      const response = await fetch(`${API_CONFIG.BASE_API_URL}/api/v1/password_resets`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json'
