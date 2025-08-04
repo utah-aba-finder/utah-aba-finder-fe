@@ -110,14 +110,12 @@ const CreateLocation: React.FC<CreateLocationProps> = ({
             'Authorization': provider.id.toString()
           },
           body: JSON.stringify({
-            data: [{
-              id: provider.id,
-              type: 'provider',
+            data: {
               attributes: {
                 ...provider.attributes,
                 locations: updatedLocations
               }
-            }]
+            }
           })
         }
       );

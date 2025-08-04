@@ -80,26 +80,22 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
         : [];
 
       const requestBody = {
-        data: [
-          {
-            id: provider.id,
-            type: "provider",
-            attributes: {
-              ...formData,
-              id: provider.attributes.id,
-              provider_type,
-              insurance: selectedInsurances,
-              counties_served: selectedCounties,
-              locations: locations.map((location) => ({
-                ...location,
-                id: location.id || null,
-              })),
-              password: provider.attributes.password,
-              username: provider.attributes.username,
-              status: formData.status || provider.attributes.status,
-            },
+        data: {
+          attributes: {
+            ...formData,
+            id: provider.attributes.id,
+            provider_type,
+            insurance: selectedInsurances,
+            counties_served: selectedCounties,
+            locations: locations.map((location) => ({
+              ...location,
+              id: location.id || null,
+            })),
+            password: provider.attributes.password,
+            username: provider.attributes.username,
+            status: formData.status || provider.attributes.status,
           },
-        ],
+        },
       };
 
       console.log('Saving location changes for provider:', {
