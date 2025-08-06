@@ -70,6 +70,9 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
   const [selectedInsurances, setSelectedInsurances] = useState<Insurance[]>(loggedInProvider.attributes.insurance || []);
   const [locations, setLocations] = useState<Location[]>(loggedInProvider.attributes.locations || []);
   const [selectedLogoFile, setSelectedLogoFile] = useState<File | null>(null);
+  const [availableProviders, setAvailableProviders] = useState<ProviderData[]>([]);
+  const [selectedProviderId, setSelectedProviderId] = useState<number>(loggedInProvider.id);
+  const [isLoadingProviders, setIsLoadingProviders] = useState(false);
 
   const handleLogout = useCallback(() => {
     toast.dismiss("session-warning");
@@ -85,16 +88,46 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
     }, 2000);
   }, [logout, clearProviderData]);
 
+  const fetchManagedProviders = useCallback(async () => {
+    try {
+      setIsLoadingProviders(true);
+      const response = await fetch(
+        'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/my_providers',
+        {
+          headers: {
+            'Authorization': loggedInProvider.id.toString(),
+          }
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Managed providers:', data);
+        setAvailableProviders(data.providers || []);
+      } else {
+        console.error('Failed to fetch managed providers:', response.status);
+        // Fallback to just the current provider
+        setAvailableProviders([loggedInProvider]);
+      }
+    } catch (error) {
+      console.error('Error fetching managed providers:', error);
+      // Fallback to just the current provider
+      setAvailableProviders([loggedInProvider]);
+    } finally {
+      setIsLoadingProviders(false);
+    }
+  }, [loggedInProvider]);
+
   const refreshProviderData = useCallback(async () => {
     try {
       console.log('Refreshing provider data:', {
-        url: `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${loggedInProvider.id}`,
-        providerId: loggedInProvider.id,
+        url: `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${selectedProviderId}`,
+        providerId: selectedProviderId,
         authHeader: loggedInProvider.id.toString()
       });
       
       const response = await fetch(
-        `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${loggedInProvider.id}`,
+        `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${selectedProviderId}`,
         {
           headers: {
             'Authorization': loggedInProvider.id.toString(),
@@ -206,12 +239,40 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
     setLocations(loggedInProvider.attributes.locations || []);
   }, [loggedInProvider]);
 
+  const handleProviderSwitch = useCallback(async (newProviderId: number) => {
+    try {
+      setSelectedProviderId(newProviderId);
+      const selectedProvider = availableProviders.find(p => p.id === newProviderId);
+      if (selectedProvider) {
+        setCurrentProvider(selectedProvider);
+        setEditedProvider(selectedProvider.attributes);
+        setProviderState(selectedProvider.states || []);
+        setSelectedCounties(selectedProvider.attributes.counties_served || []);
+        setSelectedProviderTypes(selectedProvider.attributes.provider_type || []);
+        setSelectedInsurances(selectedProvider.attributes.insurance || []);
+        setLocations(selectedProvider.attributes.locations || []);
+        setActiveStateForCounties(selectedProvider.states?.[0] || '');
+        
+        // Refresh the provider data
+        await refreshProviderData();
+      }
+    } catch (error) {
+      console.error('Error switching provider:', error);
+      toast.error('Failed to switch provider');
+    }
+  }, [availableProviders, refreshProviderData]);
+
   useEffect(() => {
     const hideAuthModal = localStorage.getItem("hideAuthModal");
     if (hideAuthModal === "true") {
       setAuthModalOpen(false);
     }
   }, []);
+
+  // Fetch managed providers on component mount
+  useEffect(() => {
+    fetchManagedProviders();
+  }, [fetchManagedProviders]);
 
   useEffect(() => {
     const tokenExpiry = sessionStorage.getItem("tokenExpiry");
@@ -658,6 +719,34 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                 </button>
               </div>
             </div>
+
+            {/* Provider Selector */}
+            {availableProviders.length > 1 && (
+              <div className="px-3 pb-3">
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Select Provider
+                </label>
+                <select
+                  value={selectedProviderId}
+                  onChange={(e) => handleProviderSwitch(Number(e.target.value))}
+                  disabled={isLoadingProviders}
+                  className="w-full p-2 text-sm border border-gray-300 rounded-md bg-white"
+                >
+                  {isLoadingProviders ? (
+                    <option>Loading providers...</option>
+                  ) : (
+                    availableProviders.map(provider => (
+                      <option key={provider.id} value={provider.id}>
+                        {provider.attributes.name}
+                      </option>
+                    ))
+                  )}
+                </select>
+                <p className="text-xs text-gray-500 mt-1">
+                  Managing {availableProviders.length} provider{availableProviders.length !== 1 ? 's' : ''}
+                </p>
+              </div>
+            )}
 
             {/* Navigation Menu */}
             <nav className="flex-1 flex flex-col justify-center gap-4 py-2 px-4">
