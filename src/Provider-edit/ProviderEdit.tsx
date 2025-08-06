@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import { useAuth } from "../Provider-login/AuthProvider";
 import Dashboard from "./components/Dashboard";
 import EditLocation from "./components/EditLocation";
@@ -633,18 +633,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
 
   return (
     <>
-      {/* Toast Container for notifications */}
-      <ToastContainer
-        position="top-right"
-        autoClose={5000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-      />
+
       
       {/* Loading overlay for save operations */}
       {isSaving && (

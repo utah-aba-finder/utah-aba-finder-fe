@@ -111,6 +111,7 @@ const UserProviderLinking: React.FC = () => {
       if (response.ok) {
         const data = await response.json();
         console.log('Users API response:', data);
+        console.log('Setting users:', data.users || []);
         setUsers(data.users || []);
       } else {
         const errorText = await response.text();
@@ -323,24 +324,29 @@ const UserProviderLinking: React.FC = () => {
         return;
       }
 
-      // Use the new unassign endpoint
-      const response = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/unassign_provider_from_user', {
+      // Use the new unlink endpoint
+      const response = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/users/unlink_user_from_provider', {
         method: 'POST',
         headers: {
           'Authorization': getAdminAuthHeader(),
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          provider_id: userObj.provider_id,
-          user_id: userId
+          user_email: userObj.email,
+          provider_id: userObj.provider_id
         })
       });
 
       if (response.ok) {
-        toast.success('User successfully unlinked from provider!');
-        fetchUsers(); // Refresh the user list
+        const result = await response.json();
+        if (result.success) {
+          toast.success('User successfully unlinked from provider!');
+          fetchUsers(); // Refresh the user list
+        } else {
+          toast.error(`Failed to unlink user: ${result.message || 'Unknown error'}`);
+        }
       } else {
-        const errorData = await response.json();
+        const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
         toast.error(`Failed to unlink user: ${errorData.message || 'Unknown error'}`);
       }
     } catch (error) {
@@ -361,24 +367,31 @@ const UserProviderLinking: React.FC = () => {
         return;
       }
 
-      // Use the switch provider endpoint to force unassign (set to null)
-      const response = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/users/switch_provider', {
+      // Use the new unassign endpoint
+      const response = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/users/unassign_provider_from_user', {
         method: 'POST',
         headers: {
           'Authorization': getAdminAuthHeader(),
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          user_email: userObj.email,
-          new_provider_id: null
+          provider_id: userObj.provider_id
         })
       });
 
       if (response.ok) {
-        toast.success('User successfully unassigned from all providers!');
-        fetchUsers(); // Refresh the user list
+        const result = await response.json();
+        console.log('Force unassign response:', result);
+        if (result.success) {
+          toast.success('User successfully unassigned from all providers!');
+          console.log('Refreshing user list after force unassign...');
+          await fetchUsers(); // Refresh the user list
+        } else {
+          toast.error(`Failed to unassign user: ${result.message || 'Unknown error'}`);
+        }
       } else {
-        const errorData = await response.json();
+        const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
+        console.error('Force unassign error:', errorData);
         toast.error(`Failed to unassign user: ${errorData.message || 'Unknown error'}`);
       }
     } catch (error) {

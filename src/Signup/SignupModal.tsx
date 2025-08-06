@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import {  X, Eye, EyeOff } from "lucide-react";
 import { CountiesServed, StateData, CountyData, Service } from "../Utility/Types";
 import { fetchStates, fetchCountiesByState } from "../Utility/ApiCall";
@@ -570,7 +570,7 @@ In-Home Services Only: ${providerData.in_home_only ? "Yes" : "No"}
           numberOfPieces={500}
         />
       )}
-      <ToastContainer />
+      
       <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
         <div className="relative top-2 sm:top-10 mx-auto p-4 sm:p-8 border w-[98%] sm:w-[95%] max-w-6xl shadow-lg rounded-md bg-white mb-20 sm:mb-10">
           <div className="flex justify-between items-center mb-4">

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import { Building2, MapPin, DollarSign, Stethoscope, Plus, X } from "lucide-react";
 import CountiesModal from "../Provider-edit/CountiesModal";
 import { CountiesServed, Insurance, StateData, CountyData, Service } from "../Utility/Types";
@@ -418,7 +418,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
 
   return (
     <div className="max-w-[1152px] mx-auto px-2 sm:px-4 py-6">
-      <ToastContainer />
+      
 
       {/* Header Section */}
       <div className="mb-6">

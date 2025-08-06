@@ -4,7 +4,7 @@ import utah from '../Assets/williamsonFamily.jpeg';
 import './Homepage.css';
 import Joyride, { Step } from 'react-joyride';
 import love from '../Assets/love.jpg';
-import { toast, ToastContainer } from 'react-toastify';
+import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import emailjs from 'emailjs-com';
 import SEO from '../Utility/SEO';
@@ -235,7 +235,7 @@ class Homepage extends Component<Props, State> {
                         }
                     }}
                 />
-                <ToastContainer />
+        
                 {/* Modal */}
                 {showModal && (
                     <div className="homepage-modal-overlay">

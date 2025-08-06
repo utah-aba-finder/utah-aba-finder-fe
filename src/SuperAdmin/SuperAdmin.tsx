@@ -15,7 +15,7 @@ import {
   ChevronDown,
   Settings,
 } from "lucide-react";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import { useAuth } from "../Provider-login/AuthProvider";
 import { SuperAdminEdit } from "./SuperAdminEdit";
 import Analytics from "./Analytics";
@@ -322,8 +322,7 @@ const SuperAdmin = () => {
 
   return (
     <>
-      <ToastContainer
-      />
+
       <div className="h-screen bg-gray-100 flex lg:flex-col">
         <div className="flex min-h-screen overflow-hidden">
           {/* Sidebar */}
