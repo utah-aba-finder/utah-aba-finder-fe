@@ -70,6 +70,14 @@ const UserProviderLinking: React.FC = () => {
     )
     .sort((a, b) => a.name.localeCompare(b.name));
 
+  // Count users per provider
+  const usersPerProvider = users.reduce((acc, user) => {
+    if (user.provider_id) {
+      acc[user.provider_id] = (acc[user.provider_id] || 0) + 1;
+    }
+    return acc;
+  }, {} as Record<number, number>);
+
   const handleBulkAssignment = () => {
     if (selectedUsersForBulk.length === 0 || !selectedProvider) {
       toast.error('Please select users and a provider for bulk assignment');
@@ -329,7 +337,7 @@ const UserProviderLinking: React.FC = () => {
         <h1 className="text-3xl font-bold text-gray-900 mb-8">User-Provider Linking Tool</h1>
         
         {/* Statistics */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div className="bg-white p-6 rounded-lg shadow">
             <h3 className="text-lg font-semibold text-gray-900">Total Users</h3>
             <p className="text-3xl font-bold text-blue-600">{users.length}</p>
@@ -341,6 +349,15 @@ const UserProviderLinking: React.FC = () => {
           <div className="bg-white p-6 rounded-lg shadow">
             <h3 className="text-lg font-semibold text-gray-900">Unconnected Users</h3>
             <p className="text-3xl font-bold text-red-600">{unconnectedUsers.length}</p>
+          </div>
+          <div className="bg-white p-6 rounded-lg shadow">
+            <h3 className="text-lg font-semibold text-gray-900">Active Providers</h3>
+            <p className="text-3xl font-bold text-purple-600">
+              {Object.keys(usersPerProvider).length}
+            </p>
+            <p className="text-sm text-gray-500">
+              {Object.values(usersPerProvider).reduce((sum, count) => sum + count, 0)} total assignments
+            </p>
           </div>
         </div>
 
@@ -466,7 +483,9 @@ const UserProviderLinking: React.FC = () => {
                             className="p-2 hover:bg-gray-100 cursor-pointer rounded"
                           >
                             <div className="font-medium">{provider.name}</div>
-                            <div className="text-sm text-gray-500">ID: {provider.id}</div>
+                            <div className="text-sm text-gray-500">
+                              ID: {provider.id} • {usersPerProvider[provider.id] || 0} users
+                            </div>
                           </div>
                         ))}
                         {filteredAndSortedProviders.length === 0 && (
