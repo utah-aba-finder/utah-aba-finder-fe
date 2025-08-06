@@ -311,18 +311,79 @@ const UserProviderLinking: React.FC = () => {
   const unlinkUserFromProvider = async (userId: number) => {
     setIsLoading(true);
     try {
-      // Find the user email from the user ID
+      // Find the user object from the user ID
       const userObj = users.find(user => user.id === userId);
       if (!userObj) {
         toast.error('User not found');
         return;
       }
 
-      // Use the switch provider endpoint to unlink (set to null)
-      await switchUserProvider(userObj.email, null);
+      if (!userObj.provider_id) {
+        toast.error('User is not currently assigned to any provider');
+        return;
+      }
+
+      // Use the new unassign endpoint
+      const response = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/unassign_provider_from_user', {
+        method: 'POST',
+        headers: {
+          'Authorization': getAdminAuthHeader(),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          provider_id: userObj.provider_id,
+          user_id: userId
+        })
+      });
+
+      if (response.ok) {
+        toast.success('User successfully unlinked from provider!');
+        fetchUsers(); // Refresh the user list
+      } else {
+        const errorData = await response.json();
+        toast.error(`Failed to unlink user: ${errorData.message || 'Unknown error'}`);
+      }
     } catch (error) {
       console.error('Error unlinking user from provider:', error);
       toast.error('Failed to unlink user from provider');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const forceUnassignUser = async (userId: number) => {
+    setIsLoading(true);
+    try {
+      // Find the user object from the user ID
+      const userObj = users.find(user => user.id === userId);
+      if (!userObj) {
+        toast.error('User not found');
+        return;
+      }
+
+      // Use the switch provider endpoint to force unassign (set to null)
+      const response = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/users/switch_provider', {
+        method: 'POST',
+        headers: {
+          'Authorization': getAdminAuthHeader(),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_email: userObj.email,
+          new_provider_id: null
+        })
+      });
+
+      if (response.ok) {
+        toast.success('User successfully unassigned from all providers!');
+        fetchUsers(); // Refresh the user list
+      } else {
+        const errorData = await response.json();
+        toast.error(`Failed to unassign user: ${errorData.message || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Error unassigning user:', error);
+      toast.error('Failed to unassign user');
     } finally {
       setIsLoading(false);
     }
@@ -637,13 +698,23 @@ const UserProviderLinking: React.FC = () => {
                         {user.provider_name || `Provider ID: ${user.provider_id}`}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <button
-                          onClick={() => unlinkUserFromProvider(user.id)}
-                          disabled={isLoading}
-                          className="text-red-600 hover:text-red-900 disabled:opacity-50"
-                        >
-                          Unlink
-                        </button>
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => unlinkUserFromProvider(user.id)}
+                            disabled={isLoading}
+                            className="text-red-600 hover:text-red-900 disabled:opacity-50"
+                          >
+                            Unlink
+                          </button>
+                          <button
+                            onClick={() => forceUnassignUser(user.id)}
+                            disabled={isLoading}
+                            className="text-orange-600 hover:text-orange-900 disabled:opacity-50 text-xs"
+                            title="Force unassign from all providers"
+                          >
+                            Force Unassign
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
