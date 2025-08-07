@@ -70,6 +70,14 @@ const UserProviderLinking: React.FC = () => {
     )
     .sort((a, b) => a.name.localeCompare(b.name));
 
+  // Count users per provider
+  const usersPerProvider = users.reduce((acc, user) => {
+    if (user.provider_id) {
+      acc[user.provider_id] = (acc[user.provider_id] || 0) + 1;
+    }
+    return acc;
+  }, {} as Record<number, number>);
+
   const handleBulkAssignment = () => {
     if (selectedUsersForBulk.length === 0 || !selectedProvider) {
       toast.error('Please select users and a provider for bulk assignment');
@@ -303,18 +311,79 @@ const UserProviderLinking: React.FC = () => {
   const unlinkUserFromProvider = async (userId: number) => {
     setIsLoading(true);
     try {
-      // Find the user email from the user ID
+      // Find the user object from the user ID
       const userObj = users.find(user => user.id === userId);
       if (!userObj) {
         toast.error('User not found');
         return;
       }
 
-      // Use the switch provider endpoint to unlink (set to null)
-      await switchUserProvider(userObj.email, null);
+      if (!userObj.provider_id) {
+        toast.error('User is not currently assigned to any provider');
+        return;
+      }
+
+      // Use the new unassign endpoint
+      const response = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/unassign_provider_from_user', {
+        method: 'POST',
+        headers: {
+          'Authorization': getAdminAuthHeader(),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          provider_id: userObj.provider_id,
+          user_id: userId
+        })
+      });
+
+      if (response.ok) {
+        toast.success('User successfully unlinked from provider!');
+        fetchUsers(); // Refresh the user list
+      } else {
+        const errorData = await response.json();
+        toast.error(`Failed to unlink user: ${errorData.message || 'Unknown error'}`);
+      }
     } catch (error) {
       console.error('Error unlinking user from provider:', error);
       toast.error('Failed to unlink user from provider');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const forceUnassignUser = async (userId: number) => {
+    setIsLoading(true);
+    try {
+      // Find the user object from the user ID
+      const userObj = users.find(user => user.id === userId);
+      if (!userObj) {
+        toast.error('User not found');
+        return;
+      }
+
+      // Use the switch provider endpoint to force unassign (set to null)
+      const response = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/users/switch_provider', {
+        method: 'POST',
+        headers: {
+          'Authorization': getAdminAuthHeader(),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_email: userObj.email,
+          new_provider_id: null
+        })
+      });
+
+      if (response.ok) {
+        toast.success('User successfully unassigned from all providers!');
+        fetchUsers(); // Refresh the user list
+      } else {
+        const errorData = await response.json();
+        toast.error(`Failed to unassign user: ${errorData.message || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Error unassigning user:', error);
+      toast.error('Failed to unassign user');
     } finally {
       setIsLoading(false);
     }
@@ -329,7 +398,7 @@ const UserProviderLinking: React.FC = () => {
         <h1 className="text-3xl font-bold text-gray-900 mb-8">User-Provider Linking Tool</h1>
         
         {/* Statistics */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div className="bg-white p-6 rounded-lg shadow">
             <h3 className="text-lg font-semibold text-gray-900">Total Users</h3>
             <p className="text-3xl font-bold text-blue-600">{users.length}</p>
@@ -341,6 +410,15 @@ const UserProviderLinking: React.FC = () => {
           <div className="bg-white p-6 rounded-lg shadow">
             <h3 className="text-lg font-semibold text-gray-900">Unconnected Users</h3>
             <p className="text-3xl font-bold text-red-600">{unconnectedUsers.length}</p>
+          </div>
+          <div className="bg-white p-6 rounded-lg shadow">
+            <h3 className="text-lg font-semibold text-gray-900">Active Providers</h3>
+            <p className="text-3xl font-bold text-purple-600">
+              {Object.keys(usersPerProvider).length}
+            </p>
+            <p className="text-sm text-gray-500">
+              {Object.values(usersPerProvider).reduce((sum, count) => sum + count, 0)} total assignments
+            </p>
           </div>
         </div>
 
@@ -466,7 +544,9 @@ const UserProviderLinking: React.FC = () => {
                             className="p-2 hover:bg-gray-100 cursor-pointer rounded"
                           >
                             <div className="font-medium">{provider.name}</div>
-                            <div className="text-sm text-gray-500">ID: {provider.id}</div>
+                            <div className="text-sm text-gray-500">
+                              ID: {provider.id} • {usersPerProvider[provider.id] || 0} users
+                            </div>
                           </div>
                         ))}
                         {filteredAndSortedProviders.length === 0 && (
@@ -618,13 +698,23 @@ const UserProviderLinking: React.FC = () => {
                         {user.provider_name || `Provider ID: ${user.provider_id}`}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <button
-                          onClick={() => unlinkUserFromProvider(user.id)}
-                          disabled={isLoading}
-                          className="text-red-600 hover:text-red-900 disabled:opacity-50"
-                        >
-                          Unlink
-                        </button>
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => unlinkUserFromProvider(user.id)}
+                            disabled={isLoading}
+                            className="text-red-600 hover:text-red-900 disabled:opacity-50"
+                          >
+                            Unlink
+                          </button>
+                          <button
+                            onClick={() => forceUnassignUser(user.id)}
+                            disabled={isLoading}
+                            className="text-orange-600 hover:text-orange-900 disabled:opacity-50 text-xs"
+                            title="Force unassign from all providers"
+                          >
+                            Force Unassign
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
