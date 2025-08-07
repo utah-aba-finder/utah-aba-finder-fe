@@ -1,7 +1,7 @@
 import { InsuranceData } from '@/Utility/Types';
 import { useState, useEffect } from 'react';
 import { fetchInsurance } from '../Utility/ApiCall';
-import { toast, ToastContainer} from 'react-toastify';
+import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { getAdminAuthHeader } from "../Utility/config";
 
@@ -134,7 +134,7 @@ const SuperAdminAddInsurances = ({handleCloseForm}: {handleCloseForm: () => void
 
     return (
         <div className='flex w-full'>
-            <ToastContainer />
+    
             <div className='flex flex-col w-1/2 p-8 text-center'>
                 <h1 className='text-2xl font-bold'>Current Insurances</h1>
                 <input 

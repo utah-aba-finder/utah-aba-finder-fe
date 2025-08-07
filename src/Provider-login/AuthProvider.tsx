@@ -30,9 +30,11 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [token, setTokenState] = useState<string | null>(
-    sessionStorage.getItem("authToken")
-  );
+  const [token, setTokenState] = useState<string | null>(() => {
+    const storedToken = sessionStorage.getItem("authToken");
+    console.log('Retrieved token from sessionStorage:', storedToken ? 'exists' : 'null');
+    return storedToken;
+  });
   const [loggedInProvider, setLoggedInProvider] = useState<any>(
     JSON.parse(sessionStorage.getItem("loggedInProvider") || "null")
   );
@@ -77,6 +79,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   }, [navigate]);
 
   const validateToken = (token: string): boolean => {
+    if (!token) return false;
+    
     try {
       // Check if this is a temporary token (base64 encoded user data)
       try {
@@ -89,7 +93,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         const currentTime = Date.now() / 1000;
 
         if (!decoded.exp) {
-          return false;
+          // If no expiration, assume it's valid (for tokens without exp)
+          return true;
         }
 
         if (decoded.exp < currentTime) {
@@ -99,6 +104,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         return true;
       }
     } catch (error) {
+      console.error('Token validation error:', error);
+      // Don't log out on validation errors, just return false
       return false;
     }
   };
@@ -106,6 +113,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const setToken = useCallback(
     (newToken: string | null) => {
       if (newToken && !validateToken(newToken)) {
+        console.log('Token validation failed, logging out');
         logout();
         return;
       }

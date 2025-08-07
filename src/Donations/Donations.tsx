@@ -4,7 +4,7 @@ import '../Donations/Donations.css';
 import { Elements } from '@stripe/react-stripe-js';
 import { Appearance, loadStripe, StripeElementsOptions } from '@stripe/stripe-js';
 import CheckoutForm from './CheckoutForm'
-import { ToastContainer } from 'react-toastify';
+
 import 'react-toastify/dist/ReactToastify.css';
 import PayPallLink from 'src/Assets/qrcode.png'
 import VenmoLink from 'src/Assets/venmo.jpeg'
@@ -63,7 +63,7 @@ const Donations = () => {
                         <p>Please use PayPal or Venmo options below.</p>
                     </div>
                 )}
-                <ToastContainer />
+        
                 <div className='paypalContainer'>
                     <img src={PayPallLink} alt="PayPal QR Code" className='paypalLink' />
                     <a href='https://paypal.me/asl2024' target="_blank" rel="noopener noreferrer">

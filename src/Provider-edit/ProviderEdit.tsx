@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import { useAuth } from "../Provider-login/AuthProvider";
 import Dashboard from "./components/Dashboard";
 import EditLocation from "./components/EditLocation";
@@ -91,8 +91,10 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
   const fetchManagedProviders = useCallback(async () => {
     try {
       setIsLoadingProviders(true);
+      console.log('Fetching accessible providers for user');
+      
       const response = await fetch(
-        'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/my_providers',
+        'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/accessible_providers',
         {
           headers: {
             'Authorization': loggedInProvider.id.toString(),
@@ -102,15 +104,15 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
 
       if (response.ok) {
         const data = await response.json();
-        console.log('Managed providers:', data);
+        console.log('Accessible providers:', data);
         setAvailableProviders(data.providers || []);
       } else {
-        console.error('Failed to fetch managed providers:', response.status);
+        console.error('Failed to fetch accessible providers:', response.status);
         // Fallback to just the current provider
         setAvailableProviders([loggedInProvider]);
       }
     } catch (error) {
-      console.error('Error fetching managed providers:', error);
+      console.error('Error fetching accessible providers:', error);
       // Fallback to just the current provider
       setAvailableProviders([loggedInProvider]);
     } finally {
@@ -120,14 +122,10 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
 
   const refreshProviderData = useCallback(async () => {
     try {
-      console.log('Refreshing provider data:', {
-        url: `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${selectedProviderId}`,
-        providerId: selectedProviderId,
-        authHeader: loggedInProvider.id.toString()
-      });
+      console.log('Refreshing provider data using provider_self endpoint');
       
       const response = await fetch(
-        `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${selectedProviderId}`,
+        'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/provider_self',
         {
           headers: {
             'Authorization': loggedInProvider.id.toString(),
@@ -241,26 +239,54 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
 
   const handleProviderSwitch = useCallback(async (newProviderId: number) => {
     try {
-      setSelectedProviderId(newProviderId);
-      const selectedProvider = availableProviders.find(p => p.id === newProviderId);
-      if (selectedProvider) {
-        setCurrentProvider(selectedProvider);
-        setEditedProvider(selectedProvider.attributes);
-        setProviderState(selectedProvider.states || []);
-        setSelectedCounties(selectedProvider.attributes.counties_served || []);
-        setSelectedProviderTypes(selectedProvider.attributes.provider_type || []);
-        setSelectedInsurances(selectedProvider.attributes.insurance || []);
-        setLocations(selectedProvider.attributes.locations || []);
-        setActiveStateForCounties(selectedProvider.states?.[0] || '');
+      console.log('Switching to provider:', newProviderId);
+      
+      // Call the set_active_provider endpoint
+      const response = await fetch(
+        'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/set_active_provider',
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': loggedInProvider.id.toString(),
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            provider_id: newProviderId
+          })
+        }
+      );
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log('Provider switch result:', result);
         
-        // Refresh the provider data
-        await refreshProviderData();
+        setSelectedProviderId(newProviderId);
+        const selectedProvider = availableProviders.find(p => p.id === newProviderId);
+        if (selectedProvider) {
+          setCurrentProvider(selectedProvider);
+          setEditedProvider(selectedProvider.attributes);
+          setProviderState(selectedProvider.states || []);
+          setSelectedCounties(selectedProvider.attributes.counties_served || []);
+          setSelectedProviderTypes(selectedProvider.attributes.provider_type || []);
+          setSelectedInsurances(selectedProvider.attributes.insurance || []);
+          setLocations(selectedProvider.attributes.locations || []);
+          setActiveStateForCounties(selectedProvider.states?.[0] || '');
+          
+          toast.success(`Switched to ${selectedProvider.attributes.name || 'provider'}`);
+          
+          // Refresh the provider data
+          await refreshProviderData();
+        }
+      } else {
+        const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
+        console.error('Provider switch error:', errorData);
+        toast.error(`Failed to switch provider: ${errorData.message || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Error switching provider:', error);
       toast.error('Failed to switch provider');
     }
-  }, [availableProviders, refreshProviderData]);
+  }, [availableProviders, refreshProviderData, loggedInProvider.id]);
 
   useEffect(() => {
     const hideAuthModal = localStorage.getItem("hideAuthModal");
@@ -633,18 +659,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
 
   return (
     <>
-      {/* Toast Container for notifications */}
-      <ToastContainer
-        position="top-right"
-        autoClose={5000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-      />
+
       
       {/* Loading overlay for save operations */}
       {isSaving && (
