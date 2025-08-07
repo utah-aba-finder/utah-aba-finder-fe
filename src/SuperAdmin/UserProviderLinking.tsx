@@ -8,6 +8,11 @@ interface User {
   email: string;
   provider_id?: number;
   provider_name?: string;
+  accessible_providers?: Array<{
+    id: number;
+    name: string;
+    is_active?: boolean;
+  }>;
   role?: number;
   created_at?: string;
   updated_at?: string;
@@ -111,8 +116,48 @@ const UserProviderLinking: React.FC = () => {
       if (response.ok) {
         const data = await response.json();
         console.log('Users API response:', data);
-        console.log('Setting users:', data.users || []);
-        setUsers(data.users || []);
+        const users = data.users || [];
+        
+        // Fetch accessible providers for each user to show multi-provider assignments
+        const usersWithAccessibleProviders = await Promise.all(
+          users.map(async (user: User) => {
+            try {
+              console.log(`Fetching accessible providers for user ${user.email} (ID: ${user.id})`);
+              console.log(`Using auth header:`, getAdminAuthHeader());
+              
+              const accessibleResponse = await fetch(
+                `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/accessible_providers?user_id=${user.id}`,
+                {
+                  headers: {
+                    'Authorization': getAdminAuthHeader(),
+                  }
+                }
+              );
+              
+              console.log(`Accessible providers response for ${user.email}:`, accessibleResponse.status, accessibleResponse.ok);
+              
+              if (accessibleResponse.ok) {
+                const accessibleData = await accessibleResponse.json();
+                console.log(`User ${user.email} accessible providers:`, accessibleData.providers);
+                console.log(`User ${user.email} accessible response:`, accessibleData);
+                return {
+                  ...user,
+                  accessible_providers: accessibleData.providers || []
+                };
+              } else {
+                const errorText = await accessibleResponse.text();
+                console.error(`Failed to fetch accessible providers for user ${user.id}:`, accessibleResponse.status, errorText);
+                return user;
+              }
+            } catch (error) {
+              console.error(`Error fetching accessible providers for user ${user.id}:`, error);
+              return user;
+            }
+          })
+        );
+        
+        console.log('Setting users with accessible providers:', usersWithAccessibleProviders);
+        setUsers(usersWithAccessibleProviders);
       } else {
         const errorText = await response.text();
         console.error('Users API error:', response.status, errorText);
@@ -187,38 +232,64 @@ const UserProviderLinking: React.FC = () => {
 
     setIsLoading(true);
     try {
-      // Find the user email from the selected user ID
+      // Find the user object from the selected user ID
       const selectedUserObj = users.find(user => user.id === selectedUser);
       if (!selectedUserObj) {
         toast.error('Selected user not found');
         return;
       }
 
-      const response = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/users/manual_link', {
+      // Check if user already has a provider
+      if (selectedUserObj.provider_id && selectedUserObj.provider_id !== selectedProvider) {
+        console.log('⚠️ WARNING: User already has provider_id:', selectedUserObj.provider_id, 'but we are assigning to:', selectedProvider);
+        console.log('This might replace the existing assignment instead of adding to it.');
+      }
+      
+      // Use the working multi-provider endpoint
+      console.log('Assigning user to provider:', {
+        user_id: selectedUserObj.id,
+        user_email: selectedUserObj.email,
+        provider_id: selectedProvider,
+        current_provider_id: selectedUserObj.provider_id,
+        current_provider_name: selectedUserObj.provider_name
+      });
+      
+      const response = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/assign_provider_to_user', {
         method: 'POST',
         headers: {
           'Authorization': getAdminAuthHeader(),
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          user_email: selectedUserObj.email,
-          provider_id: selectedProvider
+          provider_id: selectedProvider,
+          user_id: selectedUserObj.id
         })
       });
 
+      console.log('Assignment response status:', response.status);
+      console.log('Assignment response ok:', response.ok);
+
       if (response.ok) {
-        toast.success('User successfully linked to provider!');
-        fetchUsers(); // Refresh the user list
-        setSelectedUser(null);
-        setSelectedProvider(null);
-        setProviderSearchTerm(''); // Clear the search term
+        const result = await response.json();
+        console.log('Assignment response result:', result);
+        if (result.success) {
+          toast.success('User successfully assigned to provider!');
+          console.log('Refreshing user list after assignment...');
+          await fetchUsers(); // Refresh the user list
+          setSelectedUser(null);
+          setSelectedProvider(null);
+          setProviderSearchTerm(''); // Clear the search term
+        } else {
+          toast.error(`Failed to assign user: ${result.message || 'Unknown error'}`);
+        }
       } else {
-        const errorData = await response.json();
-        toast.error(`Failed to link user: ${errorData.message || 'Unknown error'}`);
+        const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
+        console.error('Assignment error:', errorData);
+        toast.error(`Failed to assign user: ${errorData.message || 'Unknown error'}`);
       }
     } catch (error) {
-      console.error('Error linking user to provider:', error);
-      toast.error('Failed to link user to provider');
+      console.error('Error assigning user to provider:', error);
+      toast.error('Failed to assign user to provider');
     } finally {
       setIsLoading(false);
     }
@@ -262,30 +333,47 @@ const UserProviderLinking: React.FC = () => {
   const bulkAssignUsers = async (userEmails: string[], providerId: number) => {
     setIsLoading(true);
     try {
-      // For now, use individual assignments until bulk endpoint is available
+      // Use the multi-provider assignment endpoint
       let successfulAssignments = 0;
       let failedAssignments: string[] = [];
       
       for (const email of userEmails) {
         try {
-          const response = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/users/manual_link', {
+          // First, find the user ID from the email
+          const user = users.find(u => u.email === email);
+          if (!user) {
+            failedAssignments.push(email);
+            continue;
+          }
+          
+          // Use the working multi-provider endpoint
+          console.log(`Bulk assigning ${email} (user_id: ${user.id}) to provider ${providerId}`);
+          
+          const response = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/assign_provider_to_user', {
             method: 'POST',
             headers: {
               'Authorization': getAdminAuthHeader(),
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              user_email: email,
-              provider_id: providerId
+              provider_id: providerId,
+              user_id: user.id
             })
           });
           
+          console.log(`Bulk assignment response for ${email}:`, response.status, response.ok);
+          
           if (response.ok) {
+            const result = await response.json();
+            console.log(`Bulk assignment result for ${email}:`, result);
             successfulAssignments++;
           } else {
+            const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
+            console.error(`Failed to assign ${email} to provider ${providerId}:`, errorData);
             failedAssignments.push(email);
           }
         } catch (error) {
+          console.error(`Error assigning ${email} to provider ${providerId}:`, error);
           failedAssignments.push(email);
         }
       }
@@ -309,7 +397,7 @@ const UserProviderLinking: React.FC = () => {
     }
   };
 
-  const unlinkUserFromProvider = async (userId: number) => {
+  const unlinkUserFromProvider = async (userId: number, providerId?: number) => {
     setIsLoading(true);
     try {
       // Find the user object from the user ID
@@ -319,21 +407,24 @@ const UserProviderLinking: React.FC = () => {
         return;
       }
 
-      if (!userObj.provider_id) {
+      // If providerId is provided, use it; otherwise use the user's primary provider_id
+      const targetProviderId = providerId || userObj.provider_id;
+      
+      if (!targetProviderId) {
         toast.error('User is not currently assigned to any provider');
         return;
       }
 
       // Use the new unlink endpoint
-      const response = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/users/unlink_user_from_provider', {
+      const response = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/unassign_provider_from_user', {
         method: 'POST',
         headers: {
           'Authorization': getAdminAuthHeader(),
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          user_email: userObj.email,
-          provider_id: userObj.provider_id
+          user_id: userId,
+          provider_id: targetProviderId
         })
       });
 
@@ -488,10 +579,10 @@ const UserProviderLinking: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Select Unlinked Users
+                  Select Users (All Users)
                 </label>
                 <div className="max-h-40 overflow-y-auto border border-gray-300 rounded-md p-2">
-                  {unlinkedUsers.map(user => (
+                  {filteredUsers.map(user => (
                     <label key={user.id} className="flex items-center space-x-2 p-1">
                       <input
                         type="checkbox"
@@ -505,7 +596,12 @@ const UserProviderLinking: React.FC = () => {
                         }}
                         className="rounded"
                       />
-                      <span className="text-sm">{user.email}</span>
+                      <span className="text-sm">
+                        {user.email}
+                        {user.provider_name && (
+                          <span className="text-gray-500 ml-2">(Currently: {user.provider_name})</span>
+                        )}
+                      </span>
                     </label>
                   ))}
                 </div>
@@ -606,9 +702,15 @@ const UserProviderLinking: React.FC = () => {
                 className="w-full p-2 border border-gray-300 rounded-md"
               >
                 <option value="">Choose a user...</option>
-                {unconnectedUsers.map(user => (
+                {filteredUsers.map(user => (
                   <option key={user.id} value={user.id}>
-                    {user.email} (ID: {user.id})
+                    {user.email} 
+                    {user.accessible_providers && user.accessible_providers.length > 0 
+                      ? ` (${user.accessible_providers.length} provider${user.accessible_providers.length > 1 ? 's' : ''}: ${user.accessible_providers.map(p => p.name).join(', ')})`
+                      : user.provider_name 
+                        ? ` (Currently: ${user.provider_name})` 
+                        : ' (No Provider)'
+                    }
                   </option>
                 ))}
               </select>
@@ -684,7 +786,7 @@ const UserProviderLinking: React.FC = () => {
             disabled={!selectedUser || !selectedProvider || isLoading}
             className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isLoading ? 'Linking...' : 'Link User to Provider'}
+            {isLoading ? 'Linking...' : 'Assign User to Provider'}
           </button>
         </div>
 
@@ -708,17 +810,58 @@ const UserProviderLinking: React.FC = () => {
                         {user.email} (ID: {user.id})
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {user.provider_name || `Provider ID: ${user.provider_id}`}
+                        {user.accessible_providers && user.accessible_providers.length > 0 ? (
+                          <div className="space-y-1">
+                            <div className="text-xs text-gray-500 mb-1">
+                              {user.accessible_providers.length} provider{user.accessible_providers.length > 1 ? 's' : ''} assigned:
+                            </div>
+                            {user.accessible_providers.map((provider, index) => (
+                              <div key={provider.id} className="flex items-center space-x-2">
+                                <span className={`px-2 py-1 rounded text-xs font-medium ${
+                                  provider.is_active ? 'bg-green-100 text-green-800 border border-green-200' : 'bg-blue-100 text-blue-800 border border-blue-200'
+                                }`}>
+                                  {provider.name}
+                                  {provider.is_active && ' (Active)'}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div>
+                            {user.provider_name ? (
+                              <span className="px-2 py-1 rounded text-xs bg-gray-100 text-gray-800 border border-gray-200">
+                                {user.provider_name} (Legacy)
+                              </span>
+                            ) : (
+                              <span className="text-gray-400 text-xs">No providers assigned</span>
+                            )}
+                          </div>
+                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         <div className="flex space-x-2">
-                          <button
-                            onClick={() => unlinkUserFromProvider(user.id)}
-                            disabled={isLoading}
-                            className="text-red-600 hover:text-red-900 disabled:opacity-50"
-                          >
-                            Unlink
-                          </button>
+                          {user.accessible_providers && user.accessible_providers.length > 0 ? (
+                            <div className="space-y-1">
+                              {user.accessible_providers.map(provider => (
+                                <button
+                                  key={provider.id}
+                                  onClick={() => unlinkUserFromProvider(user.id, provider.id)}
+                                  disabled={isLoading}
+                                  className="text-red-600 hover:text-red-900 disabled:opacity-50 text-xs block"
+                                >
+                                  Remove {provider.name}
+                                </button>
+                              ))}
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => unlinkUserFromProvider(user.id)}
+                              disabled={isLoading}
+                              className="text-red-600 hover:text-red-900 disabled:opacity-50"
+                            >
+                              Unlink
+                            </button>
+                          )}
                           <button
                             onClick={() => forceUnassignUser(user.id)}
                             disabled={isLoading}
