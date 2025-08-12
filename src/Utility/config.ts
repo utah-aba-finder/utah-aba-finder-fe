@@ -23,4 +23,14 @@ export const getAdminAuthHeader = () => {
 // Helper function to get user authorization header
 export const getUserAuthHeader = () => {
   return sessionStorage.getItem('authToken');
+};
+
+// Helper function to get the appropriate API base URL
+export const getApiBaseUrl = () => {
+  if (process.env.NODE_ENV === 'development') {
+    // Use localhost for development
+    return process.env.REACT_APP_BASE_API_URL || 'http://localhost:3001';
+  }
+  // Use Heroku for production
+  return 'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com';
 }; 

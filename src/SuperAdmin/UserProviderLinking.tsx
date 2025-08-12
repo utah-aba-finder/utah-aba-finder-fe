@@ -8,15 +8,12 @@ interface User {
   email: string;
   provider_id?: number;
   provider_name?: string;
-  accessible_providers?: Array<{
-    id: number;
-    name: string;
-    is_active?: boolean;
-  }>;
   role?: number;
   created_at?: string;
   updated_at?: string;
 }
+
+
 
 interface Provider {
   id: number;
@@ -35,6 +32,12 @@ const UserProviderLinking: React.FC = () => {
   const [filterRole, setFilterRole] = useState<string>('all');
   const [providerSearchTerm, setProviderSearchTerm] = useState('');
   const [showProviderDropdown, setShowProviderDropdown] = useState(false);
+
+  // Multi-Provider State
+  const [userProviders, setUserProviders] = useState<Record<string, Provider[]>>({});
+  const [activeProviders, setActiveProviders] = useState<Record<string, number>>({});
+  const [showUserProviderDetails, setShowUserProviderDetails] = useState<string | null>(null);
+  const [isLoadingUserProviders, setIsLoadingUserProviders] = useState(false);
 
   useEffect(() => {
     fetchUsers();
@@ -99,79 +102,343 @@ const UserProviderLinking: React.FC = () => {
     setShowBulkAssignment(false);
   };
 
-  const fetchUsers = async () => {
+  // Test function to verify API key
+  const testApiKey = async () => {
     try {
-      console.log('Fetching users from:', 'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/users/users_with_providers');
-      console.log('Using auth header:', getAdminAuthHeader());
+      const authHeader = getAdminAuthHeader();
+      console.log('🧪 Testing API key:', authHeader);
       
-      const response = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/users/users_with_providers', {
+      const response = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/users/providers_list', {
+        headers: {
+          'Authorization': authHeader,
+        }
+      });
+      
+      console.log('🧪 Test response status:', response.status);
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('🧪 Test successful, providers count:', data.providers?.length || 0);
+        toast.success('API key test successful!');
+      } else {
+        const errorText = await response.text();
+        console.error('🧪 Test failed:', errorText);
+        toast.error(`API key test failed: ${response.status}`);
+      }
+    } catch (error) {
+      console.error('🧪 Test error:', error);
+      toast.error('API key test error');
+    }
+  };
+
+  // Comprehensive API endpoint testing
+  const testAllEndpoints = async () => {
+    const testEmail = 'mfielder@abacenters.com';
+    const testProviderId = 1095;
+    
+    console.log('🧪🧪🧪 Testing All API Endpoints 🧪🧪🧪');
+    
+    // Test 1: User Providers Endpoint (This should work for existing user)
+    console.log('🧪 Test 1: User Providers Endpoint');
+    try {
+      const response1 = await fetch(`https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/user_providers?user_email=${encodeURIComponent(testEmail)}`, {
         headers: {
           'Authorization': getAdminAuthHeader(),
         }
       });
+      console.log('🧪 User Providers Status:', response1.status);
+      if (response1.ok) {
+        const data = await response1.json();
+        console.log('🧪 User Providers Success:', data);
+      } else {
+        const errorText = await response1.text();
+        console.error('🧪 User Providers Error:', errorText);
+      }
+    } catch (error) {
+      console.error('🧪 User Providers Exception:', error);
+    }
+    
+    // Test 2: Set Active Provider (This should work for existing user)
+    console.log('🧪 Test 2: Set Active Provider Endpoint');
+    try {
+      const response2 = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/set_active_provider', {
+        method: 'POST',
+        headers: {
+          'Authorization': getAdminAuthHeader(),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_email: testEmail,
+          provider_id: testProviderId
+        })
+      });
+      console.log('🧪 Set Active Provider Status:', response2.status);
+      if (response2.ok) {
+        const data = await response2.json();
+        console.log('🧪 Set Active Provider Success:', data);
+      } else {
+        const errorText = await response2.text();
+        console.error('🧪 Set Active Provider Error:', errorText);
+      }
+    } catch (error) {
+      console.error('🧪 Set Active Provider Exception:', error);
+    }
+    
+    // Test 3: Individual Assignment Endpoint (This will fail for owner - expected)
+    console.log('🧪 Test 3: Individual Assignment Endpoint (Expected to fail for owner)');
+    try {
+      const response3 = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/assign_provider_to_user', {
+        method: 'POST',
+        headers: {
+          'Authorization': getAdminAuthHeader(),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_email: testEmail,
+          provider_id: testProviderId
+        })
+      });
+      console.log('🧪 Individual Assignment Status:', response3.status);
+      if (response3.ok) {
+        const data = await response3.json();
+        console.log('🧪 Individual Assignment Success:', data);
+      } else {
+        const errorText = await response3.text();
+        console.error('🧪 Individual Assignment Error (Expected for owner):', errorText);
+      }
+    } catch (error) {
+      console.error('🧪 Individual Assignment Exception:', error);
+    }
+    
+    // Test 4: Bulk Assignment Endpoint (This will fail for owner - expected)
+    console.log('🧪 Test 4: Bulk Assignment Endpoint (Expected to fail for owner)');
+    try {
+      const response4 = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/users/bulk_assign_users', {
+        method: 'POST',
+        headers: {
+          'Authorization': getAdminAuthHeader(),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_email: testEmail,
+          provider_id: testProviderId
+        })
+      });
+      console.log('🧪 Bulk Assignment Status:', response4.status);
+      if (response4.ok) {
+        const data = await response4.json();
+        console.log('🧪 Bulk Assignment Success:', data);
+      } else {
+        const errorText = await response4.text();
+        console.error('🧪 Bulk Assignment Error (Expected for owner):', errorText);
+      }
+    } catch (error) {
+      console.error('🧪 Bulk Assignment Exception:', error);
+    }
+    
+    console.log('🧪🧪🧪 Endpoint Testing Complete 🧪🧪🧪');
+  };
+
+  // Multi-Provider Management Functions
+  const fetchUserProviders = async (userEmail: string) => {
+    try {
+      const response = await fetch(`https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/user_providers?user_email=${encodeURIComponent(userEmail)}`, {
+        headers: {
+          'Authorization': getAdminAuthHeader(),
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        return data.providers || [];
+      } else {
+        console.error('Failed to fetch user providers:', response.status);
+        // Enhanced error logging for 422 errors
+        if (response.status === 422) {
+          const errorText = await response.text();
+          console.error('422 Error Details:', errorText);
+          try {
+            const errorJson = JSON.parse(errorText);
+            console.error('422 Error JSON:', errorJson);
+          } catch (e) {
+            console.error('422 Error is not JSON:', errorText);
+          }
+        }
+        return [];
+      }
+    } catch (error) {
+      console.error('Error fetching user providers:', error);
+      return [];
+    }
+  };
+
+  const setActiveProvider = async (userEmail: string, providerId: number) => {
+    try {
+      const response = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/set_active_provider', {
+        method: 'POST',
+        headers: {
+          'Authorization': getAdminAuthHeader(),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_email: userEmail,
+          provider_id: providerId
+        })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          toast.success('Active provider updated successfully!');
+          return true;
+        } else {
+          toast.error(`Failed to update active provider: ${result.message || 'Unknown error'}`);
+          return false;
+        }
+      } else {
+        toast.error(`Failed to update active provider: HTTP ${response.status}`);
+        return false;
+      }
+    } catch (error) {
+      console.error('Error setting active provider:', error);
+      toast.error('Failed to update active provider');
+      return false;
+    }
+  };
+
+  const removeUserFromProvider = async (userEmail: string, providerId: number) => {
+    try {
+      const response = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/remove_provider_from_user', {
+        method: 'POST',
+        headers: {
+          'Authorization': getAdminAuthHeader(),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_email: userEmail,
+          provider_id: providerId
+        })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          toast.success('User removed from provider successfully!');
+          fetchUsers(); // Refresh the user list
+          return true;
+        } else {
+          toast.error(`Failed to remove user: ${result.message || 'Unknown error'}`);
+          return false;
+        }
+      } else {
+        toast.error(`Failed to remove user: HTTP ${response.status}`);
+        return false;
+      }
+    } catch (error) {
+      console.error('Error removing user from provider:', error);
+      toast.error('Failed to remove user from provider');
+      return false;
+    }
+  };
+
+  const loadUserProviderDetails = async (userEmail: string) => {
+    if (userProviders[userEmail]) {
+      // Already loaded, just toggle display
+      setShowUserProviderDetails(showUserProviderDetails === userEmail ? null : userEmail);
+      return;
+    }
+
+    setIsLoadingUserProviders(true);
+    try {
+      const providers = await fetchUserProviders(userEmail);
+      setUserProviders(prev => ({
+        ...prev,
+        [userEmail]: providers
+      }));
+      setShowUserProviderDetails(userEmail);
+    } catch (error) {
+      console.error('Error loading user provider details:', error);
+      toast.error('Failed to load user provider details');
+    } finally {
+      setIsLoadingUserProviders(false);
+    }
+  };
+
+  const handleSetActiveProvider = async (userEmail: string, providerId: number) => {
+    const success = await setActiveProvider(userEmail, providerId);
+    if (success) {
+      setActiveProviders(prev => ({
+        ...prev,
+        [userEmail]: providerId
+      }));
+    }
+  };
+
+  const handleRemoveUserFromProvider = async (userEmail: string, providerId: number) => {
+    const success = await removeUserFromProvider(userEmail, providerId);
+    if (success) {
+      // Update local state
+      setUserProviders(prev => ({
+        ...prev,
+        [userEmail]: prev[userEmail]?.filter(p => p.id !== providerId) || []
+      }));
+      // Clear active provider if it was the one removed
+      if (activeProviders[userEmail] === providerId) {
+        setActiveProviders(prev => {
+          const newState = { ...prev };
+          delete newState[userEmail];
+          return newState;
+        });
+      }
+    }
+  };
+
+  const fetchUsers = async () => {
+    try {
+      const authHeader = getAdminAuthHeader();
+      console.log('🔑 Auth header being sent:', authHeader);
+      console.log('🔑 Full headers:', {
+        'Authorization': authHeader,
+        'Content-Type': 'application/json'
+      });
       
-      console.log('Response status:', response.status);
-      console.log('Response ok:', response.ok);
+      const response = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/users/users_with_providers', {
+        headers: {
+          'Authorization': authHeader,
+        }
+      });
+      
+      console.log('📡 Response status:', response.status);
+      console.log('📡 Response headers:', response.headers);
       
       if (response.ok) {
         const data = await response.json();
-        console.log('Users API response:', data);
+
         const users = data.users || [];
         
-        // Fetch accessible providers for each user to show multi-provider assignments
-        const usersWithAccessibleProviders = await Promise.all(
-          users.map(async (user: User) => {
-            try {
-              console.log(`Fetching accessible providers for user ${user.email} (ID: ${user.id})`);
-              console.log(`Using auth header:`, getAdminAuthHeader());
-              
-              const accessibleResponse = await fetch(
-                `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/accessible_providers?user_id=${user.id}`,
-                {
-                  headers: {
-                    'Authorization': getAdminAuthHeader(),
-                  }
-                }
-              );
-              
-              console.log(`Accessible providers response for ${user.email}:`, accessibleResponse.status, accessibleResponse.ok);
-              
-              if (accessibleResponse.ok) {
-                const accessibleData = await accessibleResponse.json();
-                console.log(`User ${user.email} accessible providers:`, accessibleData.providers);
-                console.log(`User ${user.email} accessible response:`, accessibleData);
-                return {
-                  ...user,
-                  accessible_providers: accessibleData.providers || []
-                };
-              } else {
-                const errorText = await accessibleResponse.text();
-                console.error(`Failed to fetch accessible providers for user ${user.id}:`, accessibleResponse.status, errorText);
-                return user;
-              }
-            } catch (error) {
-              console.error(`Error fetching accessible providers for user ${user.id}:`, error);
-              return user;
-            }
-          })
-        );
+        // Note: The accessible_providers endpoint requires user-specific authentication
+        // which is not available in the Super Admin context. We'll work with the
+        // basic user-provider relationship data we already have.
+
         
-        console.log('Setting users with accessible providers:', usersWithAccessibleProviders);
-        setUsers(usersWithAccessibleProviders);
+        // Log summary of users with providers
+        const usersWithProviders = users.filter((user: User) => user.provider_id);
+        
+        setUsers(users);
       } else {
         const errorText = await response.text();
-        console.error('Users API error:', response.status, errorText);
+        console.error('❌ Error response:', errorText);
         toast.error(`Failed to fetch users: ${response.status}`);
       }
     } catch (error) {
-      console.error('Error fetching users:', error);
+      console.error('❌ Fetch error:', error);
       toast.error('Failed to fetch users');
     }
   };
 
   const fetchUnlinkedUsers = async () => {
     try {
-      console.log('Fetching unlinked users from:', 'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/users/unlinked_users');
+
       
       const response = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/users/unlinked_users', {
         headers: {
@@ -179,27 +446,27 @@ const UserProviderLinking: React.FC = () => {
         }
       });
       
-      console.log('Unlinked users response status:', response.status);
+
       
       if (response.ok) {
         const data = await response.json();
-        console.log('Unlinked users API response:', data);
+
         // We could use this for additional functionality if needed
         return data.users || [];
       } else {
         const errorText = await response.text();
-        console.error('Unlinked users API error:', response.status, errorText);
+
         return [];
       }
     } catch (error) {
-      console.error('Error fetching unlinked users:', error);
+
       return [];
     }
   };
 
   const fetchProviders = async () => {
     try {
-      console.log('Fetching providers from:', 'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/users/providers_list');
+
       
       const response = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/users/providers_list', {
         headers: {
@@ -207,19 +474,19 @@ const UserProviderLinking: React.FC = () => {
         }
       });
       
-      console.log('Providers response status:', response.status);
+
       
       if (response.ok) {
         const data = await response.json();
-        console.log('Providers API response:', data);
+
         setProviders(data.providers || []);
       } else {
         const errorText = await response.text();
-        console.error('Providers API error:', response.status, errorText);
+
         toast.error(`Failed to fetch providers: ${response.status}`);
       }
     } catch (error) {
-      console.error('Error fetching providers:', error);
+
       toast.error('Failed to fetch providers');
     }
   };
@@ -241,19 +508,10 @@ const UserProviderLinking: React.FC = () => {
 
       // Check if user already has a provider
       if (selectedUserObj.provider_id && selectedUserObj.provider_id !== selectedProvider) {
-        console.log('⚠️ WARNING: User already has provider_id:', selectedUserObj.provider_id, 'but we are assigning to:', selectedProvider);
-        console.log('This might replace the existing assignment instead of adding to it.');
+
       }
       
-      // Use the working multi-provider endpoint
-      console.log('Assigning user to provider:', {
-        user_id: selectedUserObj.id,
-        user_email: selectedUserObj.email,
-        provider_id: selectedProvider,
-        current_provider_id: selectedUserObj.provider_id,
-        current_provider_name: selectedUserObj.provider_name
-      });
-      
+      // Use the working multi-provider endpoint with correct format
       const response = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/assign_provider_to_user', {
         method: 'POST',
         headers: {
@@ -261,20 +519,17 @@ const UserProviderLinking: React.FC = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          provider_id: selectedProvider,
-          user_id: selectedUserObj.id
+          user_email: selectedUserObj.email, // API expects user_email, not user_id
+          provider_id: selectedProvider
         })
       });
 
-      console.log('Assignment response status:', response.status);
-      console.log('Assignment response ok:', response.ok);
-
       if (response.ok) {
         const result = await response.json();
-        console.log('Assignment response result:', result);
+
         if (result.success) {
           toast.success('User successfully assigned to provider!');
-          console.log('Refreshing user list after assignment...');
+
           await fetchUsers(); // Refresh the user list
           setSelectedUser(null);
           setSelectedProvider(null);
@@ -284,11 +539,11 @@ const UserProviderLinking: React.FC = () => {
         }
       } else {
         const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
-        console.error('Assignment error:', errorData);
+
         toast.error(`Failed to assign user: ${errorData.message || 'Unknown error'}`);
       }
     } catch (error) {
-      console.error('Error assigning user to provider:', error);
+
       toast.error('Failed to assign user to provider');
     } finally {
       setIsLoading(false);
@@ -323,7 +578,7 @@ const UserProviderLinking: React.FC = () => {
         toast.error(`Failed to switch user: ${errorData.message || 'Unknown error'}`);
       }
     } catch (error) {
-      console.error('Error switching user provider:', error);
+
       toast.error('Failed to switch user provider');
     } finally {
       setIsLoading(false);
@@ -333,64 +588,113 @@ const UserProviderLinking: React.FC = () => {
   const bulkAssignUsers = async (userEmails: string[], providerId: number) => {
     setIsLoading(true);
     try {
-      // Use the multi-provider assignment endpoint
-      let successfulAssignments = 0;
-      let failedAssignments: string[] = [];
+      // Log the request data for debugging
+      const requestBody = {
+        user_email: userEmails[0], // API expects user_email (singular), not user_emails (array)
+        provider_id: providerId
+      };
+      console.log('🔍 Debug: userEmails array:', userEmails);
+      console.log('🔍 Debug: requestBody object:', requestBody);
+      console.log('🔍 Debug: JSON.stringify(requestBody):', JSON.stringify(requestBody));
+      
+      // Try the bulk assignment endpoint first
+      const response = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/users/bulk_assign_users', {
+        method: 'POST',
+        headers: {
+          'Authorization': getAdminAuthHeader(),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody)
+      });
+
+      console.log('🔍 Debug: Response status:', response.status);
+      console.log('🔍 Debug: Response ok:', response.ok);
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          toast.success(`Bulk assignment completed! ${result.assigned_count || userEmails.length} users assigned successfully.`);
+          fetchUsers(); // Refresh the user list
+          setProviderSearchTerm(''); // Clear the search term
+          setSelectedProvider(null);
+          return; // Success, exit early
+        }
+      }
+      
+      // If bulk endpoint fails, fall back to individual assignments
+      console.log('Bulk endpoint failed, falling back to individual assignments...');
+      let successCount = 0;
+      let failureCount = 0;
+      const failedEmails: string[] = [];
       
       for (const email of userEmails) {
         try {
-          // First, find the user ID from the email
-          const user = users.find(u => u.email === email);
-          if (!user) {
-            failedAssignments.push(email);
+          // Find the user by email to get their ID
+          const userObj = users.find(user => user.email === email);
+          if (!userObj) {
+            failedEmails.push(email);
+            failureCount++;
             continue;
           }
-          
-          // Use the working multi-provider endpoint
-          console.log(`Bulk assigning ${email} (user_id: ${user.id}) to provider ${providerId}`);
-          
-          const response = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/assign_provider_to_user', {
+
+          const individualResponse = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/assign_provider_to_user', {
             method: 'POST',
             headers: {
               'Authorization': getAdminAuthHeader(),
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              provider_id: providerId,
-              user_id: user.id
+              user_email: email, // API expects user_email, not user_id
+              provider_id: providerId
             })
           });
-          
-          console.log(`Bulk assignment response for ${email}:`, response.status, response.ok);
-          
-          if (response.ok) {
-            const result = await response.json();
-            console.log(`Bulk assignment result for ${email}:`, result);
-            successfulAssignments++;
+
+          if (individualResponse.ok) {
+            const result = await individualResponse.json();
+            if (result.success) {
+              successCount++;
+            } else {
+              failedEmails.push(email);
+              failureCount++;
+            }
           } else {
-            const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
-            console.error(`Failed to assign ${email} to provider ${providerId}:`, errorData);
-            failedAssignments.push(email);
+            // Enhanced error logging for 422 errors
+            if (individualResponse.status === 422) {
+              const errorText = await individualResponse.text();
+              console.error(`422 Error for ${email}:`, errorText);
+              try {
+                const errorJson = JSON.parse(errorText);
+                console.error(`422 Error JSON for ${email}:`, errorJson);
+              } catch (e) {
+                console.error(`422 Error is not JSON for ${email}:`, errorText);
+              }
+            }
+            failedEmails.push(email);
+            failureCount++;
           }
         } catch (error) {
-          console.error(`Error assigning ${email} to provider ${providerId}:`, error);
-          failedAssignments.push(email);
+          failedEmails.push(email);
+          failureCount++;
         }
       }
-      
-      if (successfulAssignments > 0) {
-        toast.success(`Bulk assignment completed! ${successfulAssignments} users assigned successfully.`);
-      }
-      if (failedAssignments.length > 0) {
-        toast.warning(`${failedAssignments.length} assignments failed. Check console for details.`);
-        console.log('Failed assignments:', failedAssignments);
+
+      // Show results
+      if (successCount > 0) {
+        toast.success(`Bulk assignment completed! ${successCount} users assigned successfully.`);
       }
       
-      fetchUsers(); // Refresh the user list
-      setProviderSearchTerm(''); // Clear the search term
-      setSelectedProvider(null);
+      if (failureCount > 0) {
+        toast.error(`${failureCount} users failed to assign: ${failedEmails.join(', ')}`);
+      }
+
+      if (successCount > 0) {
+        fetchUsers(); // Refresh the user list
+        setProviderSearchTerm(''); // Clear the search term
+        setSelectedProvider(null);
+      }
+      
     } catch (error) {
-      console.error('Error bulk assigning users:', error);
+      console.error('Bulk assignment error:', error);
       toast.error('Failed to bulk assign users');
     } finally {
       setIsLoading(false);
@@ -441,7 +745,7 @@ const UserProviderLinking: React.FC = () => {
         toast.error(`Failed to unlink user: ${errorData.message || 'Unknown error'}`);
       }
     } catch (error) {
-      console.error('Error unlinking user from provider:', error);
+
       toast.error('Failed to unlink user from provider');
     } finally {
       setIsLoading(false);
@@ -472,21 +776,21 @@ const UserProviderLinking: React.FC = () => {
 
       if (response.ok) {
         const result = await response.json();
-        console.log('Force unassign response:', result);
+
         if (result.success) {
           toast.success('User successfully unassigned from all providers!');
-          console.log('Refreshing user list after force unassign...');
+
           await fetchUsers(); // Refresh the user list
         } else {
           toast.error(`Failed to unassign user: ${result.message || 'Unknown error'}`);
         }
       } else {
         const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
-        console.error('Force unassign error:', errorData);
+
         toast.error(`Failed to unassign user: ${errorData.message || 'Unknown error'}`);
       }
     } catch (error) {
-      console.error('Error unassigning user:', error);
+
       toast.error('Failed to unassign user');
     } finally {
       setIsLoading(false);
@@ -501,6 +805,47 @@ const UserProviderLinking: React.FC = () => {
       <div className="max-w-6xl mx-auto">
         <h1 className="text-3xl font-bold text-gray-900 mb-8">User-Provider Linking Tool</h1>
         
+        {/* Debug Section */}
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-8">
+          <h3 className="text-lg font-semibold text-yellow-800 mb-2">🔍 Debug Information</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+            <div>
+              <strong>Total Users:</strong> {users.length}
+            </div>
+            <div>
+              <strong>Connected Users:</strong> {connectedUsers.length}
+            </div>
+            <div>
+              <strong>Users with Providers:</strong> {users.filter(u => u.provider_id).length}
+            </div>
+          </div>
+          <div className="mt-2 text-xs text-yellow-700">
+            Note: Multiple provider assignments are not visible in Super Admin view due to authentication limitations
+          </div>
+          <div className="mt-4">
+            <button
+              onClick={testApiKey}
+              className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700"
+            >
+              🧪 Test API Key
+            </button>
+            <span className="ml-2 text-xs text-yellow-700">
+              Click to test if the API key is working
+            </span>
+          </div>
+          <div className="mt-2">
+            <button
+              onClick={testAllEndpoints}
+              className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700"
+            >
+              🧪🧪🧪 Test All Endpoints
+            </button>
+            <span className="ml-2 text-xs text-yellow-700">
+              Click to test all API endpoints individually
+            </span>
+          </div>
+        </div>
+
         {/* Statistics */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div className="bg-white p-6 rounded-lg shadow">
@@ -705,11 +1050,9 @@ const UserProviderLinking: React.FC = () => {
                 {filteredUsers.map(user => (
                   <option key={user.id} value={user.id}>
                     {user.email} 
-                    {user.accessible_providers && user.accessible_providers.length > 0 
-                      ? ` (${user.accessible_providers.length} provider${user.accessible_providers.length > 1 ? 's' : ''}: ${user.accessible_providers.map(p => p.name).join(', ')})`
-                      : user.provider_name 
-                        ? ` (Currently: ${user.provider_name})` 
-                        : ' (No Provider)'
+                    {user.provider_name 
+                      ? ` (Currently: ${user.provider_name})` 
+                      : ' (No Provider)'
                     }
                   </option>
                 ))}
@@ -798,69 +1141,92 @@ const UserProviderLinking: React.FC = () => {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Provider</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Primary Provider</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Multi-Provider Access</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {connectedUsers.map(user => {
+                  const userProviderList = userProviders[user.email] || [];
+                  const hasMultipleProviders = userProviderList.length > 1;
+                  
                   return (
                     <tr key={user.id}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {user.email} (ID: {user.id})
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {user.accessible_providers && user.accessible_providers.length > 0 ? (
-                          <div className="space-y-1">
-                            <div className="text-xs text-gray-500 mb-1">
-                              {user.accessible_providers.length} provider{user.accessible_providers.length > 1 ? 's' : ''} assigned:
-                            </div>
-                            {user.accessible_providers.map((provider, index) => (
-                              <div key={provider.id} className="flex items-center space-x-2">
-                                <span className={`px-2 py-1 rounded text-xs font-medium ${
-                                  provider.is_active ? 'bg-green-100 text-green-800 border border-green-200' : 'bg-blue-100 text-blue-800 border border-blue-200'
-                                }`}>
-                                  {provider.name}
-                                  {provider.is_active && ' (Active)'}
+                        {user.provider_name ? (
+                          <span className="px-2 py-1 rounded text-xs bg-blue-100 text-blue-800 border border-blue-200">
+                            {user.provider_name} (ID: {user.provider_id})
+                          </span>
+                        ) : (
+                          <span className="text-gray-400 text-xs">No primary provider</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <div className="flex items-center space-x-2">
+                          <button
+                            onClick={() => loadUserProviderDetails(user.email)}
+                            disabled={isLoadingUserProviders}
+                            className="text-blue-600 hover:text-blue-900 disabled:opacity-50 text-sm"
+                          >
+                            {isLoadingUserProviders && showUserProviderDetails === user.email ? 'Loading...' : 'View Providers'}
+                          </button>
+                          {userProviderList.length > 0 && (
+                            <span className="px-2 py-1 rounded text-xs bg-green-100 text-green-800 border border-green-200">
+                              {userProviderList.length} provider{userProviderList.length !== 1 ? 's' : ''}
+                            </span>
+                          )}
+                        </div>
+                        
+                        {/* Provider Details Dropdown */}
+                        {showUserProviderDetails === user.email && userProviderList.length > 0 && (
+                          <div className="mt-2 p-3 bg-gray-50 rounded-md border">
+                            <div className="text-xs font-medium text-gray-700 mb-2">Provider Access:</div>
+                            {userProviderList.map(provider => (
+                              <div key={provider.id} className="flex items-center justify-between py-1">
+                                <span className="text-sm text-gray-600">
+                                  {provider.name} (ID: {provider.id})
                                 </span>
+                                <div className="flex space-x-1">
+                                  <button
+                                    onClick={() => handleSetActiveProvider(user.email, provider.id)}
+                                    disabled={isLoading}
+                                    className={`px-2 py-1 text-xs rounded ${
+                                      activeProviders[user.email] === provider.id
+                                        ? 'bg-green-600 text-white'
+                                        : 'bg-blue-600 text-white hover:bg-blue-700'
+                                    }`}
+                                  >
+                                    {activeProviders[user.email] === provider.id ? 'Active' : 'Set Active'}
+                                  </button>
+                                  <button
+                                    onClick={() => handleRemoveUserFromProvider(user.email, provider.id)}
+                                    disabled={isLoading}
+                                    className="px-2 py-1 text-xs rounded bg-red-600 text-white hover:bg-red-700"
+                                  >
+                                    Remove
+                                  </button>
+                                </div>
                               </div>
                             ))}
-                          </div>
-                        ) : (
-                          <div>
-                            {user.provider_name ? (
-                              <span className="px-2 py-1 rounded text-xs bg-gray-100 text-gray-800 border border-gray-200">
-                                {user.provider_name} (Legacy)
-                              </span>
-                            ) : (
-                              <span className="text-gray-400 text-xs">No providers assigned</span>
-                            )}
                           </div>
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         <div className="flex space-x-2">
-                          {user.accessible_providers && user.accessible_providers.length > 0 ? (
-                            <div className="space-y-1">
-                              {user.accessible_providers.map(provider => (
-                                <button
-                                  key={provider.id}
-                                  onClick={() => unlinkUserFromProvider(user.id, provider.id)}
-                                  disabled={isLoading}
-                                  className="text-red-600 hover:text-red-900 disabled:opacity-50 text-xs block"
-                                >
-                                  Remove {provider.name}
-                                </button>
-                              ))}
-                            </div>
-                          ) : (
+                          {user.provider_id ? (
                             <button
                               onClick={() => unlinkUserFromProvider(user.id)}
                               disabled={isLoading}
                               className="text-red-600 hover:text-red-900 disabled:opacity-50"
                             >
-                              Unlink
+                              Unlink Primary
                             </button>
+                          ) : (
+                            <span className="text-gray-400 text-xs">No primary provider</span>
                           )}
                           <button
                             onClick={() => forceUnassignUser(user.id)}
@@ -878,6 +1244,113 @@ const UserProviderLinking: React.FC = () => {
               </tbody>
             </table>
           </div>
+        </div>
+
+        {/* Multi-Provider Management Section */}
+        <div className="bg-white p-6 rounded-lg shadow mb-8">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Multi-Provider Management</h2>
+          <p className="text-sm text-gray-600 mb-4">
+            Assign users to multiple providers for enhanced access control and flexibility.
+          </p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Select User
+              </label>
+              <select
+                value={selectedUser || ''}
+                onChange={(e) => setSelectedUser(Number(e.target.value) || null)}
+                className="w-full p-2 border border-gray-300 rounded-md"
+              >
+                <option value="">Choose a user...</option>
+                {filteredUsers.map(user => (
+                  <option key={user.id} value={user.id}>
+                    {user.email} 
+                    {user.provider_name 
+                      ? ` (Primary: ${user.provider_name})` 
+                      : ' (No Primary Provider)'
+                    }
+                  </option>
+                ))}
+              </select>
+            </div>
+            
+            <div className="relative">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Select Additional Provider
+              </label>
+              <div className="relative provider-dropdown">
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={providerSearchTerm}
+                    onChange={(e) => setProviderSearchTerm(e.target.value)}
+                    onFocus={() => setShowProviderDropdown(true)}
+                    placeholder="Search providers..."
+                    className="w-full p-2 border border-gray-300 rounded-md pr-8"
+                  />
+                  {providerSearchTerm && (
+                    <button
+                      onClick={() => {
+                        setProviderSearchTerm('');
+                        setSelectedProvider(null);
+                      }}
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+                {showProviderDropdown && (
+                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                    <div className="p-2">
+                      {filteredAndSortedProviders.map(provider => (
+                        <div
+                          key={provider.id}
+                          onClick={() => {
+                            setSelectedProvider(provider.id);
+                            setProviderSearchTerm(provider.name);
+                            setShowProviderDropdown(false);
+                          }}
+                          className="p-2 hover:bg-gray-100 cursor-pointer rounded"
+                        >
+                          <div className="font-medium">{provider.name}</div>
+                          <div className="text-sm text-gray-500">
+                            ID: {provider.id} • {usersPerProvider[provider.id] || 0} users
+                          </div>
+                        </div>
+                      ))}
+                      {filteredAndSortedProviders.length === 0 && (
+                        <div className="p-2 text-gray-500 text-sm">
+                          No providers found matching "{providerSearchTerm}"
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            <div className="flex items-end">
+              <button
+                onClick={linkUserToProvider}
+                disabled={!selectedUser || !selectedProvider || isLoading}
+                className="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isLoading ? 'Adding...' : 'Add Provider Access'}
+              </button>
+            </div>
+          </div>
+          
+          {selectedUser && selectedProvider && (
+            <div className="mt-2 p-2 bg-purple-50 rounded-md">
+              <div className="text-sm">
+                <span className="font-medium">Adding Access:</span> 
+                {users.find(u => u.id === selectedUser)?.email} → {providers.find(p => p.id === selectedProvider)?.name}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Unconnected Users List */}

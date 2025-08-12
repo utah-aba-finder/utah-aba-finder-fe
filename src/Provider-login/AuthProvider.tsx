@@ -8,6 +8,7 @@ import React, {
 import { jwtDecode } from "jwt-decode";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { getApiBaseUrl } from "../Utility/config";
 
 interface TokenPayload {
   exp: number;
@@ -23,6 +24,12 @@ interface AuthContextType {
   userRole: string;
   logout: (reason?: 'inactivity' | 'session-expired' | 'manual') => void;
   initializeSession: (token: string) => void;
+  // Multi-Provider Support
+  userProviders: any[];
+  activeProvider: any;
+  setActiveProvider: (provider: any) => void;
+  fetchUserProviders: () => Promise<void>;
+  switchProvider: (providerId: number) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -32,12 +39,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [token, setTokenState] = useState<string | null>(() => {
     const storedToken = sessionStorage.getItem("authToken");
-    console.log('Retrieved token from sessionStorage:', storedToken ? 'exists' : 'null');
+    
     return storedToken;
   });
   const [loggedInProvider, setLoggedInProvider] = useState<any>(
     JSON.parse(sessionStorage.getItem("loggedInProvider") || "null")
   );
+  
+  // Multi-Provider State
+  const [userProviders, setUserProviders] = useState<any[]>([]);
+  const [activeProvider, setActiveProviderState] = useState<any>(
+    JSON.parse(sessionStorage.getItem("activeProvider") || "null")
+  );
+  
   const navigate = useNavigate();
 
   const logout = useCallback((reason?: 'inactivity' | 'session-expired' | 'manual') => {
@@ -104,7 +118,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         return true;
       }
     } catch (error) {
-      console.error('Token validation error:', error);
+      
       // Don't log out on validation errors, just return false
       return false;
     }
@@ -113,7 +127,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const setToken = useCallback(
     (newToken: string | null) => {
       if (newToken && !validateToken(newToken)) {
-        console.log('Token validation failed, logging out');
+
         logout();
         return;
       }
@@ -345,6 +359,89 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, [token, checkTokenExpiration]);
 
+  // Multi-Provider Functions
+  const fetchUserProviders = useCallback(async () => {
+    if (!token || !loggedInProvider) return;
+    
+    try {
+      // Get user email from the logged in provider or token
+      const userEmail = loggedInProvider.email || loggedInProvider.user_email;
+      if (!userEmail) return;
+      
+      const response = await fetch(`${getApiBaseUrl()}/api/v1/providers/user_providers?user_email=${encodeURIComponent(userEmail)}`, {
+        headers: {
+          'Authorization': token,
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const providers = data.providers || [];
+        setUserProviders(providers);
+        
+        // If no active provider is set, set the first one as active
+        if (!activeProvider && providers.length > 0) {
+          setActiveProviderState(providers[0]);
+          sessionStorage.setItem("activeProvider", JSON.stringify(providers[0]));
+        }
+      } else {
+        console.error('Failed to fetch user providers:', response.status);
+      }
+    } catch (error) {
+      console.error('Error fetching user providers:', error);
+    }
+  }, [token, loggedInProvider, activeProvider]);
+
+  const switchProvider = useCallback(async (providerId: number) => {
+    if (!token || !loggedInProvider) return false;
+    
+    try {
+      const userEmail = loggedInProvider.email || loggedInProvider.user_email;
+      if (!userEmail) return false;
+      
+      const response = await fetch(`${getApiBaseUrl()}/api/v1/providers/set_active_provider`, {
+        method: 'POST',
+        headers: {
+          'Authorization': token,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_email: userEmail,
+          provider_id: providerId
+        })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          // Find the provider in userProviders and set it as active
+          const provider = userProviders.find(p => p.id === providerId);
+          if (provider) {
+            setActiveProviderState(provider);
+            sessionStorage.setItem("activeProvider", JSON.stringify(provider));
+            return true;
+          }
+        }
+      }
+      return false;
+    } catch (error) {
+      console.error('Error switching provider:', error);
+      return false;
+    }
+  }, [token, loggedInProvider, userProviders]);
+
+  const setActiveProvider = useCallback((provider: any) => {
+    setActiveProviderState(provider);
+    sessionStorage.setItem("activeProvider", JSON.stringify(provider));
+  }, []);
+
+  // Fetch user providers when logged in (moved here after function definition)
+  useEffect(() => {
+    if (token && loggedInProvider) {
+      fetchUserProviders();
+    }
+  }, [token, loggedInProvider, fetchUserProviders]);
+
   const contextValue: AuthContextType = {
     token,
     setToken,
@@ -357,6 +454,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       sessionStorage.setItem("loggedInProvider", JSON.stringify(provider));
     },
     userRole: loggedInProvider?.role || "",
+    userProviders,
+    activeProvider,
+    setActiveProvider,
+    fetchUserProviders,
+    switchProvider,
   };
 
   return (

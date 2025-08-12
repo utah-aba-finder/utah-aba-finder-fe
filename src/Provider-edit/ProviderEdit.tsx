@@ -28,6 +28,53 @@ interface ProviderEditProps {
   onUpdate: (updatedProvider: ProviderAttributes) => void;
 }
 
+// Provider Selector Component
+const ProviderSelector: React.FC = () => {
+  const { userProviders, activeProvider, switchProvider, fetchUserProviders } = useAuth();
+  
+  if (userProviders.length <= 1) {
+    return null; // Don't show selector if user only has one provider
+  }
+
+  return (
+    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-lg font-semibold text-blue-900">Provider Context</h3>
+          <p className="text-sm text-blue-700">
+            Currently editing: <span className="font-medium">{activeProvider?.name}</span>
+          </p>
+        </div>
+        <div className="flex items-center space-x-3">
+          <label className="text-sm font-medium text-blue-900">Switch to:</label>
+          <select
+            value={activeProvider?.id || ''}
+            onChange={(e) => {
+              const providerId = Number(e.target.value);
+              if (providerId !== activeProvider?.id) {
+                switchProvider(providerId);
+              }
+            }}
+            className="px-3 py-2 border border-blue-300 rounded-md bg-white text-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            {userProviders.map(provider => (
+              <option key={provider.id} value={provider.id}>
+                {provider.name}
+              </option>
+            ))}
+          </select>
+          <button
+            onClick={fetchUserProviders}
+            className="px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
+          >
+            Refresh
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const ProviderEdit: React.FC<ProviderEditProps> = ({
   loggedInProvider,
   clearProviderData,
@@ -91,7 +138,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
   const fetchManagedProviders = useCallback(async () => {
     try {
       setIsLoadingProviders(true);
-      console.log('Fetching accessible providers for user');
+  
       
       const response = await fetch(
         'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/accessible_providers',
@@ -104,15 +151,15 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
 
       if (response.ok) {
         const data = await response.json();
-        console.log('Accessible providers:', data);
+
         setAvailableProviders(data.providers || []);
       } else {
-        console.error('Failed to fetch accessible providers:', response.status);
+        
         // Fallback to just the current provider
         setAvailableProviders([loggedInProvider]);
       }
     } catch (error) {
-      console.error('Error fetching accessible providers:', error);
+      
       // Fallback to just the current provider
       setAvailableProviders([loggedInProvider]);
     } finally {
@@ -122,7 +169,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
 
   const refreshProviderData = useCallback(async () => {
     try {
-      console.log('Refreshing provider data using provider_self endpoint');
+      
       
       const response = await fetch(
         'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/provider_self',
@@ -133,15 +180,11 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
         }
       );
 
-      console.log('Refresh provider data response:', {
-        status: response.status,
-        ok: response.ok,
-        statusText: response.statusText
-      });
+
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Refresh provider data error:', errorText);
+
         throw new Error("Failed to refresh provider data");
       }
 
@@ -239,7 +282,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
 
   const handleProviderSwitch = useCallback(async (newProviderId: number) => {
     try {
-      console.log('Switching to provider:', newProviderId);
+      
       
       // Call the set_active_provider endpoint
       const response = await fetch(
@@ -258,7 +301,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
 
       if (response.ok) {
         const result = await response.json();
-        console.log('Provider switch result:', result);
+
         
         setSelectedProviderId(newProviderId);
         const selectedProvider = availableProviders.find(p => p.id === newProviderId);
@@ -279,11 +322,11 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
         }
       } else {
         const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
-        console.error('Provider switch error:', errorData);
+        
         toast.error(`Failed to switch provider: ${errorData.message || 'Unknown error'}`);
       }
     } catch (error) {
-      console.error('Error switching provider:', error);
+      
       toast.error('Failed to switch provider');
     }
   }, [availableProviders, refreshProviderData, loggedInProvider.id]);
@@ -299,6 +342,11 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
   useEffect(() => {
     fetchManagedProviders();
   }, [fetchManagedProviders]);
+
+  // Monitor accessible providers (silent)
+  useEffect(() => {
+    // Silent monitoring - no console output
+  }, [availableProviders]);
 
   useEffect(() => {
     const tokenExpiry = sessionStorage.getItem("tokenExpiry");
@@ -436,11 +484,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       formData.append('email', currentProvider.attributes.email || '');
       formData.append('website', currentProvider.attributes.website || '');
       
-      console.log('Uploading logo for provider:', {
-        providerId: loggedInProvider.id,
-        method: 'PUT',
-        authHeader: loggedInProvider.id.toString()
-      });
+      
 
       const response = await fetch(`https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${loggedInProvider.id}`, {
         method: 'PUT',
@@ -453,12 +497,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Logo upload error response:', {
-          status: response.status,
-          statusText: response.statusText,
-          errorText: errorText,
-          headers: response.headers
-        });
+        
 
         toast.error(`Failed to upload logo: ${response.status} - ${errorText}`);
         return;
@@ -508,13 +547,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
 
 
 
-      console.log('Saving provider changes:', {
-        url: `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${loggedInProvider.id}`,
-        method: 'PATCH',
-        providerId: loggedInProvider.id,
-        authHeader: loggedInProvider.id.toString(),
-        requestBody: requestBody
-      });
+      
 
       const response = await fetch(
         `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${loggedInProvider.id}`,
@@ -528,20 +561,11 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
         }
       );
       
-      console.log('Save provider changes response:', {
-        status: response.status,
-        ok: response.ok,
-        statusText: response.statusText
-      });
+      
       
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Save provider changes error response:', {
-          status: response.status,
-          statusText: response.statusText,
-          errorText: errorText,
-          headers: response.headers
-        });
+        
 
         let errorData;
         try {
@@ -763,6 +787,19 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
               </div>
             )}
 
+            {/* Debug Section */}
+            <div className="px-3 pb-3 border-t border-gray-200 pt-3">
+              <div className="text-xs text-gray-500 mb-2">Debug Info:</div>
+              <div className="text-xs space-y-1">
+                <div>Providers: {availableProviders.length}</div>
+                <div>Current: {selectedProviderId}</div>
+                <div>Loading: {isLoadingProviders ? 'Yes' : 'No'}</div>
+                {availableProviders.length > 1 && (
+                  <div className="text-green-600 font-medium">Multiple providers detected!</div>
+                )}
+              </div>
+            </div>
+
             {/* Navigation Menu */}
             <nav className="flex-1 flex flex-col justify-center gap-4 py-2 px-4">
               <button
@@ -934,6 +971,10 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
 
             {/* Main Content */}
             <main className="flex-1 overflow-y-auto p-6">
+              {/* Provider Selector for Multi-Provider Users */}
+              <ProviderSelector />
+              
+              {/* Tab Navigation */}
               {selectedTab === "dashboard" && (
                 <Dashboard provider={currentProvider} />
               )}
