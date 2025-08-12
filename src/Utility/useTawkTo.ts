@@ -26,20 +26,20 @@ export const useTawkTo = (config: TawkToConfig) => {
           try {
             // Check if i18next is available before using it
             if (window.Tawk_API && window.Tawk_API.$_Tawk && typeof window.Tawk_API.$_Tawk.i18next === 'function') {
-              console.log('Tawk.to loaded successfully with i18next support');
+      
             } else {
-              console.warn('Tawk.to loaded but i18next not available');
+              
             }
           } catch (error) {
-            console.warn('Tawk.to onLoad error:', error);
+            
           }
         };
 
         window.Tawk_API.onStatusChange = function(status: string) {
           try {
-            console.log('Tawk.to status changed:', status);
+
           } catch (error) {
-            console.warn('Tawk.to status change error:', error);
+            
           }
         };
 
@@ -52,17 +52,17 @@ export const useTawkTo = (config: TawkToConfig) => {
                 if (typeof window.Tawk_API.$_Tawk.i18next === 'function') {
                   window.Tawk_API.$_Tawk.setVisitorInformation(name, email);
                 } else {
-                  console.warn('Tawk.to i18next not available, skipping visitor information');
+      
                 }
               }
             } catch (error) {
-              console.warn('Tawk.to setVisitorInformation error:', error);
+
             }
           };
         }
       }
     } catch (error) {
-      console.warn('Tawk.to initialization error:', error);
+      
     }
   }, [config.visitorName, config.visitorEmail]);
 
@@ -72,7 +72,7 @@ export const useTawkTo = (config: TawkToConfig) => {
         window.Tawk_API.setVisitorInformation(name, email);
       }
     } catch (error) {
-      console.warn('Tawk.to setVisitorInformation error:', error);
+      
     }
   }, []);
 
@@ -82,7 +82,7 @@ export const useTawkTo = (config: TawkToConfig) => {
         window.Tawk_API.maximize();
       }
     } catch (error) {
-      console.warn('Tawk.to maximize error:', error);
+      
     }
   }, []);
 
@@ -92,7 +92,7 @@ export const useTawkTo = (config: TawkToConfig) => {
         window.Tawk_API.minimize();
       }
     } catch (error) {
-      console.warn('Tawk.to minimize error:', error);
+      
     }
   }, []);
 
@@ -102,7 +102,7 @@ export const useTawkTo = (config: TawkToConfig) => {
         window.Tawk_API.toggle();
       }
     } catch (error) {
-      console.warn('Tawk.to toggle error:', error);
+      
     }
   }, []);
 

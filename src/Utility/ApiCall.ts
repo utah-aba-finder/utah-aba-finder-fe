@@ -33,7 +33,7 @@ export const fetchProviders = async (): Promise<Providers> => {
     
     return data;
   } catch (error) {
-    console.error('Error fetching providers:', error);
+    
     if (axios.isAxiosError(error)) {
       if (error.code === 'ECONNABORTED') {
         throw new Error('Request timeout - please check your connection');
@@ -60,14 +60,14 @@ export const fetchSingleProvider = async (providerId: number) => {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Provider fetch failed:", errorText);
+      
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
     const data = await response.json();
     return data.data[0];
   } catch (error) {
-    console.error('Error fetching single provider:', error);
+    
     throw error;
   }
 }
@@ -116,7 +116,7 @@ export const fetchInsurance = async (): Promise<InsuranceData[]> => {
 // Test function to check API health
 export const testAPIHealth = async (): Promise<{ status: string; message: string }> => {
   try {
-    console.log('Testing API health...');
+
     
     // Test basic providers endpoint
     const response = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers', {
@@ -125,7 +125,7 @@ export const testAPIHealth = async (): Promise<{ status: string; message: string
       },
     });
     
-    console.log('Basic providers endpoint status:', response.status);
+    
     
     if (response.ok) {
       return { status: 'healthy', message: 'API is working correctly' };
@@ -134,7 +134,7 @@ export const testAPIHealth = async (): Promise<{ status: string; message: string
       return { status: 'error', message: `API returned ${response.status}: ${errorText}` };
     }
   } catch (error) {
-    console.error('API health check failed:', error);
+    
     return { status: 'error', message: `API health check failed: ${error instanceof Error ? error.message : 'Unknown error'}` };
   }
 };
@@ -156,7 +156,7 @@ export const fetchProvidersByStateIdAndProviderType = async (stateId: string, pr
     }
     return data;
   } catch (error) {
-    console.error('Error fetching providers by state and type:', error);
+    
     // Return empty data structure instead of throwing
     return { data: [] };
   }
@@ -192,7 +192,7 @@ export const retryRequest = async <T>(
       return await requestFn();
     } catch (error) {
       lastError = error as Error;
-      console.warn(`Request failed (attempt ${i + 1}/${maxRetries}):`, error);
+      
       
       if (i < maxRetries - 1) {
         await new Promise(resolve => setTimeout(resolve, delay * (i + 1)));
@@ -222,8 +222,7 @@ export const validateLogoFile = (file: File): { isValid: boolean; error?: string
 // Enhanced logo upload function following the exact requirements
 export const uploadProviderLogo = async (providerId: number, logoFile: File): Promise<{ success: boolean; error?: string; updatedProvider?: any }> => {
   try {
-    console.log('Uploading logo for provider ID:', providerId);
-    console.log('Logo file:', logoFile.name, 'Size:', logoFile.size, 'Type:', logoFile.type);
+    
     
     // Validate file before upload
     const validation = validateLogoFile(logoFile);
@@ -253,7 +252,7 @@ export const uploadProviderLogo = async (providerId: number, logoFile: File): Pr
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Upload failed:', errorText);
+      
       return { success: false, error: `Upload failed: ${response.status} - ${errorText}` };
     }
 
@@ -264,7 +263,7 @@ export const uploadProviderLogo = async (providerId: number, logoFile: File): Pr
       updatedProvider: result 
     };
   } catch (error) {
-    console.error('Error uploading logo:', error);
+    
     return { 
       success: false, 
       error: error instanceof Error ? error.message : 'Unknown error occurred' 
@@ -306,7 +305,7 @@ export const removeProviderLogo = async (providerId: number): Promise<{ success:
 
     return { success: true };
   } catch (error) {
-    console.error('Error removing logo:', error);
+    
     return { 
       success: false, 
       error: error instanceof Error ? error.message : 'Unknown error occurred' 
@@ -322,8 +321,7 @@ export const removeProviderLogo = async (providerId: number): Promise<{ success:
 
 export const uploadAdminProviderLogo = async (providerId: number, logoFile: File): Promise<{ success: boolean; error?: string; updatedProvider?: any }> => {
   try {
-    console.log('Uploading logo for provider ID (admin):', providerId);
-    console.log('Logo file:', logoFile.name, 'Size:', logoFile.size, 'Type:', logoFile.type);
+    
     
     // Create FormData with just the logo file (Active Storage format)
     const formData = new FormData();
@@ -361,10 +359,10 @@ export const uploadAdminProviderLogo = async (providerId: number, logoFile: File
         }
       } catch (textError) {
         // If we can't read the response text, use the status
-        console.warn('Could not read admin error response text:', textError);
+
       }
       
-      console.error('Admin logo upload error response:', errorMessage);
+      
       throw new Error(errorMessage);
     }
 
@@ -374,7 +372,7 @@ export const uploadAdminProviderLogo = async (providerId: number, logoFile: File
       updatedProvider: responseData.data?.[0] 
     };
   } catch (error) {
-    console.error('Error uploading admin logo:', error);
+    
     return { 
       success: false, 
       error: error instanceof Error ? error.message : 'Unknown error occurred' 

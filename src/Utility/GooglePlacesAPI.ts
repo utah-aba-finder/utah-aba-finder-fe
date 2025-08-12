@@ -41,7 +41,7 @@ export class GooglePlacesAPI {
       const url = new URL(website.startsWith('http') ? website : `https://${website}`);
       return url.hostname.replace('www.', '');
     } catch (error) {
-      console.error('Error extracting domain:', error);
+      
       return website;
     }
   }
@@ -111,7 +111,7 @@ export class GooglePlacesAPI {
       const data = await this.makeRequest(url);
 
       if (data.status === 'REQUEST_DENIED') {
-        console.error('API request denied:', data.error_message);
+
         throw new Error('Search request denied');
       }
 
@@ -142,7 +142,7 @@ export class GooglePlacesAPI {
 
       return null;
     } catch (error) {
-      console.error('Error searching for place by website:', error);
+      
       return null;
     }
   }
@@ -214,7 +214,7 @@ export class GooglePlacesAPI {
 
       return null;
     } catch (error) {
-      console.error('Error getting place details:', error);
+      
       return null;
     }
   }
@@ -251,12 +251,12 @@ export class GooglePlacesAPI {
 
       // Try website first if available
       if (website) {
-        console.log(`Searching by website: ${website}`);
+  
         try {
           placeDetails = await this.searchPlaceByWebsite(website);
           if (placeDetails) {
             searchMethod = 'website';
-            console.log(`Found place by website: ${placeDetails.name}`);
+  
           } else {
             errors.push(`No place found for website: ${website}`);
           }
@@ -267,12 +267,12 @@ export class GooglePlacesAPI {
 
       // Fallback to name and address if website search failed
       if (!placeDetails) {
-        console.log(`Searching by name and address: ${providerName} ${address}`);
+
         try {
           placeDetails = await this.searchPlaceByNameAndAddress(providerName, address);
           if (placeDetails) {
             searchMethod = 'name_address';
-            console.log(`Found place by name/address: ${placeDetails.name}`);
+
           } else {
             errors.push(`No place found for name/address: ${providerName} ${address}`);
           }
@@ -282,14 +282,14 @@ export class GooglePlacesAPI {
       }
 
       if (!placeDetails) {
-        console.log('No place found with either method');
+
         return { placeDetails: null, reviews: [], searchMethod: 'none', errors };
       }
 
       // Get reviews for the found place
       try {
         const reviews = await this.getPlaceReviews(placeDetails.place_id);
-        console.log(`Found ${reviews.length} reviews`);
+
         
         return {
           placeDetails: {
@@ -313,7 +313,7 @@ export class GooglePlacesAPI {
         };
       }
     } catch (error) {
-      console.error('Error searching and getting reviews:', error);
+      
       errors.push(`General error: ${error instanceof Error ? error.message : 'Unknown error'}`);
       return { placeDetails: null, reviews: [], searchMethod: 'none', errors };
     }

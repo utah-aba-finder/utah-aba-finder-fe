@@ -18,10 +18,10 @@ const PasswordReset: React.FC = () => {
   const resetToken = searchParams.get('reset_password_token');
 
   useEffect(() => {
-    console.log('PasswordReset component mounted with token:', resetToken);
+
     
     if (!resetToken) {
-      console.error('No reset token found in URL');
+      
       toast.error('Invalid password reset link. Please request a new one.');
       navigate('/login');
       return;
@@ -33,8 +33,7 @@ const PasswordReset: React.FC = () => {
 
   const validateToken = async () => {
     try {
-      console.log('Validating token:', resetToken);
-      console.log('API URL being used:', `${API_CONFIG.BASE_API_URL}/api/v1/password_resets/validate_token?token=${resetToken}`);
+      
       
       const response = await fetch(`${API_CONFIG.BASE_API_URL}/api/v1/password_resets/validate_token?token=${resetToken}`, {
         method: 'GET',
@@ -43,25 +42,18 @@ const PasswordReset: React.FC = () => {
         }
       });
 
-      console.log('Token validation response status:', response.status);
-      console.log('Token validation response ok:', response.ok);
+      
       
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Token validation failed:', errorText);
-        console.error('Token validation response headers:', response.headers);
+        
         toast.error('This reset link has expired. Please request a new password reset.');
         navigate('/forgot-password');
       } else {
-        console.log('Token validation successful');
+
       }
     } catch (error) {
-      console.error('Token validation error:', error);
-      console.error('Token validation error details:', {
-        message: error instanceof Error ? error.message : 'Unknown error',
-        name: error instanceof Error ? error.name : 'Unknown',
-        stack: error instanceof Error ? error.stack : 'No stack trace'
-      });
+
       // Don't navigate away on network errors, let user try the reset
     }
   };
@@ -88,26 +80,18 @@ const PasswordReset: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    console.log('Password reset form submitted');
-    console.log('Form validation result:', validateForm());
+
     
     if (!validateForm()) {
-      console.log('Form validation failed');
+
       return;
     }
 
-    console.log('Starting password reset process...');
+
     setIsLoading(true);
 
     try {
-      console.log('Password reset request:', {
-        url: `${API_CONFIG.BASE_API_URL}/api/v1/password_resets`,
-        method: 'PATCH',
-        token: resetToken,
-        passwordLength: password.length,
-        confirmationLength: passwordConfirmation.length,
-        apiConfig: API_CONFIG
-      });
+
 
       const response = await fetch(`${API_CONFIG.BASE_API_URL}/api/v1/password_resets`, {
         method: 'PATCH',
@@ -121,23 +105,22 @@ const PasswordReset: React.FC = () => {
         })
       });
 
-      console.log('Password reset response status:', response.status);
-      console.log('Password reset response ok:', response.ok);
+
 
       let responseData;
       try {
         const responseText = await response.text();
-        console.log('Password reset response text:', responseText);
+
 
         if (responseText) {
           responseData = JSON.parse(responseText);
-          console.log('Password reset response data:', responseData);
+
         } else {
           responseData = {};
-          console.log('Password reset response empty');
+
         }
       } catch (parseError) {
-        console.error('Password reset response parse error:', parseError);
+
         throw new Error('Invalid response from server');
       }
 

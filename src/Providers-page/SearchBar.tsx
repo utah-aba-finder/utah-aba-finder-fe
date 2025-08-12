@@ -69,14 +69,26 @@ const SearchBar: React.FC<SearchBarProps> = ({
   const [counties, setCounties] = useState<CountyData[]>([]);
   const [advancedOptions, setAdvancedOptions] = useState(false);
 
+  // Ensure props are always arrays to prevent runtime errors
+  const safeProviders = Array.isArray(providers) ? providers : [];
+  const safeInsuranceOptions = Array.isArray(insuranceOptions) ? insuranceOptions : [];
+  const safeCounties = Array.isArray(counties) ? counties : [];
+  const safeProviderStates = Array.isArray(providerStates) ? providerStates : [];
+
+  // Validate props to ensure they are always arrays
+  useEffect(() => {
+    // Silent validation - no console output
+  }, [providers, insuranceOptions, counties, providerStates]);
+
   // Fetch states on component mount
   useEffect(() => {
     const getStates = async () => {
       try {
         const statesData = await fetchStates();
-        setProviderStates(statesData);
+        setProviderStates(statesData || []);
       } catch {
         setError('We are currently experiencing issues displaying states. Please try again later.');
+        setProviderStates([]);
       }
     };
     getStates();
@@ -90,7 +102,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
   
           const countiesData = await fetchCountiesByState(parseInt(selectedStateId));
           
-          setCounties(countiesData);
+          setCounties(countiesData || []);
           // Only reset county if state changes and not during initial load
           if (selectedCounty !== '') {
             setSelectedCounty('');
@@ -233,8 +245,8 @@ const SearchBar: React.FC<SearchBarProps> = ({
               required
             >
               <option value="none">Choose a state</option>
-              {providerStates && providerStates.length > 0
-                ? providerStates.map((providerState) => (
+              {safeProviderStates.length > 0
+                ? safeProviderStates.map((providerState) => (
                     <option 
                       key={providerState.id} 
                       value={providerState.id}
@@ -275,8 +287,8 @@ const SearchBar: React.FC<SearchBarProps> = ({
               list="provider-names"
             />
             <datalist id="provider-names">
-              {providers && providers.length > 0
-                ? providers.map((provider, index) => (
+              {safeProviders.length > 0
+                ? safeProviders.map((provider, index) => (
                     <option key={index} value={provider.name ?? ''} />
                   ))
                 : null}
@@ -298,9 +310,9 @@ const SearchBar: React.FC<SearchBarProps> = ({
             />
             <datalist id="insurance-options">
               <option value="">All Insurance</option>
-              {insuranceOptions && insuranceOptions.length > 0
-                ? insuranceOptions
-                    .filter((insurance) => insurance.attributes.name !== 'Contact us')
+              {safeInsuranceOptions.length > 0
+                ? safeInsuranceOptions
+                    .filter((insurance) => insurance && insurance.attributes && insurance.attributes.name !== 'Contact us')
                     .sort((a, b) => a.attributes.name.localeCompare(b.attributes.name))
                     .map((insurance, index) => (
                       <option key={index} value={insurance.attributes.name} />
@@ -325,9 +337,9 @@ const SearchBar: React.FC<SearchBarProps> = ({
                 required
                 disabled={selectedStateId === 'none' || selectedStateId === ''}
               >
-                <option value="">All Counties ({counties ? counties.length : 0} available)</option>
-                {counties && counties.length > 0
-                  ? counties.map((county) => (
+                <option value="">All Counties ({safeCounties.length} available)</option>
+                {safeCounties.length > 0
+                  ? safeCounties.map((county) => (
                       <option key={county.id} value={county.attributes.name}>
                         {county.attributes.name}
                       </option>

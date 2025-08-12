@@ -98,11 +98,7 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
         },
       };
 
-      console.log('Saving location changes for provider:', {
-        providerId: provider.id,
-        method: 'PATCH',
-        authHeader: provider.id.toString()
-      });
+      
 
                 const response = await fetch(
             `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${provider.id}`,

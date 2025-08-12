@@ -122,20 +122,7 @@ const SuperAdmin = () => {
         throw new Error("Invalid response format");
       }
 
-      // Debug: Log logo URLs
-      console.log('Providers with logos:', data.data?.filter((p: any) => p.attributes?.logo).map((p: any) => ({
-        name: p.attributes.name,
-        logo: p.attributes.logo
-      })));
-      
-      // Debug: Log all provider data structure
-      console.log('All providers data structure:', data.data?.slice(0, 3).map((p: any) => ({
-        id: p.id,
-        name: p.attributes?.name,
-        logo: p.attributes?.logo,
-        hasLogo: !!p.attributes?.logo,
-        attributesKeys: Object.keys(p.attributes || {})
-      })));
+
 
       // Update the providers state with the fresh data
       setProviders(data.data);
@@ -175,7 +162,7 @@ const SuperAdmin = () => {
       }
 
     } catch (error) {
-      console.error('Error fetching providers:', error);
+
       toast.error("Failed to fetch providers");
     } finally {
       setIsLoading(false);
@@ -225,7 +212,7 @@ const SuperAdmin = () => {
       }, 500);
 
     } catch (error) {
-      console.error('Error updating provider:', error);
+
       toast.error("Failed to update provider");
     }
   };
@@ -791,11 +778,7 @@ const SuperAdmin = () => {
                                           alt={`${provider.attributes.name} logo`}
                                           className="w-10 h-10 object-contain rounded border border-gray-200"
                                           onError={(e) => {
-                                            console.error('Logo failed to load:', provider.attributes.logo);
                                             e.currentTarget.style.display = 'none';
-                                          }}
-                                          onLoad={() => {
-                                            console.log('Logo loaded successfully:', provider.attributes.logo);
                                           }}
                                         />
                                         {/* Logo preview on hover */}

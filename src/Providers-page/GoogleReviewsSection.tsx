@@ -74,16 +74,10 @@ const GoogleReviewsSection: React.FC<GoogleReviewsSectionProps> = ({
       setLoading(true);
       setError(null);
 
-      console.log('GoogleReviewsSection: Starting to load reviews');
-      console.log('GoogleReviewsSection: Provider name:', providerName);
-      console.log('GoogleReviewsSection: Provider address:', providerAddress);
-      console.log('GoogleReviewsSection: Provider website:', providerWebsite);
-      console.log('GoogleReviewsSection: API key exists:', !!googleApiKey);
-      console.log('GoogleReviewsSection: API key length:', googleApiKey?.length || 0);
-      console.log('GoogleReviewsSection: API key first 10 chars:', googleApiKey?.substring(0, 10));
+      
 
       if (!googleApiKey || googleApiKey.trim() === '') {
-        console.error('GoogleReviewsSection: No API key provided');
+
         setError('Google reviews are not available at this time.');
         setLoading(false);
         return;
@@ -96,30 +90,23 @@ const GoogleReviewsSection: React.FC<GoogleReviewsSectionProps> = ({
       const googlePlaces = new GooglePlacesAPI(googleApiKey);
       
       // First validate the API key
-      console.log('GoogleReviewsSection: Validating API key...');
+      
       const validation = await googlePlaces.validateAPIKey();
-      console.log('GoogleReviewsSection: API key validation result:', validation);
+      
       
       if (!validation.valid) {
-        console.error('GoogleReviewsSection: API key validation failed:', validation.error);
+        
         setError('Google reviews are not available at this time.');
         setLoading(false);
         return;
       }
 
-      console.log('GoogleReviewsSection: API key validated successfully');
       
-      console.log('GoogleReviewsSection: Starting search and get reviews...');
+      
+      
       const result = await googlePlaces.searchAndGetReviews(providerName, providerAddress, providerWebsite);
       
-      console.log('GoogleReviewsSection: Search result:', {
-        placeDetails: !!result.placeDetails,
-        reviewsCount: result.reviews?.length || 0,
-        searchMethod: result.searchMethod,
-        errors: result.errors,
-        placeName: result.placeDetails?.name,
-        placeAddress: result.placeDetails?.formatted_address
-      });
+
 
       // Only show reviews if the match is strong
       if (result.placeDetails) {
@@ -144,39 +131,27 @@ const GoogleReviewsSection: React.FC<GoogleReviewsSectionProps> = ({
           websiteMatch = getDomain(providerWebsite) === getDomain(place.website);
         }
         
-        console.log('GoogleReviewsSection: Matching results:', {
-          nameMatch,
-          addressMatch,
-          websiteMatch,
-          providerName,
-          placeName: place.name,
-          providerAddress,
-          placeAddress: place.formatted_address,
-          providerWebsite,
-          placeWebsite: place.website,
-          normalizedProviderName: normalize(providerName),
-          normalizedPlaceName: normalize(place.name)
-        });
+
         
         // Show reviews if there's a name match (more flexible)
         if (nameMatch) {
-          console.log('GoogleReviewsSection: Name match found, showing reviews');
+
           setPlaceDetails(place);
           setReviews(result.reviews);
         } else {
-          console.log('GoogleReviewsSection: No name match, not showing reviews');
+
           setPlaceDetails(null);
           setReviews([]);
           setError(`No Google reviews found for ${providerName}.`);
         }
       } else {
-        console.log('GoogleReviewsSection: No place details found');
+
         setPlaceDetails(null);
         setReviews([]);
         setError(`No Google reviews found for ${providerName}.`);
       }
     } catch (err) {
-      console.error('GoogleReviewsSection: Error loading Google reviews:', err);
+
       // Check if it's a network timeout or connection error
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       if (errorMessage.includes('timeout') || errorMessage.includes('network') || errorMessage.includes('fetch')) {

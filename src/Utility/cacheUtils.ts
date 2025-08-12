@@ -28,9 +28,9 @@ export const clearAllCaches = async (): Promise<void> => {
     // Clear sessionStorage
     sessionStorage.clear();
 
-    console.log('All caches cleared successfully');
+    
   } catch (error) {
-    console.error('Error clearing caches:', error);
+    
   }
 };
 
@@ -63,7 +63,7 @@ export const handleMobileIssues = (): void => {
     
     // Check for construction messages
     if (checkForConstructionMessage()) {
-      console.warn('Construction message detected, clearing caches...');
+
       clearAllCaches();
       setTimeout(() => {
         forceReload();
