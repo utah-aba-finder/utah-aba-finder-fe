@@ -220,10 +220,8 @@ export const validateLogoFile = (file: File): { isValid: boolean; error?: string
 };
 
 // Enhanced logo upload function following the exact requirements
-export const uploadProviderLogo = async (providerId: number, logoFile: File): Promise<{ success: boolean; error?: string; updatedProvider?: any }> => {
+export const uploadProviderLogo = async (providerId: number, logoFile: File, userId: string): Promise<{ success: boolean; error?: string; updatedProvider?: any }> => {
   try {
-    
-    
     // Validate file before upload
     const validation = validateLogoFile(logoFile);
     if (!validation.isValid) {
@@ -234,25 +232,23 @@ export const uploadProviderLogo = async (providerId: number, logoFile: File): Pr
     const formData = new FormData();
     formData.append('logo', logoFile); // Only send the logo file
     
-
+    // Add provider data to ensure the logo gets properly associated
+    formData.append('provider_id', providerId.toString());
 
     const response = await fetch(
       `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${providerId}`,
       {
         method: 'PUT',
         headers: {
-          'Authorization': 'be6205db57ce01863f69372308c41e3a',
+          'Authorization': userId,
           // Don't set Content-Type header - browser will set it automatically with boundary
         },
         body: formData
       }
     );
 
-
-
     if (!response.ok) {
       const errorText = await response.text();
-      
       return { success: false, error: `Upload failed: ${response.status} - ${errorText}` };
     }
 
@@ -263,7 +259,6 @@ export const uploadProviderLogo = async (providerId: number, logoFile: File): Pr
       updatedProvider: result 
     };
   } catch (error) {
-    
     return { 
       success: false, 
       error: error instanceof Error ? error.message : 'Unknown error occurred' 
@@ -286,14 +281,14 @@ export const uploadProviderLogo = async (providerId: number, logoFile: File): Pr
 //   });
 // };
 
-export const removeProviderLogo = async (providerId: number): Promise<{ success: boolean; error?: string }> => {
+export const removeProviderLogo = async (providerId: number, userId: string): Promise<{ success: boolean; error?: string }> => {
   try {
     const response = await fetch(
               `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${providerId}/remove_logo`,
       {
         method: 'DELETE',
         headers: {
-          'Authorization': 'be6205db57ce01863f69372308c41e3a',
+          'Authorization': userId,
         }
       }
     );
@@ -305,7 +300,6 @@ export const removeProviderLogo = async (providerId: number): Promise<{ success:
 
     return { success: true };
   } catch (error) {
-    
     return { 
       success: false, 
       error: error instanceof Error ? error.message : 'Unknown error occurred' 

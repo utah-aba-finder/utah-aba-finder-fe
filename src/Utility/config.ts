@@ -26,11 +26,11 @@ export const getUserAuthHeader = () => {
 };
 
 // Helper function to get the appropriate API base URL
-export const getApiBaseUrl = () => {
+export const getApiBaseUrl = (): string => {
+  // Temporarily use production for testing multi-provider system
   if (process.env.NODE_ENV === 'development') {
-    // Use localhost for development
-    return process.env.REACT_APP_BASE_API_URL || 'http://localhost:3001';
+    console.log('🔧 DEV MODE: Using production backend for testing');
+    return 'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com';
   }
-  // Use Heroku for production
   return 'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com';
 }; 

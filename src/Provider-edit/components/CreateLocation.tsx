@@ -175,8 +175,11 @@ const CreateLocation: React.FC<CreateLocationProps> = ({
                 value={newLocation.address_1 || ''}
                 onChange={(e) => setNewLocation({ ...newLocation, address_1: e.target.value })}
                 className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                required
+                required={!provider.attributes?.in_home_only}
               />
+              {provider.attributes?.in_home_only && (
+                <p className="text-xs text-gray-500 mt-1">Optional for in-home only providers</p>
+              )}
             </div>
 
             <div className="md:col-span-2">
@@ -196,8 +199,11 @@ const CreateLocation: React.FC<CreateLocationProps> = ({
                 value={newLocation.city || ''}
                 onChange={(e) => setNewLocation({ ...newLocation, city: e.target.value })}
                 className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                required
+                required={!provider.attributes?.in_home_only}
               />
+              {provider.attributes?.in_home_only && (
+                <p className="text-xs text-gray-500 mt-1">Optional for in-home only providers</p>
+              )}
             </div>
 
             <div>
@@ -207,8 +213,11 @@ const CreateLocation: React.FC<CreateLocationProps> = ({
                 value={newLocation.state || ''}
                 onChange={(e) => setNewLocation({ ...newLocation, state: e.target.value })}
                 className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                required
+                required={!provider.attributes?.in_home_only}
               />
+              {provider.attributes?.in_home_only && (
+                <p className="text-xs text-gray-500 mt-1">Optional for in-home only providers</p>
+              )}
             </div>
 
             <div>
@@ -218,8 +227,11 @@ const CreateLocation: React.FC<CreateLocationProps> = ({
                 value={newLocation.zip || ''}
                 onChange={(e) => setNewLocation({ ...newLocation, zip: e.target.value })}
                 className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                required
+                required={!provider.attributes?.in_home_only}
               />
+              {provider.attributes?.in_home_only && (
+                <p className="text-xs text-gray-500 mt-1">Optional for in-home only providers</p>
+              )}
             </div>
 
             <div className="md:col-span-2">

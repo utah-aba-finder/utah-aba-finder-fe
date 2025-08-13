@@ -1,0 +1,53 @@
+/* Header-specific styles to override unwanted button styling */
+
+.header-nav button {
+  border: none !important;
+  outline: none !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  border-radius: 6px !important;
+  cursor: pointer !important;
+}
+
+.header-nav button:hover {
+  background-color: #f9fafb !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.header-nav a {
+  text-decoration: none !important;
+  border: none !important;
+  outline: none !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
+
+.header-nav a:hover {
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Override any global button styles that might be interfering */
+header button,
+header .header-nav button {
+  border: none !important;
+  outline: none !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Ensure dropdown buttons look correct */
+.header-nav .dropdown-button {
+  border: none !important;
+  outline: none !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  border-radius: 6px !important;
+}
+
+.header-nav .dropdown-button:hover {
+  background-color: #f9fafb !important;
+  border: none !important;
+  box-shadow: none !important;
+} 

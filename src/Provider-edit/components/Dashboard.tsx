@@ -2,6 +2,8 @@ import { FC, useState, useEffect } from "react";
 import { Building2, Globe, Mail, Home, MapPin, X } from "lucide-react";
 import moment from "moment";
 import { ProviderData, Location, ProviderType, CountiesServed, CountyData } from "../../Utility/Types";
+import { useAuth } from "../../Provider-login/AuthProvider";
+import ProviderSelector from "./ProviderSelector";
 
 interface DashboardProps {
   provider: ProviderData;
@@ -10,7 +12,9 @@ interface DashboardProps {
 
 const Dashboard: FC<DashboardProps> = ({ provider, onUpdate }) => {
   const { attributes } = provider;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { activeProvider, userProviders } = useAuth();
+  
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedProviderTypes, setSelectedProviderTypes] = useState<ProviderType[]>(
     attributes.provider_type || []
   );
@@ -39,6 +43,14 @@ const Dashboard: FC<DashboardProps> = ({ provider, onUpdate }) => {
 
   return (
     <div className="space-y-4 sm:space-y-6">
+      {/* Provider Selector - Only show if user has multiple providers */}
+      {userProviders && userProviders.length > 1 && activeProvider && (
+        <div className="bg-gray-50 rounded-lg border border-gray-200 p-4">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">Switch Provider</h3>
+          <ProviderSelector key={activeProvider?.id || 'no-provider'} />
+        </div>
+      )}
+      
       {/* Provider Overview Card */}
       <div className="bg-white rounded-lg shadow p-4 sm:p-6 md:p-8">
         <div className="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-6 mb-4 sm:mb-8">
