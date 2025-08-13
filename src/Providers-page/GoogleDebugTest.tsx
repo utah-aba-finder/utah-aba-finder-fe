@@ -24,12 +24,7 @@ const GoogleDebugTest: React.FC = () => {
     try {
       const googlePlaces = new GooglePlacesAPI(apiKey);
       
-      console.log('Testing Google Places API with:', {
-        providerName,
-        address,
-        website,
-        hasApiKey: !!apiKey
-      });
+
 
       const result = await googlePlaces.searchAndGetReviews(providerName, address, website);
       
@@ -38,9 +33,9 @@ const GoogleDebugTest: React.FC = () => {
         debugInfo: await googlePlaces.debugSearch(providerName, address, website)
       });
 
-      console.log('Test results:', result);
+
     } catch (err) {
-      console.error('Test error:', err);
+
       setError(err instanceof Error ? err.message : 'Unknown error occurred');
     } finally {
       setLoading(false);
@@ -68,9 +63,9 @@ const GoogleDebugTest: React.FC = () => {
         message: 'Tested with Walmart in Salt Lake City, UT'
       });
 
-      console.log('Simple test results:', result);
+
     } catch (err) {
-      console.error('Simple test error:', err);
+
       setError(err instanceof Error ? err.message : 'Unknown error occurred');
     } finally {
       setLoading(false);
@@ -96,9 +91,9 @@ const GoogleDebugTest: React.FC = () => {
         message: 'API Key validation test'
       });
 
-      console.log('API Key validation:', validation);
+
     } catch (err) {
-      console.error('API Key test error:', err);
+
       setError(err instanceof Error ? err.message : 'Unknown error occurred');
     } finally {
       setLoading(false);

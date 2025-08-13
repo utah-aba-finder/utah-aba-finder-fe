@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { ChevronDown } from "lucide-react";
 import Logo from "../Assets/FinalLogo.png";
+import "./Header.css";
 
 const navigationItems = [
   { name: "Home", href: "/" },
@@ -48,73 +49,87 @@ const Header = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
+  // Get navigation items (no authentication logic needed)
+  const currentNavigationItems = navigationItems;
+
   return (
     <header className="fixed w-full top-0 z-50 max-w-[100vw]">
       <div className="bg-white border-b shadow-sm relative px-1">
         <div className="w-full box-border justify-evenly">
           <div className="flex justify-between items-center h-24 w-full">
-            <Link to="/" className="flex-shrink-0">
-              <img
-                src={Logo}
-                alt="Autism Services Locator Logo"
-                className="h-[8rem] lg:h-[12rem] w-[200px] max-w-[280px] lg:max-w-[200px]  object-contain"
-              />
-            </Link>
+            {/* Logo */}
+            <div className="flex-shrink-0">
+              <Link to="/" className="block">
+                <img
+                  src={Logo}
+                  alt="Autism Services Locator Logo"
+                  className="h-[8rem] lg:h-[12rem] w-[200px] max-w-[280px] lg:max-w-[200px]"
+                />
+              </Link>
+            </div>
 
             {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center">
-              <ul className="flex space-x-8 list-none m-0">
-                {navigationItems.map((item) => (
-                  <li key={item.name} className="group relative">
-                    {item.dropdown ? (
-                      <div className="inline-flex items-center cursor-pointer">
-                        <span className="text-[#332d29] hover:text-[#4A6FA5] xl:text-lg lg:text-base font-semibold">
-                          {item.name}
-                        </span>
-                        <ChevronDown className="ml-1 h-5 w-5 text-[#332d29]" />
-                      </div>
-                    ) : (
-                      <Link
-                        to={item.href}
-                        className={`xl:text-lg lg:text-base font-semibold no-underline ${
-                          item.isSpecial 
-                            ? 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105' 
-                            : 'text-[#332d29] hover:text-[#4A6FA5]'
-                        }`}
+            <nav className="hidden lg:flex space-x-8 header-nav">
+              {currentNavigationItems.map((item) => (
+                <div key={item.name} className="relative group">
+                  {item.dropdown ? (
+                    <div className="relative">
+                      <button
+                        onMouseEnter={() => setExpandedItem(item.name)}
+                        onMouseLeave={() => setExpandedItem(null)}
+                        className="dropdown-button text-[#332d29] hover:text-[#4A6FA5] px-3 py-2 text-lg font-bold transition-colors duration-200 bg-transparent border-0 hover:bg-gray-50 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-300"
+                        style={{ 
+                          border: 'none', 
+                          outline: 'none', 
+                          backgroundColor: 'transparent',
+                          boxShadow: 'none',
+                          borderRadius: '6px',
+                          cursor: 'pointer'
+                        }}
                       >
                         {item.name}
-                      </Link>
-                    )}
-
-                    {/* Dropdown Menu */}
-                    {item.dropdown && (
-                      <div
-                        className={`absolute ${item.name === "Contact" ? "right-0" : "left-0"
-                          } 
-                            mt-2 w-48 bg-white py-2 rounded-lg shadow-lg z-[60]
-                            invisible group-hover:visible opacity-0 group-hover:opacity-100 
-                            transition-all duration-200 ease-in-out`}
-                      >
-                        {item.dropdown.map((dropdownItem) => (
-                          <Link
-                            key={dropdownItem.name}
-                            to={dropdownItem.href}
-                            className="block px-4 py-2 text-[#332d29] hover:text-[#4A6FA5] 
-                                  hover:bg-gray-50 xl:text-base lg:text-sm font-medium whitespace-nowrap no-underline"
-                          >
-                            {dropdownItem.name}
-                          </Link>
-                        ))}
-                      </div>
-                    )}
-                  </li>
-                ))}
-              </ul>
+                        <ChevronDown className="inline-block ml-1 h-4 w-4" />
+                      </button>
+                      {expandedItem === item.name && (
+                        <div className="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200">
+                          {item.dropdown.map((dropdownItem) => (
+                            <Link
+                              key={dropdownItem.name}
+                              to={dropdownItem.href}
+                              className="block px-4 py-2 text-[#332d29] hover:text-[#4A6FA5] hover:bg-gray-50 text-base font-semibold no-underline"
+                            >
+                              {dropdownItem.name}
+                            </Link>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <Link
+                      to={item.href}
+                      className={`text-lg font-bold no-underline transition-all duration-200 ${
+                        item.isSpecial 
+                          ? 'bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-lg shadow-md hover:from-green-600 hover:to-green-700 hover:shadow-lg transform hover:scale-105' 
+                          : 'text-[#332d29] hover:text-[#4A6FA5] px-3 py-2 hover:bg-gray-50 rounded-md'
+                      }`}
+                      style={{ 
+                        textDecoration: 'none',
+                        border: 'none',
+                        outline: 'none',
+                        backgroundColor: 'transparent',
+                        boxShadow: 'none'
+                      }}
+                    >
+                      {item.name}
+                    </Link>
+                  )}
+                </div>
+              ))}
             </nav>
 
             {/* Mobile Menu Button */}
             <button
-              className="lg:hidden p-2 relative w-10 h-10 bg-transparent border-0"
+              className="lg:hidden p-2 relative w-10 h-10 bg-transparent border-0 hover:bg-gray-100 rounded-md transition-colors duration-200"
               onClick={handleMobileMenuToggle}
               aria-label="Toggle menu"
             >
@@ -141,7 +156,6 @@ const Header = () => {
           </div>
         </div>
       </div>
-      {/* <div className="w-full h-[.2em] bg-[#544d49]" /> */}
 
       {/* Mobile Menu */}
       <div
@@ -149,8 +163,8 @@ const Header = () => {
               ${isMobileMenuOpen ? "max-h-[calc(100vh-6rem)] opacity-100" : "max-h-0 opacity-0"} 
               overflow-y-auto overflow-x-hidden`}
       >
-        <nav className="py-4 max-w-full">
-          {navigationItems.map((item) => (
+        <nav className="py-4 max-w-full header-nav">
+          {currentNavigationItems.map((item) => (
             <div key={item.name} className="text-left w-full">
               {item.dropdown ? (
                 <div className="w-full">
@@ -158,7 +172,7 @@ const Header = () => {
                     onClick={() =>
                       setExpandedItem(expandedItem === item.name ? null : item.name)
                     }
-                    className="w-full flex items-center justify-between py-4 px-6
+                    className="dropdown-button w-full flex items-center justify-between py-4 px-6
                           text-[#332d29] text-xl font-bold bg-transparent border-0"
                   >
                     <span>{item.name}</span>

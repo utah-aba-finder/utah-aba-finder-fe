@@ -347,7 +347,9 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
           
           // If the admin upload fails, try the regular method
           if (!logoResult.success) {
-            logoResult = await uploadProviderLogo(provider.id, selectedLogoFile);
+            // For SuperAdmin, we can use a default admin user ID or get it from context
+            const adminUserId = 'admin'; // You might want to get this from admin context
+            logoResult = await uploadProviderLogo(provider.id, selectedLogoFile, adminUserId);
           }
           
           if (logoResult.success) {

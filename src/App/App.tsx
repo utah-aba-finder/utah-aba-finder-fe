@@ -36,6 +36,7 @@ import GoogleDebugTest from "../Providers-page/GoogleDebugTest";
 import MobileDebugTest from "../Providers-page/MobileDebugTest";
 import PasswordReset from "../PasswordReset/PasswordReset";
 import ForgotPassword from "../ForgotPassword/ForgotPassword";
+import ProviderDashboard from "../Utility/ProviderDashboard";
 
 // Simple test component to check if React loads
 const TestComponent = () => {
@@ -46,6 +47,30 @@ const TestComponent = () => {
       <p>Time: {new Date().toLocaleString()}</p>
     </div>
   );
+};
+
+// Safe Header wrapper that only renders when AuthProvider is ready
+const SafeHeader = () => {
+  try {
+    return <Header />;
+  } catch (error) {
+    // If Header fails to render due to context issues, show minimal header
+    console.warn('Header failed to render, showing fallback:', error);
+    return (
+      <header className="fixed w-full top-0 z-50 max-w-[100vw]">
+        <div className="bg-white border-b shadow-sm relative px-1">
+          <div className="w-full box-border justify-evenly">
+            <div className="flex justify-between items-center h-24 w-full">
+              <div className="flex-shrink-0">
+                <div className="h-[8rem] lg:h-[12rem] w-[200px] max-w-[280px] lg:max-w-[200px] bg-gray-200 rounded animate-pulse"></div>
+              </div>
+              <div className="text-center text-gray-500">Loading...</div>
+            </div>
+          </div>
+        </div>
+      </header>
+    );
+  }
 };
 
 function App() {
@@ -182,9 +207,10 @@ function App() {
           ⚠️ No internet connection. Some features may not work properly.
         </div>
       )}
-      <Header /> 
-      <div className="main-content">
-        <AuthProvider>
+      
+      <AuthProvider>
+        <SafeHeader /> 
+        <div className="main-content">
           <Routes>
             <Route path="/test" element={<TestComponent />} />
             <Route path="/" element={<Homepage />} />
@@ -239,11 +265,32 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            
+            {/* Provider Management Dashboard */}
+            <Route
+              path="/my-providers"
+              element={
+                <ProtectedRoute allowedRoles={["provider_admin", "super_admin"]}>
+                  <div className="min-h-screen bg-gray-50 pt-24">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                      <div className="mb-8">
+                        <h1 className="text-3xl font-bold text-gray-900">Provider Management</h1>
+                        <p className="mt-2 text-gray-600">
+                          Manage all your providers and switch between them easily
+                        </p>
+                      </div>
+                      <ProviderDashboard showQuickActions={true} showProviderList={true} />
+                    </div>
+                  </div>
+                </ProtectedRoute>
+              }
+            />
+            
             <Route path="*" element={<PageNotFound />} />
           </Routes>
-        </AuthProvider>
-      </div>
-      <Footer />
+        </div>
+        <Footer />
+      </AuthProvider>
     </div>
   );
 }

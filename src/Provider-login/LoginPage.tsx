@@ -107,8 +107,7 @@ export const LoginPage: React.FC = () => {
                 const providerId = data.user?.provider_id;
                 
                 // Debug: Log the user data to see what we're getting
-                console.log('Provider login - User data:', data.user);
-                console.log('Provider login - Provider ID:', providerId);
+                
 
                 
                 if (providerId && providerId !== null) {

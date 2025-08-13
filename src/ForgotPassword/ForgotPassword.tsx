@@ -129,12 +129,7 @@ const ForgotPassword: React.FC = () => {
       // Use the password reset endpoint
       const endpoint = `${API_CONFIG.BASE_API_URL}/api/v1/password_resets`;
       
-      console.log('ForgotPassword request:', {
-        url: endpoint,
-        method: 'POST',
-        email: trimmedEmail,
-        apiConfig: API_CONFIG
-      });
+
 
       // If test passes, proceed with the actual request
       const response = await fetch(endpoint, {
@@ -147,8 +142,7 @@ const ForgotPassword: React.FC = () => {
         })
       });
       
-      console.log('ForgotPassword response status:', response.status);
-      console.log('ForgotPassword response ok:', response.ok);
+
 
       let responseData;
       try {
@@ -160,17 +154,12 @@ const ForgotPassword: React.FC = () => {
           responseData = {};
         }
       } catch (parseError) {
-        console.error('Failed to parse response:', parseError);
+
         throw new Error('Invalid response from server');
       }
 
       if (!response.ok) {
-        console.error('ForgotPassword error response:', {
-          status: response.status,
-          statusText: response.statusText,
-          responseData: responseData,
-          headers: response.headers
-        });
+
         
         // Handle specific error cases
         if (responseData.errors) {
@@ -211,10 +200,10 @@ const ForgotPassword: React.FC = () => {
       }
 
       // If we reach here, something unexpected happened
-      console.warn('Unexpected response:', responseData);
+
       setIsSubmitted(true);
     } catch (error) {
-      console.error('Password reset request error:', error);
+
       toast.error(error instanceof Error ? error.message : '❌ Failed to send password reset email. Please try again.', {
         position: "top-center",
         autoClose: 6000,

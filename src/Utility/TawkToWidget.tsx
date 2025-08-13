@@ -41,7 +41,7 @@ const TawkToWidget: React.FC<TawkToWidgetProps> = ({
             // Create a safe wrapper for i18next
             if (!window.Tawk_API.$_Tawk.i18next || typeof window.Tawk_API.$_Tawk.i18next !== 'function') {
               window.Tawk_API.$_Tawk.i18next = function() {
-                console.warn('Tawk.to i18next called but not available, using fallback');
+        
                 return {
                   t: function(key: string) { return key; },
                   language: 'en'
@@ -56,25 +56,25 @@ const TawkToWidget: React.FC<TawkToWidgetProps> = ({
                 try {
                   return originalSetVisitorInformation.call(this, name, email);
                 } catch (error) {
-                  console.warn('Tawk.to setVisitorInformation error (suppressed):', error);
+        
                 }
               };
             }
           }
 
-          console.log('Tawk.to loaded successfully with error handling');
+  
           onLoad?.();
         } catch (error) {
-          console.warn('Tawk.to onLoad error:', error);
+          
         }
       };
 
       window.Tawk_API.onStatusChange = function(status: string) {
         try {
-          console.log('Tawk.to status changed:', status);
+
           onStatusChange?.(status);
         } catch (error) {
-          console.warn('Tawk.to status change error:', error);
+          
         }
       };
 
@@ -86,11 +86,11 @@ const TawkToWidget: React.FC<TawkToWidgetProps> = ({
               if (typeof window.Tawk_API.$_Tawk.i18next === 'function') {
                 window.Tawk_API.$_Tawk.setVisitorInformation(name, email);
               } else {
-                console.warn('Tawk.to i18next not available, skipping visitor information');
+      
               }
             }
           } catch (error) {
-            console.warn('Tawk.to setVisitorInformation error:', error);
+
           }
         };
       }
@@ -103,7 +103,7 @@ const TawkToWidget: React.FC<TawkToWidgetProps> = ({
       script.setAttribute('crossorigin', '*');
       
       script.onerror = function() {
-        console.warn('Failed to load Tawk.to script');
+
       };
 
       scriptRef.current = script;
@@ -111,7 +111,7 @@ const TawkToWidget: React.FC<TawkToWidgetProps> = ({
       isInitialized.current = true;
 
     } catch (error) {
-      console.warn('Tawk.to initialization error:', error);
+      
     }
 
     // Cleanup function
@@ -128,7 +128,7 @@ const TawkToWidget: React.FC<TawkToWidgetProps> = ({
       try {
         window.Tawk_API.setVisitorInformation?.(visitorName || '', visitorEmail || '');
       } catch (error) {
-        console.warn('Tawk.to setVisitorInformation error:', error);
+        
       }
     }
   }, [visitorName, visitorEmail]);

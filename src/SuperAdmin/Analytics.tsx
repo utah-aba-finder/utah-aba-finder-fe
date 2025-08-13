@@ -55,10 +55,10 @@ const Analytics: React.FC<AnalyticsProps> = ({ providers }) => {
           const data = await response.json();
           setUsers(data.users || []);
         } else {
-          console.error('Failed to fetch users:', response.status);
+  
         }
       } catch (error) {
-        console.error('Error fetching users:', error);
+
       } finally {
         setIsLoadingUsers(false);
       }

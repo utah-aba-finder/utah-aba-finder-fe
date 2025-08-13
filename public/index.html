@@ -72,66 +72,82 @@
   
   <!-- Service Worker Registration with mobile-friendly settings -->
   <script>
-    // Detect mobile Safari
-    const isMobileSafari = /iPad|iPhone|iPod/.test(navigator.userAgent) && 
-                          /Safari/.test(navigator.userAgent) && 
-                          !/Chrome/.test(navigator.userAgent);
-    
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        // Add error boundary for service worker registration
+    // Service Worker Registration - Safe + Graceful
+    (function() {
+      if (!('serviceWorker' in navigator)) {
+        console.log('Service Worker not supported');
+        return;
+      }
+
+      window.addEventListener('load', async () => {
         try {
-          // For mobile Safari, use a more conservative approach
-          if (isMobileSafari) {
-            console.log('Mobile Safari detected - using conservative service worker approach');
+          const isMobileSafari =
+            /iPad|iPhone|iPod/.test(navigator.userAgent) &&
+            /Safari/.test(navigator.userAgent) &&
+            !/Chrome/.test(navigator.userAgent);
+
+          // Avoid previous reload loops
+          let reloadedForSW = sessionStorage.getItem('sw-reloaded') === '1';
+
+          // Gracefully verify sw.js exists (and bypass HTTP cache)
+          const swUrl = '/sw.js';
+          let swExists = false;
+          try {
+            const head = await fetch(swUrl, { method: 'GET', cache: 'no-store' });
+            swExists = head.ok;
+            if (!swExists) {
+              console.warn('Service worker file missing at', swUrl);
+            }
+          } catch (e) {
+            console.warn('Could not verify /sw.js (network issue?):', e);
           }
-          
-          navigator.serviceWorker.register('/sw.js', {
+          if (!swExists) return; // Don't register if it's not there
+
+          const registration = await navigator.serviceWorker.register(swUrl, {
             scope: '/',
             updateViaCache: 'none'
-          })
-            .then((registration) => {
-              console.log('SW registered successfully: ', registration);
-              
-              // Handle service worker updates
-              registration.addEventListener('updatefound', () => {
-                const newWorker = registration.installing;
-                if (newWorker) {
-                  newWorker.addEventListener('statechange', () => {
-                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                      // New service worker available
-                      console.log('New service worker available');
-                      // Force reload to use new service worker
-                      window.location.reload();
-                    }
-                  });
+          });
+          console.log('SW registered:', registration);
+
+          // Listen for updates
+          registration.addEventListener('updatefound', () => {
+            const newWorker = registration.installing;
+            if (!newWorker) return;
+
+            newWorker.addEventListener('statechange', async () => {
+              if (newWorker.state === 'installed') {
+                // If there's an existing controller, a new SW is ready to activate
+                if (navigator.serviceWorker.controller) {
+                  console.log('New service worker available');
+                  // Ask it to activate immediately
+                  newWorker.postMessage({ type: 'SKIP_WAITING' });
+                } else {
+                  console.log('Service worker installed for the first time');
                 }
-              });
-              
-              // Handle service worker errors
-              registration.addEventListener('error', (error) => {
-                console.error('Service worker error:', error);
-                // For mobile Safari, consider unregistering on error
-                if (isMobileSafari) {
-                  console.log('Mobile Safari error detected - consider visiting /disable-sw.html');
-                }
-              });
-            })
-            .catch((registrationError) => {
-              console.error('SW registration failed: ', registrationError);
-              // Don't let service worker errors break the app
-              if (isMobileSafari) {
-                console.log('Mobile Safari registration failed - consider visiting /disable-sw.html');
               }
             });
-        } catch (error) {
-          console.error('Service worker registration error:', error);
-          // Don't let service worker errors break the app
+          });
+
+          // When the new SW activates, reload once (avoid infinite loop)
+          navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (reloadedForSW) return;
+            reloadedForSW = true;
+            sessionStorage.setItem('sw-reloaded', '1');
+            window.location.reload();
+          });
+
+          // Optional: handle errors
+          registration.addEventListener('error', (err) => {
+            console.error('Service worker error:', err);
+            if (isMobileSafari) {
+              console.log('Mobile Safari: if issues persist, visit /disable-sw.html');
+            }
+          });
+        } catch (err) {
+          console.error('Service worker registration error:', err);
         }
       });
-    } else {
-      console.log('Service Worker not supported');
-    }
+    })();
   </script>
   
   <!--

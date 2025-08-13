@@ -8,7 +8,6 @@ import React, {
 import { jwtDecode } from "jwt-decode";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { getApiBaseUrl } from "../Utility/config";
 
 interface TokenPayload {
   exp: number;
@@ -37,6 +36,8 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
+
+  
   const [token, setTokenState] = useState<string | null>(() => {
     const storedToken = sessionStorage.getItem("authToken");
     
@@ -52,7 +53,82 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     JSON.parse(sessionStorage.getItem("activeProvider") || "null")
   );
   
+  // Log when activeProvider changes
+
+  
   const navigate = useNavigate();
+
+  // --- Helpers ---------------------------------------------------------------
+
+  const getApiBaseUrl = () => {
+    if (process.env.NODE_ENV === 'development') {
+      // You currently hit prod while dev'ing; keep that behavior
+      return 'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com';
+    }
+    return process.env.REACT_APP_API_BASE_URL || 'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com';
+  };
+
+  // Safely pull a numeric/string user id for the Authorization header
+  const extractUserIdForAuth = (token: string | null, loggedInProvider: any): string | null => {
+    if (!token) return loggedInProvider?.id?.toString?.() || null;
+
+    // Try base64 JSON (your current approach)
+    try {
+      const decoded = JSON.parse(atob(token));
+      if (decoded?.id) return decoded.id.toString();
+    } catch {
+      /* noop */
+    }
+    // Fallback to using loggedInProvider.id (should be user id in your flow)
+    return loggedInProvider?.id?.toString?.() || null;
+  };
+
+  // Normalize /providers/:id responses into { id, type, states, attributes: {...} }
+  const normalizeProviderDetail = (raw: any) => {
+    // Common API shapes you handled before
+    let p = raw?.data;
+    if (Array.isArray(p)) p = p[0];
+    if (!p) p = raw?.provider || raw;
+
+    // Build a safe object for ProviderEdit expectations
+    const id = p?.id ?? p?.attributes?.id ?? p?.provider_id ?? 0;
+    const states = p?.states || p?.attributes?.states || [];
+    const attributes = p?.attributes || p || {};
+
+    return {
+      id,
+      type: p?.type || 'provider',
+      states,
+      attributes: {
+        id,
+        states,
+        password: '',
+        username: attributes?.email || p?.email || '',
+        name: attributes?.name || p?.name || '',
+        email: attributes?.email || p?.email || '',
+        website: attributes?.website || p?.website || '',
+        cost: attributes?.cost || p?.cost || '',
+        min_age: attributes?.min_age ?? p?.min_age ?? null,
+        max_age: attributes?.max_age ?? p?.max_age ?? null,
+        waitlist: attributes?.waitlist ?? p?.waitlist ?? null,
+        telehealth_services: attributes?.telehealth_services ?? p?.telehealth_services ?? null,
+        spanish_speakers: attributes?.spanish_speakers ?? p?.spanish_speakers ?? null,
+        at_home_services: attributes?.at_home_services ?? p?.at_home_services ?? null,
+        in_clinic_services: attributes?.in_clinic_services ?? p?.in_clinic_services ?? null,
+        provider_type: attributes?.provider_type || p?.provider_type || [],
+        insurance: attributes?.insurance || p?.insurance || [],
+        counties_served: attributes?.counties_served || p?.counties_served || [],
+        locations: attributes?.locations || p?.locations || [],
+        logo: attributes?.logo ?? p?.logo ?? null,
+        updated_last: attributes?.updated_last ?? p?.updated_last ?? null,
+        status: attributes?.status ?? p?.status ?? null,
+        in_home_only: attributes?.in_home_only ?? p?.in_home_only ?? false,
+        service_delivery:
+          attributes?.service_delivery ??
+          p?.service_delivery ?? { in_home: false, in_clinic: false, telehealth: false },
+      },
+    };
+  };
 
   const logout = useCallback((reason?: 'inactivity' | 'session-expired' | 'manual') => {
     // Clear all session-related toasts before logging out
@@ -362,73 +438,141 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   // Multi-Provider Functions
   const fetchUserProviders = useCallback(async () => {
     if (!token || !loggedInProvider) return;
-    
+
     try {
-      // Get user email from the logged in provider or token
-      const userEmail = loggedInProvider.email || loggedInProvider.user_email;
-      if (!userEmail) return;
-      
-      const response = await fetch(`${getApiBaseUrl()}/api/v1/providers/user_providers?user_email=${encodeURIComponent(userEmail)}`, {
-        headers: {
-          'Authorization': token,
-        }
+      // 1) Get user email (endpoint requires it)
+      const userEmail =
+        loggedInProvider?.attributes?.email ||
+        loggedInProvider?.email ||
+        loggedInProvider?.user_email;
+
+      if (!userEmail) {
+        console.error('fetchUserProviders: No user email available');
+        return;
+      }
+
+      // 2) User id for Authorization header
+      const userId = extractUserIdForAuth(token, loggedInProvider);
+      if (!userId) {
+        console.error('fetchUserProviders: No user id for Authorization');
+        return;
+      }
+
+      // 3) Call user_providers (list is lightweight; no attributes)
+      const url = `${getApiBaseUrl()}/api/v1/providers/user_providers?user_email=${encodeURIComponent(userEmail)}`;
+      const listResp = await fetch(url, {
+        headers: { Authorization: userId, 'Content-Type': 'application/json' },
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        const providers = data.providers || [];
-        setUserProviders(providers);
-        
-        // If no active provider is set, set the first one as active
-        if (!activeProvider && providers.length > 0) {
-          setActiveProviderState(providers[0]);
-          sessionStorage.setItem("activeProvider", JSON.stringify(providers[0]));
-        }
-      } else {
-        console.error('Failed to fetch user providers:', response.status);
+      if (!listResp.ok) {
+        const txt = await listResp.text();
+        console.error('fetchUserProviders: user_providers failed', listResp.status, txt);
+        return;
       }
-    } catch (error) {
-      console.error('Error fetching user providers:', error);
+
+      const listData = await listResp.json();
+      if (!listData?.success || !Array.isArray(listData?.providers)) {
+        console.error('fetchUserProviders: Unexpected list response format', listData);
+        return;
+      }
+
+      setUserProviders(listData.providers);
+
+      // 4) Decide which provider to activate
+      //    Priority: sessionStorage.activeProvider.id → backend active_provider_id → first in list
+      let targetId: number | null = null;
+
+      const stored = sessionStorage.getItem('activeProvider');
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          if (parsed?.id) targetId = Number(parsed.id);
+        } catch {/* noop */}
+      }
+
+      if (!targetId && listData?.user?.active_provider_id) {
+        targetId = Number(listData.user.active_provider_id);
+      }
+
+      if (!targetId && listData.providers.length > 0) {
+        targetId = Number(listData.providers[0].id);
+      }
+
+      if (!targetId) return; // nothing to activate
+
+      // 5) Fetch full provider detail (with attributes) BEFORE setting activeProvider
+      const detailResp = await fetch(`${getApiBaseUrl()}/api/v1/providers/${targetId}`, {
+        headers: { Authorization: userId, 'Content-Type': 'application/json' },
+      });
+
+      if (!detailResp.ok) {
+        const txt = await detailResp.text();
+        console.error('fetchUserProviders: provider detail failed', detailResp.status, txt);
+        return;
+      }
+
+      const detailData = await detailResp.json();
+      const normalized = normalizeProviderDetail(detailData);
+
+      setActiveProviderState(normalized);
+      sessionStorage.setItem('activeProvider', JSON.stringify(normalized));
+    } catch (err) {
+      console.error('fetchUserProviders: Error', err);
     }
-  }, [token, loggedInProvider, activeProvider]);
+  }, [token, loggedInProvider]);
 
   const switchProvider = useCallback(async (providerId: number) => {
-    if (!token || !loggedInProvider) return false;
-    
+    if (!token || !loggedInProvider || !providerId) return false;
+
     try {
-      const userEmail = loggedInProvider.email || loggedInProvider.user_email;
-      if (!userEmail) return false;
-      
-      const response = await fetch(`${getApiBaseUrl()}/api/v1/providers/set_active_provider`, {
+      const userId = extractUserIdForAuth(token, loggedInProvider);
+      if (!userId) {
+        console.error('switchProvider: No user id for Authorization');
+        return false;
+      }
+
+      // 1) Tell backend to set the context
+      const setResp = await fetch(`${getApiBaseUrl()}/api/v1/providers/set_active_provider`, {
         method: 'POST',
-        headers: {
-          'Authorization': token,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          user_email: userEmail,
-          provider_id: providerId
-        })
+        headers: { Authorization: userId, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ provider_id: providerId }),
       });
 
-      if (response.ok) {
-        const result = await response.json();
-        if (result.success) {
-          // Find the provider in userProviders and set it as active
-          const provider = userProviders.find(p => p.id === providerId);
-          if (provider) {
-            setActiveProviderState(provider);
-            sessionStorage.setItem("activeProvider", JSON.stringify(provider));
-            return true;
-          }
-        }
+      if (!setResp.ok) {
+        const txt = await setResp.text();
+        console.error('switchProvider: set_active_provider failed', setResp.status, txt);
+        return false;
       }
-      return false;
-    } catch (error) {
-      console.error('Error switching provider:', error);
+
+      const setData = await setResp.json();
+      if (!setData?.success) {
+        console.error('switchProvider: set_active_provider returned non-success', setData);
+        return false;
+      }
+
+      // 2) Fetch the full provider record (the editor needs attributes)
+      const detailResp = await fetch(`${getApiBaseUrl()}/api/v1/providers/${providerId}`, {
+        headers: { Authorization: userId, 'Content-Type': 'application/json' },
+      });
+
+      if (!detailResp.ok) {
+        const txt = await detailResp.text();
+        console.error('switchProvider: provider detail failed', detailResp.status, txt);
+        return false;
+      }
+
+      const detailData = await detailResp.json();
+      const normalized = normalizeProviderDetail(detailData);
+
+      // 3) Update state + sessionStorage
+      setActiveProviderState(normalized);
+      sessionStorage.setItem('activeProvider', JSON.stringify(normalized));
+      return true;
+    } catch (err) {
+      console.error('switchProvider: Error', err);
       return false;
     }
-  }, [token, loggedInProvider, userProviders]);
+  }, [token, loggedInProvider]);
 
   const setActiveProvider = useCallback((provider: any) => {
     setActiveProviderState(provider);
@@ -438,6 +582,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   // Fetch user providers when logged in (moved here after function definition)
   useEffect(() => {
     if (token && loggedInProvider) {
+  
       fetchUserProviders();
     }
   }, [token, loggedInProvider, fetchUserProviders]);
