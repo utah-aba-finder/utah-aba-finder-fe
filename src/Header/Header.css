@@ -50,4 +50,27 @@ header .header-nav button {
   background-color: #f9fafb !important;
   border: none !important;
   box-shadow: none !important;
+}
+
+/* Navigation alignment improvements */
+.header-nav {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.header-nav > div {
+  display: flex !important;
+  align-items: center !important;
+  height: 100% !important;
+}
+
+/* Ensure consistent button heights */
+.header-nav button,
+.header-nav a {
+  height: 44px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: fit-content !important;
 } 
