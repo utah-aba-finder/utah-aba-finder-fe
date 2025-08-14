@@ -900,20 +900,30 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                               e.currentTarget.style.display = 'none';
                             }}
                           />
-        </div>
+                        </div>
                       ) : (
                         <div className="w-12 h-12 bg-gray-100 rounded border border-gray-200 flex items-center justify-center flex-shrink-0">
                           <span className="text-gray-400 text-lg">📷</span>
-      </div>
+                        </div>
                       )}
                       <div className="text-right">
                         <div className="text-sm font-medium text-gray-700">
                           {currentProvider?.attributes?.name || 'Unknown Provider'}
-            </div>
+                        </div>
                         <div className="text-xs text-gray-500">
                           {selectedTab === "dashboard" ? "Dashboard View" : "Edit Mode"}
-          </div>
-        </div>
+                        </div>
+                      </div>
+                      
+                      {/* Logout Button - Always visible in header */}
+                      <button
+                        onClick={handleLogout}
+                        className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 px-3 py-2 rounded-lg transition-colors duration-200"
+                        title="Sign Out"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        <span className="hidden sm:inline text-sm">Sign Out</span>
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -942,9 +952,20 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                   </div>
                   <span className="text-lg font-semibold">Provider Panel</span>
                 </div>
-                <button className="md:hidden" onClick={() => setIsOpen(false)}>
-                  <X className="ml-2 w-4 h-4 cursor-pointer" />
-                </button>
+                <div className="flex items-center space-x-2">
+                  {/* Mobile Logout Button */}
+                  <button 
+                    onClick={handleLogout}
+                    className="md:hidden flex items-center space-x-1 text-gray-600 hover:text-gray-800 hover:bg-gray-100 p-1.5 rounded transition-colors duration-200"
+                    title="Sign Out"
+                  >
+                    <LogOut className="w-4 h-4" />
+                  </button>
+                  {/* Mobile Close Button */}
+                  <button className="md:hidden" onClick={() => setIsOpen(false)}>
+                    <X className="ml-2 w-4 h-4 cursor-pointer" />
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -1063,16 +1084,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
               </button>
             </nav>
 
-            {/* Logout Button */}
-            <div className="p-3 border-t">
-              <button
-                onClick={handleLogout}
-                className="flex items-center space-x-3 text-gray-700 hover:cursor-pointer hover:text-gray-900 w-full px-3 py-2 text-sm"
-              >
-                <LogOut className="w-4 h-4" />
-                <span>Sign Out</span>
-              </button>
-            </div>
+            {/* Sidebar Footer - Removed logout button, now in header */}
           </aside>
 
           {/* Main Content Container */}
@@ -1625,6 +1637,17 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
         </div>
       </div>
         </div>
+      </div>
+      
+      {/* Floating Logout Button - Mobile Only */}
+      <div className="fixed bottom-6 right-6 z-50 md:hidden">
+        <button
+          onClick={handleLogout}
+          className="bg-red-500 hover:bg-red-600 text-white p-3 rounded-full shadow-lg transition-all duration-200 hover:scale-110"
+          title="Sign Out"
+        >
+          <LogOut className="w-6 h-6" />
+        </button>
       </div>
       
       {/* Loading overlay for save operations */}

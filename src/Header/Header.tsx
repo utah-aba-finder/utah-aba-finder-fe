@@ -56,28 +56,28 @@ const Header = () => {
     <header className="fixed w-full top-0 z-50 max-w-[100vw]">
       <div className="bg-white border-b shadow-sm relative px-1">
         <div className="w-full box-border justify-evenly">
-          <div className="flex justify-between items-center h-24 w-full">
+          <div className="flex justify-between items-center h-24 w-full px-4">
             {/* Logo */}
-            <div className="flex-shrink-0">
+            <div className="flex-shrink-0 flex items-center">
               <Link to="/" className="block">
                 <img
                   src={Logo}
                   alt="Autism Services Locator Logo"
-                  className="h-[8rem] lg:h-[12rem] w-[200px] max-w-[280px] lg:max-w-[200px]"
+                  className="h-20 w-auto object-contain max-w-[280px] lg:h-24"
                 />
               </Link>
             </div>
 
             {/* Desktop Navigation */}
-            <nav className="hidden lg:flex space-x-8 header-nav">
+            <nav className="hidden lg:flex items-center space-x-6 header-nav">
               {currentNavigationItems.map((item) => (
-                <div key={item.name} className="relative group">
+                <div key={item.name} className="relative group flex items-center">
                   {item.dropdown ? (
                     <div className="relative">
                       <button
                         onMouseEnter={() => setExpandedItem(item.name)}
                         onMouseLeave={() => setExpandedItem(null)}
-                        className="dropdown-button text-[#332d29] hover:text-[#4A6FA5] px-3 py-2 text-lg font-bold transition-colors duration-200 bg-transparent border-0 hover:bg-gray-50 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-300"
+                        className="dropdown-button text-[#332d29] hover:text-[#4A6FA5] px-4 py-3 text-lg font-bold transition-colors duration-200 bg-transparent border-0 hover:bg-gray-50 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-300 flex items-center"
                         style={{ 
                           border: 'none', 
                           outline: 'none', 
@@ -88,7 +88,7 @@ const Header = () => {
                         }}
                       >
                         {item.name}
-                        <ChevronDown className="inline-block ml-1 h-4 w-4" />
+                        <ChevronDown className="inline-block ml-2 h-4 w-4" />
                       </button>
                       {expandedItem === item.name && (
                         <div className="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200">
@@ -107,10 +107,10 @@ const Header = () => {
                   ) : (
                     <Link
                       to={item.href}
-                      className={`text-lg font-bold no-underline transition-all duration-200 ${
+                      className={`text-lg font-bold no-underline transition-all duration-200 flex items-center ${
                         item.isSpecial 
-                          ? 'bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-lg shadow-md hover:from-green-600 hover:to-green-700 hover:shadow-lg transform hover:scale-105' 
-                          : 'text-[#332d29] hover:text-[#4A6FA5] px-3 py-2 hover:bg-gray-50 rounded-md'
+                          ? 'bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-3 rounded-lg shadow-md hover:from-green-600 hover:to-green-700 hover:shadow-lg transform hover:scale-105' 
+                          : 'text-[#332d29] hover:text-[#4A6FA5] px-4 py-3 hover:bg-gray-50 rounded-md'
                       }`}
                       style={{ 
                         textDecoration: 'none',
@@ -148,75 +148,75 @@ const Header = () => {
                   />
                   <div
                     className={`absolute w-full h-0.5 bg-[#332d29] transition-all duration-300 
-                      ${isMobileMenuOpen ? "-rotate-45 top-1/2" : "rotate-0 top-full"}`}
-                  />
-                </div>
-              </div>
-            </button>
-          </div>
-        </div>
-      </div>
+                       ${isMobileMenuOpen ? "-rotate-45 top-1/2" : "rotate-0 top-full"}`}
+                   />
+                 </div>
+               </div>
+             </button>
+           </div>
+         </div>
+       </div>
 
-      {/* Mobile Menu */}
-      <div
-        className={`lg:hidden bg-white transition-all duration-300 ease-in-out w-full
-              ${isMobileMenuOpen ? "max-h-[calc(100vh-6rem)] opacity-100" : "max-h-0 opacity-0"} 
-              overflow-y-auto overflow-x-hidden`}
-      >
-        <nav className="py-4 max-w-full header-nav">
-          {currentNavigationItems.map((item) => (
-            <div key={item.name} className="text-left w-full">
-              {item.dropdown ? (
-                <div className="w-full">
-                  <button
-                    onClick={() =>
-                      setExpandedItem(expandedItem === item.name ? null : item.name)
-                    }
-                    className="dropdown-button w-full flex items-center justify-between py-4 px-6
-                          text-[#332d29] text-xl font-bold bg-transparent border-0"
-                  >
-                    <span>{item.name}</span>
-                    <ChevronDown
-                      className={`h-6 w-6 transform transition-transform duration-300
-                            ${expandedItem === item.name ? "rotate-180" : ""}`}
-                    />
-                  </button>
-                  <div
-                    className={`overflow-hidden transition-all duration-300
-                          ${expandedItem === item.name ? "max-h-96" : "max-h-0"}`}
-                  >
-                    {item.dropdown.map((dropdownItem) => (
-                      <Link
-                        key={dropdownItem.name}
-                        to={dropdownItem.href}
-                        className="block py-3 px-12 text-[#332d29] hover:text-[#4A6FA5]
-                              text-lg font-semibold no-underline"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                      >
-                        {dropdownItem.name}
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <Link
-                  to={item.href}
-                  className={`block py-4 px-6 text-xl font-bold no-underline ${
-                    item.isSpecial 
-                      ? 'bg-gradient-to-r from-green-500 to-green-600 text-white mx-4 rounded-lg shadow-md text-center' 
-                      : 'text-[#332d29] hover:text-[#4A6FA5]'
-                  }`}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  {item.name}
-                </Link>
-              )}
-            </div>
-          ))}
-        </nav>
-      </div>
-    </header>
-  );
-};
+       {/* Mobile Menu */}
+       <div
+         className={`lg:hidden bg-white transition-all duration-300 ease-in-out w-full
+               ${isMobileMenuOpen ? "max-h-[calc(100vh-6rem)] opacity-100" : "max-h-0 opacity-0"} 
+               overflow-y-auto overflow-x-hidden`}
+       >
+         <nav className="py-4 max-w-full header-nav">
+           {currentNavigationItems.map((item) => (
+             <div key={item.name} className="text-left w-full">
+               {item.dropdown ? (
+                 <div className="w-full">
+                   <button
+                     onClick={() =>
+                       setExpandedItem(expandedItem === item.name ? null : item.name)
+                     }
+                     className="dropdown-button w-full flex items-center justify-between py-4 px-6
+                           text-[#332d29] text-xl font-bold bg-transparent border-0"
+                   >
+                     <span>{item.name}</span>
+                     <ChevronDown
+                       className={`h-6 w-6 transform transition-transform duration-300
+                             ${expandedItem === item.name ? "rotate-180" : ""}`}
+                     />
+                   </button>
+                   <div
+                     className={`overflow-hidden transition-all duration-300
+                           ${expandedItem === item.name ? "max-h-96" : "max-h-0"}`}
+                   >
+                     {item.dropdown.map((dropdownItem) => (
+                       <Link
+                         key={dropdownItem.name}
+                         to={dropdownItem.href}
+                         className="block py-3 px-12 text-[#332d29] hover:text-[#4A6FA5]
+                               text-lg font-semibold no-underline"
+                         onClick={() => setIsMobileMenuOpen(false)}
+                       >
+                         {dropdownItem.name}
+                       </Link>
+                     ))}
+                   </div>
+                 </div>
+               ) : (
+                 <Link
+                   to={item.href}
+                   className={`block py-4 px-6 text-xl font-bold no-underline ${
+                     item.isSpecial 
+                       ? 'bg-gradient-to-r from-green-500 to-green-600 text-white mx-4 rounded-lg shadow-md text-center' 
+                       : 'text-[#332d29] hover:text-[#4A6FA5]'
+                   }`}
+                   onClick={() => setIsMobileMenuOpen(false)}
+                 >
+                   {item.name}
+                 </Link>
+               )}
+             </div>
+           ))}
+         </nav>
+       </div>
+     </header>
+   );
+ };
 
-export default Header;
+ export default Header;
