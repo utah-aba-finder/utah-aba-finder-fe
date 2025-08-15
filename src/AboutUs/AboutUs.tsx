@@ -39,16 +39,15 @@ const AboutUs: React.FC = () => {
           <p>
             Autism Services Locator is an innovative application designed to connect
             parents with Applied Behavior Analysis (ABA), Speech Therapy, Occupational Therapy, and Autism Evaluation providers tailored to
-            their unique needs and goals. Our team of passionate full-stack
-            developers created this platform with a deep understanding of the
+            their unique needs and goals. Our platform was created with a deep understanding of the
             challenges faced by families seeking different types of services.
           </p>
 
           <h1>Our Story</h1>
           <p>
-            One of our team members, a parent of Autistic children, experienced
+            Jordan Williamson, a parent of Autistic children, experienced
             firsthand the frustration of navigating complex healthcare systems
-            to find suitable providers. This personal journey sparked our
+            to find suitable providers. This personal journey sparked the
             mission to simplify the process for families starting in Utah and expanding to other states.
           </p>
 
@@ -89,17 +88,19 @@ const AboutUs: React.FC = () => {
         </div>
 
         <div className="about-us-portfolio">
+          {/* Core Team Section - Jordan Williamson */}
           <div className="team-section card">
             <div className="team-title-container">
-              <h2 className="team-title">Meet the Team</h2>
+              <h2 className="team-title">Core Development Team</h2>
+              <p className="team-subtitle">Currently leading development and maintenance</p>
             </div>
             <div className="profile-cards-container">
-              <div className="profile-card">
-                <img src={jordanPic} alt="jordan" className="profile-icon" />
+              <div className="profile-card featured">
+                <img src={jordanPic} alt="Jordan Williamson" className="profile-icon" />
                 <div className="profile-info">
                   <h3>Jordan Williamson</h3>
-                  <h3>Founder, Front End Developer</h3>
-                  <p>Jordan is a front-end developer with a background as a Military Working Dog Handler in the U.S. Army, holding degrees in Criminal Justice and IT with a concentration in programming and software development, and a father of two ASD children. Jordan wanted to create a platform that would make it easier for parents to find needed resources for their children.</p>
+                  <h4 className="role-title">Lead Developer & Founder</h4>
+                  <p>Jordan is the driving force behind Autism Services Locator, actively developing and maintaining the platform. As a father of two ASD children and a front-end developer with a background as a Military Working Dog Handler in the U.S. Army, Jordan holds degrees in Criminal Justice and IT with a concentration in programming and software development. His personal experience navigating healthcare systems for his children inspired him to create this platform to help other families find the resources they need.</p>
                   <div className="icon-container">
                     <a href="https://www.linkedin.com/in/jordan-williamson-a079b3271/" target="_blank" rel="noopener noreferrer">
                       <img src={LinkedinIcon} alt="LinkedIn" className="linkedin-icon" />
@@ -110,12 +111,21 @@ const AboutUs: React.FC = () => {
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
 
+          {/* Contributors Section - Original Team Members */}
+          <div className="team-section card">
+            <div className="team-title-container">
+              <h2 className="team-title">Project Contributors</h2>
+              <p className="team-subtitle">Team members who helped build the foundation</p>
+            </div>
+            <div className="profile-cards-container">
               <div className="profile-card">
-                <img src={kevinPic} alt="kevin" className="profile-icon" />
+                <img src={kevinPic} alt="Kevin Nelson" className="profile-icon" />
                 <div className="profile-info">
                   <h3>Kevin Nelson</h3>
-                  <h3>Co-Founder, Front End Developer</h3>
+                  <h4 className="role-title">Co-Founder, Front End Developer</h4>
                   <p>Kevin Nelson is a software engineer with a background in business and legal operations, who combines his Juris Doctorate and Business Administration degrees to bridge the gap between business/law and tech.</p>
                   <div className="icon-container">
                     <a href="https://www.linkedin.com/in/kevinnelson418/" target="_blank" rel="noopener noreferrer">
@@ -129,10 +139,10 @@ const AboutUs: React.FC = () => {
               </div>
 
               <div className="profile-card">
-                <img src={seongPic} alt="Seong" className="profile-icon" />
+                <img src={seongPic} alt="Seong Kang" className="profile-icon" />
                 <div className="profile-info">
                   <h3>Seong Kang</h3>
-                  <h3>Co-Founder, Front End Developer</h3>
+                  <h4 className="role-title">Co-Founder, Front End Developer</h4>
                   <p>Seong is passionate about accessibility, responsive design, and creating better UI/UX, blending a background in the U.S. Army, behavioral health, and entertainment technology with skills in React, JavaScript, HTML, and CSS.</p>
                   <div className="icon-container">
                     <a href="https://www.linkedin.com/in/seong-kang/" target="_blank" rel="noopener noreferrer">
@@ -146,10 +156,10 @@ const AboutUs: React.FC = () => {
               </div>
 
               <div className="profile-card">
-                <img src={austinPic} alt="Austin" className="profile-icon" />
+                <img src={austinPic} alt="Austin Carr-Jones" className="profile-icon" />
                 <div className="profile-info">
                   <h3>Austin Carr-Jones</h3>
-                  <h3>Co-Founder, Back End Developer</h3>
+                  <h4 className="role-title">Co-Founder, Back End Developer</h4>
                   <p>Austin is a software engineer with a background in sales, using technologies like Ruby on Rails, RSpec, PostgreSQL, SQL, and Bootstrap to build effective solutions, leveraging 14 years of experience in optimizing CRM workflows and driving growth.</p>
                   <div className="icon-container">
                     <a href="https://www.linkedin.com/in/austin-carr-jones/" target="_blank" rel="noopener noreferrer">
@@ -163,10 +173,10 @@ const AboutUs: React.FC = () => {
               </div>
 
               <div className="profile-card">
-                <img src={cheePic} alt="Chee" className="profile-icon" />
+                <img src={cheePic} alt="Chee Lee" className="profile-icon" />
                 <div className="profile-info">
                   <h3>Chee Lee</h3>
-                  <h3>Co-Founder, Back End Developer</h3>
+                  <h4 className="role-title">Co-Founder, Back End Developer</h4>
                   <p>Chee is a software engineer with a background in healthcare, bringing analytical skills and a unique problem-solving perspective from five years in interventional radiology, and is eager to apply these abilities to developing innovative software solutions.</p>
                   <div className="icon-container">
                     <a href="https://www.linkedin.com/in/chee-lee-rtr/" target="_blank" rel="noopener noreferrer">
@@ -178,27 +188,28 @@ const AboutUs: React.FC = () => {
                   </div>
                 </div>
               </div>
-            </div>
-              <div className='intern-section'>
-                <div className='intern-content-container'>
-                      <div className='intern-title-container'>
-                        <h2 className='intern-title'>Our Amazing Interns</h2>
-                      </div>
-                      <div className='intern-cards-container'>
-                        <div className='intern-card'>
-                          <img src={intern1} alt="intern1" className="intern-icon" />
-                          <h3>Garrett Bowman</h3>
-                          <p>Backend Developer Intern.</p>
-                        </div>
-                      <div className='intern-card'>
-                        <img src={intern2} alt="intern2" className="intern-icon" />
-                        <h3>Kim Ewing</h3>
-                        <p>Frontend Developer Intern.</p>
-                      </div>
-                    </div>
+
+              <div className="profile-card">
+                <img src={intern1} alt="Garrett Bowman" className="profile-icon" />
+                <div className="profile-info">
+                  <h3>Garrett Bowman</h3>
+                  <h4 className="role-title">Backend Developer Intern</h4>
+                  <p>Garrett contributed to the project as a backend developer intern, helping to build the foundation of the platform's server-side functionality.</p>
                 </div>
-                  </div>
               </div>
+
+              <div className="profile-card">
+                <img src={intern2} alt="Kim Ewing" className="profile-icon" />
+                <div className="profile-info">
+                  <h3>Kim Ewing</h3>
+                  <h4 className="role-title">Frontend Developer Intern</h4>
+                  <p>Kim contributed to the project as a frontend developer intern, helping to create the user interface and user experience components.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Remove the separate interns section since they're now in contributors */}
         </div>
       </div>
     </div>

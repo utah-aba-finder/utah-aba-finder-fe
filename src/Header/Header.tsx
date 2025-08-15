@@ -61,7 +61,7 @@ const Header = () => {
   const handleMouseLeave = () => {
     const timeout = setTimeout(() => {
       setExpandedItem(null);
-    }, 150); // 150ms delay before closing
+    }, 300); // Increased to 300ms delay before closing
     setHoverTimeout(timeout);
   };
 
@@ -72,14 +72,14 @@ const Header = () => {
     <header className="fixed w-full top-0 z-50 max-w-[100vw]">
       <div className="bg-white border-b shadow-sm relative px-2">
         <div className="w-full box-border">
-          <div className="flex justify-between items-center h-24 w-full px-8 pr-12 max-w-7xl mx-auto">
+          <div className="flex justify-between items-center h-24 w-full px-6 pr-12 max-w-7xl mx-auto">
             {/* Logo */}
             <div className="flex-shrink-0 flex items-center">
               <Link to="/" className="block">
                 <img
                   src={Logo}
                   alt="Autism Services Locator Logo"
-                  className="h-20 w-auto object-contain max-w-[280px] lg:h-24"
+                  className="h-24 w-auto object-contain max-w-[320px] lg:h-28"
                 />
               </Link>
             </div>
@@ -89,10 +89,12 @@ const Header = () => {
               {currentNavigationItems.map((item) => (
                 <div key={item.name} className="relative group flex items-center">
                   {item.dropdown ? (
-                    <div className="relative">
+                    <div 
+                      className="relative"
+                      onMouseEnter={() => handleMouseEnter(item.name)}
+                      onMouseLeave={handleMouseLeave}
+                    >
                       <button
-                        onMouseEnter={() => handleMouseEnter(item.name)}
-                        onMouseLeave={handleMouseLeave}
                         className="dropdown-button text-[#332d29] hover:text-[#4A6FA5] px-3 py-3 text-lg font-bold transition-colors duration-200 bg-transparent border-0 hover:bg-gray-50 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-300 flex items-center"
                         style={{ 
                           border: 'none', 
@@ -108,17 +110,15 @@ const Header = () => {
                       </button>
                       {expandedItem === item.name && (
                         <div 
-                          className={`absolute mt-0 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200 ${
+                          className={`absolute mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200 ${
                             item.name === "Contact" ? "right-0" : "left-0"
                           }`}
-                          onMouseEnter={() => handleMouseEnter(item.name)}
-                          onMouseLeave={handleMouseLeave}
                         >
                           {item.dropdown.map((dropdownItem) => (
                             <Link
                               key={dropdownItem.name}
                               to={dropdownItem.href}
-                              className="block px-4 py-2 text-[#332d29] hover:text-[#4A6FA5] hover:bg-gray-50 text-base font-semibold no-underline"
+                              className="block px-4 py-2 text-[#332d29] hover:text-[#4A6FA5] hover:bg-gray-50 text-base font-semibold no-underline transition-colors duration-150"
                             >
                               {dropdownItem.name}
                             </Link>
