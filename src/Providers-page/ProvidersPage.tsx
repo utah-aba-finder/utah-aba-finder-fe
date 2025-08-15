@@ -201,9 +201,15 @@ const ProvidersPage: React.FC = () => {
 
   useEffect(() => {
     const getProviders = async () => {
+      // Add a fallback timeout to ensure loading state is reset
+      const loadingTimeout = setTimeout(() => {
+        console.log('⏰ Loading timeout - forcing loading to false');
+        setIsLoading(false);
+      }, 15000); // 15 second timeout
+      
       try {
         console.log('🔄 Starting to fetch providers...');
-        if (isMountedRef.current) setIsLoading(true);
+        setIsLoading(true);
         
         const providers = await fetchProviders();
         console.log('📡 API response received:', providers);
@@ -213,6 +219,8 @@ const ProvidersPage: React.FC = () => {
           console.warn('⚠️ Invalid providers data structure:', providers);
           setAllProviders([]);
           setFilteredProviders([]);
+          clearTimeout(loadingTimeout);
+          setIsLoading(false);
           return;
         }
         
@@ -258,9 +266,11 @@ const ProvidersPage: React.FC = () => {
         setShowError("Failed to load providers. Please try again later.");
         setAllProviders([]);
         setFilteredProviders([]);
+        setIsLoading(false);
       } finally {
         console.log('🏁 Setting loading to false');
-        if (isMountedRef.current) setIsLoading(false);
+        clearTimeout(loadingTimeout);
+        setIsLoading(false);
       }
     };
     
@@ -276,7 +286,7 @@ const ProvidersPage: React.FC = () => {
   }, []);
 
   const handleSearch = async (searchParams: any) => {
-    if (isMountedRef.current) setIsLoading(true);
+    setIsLoading(true);
     setShowResultMessage(false); // Hide result message immediately when search starts
     setIsSearchRefined(false); // Reset search refined state until we have results
     setShowSearchNotification(false); // Reset search notification
@@ -289,7 +299,7 @@ const ProvidersPage: React.FC = () => {
 
         setFilteredProviders([]);
         setCurrentPage(1);
-        if (isMountedRef.current) setIsLoading(false);
+        setIsLoading(false);
         return;
       }
       

@@ -362,12 +362,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // In inactivity monitoring useEffect:
   useEffect(() => {
+    console.log('🔄 AuthProvider: Inactivity monitoring useEffect triggered', { token: !!token });
     if (!token) return;
 
     let inactivityTimeout: NodeJS.Timeout;
     let warningTimeout: NodeJS.Timeout;
 
     const resetInactivityTimer = () => {
+      console.log('🔄 AuthProvider: Resetting inactivity timer');
       clearTimeout(inactivityTimeout);
       clearTimeout(warningTimeout);
 
@@ -376,6 +378,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       warningTimeout = setTimeout(() => {
         // Only show inactivity warning if user is still logged in
         if (token && sessionStorage.getItem("authToken")) {
+          console.log('⚠️ AuthProvider: Showing inactivity warning');
           toast.warning(
             "You will be logged out in 60 seconds due to inactivity",
             {
@@ -393,6 +396,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       inactivityTimeout = setTimeout(() => {
         // Only show inactivity logout if user is still logged in
         if (token && sessionStorage.getItem("authToken")) {
+          console.log('⏰ AuthProvider: Logging out due to inactivity');
           toast.dismiss("inactivity-warning"); 
           toast.error("Logging out due to inactivity", {
             toastId: "inactivity-logout",
@@ -430,17 +434,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   }, [token, logout]);
 
   useEffect(() => {
+    console.log('🔄 AuthProvider: Token useEffect triggered', { token: !!token });
     if (token) {
+      console.log('✅ AuthProvider: Setting authToken in sessionStorage');
       sessionStorage.setItem("authToken", token);
       const cleanup = checkTokenExpiration(token);
       return cleanup;
     } else {
+      console.log('❌ AuthProvider: Removing authToken from sessionStorage');
       sessionStorage.removeItem("authToken");
       toast.dismiss("session-warning-five-min");
       toast.dismiss("session-warning-one-min");
       toast.dismiss("session-expired");
     }
-  }, [token, checkTokenExpiration]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token]); // Removed checkTokenExpiration to prevent circular dependency
 
   // Multi-Provider Functions
   const fetchUserProviders = useCallback(async () => {
@@ -589,10 +597,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   // Fetch user providers when logged in (moved here after function definition)
   useEffect(() => {
     if (token && loggedInProvider) {
-  
       fetchUserProviders();
     }
-  }, [token, loggedInProvider, fetchUserProviders]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token, loggedInProvider]); // Removed fetchUserProviders to prevent infinite loop
 
   const contextValue: AuthContextType = {
     token,
