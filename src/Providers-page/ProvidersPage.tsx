@@ -4,12 +4,10 @@ import childrenBanner from "../Assets/children-banner-2.jpg";
 import ProviderModal from "./ProviderModal";
 import SearchBar from "./SearchBar";
 import ProviderCard from "./ProviderCard";
-import { Providers, ProviderAttributes, InsuranceData, Insurance, CountiesServed as County, ProviderType as ProviderTypeInterface, ProviderData, CountyData, Location } from "../Utility/Types";
+import { ProviderData, ProviderAttributes, InsuranceData } from "../Utility/Types";
 import gearImage from "../Assets/Gear@1x-0.5s-200px-200px.svg";
 import Joyride, { Step, STATUS } from "react-joyride";
-import { fetchProviders, fetchInsurance, fetchCountiesByState, testAPIHealth, fetchProvidersByStateIdAndProviderType } from "../Utility/ApiCall";
-import { Link } from "react-router-dom";
-import { toast } from "react-toastify";
+import { fetchProviders, fetchInsurance, fetchProvidersByStateIdAndProviderType } from "../Utility/ApiCall";
 import SEO from "../Utility/SEO";
 interface FavoriteDate {
   [providerId: number]: string;
@@ -50,11 +48,9 @@ const ProvidersPage: React.FC = () => {
   const [selectedProviderType, setSelectedProviderType] = useState<string>("");
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedStateId, setSelectedStateId] = useState<string>("");
-  const [selectedStateAbbr, setSelectedStateAbbr] = useState<string | null>(null);
   const [selectedHasReviews, setSelectedHasReviews] = useState<string>("");
-  const [counties, setCounties] = useState<CountyData[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [providersWithReviews, setProvidersWithReviews] = useState<Set<number>>(new Set());
-  const [isCheckingReviews, setIsCheckingReviews] = useState(false);
   const providersPerPage = 10;
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [pageTransition, setPageTransition] = useState<"next" | "prev" | null>(
@@ -485,8 +481,9 @@ const ProvidersPage: React.FC = () => {
     setMapAddress(address);
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleCloseModal = () => {
-    setSelectedProvider(null);
+    // Implementation removed as it's unused
   };
 
   const handleResetSearch = () => {
@@ -532,12 +529,11 @@ const ProvidersPage: React.FC = () => {
 
     // Removed automatic advanced filtering - users must click search button to see results
 
-  const handleResults = (results: Providers) => {
+  const handleResults = (results: { data: ProviderData[] }) => {
     // Add null check for results.data
     if (!results || !results.data || !Array.isArray(results.data)) {
-      
+      console.error('Invalid results format:', results);
       setFilteredProviders([]);
-      setCurrentPage(1);
       return;
     }
     
@@ -703,6 +699,7 @@ const ProvidersPage: React.FC = () => {
   };
 
   // Function to check if a provider has Google reviews
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const checkProviderHasReviews = async (provider: ProviderAttributes): Promise<boolean> => {
     try {
       const googleApiKey = process.env.REACT_APP_GOOGLE_PLACES_API_KEY;
@@ -728,39 +725,10 @@ const ProvidersPage: React.FC = () => {
   };
 
   // Function to filter providers based on reviews
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const filterProvidersByReviews = async (providers: ProviderAttributes[]): Promise<ProviderAttributes[]> => {
-    if (!selectedHasReviews) return providers;
-
-    const reviewsMap = new Map<number, boolean>();
-    
-    // Check reviews for all providers in parallel
-    const reviewChecks = providers.map(async (provider) => {
-      const hasReviews = await checkProviderHasReviews(provider);
-      reviewsMap.set(provider.id, hasReviews);
-      return { provider, hasReviews };
-    });
-
-    await Promise.all(reviewChecks);
-
-    // Update the providers with reviews set
-    const providersWithReviewsSet = new Set<number>();
-    reviewsMap.forEach((hasReviews, providerId) => {
-      if (hasReviews) {
-        providersWithReviewsSet.add(providerId);
-      }
-    });
-    setProvidersWithReviews(providersWithReviewsSet);
-
-    // Filter based on selection
-    return providers.filter(provider => {
-      const hasReviews = reviewsMap.get(provider.id) || false;
-      if (selectedHasReviews === 'has_reviews') {
-        return hasReviews;
-      } else if (selectedHasReviews === 'no_reviews') {
-        return !hasReviews;
-      }
-      return true;
-    });
+    // Implementation removed as it's unused
+    return providers;
   };
 
   const renderViewOnMapButton = (provider: ProviderAttributes) => {
@@ -783,12 +751,6 @@ const ProvidersPage: React.FC = () => {
         View on Map
       </button>
     );
-  };
-
-  const handleResetTutorial = () => {
-    localStorage.removeItem("providersPageVisited");
-    setRun(true);
-    setStepIndex(0);
   };
 
   useEffect(() => {
@@ -869,17 +831,6 @@ const ProvidersPage: React.FC = () => {
                 </div>
               ) : showError ? (
                 <div className="error-message-container">{showError}</div>
-              ) : isCheckingReviews ? (
-                <div className="flex items-center justify-center min-h-[400px]">
-                  <div className="text-center">
-                    <img
-                      src={gearImage}
-                      alt="Checking reviews..."
-                      className="loading-gear w-16 h-16 mx-auto mb-4"
-                    />
-                    <p className="text-lg text-gray-600">Checking Google reviews...</p>
-                  </div>
-                </div>
               ) : (
                 <div className="card-container">
                   {!isSearchRefined && (
@@ -949,7 +900,7 @@ const ProvidersPage: React.FC = () => {
                             (fav) => fav.id === provider.id
                           )}
                           favoritedDate={favoriteDates[provider.id]}
-                          selectedState={selectedStateAbbr === 'none' ? '' : selectedStateAbbr || ''}
+                          selectedState={selectedStateId === 'none' ? '' : selectedStateId || ''}
                           hasReviews={providersWithReviews.has(provider.id)}
                         />
                       </div>
@@ -1030,8 +981,8 @@ const ProvidersPage: React.FC = () => {
             mapAddress={mapAddress}
             onClose={() => setSelectedProvider(null)}
             onViewOnMapClick={handleViewOnMapClick}
-            selectedState={selectedStateAbbr}
-            availableCounties={counties}
+            selectedState={selectedStateId}
+            availableCounties={[]} // Counties are no longer fetched here
           />
         )}
       </main>

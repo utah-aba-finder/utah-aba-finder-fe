@@ -74,8 +74,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
     // Try base64 JSON (your current approach)
     try {
-      const decoded = JSON.parse(atob(token));
-      if (decoded?.id) return decoded.id.toString();
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const _decoded = JSON.parse(atob(token));
+      if (_decoded?.id) return _decoded.id.toString();
     } catch {
       /* noop */
     }
@@ -174,20 +175,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       // Check if this is a temporary token (base64 encoded user data)
       try {
-        const decoded = JSON.parse(atob(token));
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const _decoded = JSON.parse(atob(token));
         // If we can decode it as JSON, it's our temporary token
         return true;
       } catch {
         // If not JSON, try to decode as JWT
-        const decoded = jwtDecode<TokenPayload>(token);
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const _decoded = jwtDecode<TokenPayload>(token);
         const currentTime = Date.now() / 1000;
 
-        if (!decoded.exp) {
+        if (!_decoded.exp) {
           // If no expiration, assume it's valid (for tokens without exp)
           return true;
         }
 
-        if (decoded.exp < currentTime) {
+        if (_decoded.exp < currentTime) {
           return false;
         }
 
@@ -227,15 +230,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
       // Check if this is a temporary token
       try {
-        const decoded = JSON.parse(atob(newToken));
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const _decoded = JSON.parse(atob(newToken));
         // For temporary tokens, set a 24-hour expiration
         const expirationTime = Date.now() + (24 * 60 * 60 * 1000);
         sessionStorage.setItem("tokenExpiry", expirationTime.toString());
 
       } catch {
         // For JWT tokens, use the token's expiration
-        const decoded = jwtDecode<TokenPayload>(newToken);
-        const expirationTime = decoded.exp * 1000;
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const _decoded = jwtDecode<TokenPayload>(newToken);
+        const expirationTime = _decoded.exp * 1000;
         sessionStorage.setItem("tokenExpiry", expirationTime.toString());
 
       }
@@ -253,14 +258,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         let timeUntilExpiration: number;
         
         try {
-          const decoded = JSON.parse(atob(token));
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const _decoded = JSON.parse(atob(token));
           // For temporary tokens, use the stored expiration time
           const storedExpiry = sessionStorage.getItem("tokenExpiry");
           expirationTime = storedExpiry ? parseInt(storedExpiry) : Date.now() + (24 * 60 * 60 * 1000);
         } catch {
           // For JWT tokens, decode and use token expiration
-          const decoded = jwtDecode<TokenPayload>(token);
-          expirationTime = decoded.exp * 1000;
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const _decoded = jwtDecode<TokenPayload>(token);
+          expirationTime = _decoded.exp * 1000;
         }
         
         const currentTime = Date.now();

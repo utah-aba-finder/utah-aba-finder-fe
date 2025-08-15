@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { ProviderAttributes } from '../Utility/Types';
 import { MapPin, Phone, Mail, Globe, Eye, ToggleLeft, ToggleRight, Briefcase, Home, Building, Monitor } from 'lucide-react';
 import './ProviderCard.css';

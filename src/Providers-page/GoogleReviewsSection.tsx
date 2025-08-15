@@ -112,24 +112,7 @@ const GoogleReviewsSection: React.FC<GoogleReviewsSectionProps> = ({
       if (result.placeDetails) {
         const place = result.placeDetails;
         let nameMatch = isCloseMatch(providerName, place.name);
-        let addressMatch = false;
-        if (place.formatted_address) {
-          // Only compare the city/state/zip part for flexibility
-          const providerAddrNorm = providerAddress.split(',').pop()?.trim() || providerAddress;
-          const placeAddrNorm = place.formatted_address.split(',').pop()?.trim() || place.formatted_address;
-          addressMatch = isCloseMatch(providerAddrNorm, placeAddrNorm);
-        }
-        let websiteMatch = false;
-        if (providerWebsite && place.website) {
-          const getDomain = (url: string) => {
-            try {
-              return new URL(url.startsWith('http') ? url : `https://${url}`).hostname.replace('www.', '');
-            } catch {
-              return url;
-            }
-          };
-          websiteMatch = getDomain(providerWebsite) === getDomain(place.website);
-        }
+        // addressMatch and websiteMatch removed as they're unused
         
 
         
