@@ -63,7 +63,6 @@ const SearchBar: React.FC<SearchBarProps> = ({
   const [isVisible, setIsVisible] = useState(false);
   const [selectedProviderType, setSelectedProviderType] = useState<string>('none');
   const [providerStates, setProviderStates] = useState<any[]>([]);
-  const [error, setError] = useState<string>('');
   const [selectedStateId, setSelectedStateId] = useState<string>('none');
   const [selectedState, setSelectedState] = useState<string>('none');
   const [counties, setCounties] = useState<CountyData[]>([]);
@@ -87,7 +86,6 @@ const SearchBar: React.FC<SearchBarProps> = ({
         const statesData = await fetchStates();
         setProviderStates(statesData || []);
       } catch {
-        setError('We are currently experiencing issues displaying states. Please try again later.');
         setProviderStates([]);
       }
     };
@@ -110,8 +108,6 @@ const SearchBar: React.FC<SearchBarProps> = ({
           }
         } catch (err) {
   
-          setCounties([]);
-          setError('Error loading counties. Please try again later.');
         }
       } else {
         setCounties([]);
@@ -121,7 +117,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
     };
 
     getCounties();
-  }, [selectedStateId]);
+  }, [selectedStateId, selectedCounty, onCountyChange]);
 
   useEffect(() => {
     if (showNotification) {
@@ -157,20 +153,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
     });
     
     // Don't show notification immediately - let the parent component control it
-  }, [
-    searchQuery,
-    selectedCounty,
-    selectedInsurance,
-    selectedSpanish,
-    selectedService,
-    selectedWaitList,
-    selectedAge,
-    selectedProviderType,
-    selectedStateId,
-    selectedState,
-    selectedHasReviews,
-    onSearch,
-  ]);
+  }, [searchQuery, selectedCounty, selectedInsurance, selectedSpanish, selectedService, selectedWaitList, selectedAge, selectedProviderType, selectedStateId, selectedState, selectedHasReviews, onSearch]);
 
   // Show notification when parent component signals it's ready
   useEffect(() => {

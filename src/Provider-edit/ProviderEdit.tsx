@@ -5,7 +5,6 @@ import Dashboard from "./components/Dashboard";
 import EditLocation from "./components/EditLocation";
 import LocationManagement from "./components/LocationManagement";
 import { AuthModal } from "./AuthModal";
-import ProviderSelector from "./components/ProviderSelector";
 import {
   Building2,
   LogOut,
@@ -16,13 +15,11 @@ import {
   DollarSign,
   Tag,
 } from "lucide-react";
-import moment from "moment";
 import "react-toastify/dist/ReactToastify.css";
-import { ProviderData, ProviderAttributes, Insurance, CountiesServed, Location, StateData, CountyData, ProviderType } from "../Utility/Types";
-import { fetchStates, fetchCountiesByState, validateLogoFile, uploadProviderLogo, removeProviderLogo } from "../Utility/ApiCall";
+import { ProviderData, ProviderAttributes } from "../Utility/Types";
+import { fetchStates, fetchCountiesByState, uploadProviderLogo, removeProviderLogo } from "../Utility/ApiCall";
 import InsuranceModal from "./InsuranceModal";
 import CountiesModal from "./CountiesModal";
-import ProviderContextIndicator from "../Utility/ProviderContextIndicator";
 
 interface ProviderEditProps {
   loggedInProvider: ProviderData;
@@ -42,7 +39,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
   const [sessionTimeLeft, setSessionTimeLeft] = useState<number | null>(null);
   
   // Get auth context for multi-provider support
-  const { activeProvider, userProviders, token } = useAuth();
+  const { activeProvider, token } = useAuth();
   
   // Local state for the currently edited provider
   const [currentProvider, setCurrentProvider] = useState<ProviderData | null>(null);
@@ -53,16 +50,10 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
   const [selectedProviderTypes, setSelectedProviderTypes] = useState<any[]>([]);
   const [selectedInsurances, setSelectedInsurances] = useState<any[]>([]);
   const [locations, setLocations] = useState<any[]>([]);
-  const [selectedProviderId, setSelectedProviderId] = useState<number | null>(null);
   const [selectedLogoFile, setSelectedLogoFile] = useState<File | null>(null);
-  const [selectedStateAbbr, setSelectedStateAbbr] = useState<string>('none');
-  const [selectedAddress, setSelectedAddress] = useState<string>('');
-  const [mapAddress, setMapAddress] = useState<string>('');
-  const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [availableStates, setAvailableStates] = useState<any[]>([]);
   const [availableCounties, setAvailableCounties] = useState<any[]>([]);
-  const [isLoadingProviders, setIsLoadingProviders] = useState(false);
   const [isCountiesModalOpen, setIsCountiesModalOpen] = useState(false);
   const [isInsuranceModalOpen, setIsInsuranceModalOpen] = useState(false);
 
@@ -104,6 +95,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
   }, [token, loggedInProvider.id]);
 
   // Debug effect to track activeProvider changes
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     
     // If activeProvider has valid data but currentProvider doesn't match, force an update
@@ -122,6 +114,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
   // previousProviderId.current = useRef<number | null>(null); // This line is removed as it's now in the component level
   
   // Main provider switching useEffect
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     
     // Check if we actually need to do anything
@@ -158,9 +151,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
   
   // Helper function to handle provider switching with data
   const handleProviderSwitchWithData = (providerData: any) => {
-    
-    // Check if this is actually a different provider (not just a re-render)
-    const isActuallySwitchingProviders = providerData.id !== currentProvider?.id;
     
     // Always update the state to ensure data consistency
     // Even if it's the "same" provider, the data might be different or more complete
@@ -212,11 +202,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       setSelectedProviderTypes(newProviderData.attributes.provider_type || []);
       setSelectedInsurances(newProviderData.attributes.insurance || []);
       setLocations(newProviderData.attributes.locations || []);
-    setSelectedProviderId(newProviderData.id);
     setSelectedLogoFile(null);
-    setSelectedStateAbbr('none');
-    setSelectedAddress('');
-    setMapAddress('');
     
     // Reset form state when switching providers
     setSelectedTab("dashboard");
@@ -244,7 +230,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       setSelectedProviderTypes(initialProviderData.attributes.provider_type || []);
       setSelectedInsurances(initialProviderData.attributes.insurance || []);
       setLocations(initialProviderData.attributes.locations || []);
-      setSelectedProviderId(initialProviderData.id);
       previousProviderId.current = initialProviderData.id;
     }
   }, [loggedInProvider, currentProvider]);
@@ -267,7 +252,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
 
   const fetchManagedProviders = useCallback(async () => {
     try {
-      setIsLoadingProviders(true);
   
       
       const response = await fetch(
@@ -293,7 +277,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       // Fallback to just the current provider
       setAvailableProviders([loggedInProvider]);
     } finally {
-      setIsLoadingProviders(false);
     }
   }, [loggedInProvider]);
 
@@ -320,7 +303,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       );
 
       if (!response.ok) {
-        const errorText = await response.text();
+        await response.text();
         throw new Error("Failed to refresh provider data");
       }
 
@@ -330,99 +313,52 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       
       
       // Ensure we have all required properties with defaults
-      const safeProviderData = {
-        ...providerData,
+      const updatedProvider: ProviderData = {
+        id: providerData.id || currentProvider?.id || 0,
+        type: providerData.type || 'Provider',
+        states: providerData.states || [],
         attributes: {
-          ...providerData.attributes,
+          id: providerData.id || currentProvider?.id || 0,
+          states: providerData.states || [],
+          password: '',
+          username: providerData.attributes?.email || providerData.email || '',
+          name: providerData.attributes?.name || providerData.name || '',
+          email: providerData.attributes?.email || providerData.email || '',
+          website: providerData.attributes?.website || providerData.website || '',
+          logo: providerData.attributes?.logo || providerData.logo || null,
           provider_type: providerData.attributes?.provider_type || [],
           insurance: providerData.attributes?.insurance || [],
           counties_served: providerData.attributes?.counties_served || [],
           locations: providerData.attributes?.locations || [],
+          cost: providerData.attributes?.cost || null,
+          min_age: providerData.attributes?.min_age || null,
+          max_age: providerData.attributes?.max_age || null,
+          waitlist: providerData.attributes?.waitlist || null,
+          telehealth_services: providerData.attributes?.telehealth_services || null,
+          spanish_speakers: providerData.attributes?.spanish_speakers || null,
+          at_home_services: providerData.attributes?.at_home_services || null,
+          in_clinic_services: providerData.attributes?.in_clinic_services || null,
+          updated_last: providerData.attributes?.updated_last || null,
+          status: providerData.attributes?.status || null,
+          in_home_only: providerData.attributes?.in_home_only || false,
+          service_delivery: providerData.attributes?.service_delivery || { in_home: false, in_clinic: false, telehealth: false }
         }
       };
-
-      // Check if the data has actually changed before updating local state
-      const hasCountiesChanged = JSON.stringify(providerData.attributes?.counties_served) !== JSON.stringify(selectedCounties);
-      const hasStatesChanged = JSON.stringify(providerData.states) !== JSON.stringify(providerState);
       
-
+      setCurrentProvider(updatedProvider);
+      setEditedProvider(updatedProvider.attributes);
+      setProviderState(updatedProvider.states || []);
+      setSelectedCounties(updatedProvider.attributes.counties_served || []);
+      setSelectedProviderTypes(updatedProvider.attributes.provider_type || []);
+      setSelectedInsurances(updatedProvider.attributes.insurance || []);
+      setLocations(updatedProvider.attributes.locations || []);
       
-      // Only update if there are actual changes
-      if (hasCountiesChanged || hasStatesChanged) {
-
-        
-        setCurrentProvider((prev) => ({
-          id: safeProviderData.id || prev?.id || 0,
-          type: safeProviderData.type || prev?.type || 'provider',
-          states: safeProviderData.states || prev?.states || [],
-          attributes: {
-            id: safeProviderData.attributes.id || prev?.attributes?.id || 0,
-            states: safeProviderData.attributes.states || prev?.attributes?.states || [],
-            password: safeProviderData.attributes.password || prev?.attributes?.password || '',
-            username: safeProviderData.attributes.username || prev?.attributes?.username || '',
-            name: safeProviderData.attributes.name || prev?.attributes?.name || '',
-            email: safeProviderData.attributes.email || prev?.attributes?.email || '',
-            website: safeProviderData.attributes.website || prev?.attributes?.website || '',
-            cost: safeProviderData.attributes.cost || prev?.attributes?.cost || '',
-            min_age: safeProviderData.attributes.min_age ?? prev?.attributes?.min_age ?? null,
-            max_age: safeProviderData.attributes.max_age ?? prev?.attributes?.max_age ?? null,
-            waitlist: safeProviderData.attributes.waitlist ?? prev?.attributes?.waitlist ?? null,
-            telehealth_services: safeProviderData.attributes.telehealth_services ?? prev?.attributes?.telehealth_services ?? null,
-            spanish_speakers: safeProviderData.attributes.spanish_speakers ?? prev?.attributes?.spanish_speakers ?? null,
-            at_home_services: safeProviderData.attributes.at_home_services ?? prev?.attributes?.at_home_services ?? null,
-            in_clinic_services: safeProviderData.attributes.in_clinic_services ?? prev?.attributes?.in_clinic_services ?? null,
-            provider_type: safeProviderData.attributes.provider_type || prev?.attributes?.provider_type || [],
-            insurance: safeProviderData.attributes.insurance || prev?.attributes?.insurance || [],
-            counties_served: safeProviderData.attributes.counties_served || prev?.attributes?.counties_served || [],
-            locations: safeProviderData.attributes.locations || prev?.attributes?.locations || [],
-            logo: safeProviderData.attributes.logo ?? prev?.attributes?.logo ?? null,
-            updated_last: safeProviderData.attributes.updated_last ?? prev?.attributes?.updated_last ?? null,
-            status: safeProviderData.attributes.status ?? prev?.attributes?.status ?? null,
-            in_home_only: safeProviderData.attributes.in_home_only ?? prev?.attributes?.in_home_only ?? false,
-            service_delivery: safeProviderData.attributes.service_delivery ?? prev?.attributes?.service_delivery ?? { in_home: false, in_clinic: false, telehealth: false }
-          }
-        }));
-        setEditedProvider((prev) => ({
-          id: safeProviderData.attributes.id || prev?.id || 0,
-          states: safeProviderData.attributes.states || prev?.states || [],
-          password: safeProviderData.attributes.password || prev?.password || '',
-          username: safeProviderData.attributes.username || prev?.username || '',
-          name: safeProviderData.attributes.name || prev?.name || '',
-          email: safeProviderData.attributes.email || prev?.email || '',
-          website: safeProviderData.attributes.website || prev?.website || '',
-          cost: safeProviderData.attributes.cost || prev?.cost || '',
-          min_age: safeProviderData.attributes.min_age ?? prev?.min_age ?? null,
-          max_age: safeProviderData.attributes.max_age ?? prev?.max_age ?? null,
-          waitlist: safeProviderData.attributes.waitlist ?? prev?.waitlist ?? null,
-          telehealth_services: safeProviderData.attributes.telehealth_services ?? prev?.telehealth_services ?? null,
-          spanish_speakers: safeProviderData.attributes.spanish_speakers ?? prev?.spanish_speakers ?? null,
-          at_home_services: safeProviderData.attributes.at_home_services ?? prev?.at_home_services ?? null,
-          in_clinic_services: safeProviderData.attributes.in_clinic_services ?? prev?.in_clinic_services ?? null,
-          provider_type: safeProviderData.attributes.provider_type || prev?.provider_type || [],
-          insurance: safeProviderData.attributes.insurance || prev?.insurance || [],
-          counties_served: safeProviderData.attributes.counties_served || prev?.counties_served || [],
-          locations: safeProviderData.attributes.locations || prev?.locations || [],
-          logo: safeProviderData.attributes.logo ?? prev?.logo ?? null,
-          updated_last: safeProviderData.attributes.updated_last ?? prev?.updated_last ?? null,
-          status: safeProviderData.attributes.status ?? prev?.status ?? null,
-          in_home_only: safeProviderData.attributes.in_home_only ?? prev?.in_home_only ?? false,
-          service_delivery: safeProviderData.attributes.service_delivery ?? prev?.service_delivery ?? { in_home: false, in_clinic: false, telehealth: false }
-        }));
-      setSelectedProviderTypes(safeProviderData.attributes.provider_type || []);
-      setSelectedCounties(safeProviderData.attributes.counties_served || []);
-      setProviderState(safeProviderData.states || []);
-      setSelectedInsurances(safeProviderData.attributes.insurance || []);
-      setLocations(safeProviderData.attributes.locations || []);
-      
-      } else {
-      
-      }
-
+      toast.success('Provider data refreshed successfully');
     } catch (error) {
       console.error('🔍 ProviderEdit: Error in refreshProviderData:', error);
       toast.error('Failed to refresh provider data');
     }
-  }, [currentProvider?.id, selectedCounties, providerState, loggedInProvider.id, extractUserId]);
+  }, [currentProvider?.id, extractUserId]);
 
   // Initialize provider state and fetch counties for saved states
   useEffect(() => {
@@ -571,44 +507,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
     }
   }, [providerState, activeStateForCounties]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setEditedProvider(prev => {
-      if (!prev) return null;
-      return {
-      ...prev,
-      [name]: value
-      };
-    });
-  };
-
-  const handleStateChange = async (stateName: string) => {
-    try {
-      setIsLoading(true);
-      const stateData = availableStates.find(s => s.attributes.name === stateName);
-      if (stateData) {
-        const counties = await fetchCountiesByState(stateData.id);
-        setAvailableCounties(prev => [...prev, ...counties]);
-        setProviderState(prev => [...prev, stateName]);
-        if (!activeStateForCounties) {
-          setActiveStateForCounties(stateName);
-        }
-      }
-    } catch (error) {
-      
-      toast.error('Failed to fetch counties');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const removeState = (stateToRemove: string) => {
-    setProviderState(prev => prev.filter(state => state !== stateToRemove));
-    if (activeStateForCounties === stateToRemove) {
-      setActiveStateForCounties(providerState[0] || '');
-    }
-  };
-
   const getProviderTypeId = (typeName: string): number => {
     const typeMap: { [key: string]: number } = {
       "ABA Therapy": 1,
@@ -716,7 +614,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
 
       // Get the proper user ID for authorization using the existing helper
       const userId = extractUserId();
-      
+
       if (!userId) {
         throw new Error('No user ID available for authorization');
       }
@@ -735,7 +633,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       
       if (!response.ok) {
         const errorText = await response.text();
-        
+
         let errorData;
         try {
           errorData = JSON.parse(errorText);
@@ -758,7 +656,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       try {
         // Only refresh if we're dealing with a different provider or if explicitly needed
         if (responseData.data?.id !== currentProvider?.id) {
-          await refreshProviderData();
+        await refreshProviderData();
         } else {
           // Don't refresh if we're editing the same provider
         }
@@ -778,52 +676,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
     }
   };
 
-  const handleProviderCardClick = (provider: ProviderAttributes) => {
-    // Get locations filtered by selected state
-    const stateLocations = selectedStateAbbr && selectedStateAbbr !== 'none'
-      ? provider.locations.filter(loc => loc.state?.toUpperCase() === selectedStateAbbr.toUpperCase())
-      : provider.locations;
-
-    // Use the first matching location, or fall back to the first location if none match
-    const primaryLocation = stateLocations[0] || provider.locations[0];
-
-    const address = primaryLocation
-      ? `${primaryLocation.address_1 || ""} ${primaryLocation.address_2 || ""}, ${primaryLocation.city || ""}, ${primaryLocation.state || ""} ${primaryLocation.zip || ""}`.trim()
-      : "Address not available";
-
-    setMapAddress(address);
-    setSelectedAddress(address);
-  };
-
-  const handleViewOnMapClick = (address: string) => {
-    setMapAddress(address);
-    setSelectedAddress(address);
-  };
-
-  const renderViewOnMapButton = (provider: ProviderAttributes) => {
-    // Get locations filtered by selected state
-    const stateLocations = selectedStateAbbr && selectedStateAbbr !== 'none'
-      ? provider.locations.filter(loc => loc.state?.toUpperCase() === selectedStateAbbr.toUpperCase())
-      : provider.locations;
-
-    // Use the first matching location, or fall back to the first location if none match
-    const primaryLocation = stateLocations[0] || provider.locations[0];
-    const isAddressAvailable = primaryLocation?.address_1;
-
-    return (
-      <button
-        className={`view-on-map-button ${!isAddressAvailable ? "disabled" : ""}`}
-        onClick={() => {
-          const fullAddress = `${primaryLocation.address_1 || ""} ${primaryLocation.address_2 || ""}, ${primaryLocation.city || ""}, ${primaryLocation.state || ""} ${primaryLocation.zip || ""}`.trim();
-          handleViewOnMapClick(fullAddress);
-        }}
-        disabled={!isAddressAvailable}
-      >
-        View on Map
-      </button>
-    );
-  };
-
   // Check if we have a valid provider to work with
   const hasValidProvider = currentProvider && currentProvider.id && Number(currentProvider.id) > 0;
   
@@ -839,7 +691,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
     );
   }
 
-  if (isLoading) {
+  if (isSaving) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
@@ -886,176 +738,168 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                       {selectedTab === "locations" && "Location Management"}
                       {selectedTab === "provider-types" && "Provider Services"}
                       {selectedTab === "billing" && "Billing Management"}
-          </h1>
-          </div>
-                  <div className="text-right">
-                    <div className="flex items-center justify-end space-x-4">
-                      {currentProvider?.attributes?.logo ? (
-                        <div className="flex-shrink-0">
-                          <img 
-                            src={currentProvider.attributes.logo}
-                            alt={`${currentProvider.attributes.name} logo`}
-                            className="w-12 h-12 object-contain rounded border border-gray-200 shadow-sm"
-                            onError={(e) => {
-                              e.currentTarget.style.display = 'none';
-                            }}
-                          />
-                        </div>
-                      ) : (
-                        <div className="w-12 h-12 bg-gray-100 rounded border border-gray-200 flex items-center justify-center flex-shrink-0">
-                          <span className="text-gray-400 text-lg">📷</span>
-                        </div>
-                      )}
-                      <div className="text-right">
-                        <div className="text-sm font-medium text-gray-700">
-                          {currentProvider?.attributes?.name || 'Unknown Provider'}
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          {selectedTab === "dashboard" ? "Dashboard View" : "Edit Mode"}
-                        </div>
+                    </h1>
+                  </div>
+                  <div className="flex items-center space-x-4">
+                    {currentProvider?.attributes?.logo ? (
+                      <div className="flex-shrink-0">
+                        <img
+                          src={currentProvider.attributes.logo}
+                          alt={`${currentProvider.attributes.name} logo`}
+                          className="w-12 h-12 object-contain rounded border border-gray-200 shadow-sm"
+                        />
                       </div>
-                      
-                      {/* Logout Button - Always visible in header */}
-                      <button
-                        onClick={handleLogout}
-                        className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 px-3 py-2 rounded-lg transition-colors duration-200"
-                        title="Sign Out"
-                      >
-                        <LogOut className="w-4 h-4" />
-                        <span className="hidden sm:inline text-sm">Sign Out</span>
-                      </button>
+                    ) : (
+                      <div className="w-12 h-12 bg-gray-100 rounded border border-gray-200 flex items-center justify-center flex-shrink-0">
+                        <span className="text-gray-400 text-lg">📷</span>
+                      </div>
+                    )}
+                    <div className="text-right">
+                      <div className="text-sm font-medium text-gray-700">
+                        {currentProvider?.attributes?.name || 'Unknown Provider'}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {selectedTab === 'dashboard' ? 'Dashboard View' : 'Edit Mode'}
+                      </div>
                     </div>
+                    <button
+                      onClick={handleLogout}
+                      className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 px-3 py-2 rounded-lg transition-colors duration-200"
+                      title="Sign Out"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      <span className="hidden sm:inline text-sm">Sign Out</span>
+                    </button>
                   </div>
                 </div>
               </div>
             </div>
           </header>
 
-      <div className="h-screen bg-gray-100 flex flex-col">
-        <div className="flex min-h-screen overflow-hidden">
-          {/* Sidebar */}
-          <aside
+    <div className="flex">
+      {/* Sidebar */}
+      <aside
+        className={`
+          bg-white shadow-lg w-64 flex flex-col
+          fixed md:static h-[calc(100vh-2rem)] my-4 rounded-lg mx-4
+          transform transition-transform duration-300 ease-in-out
+          ${isOpen ? "translate-x-0" : "-translate-x-full"}
+          md:translate-x-0 z-40
+        `}
+      >
+        {/* Dashboard Header */}
+        <div className="p-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <div className="w-7 h-7 bg-[#4A6FA5] rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-sm">ASL</span>
+              </div>
+              <span className="text-lg font-semibold">Provider Panel</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              {/* Mobile Logout Button */}
+              <button 
+                onClick={handleLogout}
+                className="md:hidden flex items-center space-x-1 text-gray-600 hover:text-gray-800 hover:bg-gray-100 p-1.5 rounded transition-colors duration-200"
+                title="Sign Out"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+              {/* Mobile Close Button */}
+            <button className="md:hidden" onClick={() => setIsOpen(false)}>
+              <X className="ml-2 w-4 h-4 cursor-pointer" />
+            </button>
+          </div>
+        </div>
+        </div>
+
+        {/* Navigation Menu */}
+        <nav className="flex-1 flex flex-col justify-center gap-4 py-2 px-4">
+          <button
+            onClick={() => setSelectedTab("dashboard")}
             className={`
-              bg-white shadow-lg w-64 flex flex-col
-              fixed md:static h-[calc(100vh-2rem)] my-4 rounded-lg mx-4
-              transform transition-transform duration-300 ease-in-out
-              ${isOpen ? "translate-x-0" : "-translate-x-full"}
-              md:translate-x-0 z-40
+              hidden md:flex items-center justify-center gap-2 px-3 py-2 rounded-lg
+              transition-colors duration-200
+              ${
+                selectedTab === "dashboard"
+                  ? "bg-[#4A6FA5] text-white"
+                  : "text-gray-700 hover:bg-gray-100"
+              }
             `}
           >
-            {/* Dashboard Header */}
-            <div className="p-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <div className="w-7 h-7 bg-[#4A6FA5] rounded-lg flex items-center justify-center">
-                    <span className="text-white font-bold text-sm">ASL</span>
-                  </div>
-                  <span className="text-lg font-semibold">Provider Panel</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  {/* Mobile Logout Button */}
-                  <button 
-                    onClick={handleLogout}
-                    className="md:hidden flex items-center space-x-1 text-gray-600 hover:text-gray-800 hover:bg-gray-100 p-1.5 rounded transition-colors duration-200"
-                    title="Sign Out"
-                  >
-                    <LogOut className="w-4 h-4" />
-                  </button>
-                  {/* Mobile Close Button */}
-                  <button className="md:hidden" onClick={() => setIsOpen(false)}>
-                    <X className="ml-2 w-4 h-4 cursor-pointer" />
-                  </button>
-                </div>
-              </div>
-            </div>
+            <BarChart className="w-4 h-4" />
+            <span className="text-sm">Dashboard</span>
+          </button>
 
-            {/* Navigation Menu */}
-            <nav className="flex-1 flex flex-col justify-center gap-4 py-2 px-4">
-              <button
-                onClick={() => setSelectedTab("dashboard")}
-                className={`
-                  flex items-center justify-center gap-2 px-3 py-2 rounded-lg
-                  transition-colors duration-200 md:flex hidden
-                  ${
-                    selectedTab === "dashboard"
-                      ? "bg-[#4A6FA5] text-white"
-                      : "text-gray-700 hover:bg-gray-100"
-                  }
-                `}
-              >
-                <BarChart className="w-4 h-4" />
-                <span className="text-sm">Dashboard</span>
-              </button>
+          <button
+            onClick={() => setSelectedTab("edit")}
+            className={`
+              hidden md:flex items-center justify-center gap-2 px-3 py-2 rounded-lg
+              transition-colors duration-200
+              ${
+                selectedTab === "edit"
+                  ? "bg-[#4A6FA5] text-white"
+                  : "text-gray-700 hover:bg-gray-100"
+              }
+            `}
+          >
+            <Building2 className="w-4 h-4" />
+            <span className="text-sm">Basic Details</span>
+          </button>
 
-              <button
-                onClick={() => setSelectedTab("edit")}
-                className={`
-                  flex items-center justify-center gap-2 px-3 py-2 rounded-lg
-                  transition-colors duration-200 md:flex hidden
-                  ${
-                    selectedTab === "edit"
-                      ? "bg-[#4A6FA5] text-white"
-                      : "text-gray-700 hover:bg-gray-100"
-                  }
-                `}
-              >
+          <button
+                onClick={() => setSelectedTab("details")}
+            className={`
+              hidden md:flex items-center justify-center gap-2 px-3 py-2 rounded-lg
+              transition-colors duration-200
+              ${
+                    selectedTab === "details"
+                  ? "bg-[#4A6FA5] text-white"
+                  : "text-gray-700 hover:bg-gray-100"
+              }
+            `}
+          >
                 <Building2 className="w-4 h-4" />
-                <span className="text-sm">Basic Details</span>
-              </button>
+                <span className="text-sm">Provider Logo</span>
+          </button>
 
-              <button
-                    onClick={() => setSelectedTab("details")}
-                className={`
-                  flex items-center justify-center gap-2 px-3 py-2 rounded-lg
-                  transition-colors duration-200 md:flex hidden
-                  ${
-                        selectedTab === "details"
-                      ? "bg-[#4A6FA5] text-white"
-                      : "text-gray-700 hover:bg-gray-100"
-                  }
-                `}
-              >
-                    <Building2 className="w-4 h-4" />
-                    <span className="text-sm">Provider Logo</span>
-              </button>
+          <button
+                onClick={() => setSelectedTab("provider-types")}
+            className={`
+              hidden md:flex items-center justify-center gap-2 px-3 py-2 rounded-lg
+              transition-colors duration-200
+              ${
+                    selectedTab === "provider-types"
+                  ? "bg-[#4A6FA5] text-white"
+                  : "text-gray-700 hover:bg-gray-100"
+              }
+            `}
+          >
+                <Tag className="w-4 h-4" />
+            <span className="text-sm">Provider Services</span>
+          </button>
 
-              <button
-                    onClick={() => setSelectedTab("provider-types")}
-                className={`
-                  flex items-center justify-center gap-2 px-3 py-2 rounded-lg
-                  transition-colors duration-200 md:flex hidden
-                  ${
-                        selectedTab === "provider-types"
-                      ? "bg-[#4A6FA5] text-white"
-                      : "text-gray-700 hover:bg-gray-100"
-                  }
-                `}
-              >
-                    <Tag className="w-4 h-4" />
-                                         <span className="text-sm">Provider Services</span>
-              </button>
-
-              <button
-                onClick={() => setSelectedTab("coverage")}
-                className={`
-                  flex items-center justify-center gap-2 px-3 py-2 rounded-lg
-                  transition-colors duration-200 md:flex hidden
-                  ${
-                    selectedTab === "coverage"
-                      ? "bg-[#4A6FA5] text-white"
-                      : "text-gray-700 hover:bg-gray-100"
-                  }
-                `}
-              >
-                <MapPin className="w-4 h-4" />
-                <span className="text-sm">Coverage Area</span>
-              </button>
+          <button
+            onClick={() => setSelectedTab("coverage")}
+            className={`
+              hidden md:flex items-center justify-center gap-2 px-3 py-2 rounded-lg
+              transition-colors duration-200
+              ${
+                selectedTab === "coverage"
+                  ? "bg-[#4A6FA5] text-white"
+                  : "text-gray-700 hover:bg-gray-100"
+              }
+            `}
+          >
+            <MapPin className="w-4 h-4" />
+            <span className="text-sm">Coverage Area</span>
+          </button>
 
                   <button
                     onClick={() => setSelectedTab("locations")}
                     className={`
-                      flex items-center justify-center gap-2 px-3 py-2 rounded-lg
-                      transition-colors duration-200 md:flex hidden
+                      hidden md:flex items-center justify-center gap-2 px-3 py-2 rounded-lg
+                      transition-colors duration-200
                       ${
                         selectedTab === "locations"
                           ? "bg-[#4A6FA5] text-white"
@@ -1065,13 +909,13 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                   >
                     <Building2 className="w-4 h-4" />
                     <span className="text-sm">Locations</span>
-                  </button>
+              </button>
 
               <button
                 onClick={() => setSelectedTab("insurance")}
                 className={`
-                  flex items-center justify-center gap-2 px-3 py-2 rounded-lg
-                  transition-colors duration-200 md:flex hidden
+                  hidden md:flex items-center justify-center gap-2 px-3 py-2 rounded-lg
+                  transition-colors duration-200
                   ${
                     selectedTab === "insurance"
                       ? "bg-[#4A6FA5] text-white"
@@ -1384,155 +1228,136 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                     
                     {/* States Section */}
                     <div className="space-y-4">
-                      {/* Selected States Section */}
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">Coverage States</label>
-                        {isLoading ? (
-                          <div className="flex items-center justify-center py-4">
-                            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
-                          </div>
-                        ) : (
-                          <>
-                            {providerState.length > 0 ? (
-                              <div className="flex flex-wrap gap-2 mb-4">
-                                {providerState.map((stateName) => (
-                                  <div 
-                                    key={stateName} 
-                                    className={`px-3 py-1 rounded-full text-sm flex items-center cursor-pointer justify-between
-                                      ${activeStateForCounties === stateName ? 'bg-green-500 text-white' : 'bg-blue-500 text-white'}`}
-                                  >
-                                    <span 
-                                      onClick={() => {
-                                        const stateData = availableStates.find(s => s.attributes.name === stateName);
-                                        if (stateData) {
-                                          setActiveStateForCounties(activeStateForCounties === stateName ? '' : stateName);
-                                          if (activeStateForCounties !== stateName) {
-                                            fetchCountiesByState(stateData.id).then(counties => {
-                                              setAvailableCounties(prev => {
-                                                const filtered = prev.filter(c => c.attributes.state !== stateName);
-                                                return [...filtered, ...counties];
-                                              });
-                                            });
-                                          }
-                                        }
-                                      }}
-                                    >
-                                      {stateName}
-                                    </span>
-                                    <X 
-                                          className="ml-2 h-4 w-4 cursor-pointer" 
-                                      onClick={() => {
-                                        setProviderState(prev => prev.filter(s => s !== stateName));
-                                        setSelectedCounties(prev => prev.filter(c => c.state !== stateName));
-                                        if (activeStateForCounties === stateName) {
-                                          setActiveStateForCounties('');
-                                        }
-                                      }}
-                                    />
-                                  </div>
-                                ))}
-                              </div>
-                            ) : (
-                              <p className="text-gray-500 text-sm mb-4">No states selected yet. Select states from the dropdown below.</p>
-                            )}
-
-                            {/* Add new state dropdown */}
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-2">
-                                {providerState.length > 0 ? 'Add More States' : 'Select States'}
-                              </label>
-                              <select
-                                onChange={async (e) => {
-                                  const selectedStateName = e.target.value;
-                                  if (selectedStateName && !providerState.includes(selectedStateName)) {
-                                    const stateData = availableStates.find(s => s.attributes.name === selectedStateName);
-                                    if (stateData) {
-                                      setActiveStateForCounties(selectedStateName);
-                                      setProviderState(prev => [...prev, selectedStateName]);
-                                      const counties = await fetchCountiesByState(stateData.id);
-                                      setAvailableCounties(prev => {
-                                        const filtered = prev.filter(c => c.attributes.state !== selectedStateName);
-                                        return [...filtered, ...counties];
-                                      });
-                                    }
-                                  }
-                                  e.target.value = ''; // Reset select after choosing
-                                }}
-                                className="block w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-                                value=""
-                                disabled={isLoading}
-                              >
-                                <option value="">
-                                  {isLoading 
-                                    ? 'Loading states...' 
-                                    : availableStates.length === providerState.length 
-                                      ? 'All states selected' 
-                                      : 'Select a state...'}
-                                </option>
-                                {!isLoading && availableStates
-                                  .filter(state => !providerState.includes(state.attributes.name))
-                                  .map(state => (
-                                    <option key={state.id} value={state.attributes.name}>
-                                      {state.attributes.name}
-                                    </option>
-                                  ))
-                                }
-                              </select>
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Counties Section */}
-                    {activeStateForCounties && (
-                      <div className="mt-6">
-                        <h3 className="text-sm font-medium text-gray-700 mb-2">Counties in {activeStateForCounties}</h3>
-                        <div className="flex flex-wrap gap-2">
-                          {availableCounties
-                            .filter(county => county.attributes.state === activeStateForCounties)
-                            .map(county => {
-                              const isSelected = selectedCounties.some(c => c.county_id === county.id);
-                              return (
+                        <>
+                          {providerState.length > 0 ? (
+                            <div className="flex flex-wrap gap-2 mb-4">
+                              {providerState.map((stateName) => (
                                 <div
-                                  key={county.id}
-                                  onClick={() => {
-                                    if (isSelected) {
-                                      const remaining = selectedCounties.filter(c => c.county_id !== county.id);
-                                      if (!remaining.some(c => c.state === activeStateForCounties)) {
-                                        setSelectedCounties(prev => [...prev.filter(c => c.state !== activeStateForCounties), {
-                                          county_id: 0,
-                                          county_name: "Contact Us",
-                                          state: activeStateForCounties
-                                        }]);
-                                      } else {
-                                        setSelectedCounties(remaining);
-                                      }
-                                    } else {
-                                      setSelectedCounties(prev => [...prev.filter(c => 
-                                        !(c.state === activeStateForCounties && c.county_name === "Contact Us")
-                                      ), {
-                                        county_id: county.id,
-                                        county_name: county.attributes.name,
-                                        state: county.attributes.state
-                                      }]);
-                                    }
-                                  }}
-                                  className={`px-3 py-1 rounded-full text-sm cursor-pointer flex items-center justify-between
-                                    ${isSelected 
-                                      ? 'bg-blue-500 text-white' 
-                                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                                  key={stateName}
+                                  className={`px-3 py-1 rounded-full text-sm flex items-center cursor-pointer justify-between ${activeStateForCounties === stateName ? 'bg-green-500 text-white' : 'bg-blue-500 text-white'}`}
                                 >
-                                  <span>{county.attributes.name}</span>
-                                  {isSelected && (
-                                    <X className="h-4 w-4 ml-2" />
-                                  )}
+                                  <span
+                                    onClick={() => {
+                                      const stateData = availableStates.find(s => s.attributes.name === stateName);
+                                      if (stateData) {
+                                        const togglingTo = activeStateForCounties === stateName ? '' : stateName;
+                                        setActiveStateForCounties(togglingTo);
+                                        if (togglingTo) {
+                                          fetchCountiesByState(stateData.id).then(counties => {
+                                            setAvailableCounties(prev => {
+                                              const filtered = prev.filter(c => c.attributes.state !== stateName);
+                                              return [...filtered, ...counties];
+                                            });
+                                          });
+                                        }
+                                      }
+                                    }}
+                                  >
+                                    {stateName}
+                                  </span>
+                                  <X
+                                    className="ml-2 h-4 w-4 cursor-pointer"
+                                    onClick={() => {
+                                      setProviderState(prev => prev.filter(s => s !== stateName));
+                                      setSelectedCounties(prev => prev.filter(c => c.state !== stateName));
+                                      if (activeStateForCounties === stateName) {
+                                        setActiveStateForCounties('');
+                                      }
+                                    }}
+                                  />
                                 </div>
-                              );
-                            })}
-                        </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-gray-500 text-sm mb-4">No states selected yet. Select states from the dropdown below.</p>
+                          )}
+
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              {providerState.length > 0 ? 'Add More States' : 'Select States'}
+                            </label>
+                            <select
+                              onChange={async (e) => {
+                                const selectedStateName = e.target.value;
+                                if (selectedStateName && !providerState.includes(selectedStateName)) {
+                                  const stateData = availableStates.find(s => s.attributes.name === selectedStateName);
+                                  if (stateData) {
+                                    setActiveStateForCounties(selectedStateName);
+                                    setProviderState(prev => [...prev, selectedStateName]);
+                                    const counties = await fetchCountiesByState(stateData.id);
+                                    setAvailableCounties(prev => {
+                                      const filtered = prev.filter(c => c.attributes.state !== selectedStateName);
+                                      return [...filtered, ...counties];
+                                    });
+                                  }
+                                }
+                                e.target.value = '';
+                              }}
+                              className="block w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                              value=""
+                              disabled={false}
+                            >
+                              <option value="">Select a state...</option>
+                              {availableStates
+                                .filter(state => !providerState.includes(state.attributes.name))
+                                .map(state => (
+                                  <option key={state.id} value={state.attributes.name}>
+                                    {state.attributes.name}
+                                  </option>
+                                ))}
+                            </select>
+                          </div>
+                        </>
                       </div>
-                    )}
+
+                      {/* Counties Section */}
+                      {activeStateForCounties && (
+                        <div className="mt-6">
+                          <h3 className="text-sm font-medium text-gray-700 mb-2">Counties in {activeStateForCounties}</h3>
+                          <div className="flex flex-wrap gap-2">
+                            {availableCounties
+                              .filter(county => county.attributes.state === activeStateForCounties)
+                              .map(county => {
+                                const isSelected = selectedCounties.some(c => c.county_id === county.id);
+                                return (
+                                  <div
+                                    key={county.id}
+                                    onClick={() => {
+                                      if (isSelected) {
+                                        const remaining = selectedCounties.filter(c => c.county_id !== county.id);
+                                        if (!remaining.some(c => c.state === activeStateForCounties)) {
+                                          setSelectedCounties(prev => [...prev.filter(c => c.state !== activeStateForCounties), {
+                                            county_id: 0,
+                                            county_name: 'Contact Us',
+                                            state: activeStateForCounties,
+                                          }]);
+                                        } else {
+                                          setSelectedCounties(remaining);
+                                        }
+                                      } else {
+                                        setSelectedCounties(prev => [
+                                          ...prev.filter(c => !(c.state === activeStateForCounties && c.county_name === 'Contact Us')),
+                                          {
+                                            county_id: county.id,
+                                            county_name: county.attributes.name,
+                                            state: county.attributes.state,
+                                          },
+                                        ]);
+                                      }
+                                    }}
+                                    className={`px-3 py-1 rounded-full text-sm cursor-pointer flex items-center justify-between ${isSelected ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                                  >
+                                    <span>{county.attributes.name}</span>
+                                    {isSelected && <X className="h-4 w-4 ml-2" />}
+                                  </div>
+                                );
+                              })}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   {/* Save and Discard Buttons */}
@@ -1580,7 +1405,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                         }
                       }}
                     />
-                  )}
+              )}
               {selectedTab === "insurance" && (
                 <div className="space-y-6">
                   <div className="bg-white rounded-lg shadow p-6">
@@ -1636,9 +1461,8 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
           </div>
         </div>
       </div>
-        </div>
-      </div>
-      
+    </div>
+ 
       {/* Floating Logout Button - Mobile Only */}
       <div className="fixed bottom-6 right-6 z-50 md:hidden">
         <button
@@ -1668,9 +1492,9 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
           handleShownModal={handleShownModal}
         />
       )}
-
+ 
       {renderSessionWarning()}
-
+ 
       {isCountiesModalOpen && (
         <CountiesModal
           isOpen={isCountiesModalOpen}
@@ -1683,7 +1507,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
           onStateChange={setActiveStateForCounties}
         />
       )}
-
+ 
       {isInsuranceModalOpen && (
         <InsuranceModal
           isOpen={isInsuranceModalOpen}
@@ -1699,5 +1523,5 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
     </div>
   );
 };
-
+ 
 export default ProviderEdit;

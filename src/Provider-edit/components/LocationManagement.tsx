@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { toast } from 'react-toastify';
 import { useAuth } from '../../Provider-login/AuthProvider';
-import { Plus, Edit, Trash2, MapPin, Phone, Building2, X, Check, AlertCircle } from 'lucide-react';
+import { Plus, Edit, Trash2, MapPin, Phone, Building2, X, AlertCircle } from 'lucide-react';
 import { Location } from '../../Utility/Types';
 
 interface LocationManagementProps {
@@ -24,7 +24,7 @@ const LocationManagement: React.FC<LocationManagementProps> = ({
   currentLocations,
   onLocationsUpdate
 }) => {
-  const { token, loggedInProvider } = useAuth();
+  const { loggedInProvider } = useAuth();
   const [locations, setLocations] = useState<Location[]>(currentLocations || []);
   const [isLoading, setIsLoading] = useState(false);
   const [isAddingLocation, setIsAddingLocation] = useState(false);
@@ -79,15 +79,13 @@ const LocationManagement: React.FC<LocationManagementProps> = ({
     return process.env.REACT_APP_API_BASE_URL || 'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com';
   };
 
-  const getAuthHeader = () => {
-    // Use loggedInProvider.id as the user ID for authorization
+  const getAuthHeader = useCallback(() => {
     return loggedInProvider?.id?.toString() || '';
-  };
+  }, [loggedInProvider?.id]);
 
   // Fetch all locations for the provider
   const fetchLocations = useCallback(async () => {
     if (!providerId) return;
-    
     setIsLoading(true);
     try {
       const response = await fetch(`${getApiBaseUrl()}/api/v1/providers/${providerId}/locations`, {

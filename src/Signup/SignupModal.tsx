@@ -1000,7 +1000,7 @@ In-Home Services Only: ${providerData.in_home_only ? "Yes" : "No"}
                     {/* Address Section */}
                     <div>
                       <h4 className="text-lg font-medium text-gray-700 mb-3">Address Information</h4>
-                      <div className="grid grid-cols-1 gap-4 p-4 flex justify-center">
+                      <div className="grid grid-cols-1 gap-4 p-4">
                         <div className="text-center">
                           <label className="block text-sm text-gray-600 mb-2">
                             Address Line 1

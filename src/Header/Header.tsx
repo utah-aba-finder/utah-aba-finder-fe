@@ -44,9 +44,25 @@ const navigationItems = [
 const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [expandedItem, setExpandedItem] = useState<string | null>(null);
+  const [hoverTimeout, setHoverTimeout] = useState<NodeJS.Timeout | null>(null);
 
   const handleMobileMenuToggle = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  const handleMouseEnter = (itemName: string) => {
+    if (hoverTimeout) {
+      clearTimeout(hoverTimeout);
+      setHoverTimeout(null);
+    }
+    setExpandedItem(itemName);
+  };
+
+  const handleMouseLeave = () => {
+    const timeout = setTimeout(() => {
+      setExpandedItem(null);
+    }, 300); // Increased to 300ms delay before closing
+    setHoverTimeout(timeout);
   };
 
   // Get navigation items (no authentication logic needed)
@@ -56,27 +72,29 @@ const Header = () => {
     <header className="fixed w-full top-0 z-50 max-w-[100vw]">
       <div className="bg-white border-b shadow-sm relative px-2">
         <div className="w-full box-border">
-          <div className="flex justify-between items-center h-24 w-full px-8 pr-12 max-w-7xl mx-auto">
+          <div className="flex justify-between items-center h-24 w-full px-6 pr-12 max-w-7xl mx-auto">
             {/* Logo */}
             <div className="flex-shrink-0 flex items-center">
               <Link to="/" className="block">
                 <img
                   src={Logo}
                   alt="Autism Services Locator Logo"
-                  className="h-20 w-auto object-contain max-w-[280px] lg:h-24"
+                  className="h-24 w-auto object-contain max-w-[320px] lg:h-28"
                 />
               </Link>
             </div>
 
-            {/* Desktop Navigation */}
+            {/* Desktop Navigation - Hidden on mobile */}
             <nav className="hidden lg:flex items-center space-x-5 header-nav">
               {currentNavigationItems.map((item) => (
                 <div key={item.name} className="relative group flex items-center">
                   {item.dropdown ? (
-                    <div className="relative">
+                    <div 
+                      className="relative"
+                      onMouseEnter={() => handleMouseEnter(item.name)}
+                      onMouseLeave={handleMouseLeave}
+                    >
                       <button
-                        onMouseEnter={() => setExpandedItem(item.name)}
-                        onMouseLeave={() => setExpandedItem(null)}
                         className="dropdown-button text-[#332d29] hover:text-[#4A6FA5] px-3 py-3 text-lg font-bold transition-colors duration-200 bg-transparent border-0 hover:bg-gray-50 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-300 flex items-center"
                         style={{ 
                           border: 'none', 
@@ -91,14 +109,16 @@ const Header = () => {
                         <ChevronDown className="inline-block ml-2 h-4 w-4" />
                       </button>
                       {expandedItem === item.name && (
-                        <div className={`absolute mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200 ${
-                          item.name === "Contact" ? "right-0" : "left-0"
-                        }`}>
+                        <div 
+                          className={`absolute mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200 ${
+                            item.name === "Contact" ? "right-0" : "left-0"
+                          }`}
+                        >
                           {item.dropdown.map((dropdownItem) => (
                             <Link
                               key={dropdownItem.name}
                               to={dropdownItem.href}
-                              className="block px-4 py-2 text-[#332d29] hover:text-[#4A6FA5] hover:bg-gray-50 text-base font-semibold no-underline"
+                              className="block px-4 py-2 text-[#332d29] hover:text-[#4A6FA5] hover:bg-gray-50 text-base font-semibold no-underline transition-colors duration-150"
                             >
                               {dropdownItem.name}
                             </Link>
@@ -129,16 +149,15 @@ const Header = () => {
               ))}
             </nav>
 
-            {/* Mobile Menu Button - Always visible on mobile */}
+            {/* Mobile Menu Button - Visible only on mobile */}
             <button
-              className="block lg:hidden p-6 relative w-12 h-12 bg-transparent border-0 hover:bg-gray-100 rounded-md transition-colors duration-200 z-10 mr-2"
+              className="lg:hidden p-6 relative w-12 h-12 bg-transparent border-0 hover:bg-gray-100 rounded-md transition-colors duration-200 z-10 mr-2"
               onClick={handleMobileMenuToggle}
               aria-label="Toggle menu"
             >
               <div className="absolute inset-0 flex items-center justify-center">
                 <div
-                  className={`w-6 h-6 relative transition-all duration-300 ${isMobileMenuOpen ? "rotate-180" : "rotate-0"
-                    }`}
+                  className={`w-6 h-6 relative transition-all duration-300 ${isMobileMenuOpen ? "rotate-180" : "rotate-0"}`}
                 >
                   <div
                     className={`absolute w-full h-0.5 bg-[#332d29] transition-all duration-300 

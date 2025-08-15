@@ -51,26 +51,7 @@ const TestComponent = () => {
 
 // Safe Header wrapper that only renders when AuthProvider is ready
 const SafeHeader = () => {
-  try {
-    return <Header />;
-  } catch (error) {
-    // If Header fails to render due to context issues, show minimal header
-    console.warn('Header failed to render, showing fallback:', error);
-    return (
-      <header className="fixed w-full top-0 z-50 max-w-[100vw]">
-        <div className="bg-white border-b shadow-sm relative px-1">
-          <div className="w-full box-border justify-evenly">
-            <div className="flex justify-between items-center h-24 w-full">
-              <div className="flex-shrink-0">
-                <div className="h-[8rem] lg:h-[12rem] w-[200px] max-w-[280px] lg:max-w-[200px] bg-gray-200 rounded animate-pulse"></div>
-              </div>
-              <div className="text-center text-gray-500">Loading...</div>
-            </div>
-          </div>
-        </div>
-      </header>
-    );
-  }
+  return <Header />;
 };
 
 function App() {
@@ -323,8 +304,6 @@ function ProviderEditWrapper({
   clearProviderData: () => void;
   onUpdate: (updatedProvider: ProviderAttributes) => void;
 }) {
-  const { id } = useParams();
-  const providerId = id ? parseInt(id) : 0;
   const { loggedInProvider } = useAuth();
 
   if (!loggedInProvider) {

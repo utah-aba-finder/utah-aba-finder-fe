@@ -52,7 +52,36 @@ header .header-nav button {
   box-shadow: none !important;
 }
 
-/* Additional spacing and responsive adjustments */
+/* Dropdown menu improvements */
+.header-nav .relative {
+  position: relative !important;
+}
+
+.header-nav .absolute {
+  position: absolute !important;
+}
+
+/* Smooth dropdown transitions */
+.header-nav .absolute {
+  transition: opacity 0.15s ease-in-out, transform 0.15s ease-in-out !important;
+  transform-origin: top center !important;
+}
+
+/* Force hide desktop navigation on mobile devices */
+@media (max-width: 1023px) {
+  .header-nav {
+    display: none !important;
+  }
+}
+
+/* Ensure mobile menu button is visible on mobile */
+@media (max-width: 1023px) {
+  button[aria-label="Toggle menu"] {
+    display: block !important;
+  }
+}
+
+/* Additional spacing adjustments */
 @media (max-width: 1024px) {
   header .px-8.pr-12 {
     padding-left: 1.5rem !important;
@@ -64,15 +93,5 @@ header .header-nav button {
   header .px-8.pr-12 {
     padding-left: 1rem !important;
     padding-right: 1.5rem !important;
-  }
-}
-
-/* Ensure mobile menu button has proper spacing */
-@media (max-width: 1024px) {
-  header button[aria-label="Toggle menu"] {
-    margin-right: 0.5rem !important;
-    padding: 1.5rem !important;
-    width: 3rem !important;
-    height: 3rem !important;
   }
 } 

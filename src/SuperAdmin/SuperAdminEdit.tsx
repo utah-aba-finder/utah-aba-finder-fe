@@ -7,12 +7,10 @@ import {
   Mail,
   DollarSign,
   Clock,
-  Video,
-  Home,
   Stethoscope,
   Languages,
-  Plus,
   X,
+  Plus,
 } from "lucide-react";
 import moment from "moment";
 import InsuranceModal from "../Provider-edit/InsuranceModal";

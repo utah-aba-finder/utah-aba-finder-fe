@@ -25,7 +25,6 @@ export const fetchProviders = async (): Promise<Providers> => {
     // Process logo URLs in the response
     if (data.data && data.data.length > 0) {
       data.data.forEach(provider => {
-        const logoUrl = provider.attributes?.logo;
         
         // Logo status logging removed for production
       });
@@ -59,7 +58,7 @@ export const fetchSingleProvider = async (providerId: number) => {
 
 
     if (!response.ok) {
-      const errorText = await response.text();
+      await response.text();
       
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -130,8 +129,8 @@ export const testAPIHealth = async (): Promise<{ status: string; message: string
     if (response.ok) {
       return { status: 'healthy', message: 'API is working correctly' };
     } else {
-      const errorText = await response.text();
-      return { status: 'error', message: `API returned ${response.status}: ${errorText}` };
+      await response.text();
+      return { status: 'error', message: `API returned ${response.status}: ${response.statusText}` };
     }
   } catch (error) {
     

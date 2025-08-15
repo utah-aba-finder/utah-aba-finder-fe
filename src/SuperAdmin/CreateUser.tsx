@@ -1,5 +1,5 @@
 import { EyeIcon, EyeOffIcon } from "lucide-react";
-import { useState, useEffect,  } from "react";
+import { useState } from "react";
 import { toast } from "react-toastify";
 import { getAdminAuthHeader } from "../Utility/config";
 
@@ -9,7 +9,6 @@ const CreateUser = ({ handleCloseForm }: { handleCloseForm: () => void }) => {
     const [passwordConfirmation, setPasswordConfirmation] = useState("");
     const [providerId, setProviderId] = useState("");
     const [role, setRole] = useState("");
-    const [hidden, setHidden] = useState(true);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 

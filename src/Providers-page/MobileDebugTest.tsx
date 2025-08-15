@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { GooglePlacesAPI } from '../Utility/GooglePlacesAPI';
 
 const MobileDebugTest: React.FC = () => {
