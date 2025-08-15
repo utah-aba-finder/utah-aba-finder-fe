@@ -52,6 +52,21 @@ header .header-nav button {
   box-shadow: none !important;
 }
 
+/* Dropdown menu improvements */
+.header-nav .relative {
+  position: relative !important;
+}
+
+.header-nav .absolute {
+  position: absolute !important;
+}
+
+/* Smooth dropdown transitions */
+.header-nav .absolute {
+  transition: opacity 0.15s ease-in-out, transform 0.15s ease-in-out !important;
+  transform-origin: top center !important;
+}
+
 /* Force hide desktop navigation on mobile devices */
 @media (max-width: 1023px) {
   .header-nav {

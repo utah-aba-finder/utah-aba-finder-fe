@@ -44,9 +44,25 @@ const navigationItems = [
 const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [expandedItem, setExpandedItem] = useState<string | null>(null);
+  const [hoverTimeout, setHoverTimeout] = useState<NodeJS.Timeout | null>(null);
 
   const handleMobileMenuToggle = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  const handleMouseEnter = (itemName: string) => {
+    if (hoverTimeout) {
+      clearTimeout(hoverTimeout);
+      setHoverTimeout(null);
+    }
+    setExpandedItem(itemName);
+  };
+
+  const handleMouseLeave = () => {
+    const timeout = setTimeout(() => {
+      setExpandedItem(null);
+    }, 150); // 150ms delay before closing
+    setHoverTimeout(timeout);
   };
 
   // Get navigation items (no authentication logic needed)
@@ -75,8 +91,8 @@ const Header = () => {
                   {item.dropdown ? (
                     <div className="relative">
                       <button
-                        onMouseEnter={() => setExpandedItem(item.name)}
-                        onMouseLeave={() => setExpandedItem(null)}
+                        onMouseEnter={() => handleMouseEnter(item.name)}
+                        onMouseLeave={handleMouseLeave}
                         className="dropdown-button text-[#332d29] hover:text-[#4A6FA5] px-3 py-3 text-lg font-bold transition-colors duration-200 bg-transparent border-0 hover:bg-gray-50 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-300 flex items-center"
                         style={{ 
                           border: 'none', 
@@ -91,9 +107,13 @@ const Header = () => {
                         <ChevronDown className="inline-block ml-2 h-4 w-4" />
                       </button>
                       {expandedItem === item.name && (
-                        <div className={`absolute mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200 ${
-                          item.name === "Contact" ? "right-0" : "left-0"
-                        }`}>
+                        <div 
+                          className={`absolute mt-0 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200 ${
+                            item.name === "Contact" ? "right-0" : "left-0"
+                          }`}
+                          onMouseEnter={() => handleMouseEnter(item.name)}
+                          onMouseLeave={handleMouseLeave}
+                        >
                           {item.dropdown.map((dropdownItem) => (
                             <Link
                               key={dropdownItem.name}
