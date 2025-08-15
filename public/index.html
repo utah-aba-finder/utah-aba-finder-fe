@@ -77,6 +77,16 @@
     gtag('config', 'G-VXVLNVMD86');
   </script>
   
+  <!-- TEMPORARY: Service Worker Cleanup (remove after one deploy) -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => r.unregister()));
+    }
+    if (window.caches) {
+      caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k))));
+    }
+  </script>
+  
   <!-- Service Worker Registration with mobile-friendly settings -->
   <script>
     // Service Worker Registration - Safe + Graceful

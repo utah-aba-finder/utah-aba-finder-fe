@@ -52,25 +52,27 @@ header .header-nav button {
   box-shadow: none !important;
 }
 
-/* Navigation alignment improvements */
-.header-nav {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
+/* Additional spacing and responsive adjustments */
+@media (max-width: 1024px) {
+  header .px-8.pr-12 {
+    padding-left: 1.5rem !important;
+    padding-right: 2rem !important;
+  }
 }
 
-.header-nav > div {
-  display: flex !important;
-  align-items: center !important;
-  height: 100% !important;
+@media (max-width: 768px) {
+  header .px-8.pr-12 {
+    padding-left: 1rem !important;
+    padding-right: 1.5rem !important;
+  }
 }
 
-/* Ensure consistent button heights */
-.header-nav button,
-.header-nav a {
-  height: 44px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  min-width: fit-content !important;
+/* Ensure mobile menu button has proper spacing */
+@media (max-width: 1024px) {
+  header button[aria-label="Toggle menu"] {
+    margin-right: 0.5rem !important;
+    padding: 1.5rem !important;
+    width: 3rem !important;
+    height: 3rem !important;
+  }
 } 

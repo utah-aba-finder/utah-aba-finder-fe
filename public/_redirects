@@ -1,0 +1,9 @@
+# Force HTTPS
+http://autismserviceslocator.com/*  https://autismserviceslocator.com/:splat  301!
+http://www.autismserviceslocator.com/*  https://www.autismserviceslocator.com/:splat  301!
+
+# If you choose WWW as primary (swap these two if you prefer apex)
+https://autismserviceslocator.com/*   https://www.autismserviceslocator.com/:splat  301!
+
+# React SPA fallback
+/*  /index.html  200 

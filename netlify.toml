@@ -32,4 +32,17 @@ status = 200
     Cache-Control = "public, max-age=31536000, immutable"
 
 [build]
-  functions = "netlify/functions"
+  command = "npm run build"
+  publish = "build"  # CRA build output
+
+# Don't cache HTML (prevents stale document after deploy)
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "no-store"
+
+# Long cache for hashed assets
+[[headers]]
+  for = "/static/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
