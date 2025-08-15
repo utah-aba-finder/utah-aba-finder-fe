@@ -202,18 +202,21 @@ const ProvidersPage: React.FC = () => {
   useEffect(() => {
     const getProviders = async () => {
       try {
+        console.log('🔄 Starting to fetch providers...');
         if (isMountedRef.current) setIsLoading(true);
         
         const providers = await fetchProviders();
+        console.log('📡 API response received:', providers);
         
         // Add null check for providers.data
         if (!providers || !providers.data || !Array.isArray(providers.data)) {
-  
+          console.warn('⚠️ Invalid providers data structure:', providers);
           setAllProviders([]);
           setFilteredProviders([]);
           return;
         }
         
+        console.log(`✅ Mapping ${providers.data.length} providers...`);
         const mappedProviders = providers.data.map((p: ProviderData) => ({
           id: p.attributes.id,
           name: p.attributes.name,
@@ -247,14 +250,16 @@ const ProvidersPage: React.FC = () => {
           }
         }));
         
+        console.log('📝 Mapped providers:', mappedProviders);
         setAllProviders(mappedProviders);
         setFilteredProviders(mappedProviders);
       } catch (error) {
-
+        console.error('❌ Error fetching providers:', error);
         setShowError("Failed to load providers. Please try again later.");
         setAllProviders([]);
         setFilteredProviders([]);
       } finally {
+        console.log('🏁 Setting loading to false');
         if (isMountedRef.current) setIsLoading(false);
       }
     };

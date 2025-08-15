@@ -100,6 +100,7 @@ const SuperAdmin = () => {
   // Fetch providers
   const fetchAllProviders = useCallback(async () => {
     try {
+      console.log('🔄 SuperAdmin: Starting to fetch providers...');
       // Use the correct API app URL for data operations
       const response = await fetch(
         `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/providers`,
@@ -112,17 +113,21 @@ const SuperAdmin = () => {
         }
       );
 
+      console.log('📡 SuperAdmin: API response status:', response.status);
       if (!response.ok) {
+        console.error('❌ SuperAdmin: HTTP error:', response.status);
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const data = await response.json();
+      console.log('📊 SuperAdmin: API response data:', data);
       
       if (!data || !data.data) {
+        console.error('❌ SuperAdmin: Invalid response format:', data);
         throw new Error("Invalid response format");
       }
 
-
+      console.log(`✅ SuperAdmin: Processing ${data.data.length} providers...`);
 
       // Update the providers state with the fresh data
       setProviders(data.data);
