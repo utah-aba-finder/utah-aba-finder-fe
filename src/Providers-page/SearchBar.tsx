@@ -63,7 +63,6 @@ const SearchBar: React.FC<SearchBarProps> = ({
   const [isVisible, setIsVisible] = useState(false);
   const [selectedProviderType, setSelectedProviderType] = useState<string>('none');
   const [providerStates, setProviderStates] = useState<any[]>([]);
-  const [error, setError] = useState<string>('');
   const [selectedStateId, setSelectedStateId] = useState<string>('none');
   const [selectedState, setSelectedState] = useState<string>('none');
   const [counties, setCounties] = useState<CountyData[]>([]);
@@ -87,7 +86,6 @@ const SearchBar: React.FC<SearchBarProps> = ({
         const statesData = await fetchStates();
         setProviderStates(statesData || []);
       } catch {
-        setError('We are currently experiencing issues displaying states. Please try again later.');
         setProviderStates([]);
       }
     };
@@ -110,8 +108,6 @@ const SearchBar: React.FC<SearchBarProps> = ({
           }
         } catch (err) {
   
-          setCounties([]);
-          setError('Error loading counties. Please try again later.');
         }
       } else {
         setCounties([]);

@@ -1,10 +1,9 @@
 import React, { FC, useState, useEffect } from "react";
 import { toast } from "react-toastify";
-import { Building2, DollarSign, Tag, Users, Calendar, Star, TrendingUp, AlertCircle, CheckCircle, Clock, UserCheck, UserX, Phone, Mail, Globe, MapPin as MapPinIcon, Stethoscope, Languages } from "lucide-react";
+import { Building2, DollarSign, Clock, Stethoscope, Languages, Mail, Globe } from "lucide-react";
 import moment from "moment";
-import { ProviderData, ProviderAttributes, Insurance, CountiesServed, Location, StateData, CountyData, Service } from "../../Utility/Types";
+import { ProviderData, ProviderAttributes, Insurance, CountiesServed, Location } from "../../Utility/Types";
 import { fetchStates, fetchCountiesByState } from "../../Utility/ApiCall";
-import { useAuth } from '../../Provider-login/AuthProvider';
 
 interface EditLocationProps {
   provider: ProviderData;
@@ -156,20 +155,6 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
     }
   };
 
-  const handleServiceChange = (locationIndex: number, service: Service) => {
-    const newLocations = [...locations];
-    const locationServices = newLocations[locationIndex].services || [];
-    
-    const serviceExists = locationServices.some(s => s.id === service.id);
-    if (serviceExists) {
-      newLocations[locationIndex].services = locationServices.filter(s => s.id !== service.id);
-    } else {
-      newLocations[locationIndex].services = [...locationServices, service];
-    }
-    
-    setLocations(newLocations);
-  };
-
   useEffect(() => {
     setFormData({
       ...provider.attributes,
@@ -201,9 +186,7 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
             .map(s => s.id);
           
           const countiesPromises = stateIds.map(id => fetchCountiesByState(id));
-          const countiesResults = await Promise.all(countiesPromises);
-          const allCounties = countiesResults.flat();
-          // setAvailableCounties removed as it's unused
+          await Promise.all(countiesPromises);
         }
       } catch (error) {
         console.error('Error fetching states and counties:', error);

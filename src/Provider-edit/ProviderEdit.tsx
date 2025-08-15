@@ -358,7 +358,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       console.error('🔍 ProviderEdit: Error in refreshProviderData:', error);
       toast.error('Failed to refresh provider data');
     }
-  }, [currentProvider?.id, selectedCounties, providerState, extractUserId]);
+  }, [currentProvider?.id, extractUserId]);
 
   // Initialize provider state and fetch counties for saved states
   useEffect(() => {

@@ -67,9 +67,6 @@ const UserProviderLinking: React.FC = () => {
     return matchesSearch && matchesRole;
   });
 
-  // Get unlinked users for bulk assignment
-  const unlinkedUsers = filteredUsers.filter(user => !user.provider_id);
-
   // Filter and sort providers
   const filteredAndSortedProviders = providers
     .filter(provider => 
@@ -424,8 +421,8 @@ const UserProviderLinking: React.FC = () => {
         // Log summary of users with providers
         setUsers(users);
       } else {
-        const errorText = await response.text();
-        console.error('❌ Error response:', errorText);
+        await response.text();
+        console.error('❌ Error response:', response.status);
         toast.error(`Failed to fetch users: ${response.status}`);
       }
     } catch (error) {
@@ -451,7 +448,7 @@ const UserProviderLinking: React.FC = () => {
 
         setProviders(data.providers || []);
       } else {
-        const errorText = await response.text();
+        await response.text();
 
         toast.error(`Failed to fetch providers: ${response.status}`);
       }

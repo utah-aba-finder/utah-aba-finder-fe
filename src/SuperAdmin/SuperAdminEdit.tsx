@@ -11,10 +11,6 @@ import {
   Languages,
   X,
   Plus,
-  Trash2,
-  Edit,
-  Eye,
-  EyeOff,
 } from "lucide-react";
 import moment from "moment";
 import InsuranceModal from "../Provider-edit/InsuranceModal";
