@@ -258,10 +258,14 @@ const ProvidersPage: React.FC = () => {
         if (isMountedRef.current) setIsLoading(false);
       }
     };
+    
+    // Capture the ref value to avoid cleanup warning
+    const currentErrorTimeout = errorTimeoutRef.current;
+    
     getProviders();
     return () => {
-      if (errorTimeoutRef.current) {
-        clearTimeout(errorTimeoutRef.current);
+      if (currentErrorTimeout) {
+        clearTimeout(currentErrorTimeout);
       }
     };
   }, []);
