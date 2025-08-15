@@ -121,7 +121,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
     };
 
     getCounties();
-  }, [selectedStateId]);
+  }, [selectedStateId, selectedCounty, onCountyChange]);
 
   useEffect(() => {
     if (showNotification) {
@@ -157,20 +157,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
     });
     
     // Don't show notification immediately - let the parent component control it
-  }, [
-    searchQuery,
-    selectedCounty,
-    selectedInsurance,
-    selectedSpanish,
-    selectedService,
-    selectedWaitList,
-    selectedAge,
-    selectedProviderType,
-    selectedStateId,
-    selectedState,
-    selectedHasReviews,
-    onSearch,
-  ]);
+  }, [searchQuery, selectedCounty, selectedInsurance, selectedSpanish, selectedService, selectedWaitList, selectedAge, selectedProviderType, selectedStateId, selectedState, selectedHasReviews, onSearch]);
 
   // Show notification when parent component signals it's ready
   useEffect(() => {

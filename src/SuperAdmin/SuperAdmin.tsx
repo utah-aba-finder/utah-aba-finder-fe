@@ -170,9 +170,10 @@ const SuperAdmin = () => {
   }, [selectedProvider, US_STATES]);
 
   useEffect(() => {
-    setIsLoading(true);
-    fetchAllProviders();
-  }, []); // Only run once on mount
+    if (loggedInProvider && loggedInProvider.role === 'super_admin') {
+      fetchAllProviders();
+    }
+  }, [loggedInProvider, fetchAllProviders]);
 
   const handleProviderUpdate = async (updatedProvider: ProviderAttributes) => {
     try {

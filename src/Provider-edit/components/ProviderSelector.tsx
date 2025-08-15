@@ -64,7 +64,7 @@ const ProviderSelector: React.FC = () => {
             <span className="font-medium">Provider ID:</span> {activeProvider?.id || 'None'} | 
             <span className="font-medium ml-2">Type:</span> {activeProvider?.type || 'None'} | 
             <span className="font-medium ml-2">Access:</span> {
-              activeProvider?.user_id === activeProvider?.user_id ? 'Primary Owner' : 'Assigned'
+              activeProvider?.user_id ? 'Primary Owner' : 'Assigned'
             }
           </div>
         </div>

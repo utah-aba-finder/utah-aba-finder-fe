@@ -1,21 +1,14 @@
 import React, { FC, useState, useEffect } from "react";
 import { toast } from "react-toastify";
-import { Building2, MapPin, Globe, Mail, DollarSign, Clock, Video, Home, Stethoscope, Languages, X } from "lucide-react";
+import { Building2, DollarSign, Tag, Users, Calendar, Star, TrendingUp, AlertCircle, CheckCircle, Clock, UserCheck, UserX, Phone, Mail, Globe, MapPin as MapPinIcon, Stethoscope, Languages } from "lucide-react";
 import moment from "moment";
-import InsuranceModal from "../InsuranceModal";
-import CountiesModal from "../CountiesModal";
 import { ProviderData, ProviderAttributes, Insurance, CountiesServed, Location, StateData, CountyData, Service } from "../../Utility/Types";
 import { fetchStates, fetchCountiesByState } from "../../Utility/ApiCall";
-import { getAdminAuthHeader } from "../../Utility/config";
+import { useAuth } from '../../Provider-login/AuthProvider';
 
 interface EditLocationProps {
   provider: ProviderData;
   onUpdate: (updatedProvider: ProviderAttributes) => void;
-}
-
-interface ApiError {
-  message: string;
-  status?: number;
 }
 
 const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
@@ -43,8 +36,6 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
     setSelectedCounties(provider.attributes.counties_served || []);
   }, [provider]);
   
-  const [isInsuranceModalOpen, setIsInsuranceModalOpen] = useState(false);
-  const [isCountiesModalOpen, setIsCountiesModalOpen] = useState(false);
   const [selectedInsurances, setSelectedInsurances] = useState<Insurance[]>(
     provider.attributes.insurance || []
   );
@@ -53,8 +44,6 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
   );
   const [isSaving, setIsSaving] = useState(false);
   const [activeTab, setActiveTab] = useState("basic");
-  const [availableStates, setAvailableStates] = useState<StateData[]>([]);
-  const [availableCounties, setAvailableCounties] = useState<CountyData[]>([]);
 
   const handleCancel = () => {
     setFormData(provider.attributes);
@@ -117,8 +106,6 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
 
         throw new Error(errorData.message || `HTTP ${response.status}: Failed to update provider`);
       }
-
-      const responseData = await response.json();
 
       // Only refresh data if the save was successful
       try {
@@ -203,28 +190,28 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
   }, [provider.attributes]);
 
   useEffect(() => {
-    const loadStatesAndCounties = async () => {
+    const fetchStatesAndCounties = async () => {
       try {
         const states = await fetchStates();
-        setAvailableStates(states);
+        // setAvailableStates removed as it's unused
         
-        if (provider.states && provider.states[0]) {
-          const selectedState = states.find(
-            state => state.attributes.name === provider.states[0]
-          );
+        if (provider.attributes.states && provider.attributes.states.length > 0) {
+          const stateIds = states
+            .filter(s => provider.attributes.states.includes(s.attributes.name))
+            .map(s => s.id);
           
-          if (selectedState) {
-            const counties = await fetchCountiesByState(selectedState.id);
-            setAvailableCounties(counties);
-          }
+          const countiesPromises = stateIds.map(id => fetchCountiesByState(id));
+          const countiesResults = await Promise.all(countiesPromises);
+          const allCounties = countiesResults.flat();
+          // setAvailableCounties removed as it's unused
         }
       } catch (error) {
-
-        toast.error("Failed to load location data");
+        console.error('Error fetching states and counties:', error);
       }
     };
-    loadStatesAndCounties();
-  }, [provider.states]);
+    
+    fetchStatesAndCounties();
+  }, [provider]);
 
   return (
     <div className="w-full overflow-x-hidden relative">

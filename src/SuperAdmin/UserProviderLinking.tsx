@@ -422,8 +422,6 @@ const UserProviderLinking: React.FC = () => {
 
         
         // Log summary of users with providers
-        const usersWithProviders = users.filter((user: User) => user.provider_id);
-        
         setUsers(users);
       } else {
         const errorText = await response.text();
@@ -433,34 +431,6 @@ const UserProviderLinking: React.FC = () => {
     } catch (error) {
       console.error('❌ Fetch error:', error);
       toast.error('Failed to fetch users');
-    }
-  };
-
-  const fetchUnlinkedUsers = async () => {
-    try {
-
-      
-      const response = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/users/unlinked_users', {
-        headers: {
-          'Authorization': getAdminAuthHeader(),
-        }
-      });
-      
-
-      
-      if (response.ok) {
-        const data = await response.json();
-
-        // We could use this for additional functionality if needed
-        return data.users || [];
-      } else {
-        const errorText = await response.text();
-
-        return [];
-      }
-    } catch (error) {
-
-      return [];
     }
   };
 
@@ -545,41 +515,6 @@ const UserProviderLinking: React.FC = () => {
     } catch (error) {
 
       toast.error('Failed to assign user to provider');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const switchUserProvider = async (userEmail: string, newProviderId: number | null) => {
-    setIsLoading(true);
-    try {
-      const response = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/users/switch_provider', {
-        method: 'POST',
-        headers: {
-          'Authorization': getAdminAuthHeader(),
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          user_email: userEmail,
-          new_provider_id: newProviderId
-        })
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        if (result.success) {
-          toast.success(`User switched successfully!`);
-          fetchUsers(); // Refresh the user list
-        } else {
-          toast.error(`Failed to switch user: ${result.message || 'Unknown error'}`);
-        }
-      } else {
-        const errorData = await response.json();
-        toast.error(`Failed to switch user: ${errorData.message || 'Unknown error'}`);
-      }
-    } catch (error) {
-
-      toast.error('Failed to switch user provider');
     } finally {
       setIsLoading(false);
     }
@@ -1149,7 +1084,6 @@ const UserProviderLinking: React.FC = () => {
               <tbody className="bg-white divide-y divide-gray-200">
                 {connectedUsers.map(user => {
                   const userProviderList = userProviders[user.email] || [];
-                  const hasMultipleProviders = userProviderList.length > 1;
                   
                   return (
                     <tr key={user.id}>

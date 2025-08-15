@@ -171,14 +171,6 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
     }));
   };
 
-  const handleOpenCountiesModal = () => {
-    if (providerState.length === 0) {
-      toast.warning("Please select a state first");
-      return;
-    }
-    setIsCountiesModalOpen(true);
-  };
-
   const handleCloseCountiesModal = () => {
     setIsCountiesModalOpen(false);
   };

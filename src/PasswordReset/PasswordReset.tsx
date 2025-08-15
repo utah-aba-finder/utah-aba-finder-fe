@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -17,21 +17,7 @@ const PasswordReset: React.FC = () => {
 
   const resetToken = searchParams.get('reset_password_token');
 
-  useEffect(() => {
-
-    
-    if (!resetToken) {
-      
-      toast.error('Invalid password reset link. Please request a new one.');
-      navigate('/login');
-      return;
-    }
-
-    // Validate the token when component mounts
-    validateToken();
-  }, [resetToken, navigate]);
-
-  const validateToken = async () => {
+  const validateToken = useCallback(async () => {
     try {
       
       
@@ -45,7 +31,7 @@ const PasswordReset: React.FC = () => {
       
       
       if (!response.ok) {
-        const errorText = await response.text();
+        await response.text();
         
         toast.error('This reset link has expired. Please request a new password reset.');
         navigate('/forgot-password');
@@ -56,7 +42,18 @@ const PasswordReset: React.FC = () => {
 
       // Don't navigate away on network errors, let user try the reset
     }
-  };
+  }, [resetToken, navigate]);
+
+  useEffect(() => {
+    if (!resetToken) {
+      toast.error('Invalid password reset link. Please request a new one.');
+      navigate('/login');
+      return;
+    }
+
+    // Validate the token when component mounts
+    validateToken();
+  }, [resetToken, navigate, validateToken]);
 
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};

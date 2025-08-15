@@ -1,5 +1,5 @@
-import { FC, useState, useEffect } from "react";
-import { Building2, Globe, Mail, Home, MapPin, X } from "lucide-react";
+import React, { useState } from "react";
+import { Building2, Globe, Mail, Home, MapPin } from "lucide-react";
 import moment from "moment";
 import { ProviderData, Location, ProviderType, CountiesServed, CountyData } from "../../Utility/Types";
 import { useAuth } from "../../Provider-login/AuthProvider";
@@ -10,7 +10,7 @@ interface DashboardProps {
   onUpdate?: (updatedData: ProviderData) => void;
 }
 
-const Dashboard: FC<DashboardProps> = ({ provider, onUpdate }) => {
+const Dashboard: React.FC<DashboardProps> = ({ provider, onUpdate }) => {
   const { attributes } = provider;
   const { activeProvider, userProviders } = useAuth();
   
@@ -30,16 +30,6 @@ const Dashboard: FC<DashboardProps> = ({ provider, onUpdate }) => {
   );
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [availableCounties, setAvailableCounties] = useState<CountyData[]>([]);
-
-  const getProviderTypeId = (typeName: string): number => {
-    const typeMap: { [key: string]: number } = {
-      "ABA Therapy": 1,
-      "Autism Evaluation": 2,
-      "Speech Therapy": 3,
-      "Occupational Therapy": 4,
-    };
-    return typeMap[typeName] || 1;
-  };
 
   return (
     <div className="space-y-4 sm:space-y-6">

@@ -95,6 +95,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
   }, [token, loggedInProvider.id]);
 
   // Debug effect to track activeProvider changes
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     
     // If activeProvider has valid data but currentProvider doesn't match, force an update
@@ -108,12 +109,12 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       }
     }
   }, [activeProvider, currentProvider?.id]);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   
   // Sync currentProvider with activeProvider from auth context
   // previousProviderId.current = useRef<number | null>(null); // This line is removed as it's now in the component level
   
   // Main provider switching useEffect
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     
     // Check if we actually need to do anything
@@ -147,13 +148,9 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
 
     }
   }, [activeProvider, currentProvider?.id, loggedInProvider.id]);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   
   // Helper function to handle provider switching with data
   const handleProviderSwitchWithData = (providerData: any) => {
-    
-    // Check if this is actually a different provider (not just a re-render)
-    const isActuallySwitchingProviders = providerData.id !== currentProvider?.id;
     
     // Always update the state to ensure data consistency
     // Even if it's the "same" provider, the data might be different or more complete
@@ -316,99 +313,52 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       
       
       // Ensure we have all required properties with defaults
-      const safeProviderData = {
-        ...providerData,
+      const updatedProvider: ProviderData = {
+        id: providerData.id || currentProvider?.id || 0,
+        type: providerData.type || 'Provider',
+        states: providerData.states || [],
         attributes: {
-          ...providerData.attributes,
+          id: providerData.id || currentProvider?.id || 0,
+          states: providerData.states || [],
+          password: '',
+          username: providerData.attributes?.email || providerData.email || '',
+          name: providerData.attributes?.name || providerData.name || '',
+          email: providerData.attributes?.email || providerData.email || '',
+          website: providerData.attributes?.website || providerData.website || '',
+          logo: providerData.attributes?.logo || providerData.logo || null,
           provider_type: providerData.attributes?.provider_type || [],
           insurance: providerData.attributes?.insurance || [],
           counties_served: providerData.attributes?.counties_served || [],
           locations: providerData.attributes?.locations || [],
+          cost: providerData.attributes?.cost || null,
+          min_age: providerData.attributes?.min_age || null,
+          max_age: providerData.attributes?.max_age || null,
+          waitlist: providerData.attributes?.waitlist || null,
+          telehealth_services: providerData.attributes?.telehealth_services || null,
+          spanish_speakers: providerData.attributes?.spanish_speakers || null,
+          at_home_services: providerData.attributes?.at_home_services || null,
+          in_clinic_services: providerData.attributes?.in_clinic_services || null,
+          updated_last: providerData.attributes?.updated_last || null,
+          status: providerData.attributes?.status || null,
+          in_home_only: providerData.attributes?.in_home_only || false,
+          service_delivery: providerData.attributes?.service_delivery || { in_home: false, in_clinic: false, telehealth: false }
         }
       };
-
-      // Check if the data has actually changed before updating local state
-      const hasCountiesChanged = JSON.stringify(providerData.attributes?.counties_served) !== JSON.stringify(selectedCounties);
-      const hasStatesChanged = JSON.stringify(providerData.states) !== JSON.stringify(providerState);
       
-
+      setCurrentProvider(updatedProvider);
+      setEditedProvider(updatedProvider.attributes);
+      setProviderState(updatedProvider.states || []);
+      setSelectedCounties(updatedProvider.attributes.counties_served || []);
+      setSelectedProviderTypes(updatedProvider.attributes.provider_type || []);
+      setSelectedInsurances(updatedProvider.attributes.insurance || []);
+      setLocations(updatedProvider.attributes.locations || []);
       
-      // Only update if there are actual changes
-      if (hasCountiesChanged || hasStatesChanged) {
-
-        
-        setCurrentProvider((prev) => ({
-          id: safeProviderData.id || prev?.id || 0,
-          type: safeProviderData.type || prev?.type || 'provider',
-          states: safeProviderData.states || prev?.states || [],
-          attributes: {
-            id: safeProviderData.attributes.id || prev?.attributes?.id || 0,
-            states: safeProviderData.attributes.states || prev?.attributes?.states || [],
-            password: safeProviderData.attributes.password || prev?.attributes?.password || '',
-            username: safeProviderData.attributes.username || prev?.attributes?.username || '',
-            name: safeProviderData.attributes.name || prev?.attributes?.name || '',
-            email: safeProviderData.attributes.email || prev?.attributes?.email || '',
-            website: safeProviderData.attributes.website || prev?.attributes?.website || '',
-            cost: safeProviderData.attributes.cost || prev?.attributes?.cost || '',
-            min_age: safeProviderData.attributes.min_age ?? prev?.attributes?.min_age ?? null,
-            max_age: safeProviderData.attributes.max_age ?? prev?.attributes?.max_age ?? null,
-            waitlist: safeProviderData.attributes.waitlist ?? prev?.attributes?.waitlist ?? null,
-            telehealth_services: safeProviderData.attributes.telehealth_services ?? prev?.attributes?.telehealth_services ?? null,
-            spanish_speakers: safeProviderData.attributes.spanish_speakers ?? prev?.attributes?.spanish_speakers ?? null,
-            at_home_services: safeProviderData.attributes.at_home_services ?? prev?.attributes?.at_home_services ?? null,
-            in_clinic_services: safeProviderData.attributes.in_clinic_services ?? prev?.attributes?.in_clinic_services ?? null,
-            provider_type: safeProviderData.attributes.provider_type || prev?.attributes?.provider_type || [],
-            insurance: safeProviderData.attributes.insurance || prev?.attributes?.insurance || [],
-            counties_served: safeProviderData.attributes.counties_served || prev?.attributes?.counties_served || [],
-            locations: safeProviderData.attributes.locations || prev?.attributes?.locations || [],
-            logo: safeProviderData.attributes.logo ?? prev?.attributes?.logo ?? null,
-            updated_last: safeProviderData.attributes.updated_last ?? prev?.attributes?.updated_last ?? null,
-            status: safeProviderData.attributes.status ?? prev?.attributes?.status ?? null,
-            in_home_only: safeProviderData.attributes.in_home_only ?? prev?.attributes?.in_home_only ?? false,
-            service_delivery: safeProviderData.attributes.service_delivery ?? prev?.attributes?.service_delivery ?? { in_home: false, in_clinic: false, telehealth: false }
-          }
-        }));
-        setEditedProvider((prev) => ({
-          id: safeProviderData.attributes.id || prev?.id || 0,
-          states: safeProviderData.attributes.states || prev?.states || [],
-          password: safeProviderData.attributes.password || prev?.password || '',
-          username: safeProviderData.attributes.username || prev?.username || '',
-          name: safeProviderData.attributes.name || prev?.name || '',
-          email: safeProviderData.attributes.email || prev?.email || '',
-          website: safeProviderData.attributes.website || prev?.website || '',
-          cost: safeProviderData.attributes.cost || prev?.cost || '',
-          min_age: safeProviderData.attributes.min_age ?? prev?.min_age ?? null,
-          max_age: safeProviderData.attributes.max_age ?? prev?.max_age ?? null,
-          waitlist: safeProviderData.attributes.waitlist ?? prev?.waitlist ?? null,
-          telehealth_services: safeProviderData.attributes.telehealth_services ?? prev?.telehealth_services ?? null,
-          spanish_speakers: safeProviderData.attributes.spanish_speakers ?? prev?.spanish_speakers ?? null,
-          at_home_services: safeProviderData.attributes.at_home_services ?? prev?.at_home_services ?? null,
-          in_clinic_services: safeProviderData.attributes.in_clinic_services ?? prev?.in_clinic_services ?? null,
-          provider_type: safeProviderData.attributes.provider_type || prev?.provider_type || [],
-          insurance: safeProviderData.attributes.insurance || prev?.insurance || [],
-          counties_served: safeProviderData.attributes.counties_served || prev?.counties_served || [],
-          locations: safeProviderData.attributes.locations || prev?.locations || [],
-          logo: safeProviderData.attributes.logo ?? prev?.logo ?? null,
-          updated_last: safeProviderData.attributes.updated_last ?? prev?.updated_last ?? null,
-          status: safeProviderData.attributes.status ?? prev?.status ?? null,
-          in_home_only: safeProviderData.attributes.in_home_only ?? prev?.in_home_only ?? false,
-          service_delivery: safeProviderData.attributes.service_delivery ?? prev?.service_delivery ?? { in_home: false, in_clinic: false, telehealth: false }
-        }));
-      setSelectedProviderTypes(safeProviderData.attributes.provider_type || []);
-      setSelectedCounties(safeProviderData.attributes.counties_served || []);
-      setProviderState(safeProviderData.states || []);
-      setSelectedInsurances(safeProviderData.attributes.insurance || []);
-      setLocations(safeProviderData.attributes.locations || []);
-      
-      } else {
-      
-      }
-
+      toast.success('Provider data refreshed successfully');
     } catch (error) {
       console.error('🔍 ProviderEdit: Error in refreshProviderData:', error);
       toast.error('Failed to refresh provider data');
     }
-  }, [currentProvider?.id, selectedCounties, providerState, loggedInProvider.id, extractUserId]);
+  }, [currentProvider?.id, selectedCounties, providerState, extractUserId]);
 
   // Initialize provider state and fetch counties for saved states
   useEffect(() => {
