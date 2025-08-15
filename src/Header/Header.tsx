@@ -68,7 +68,7 @@ const Header = () => {
               </Link>
             </div>
 
-            {/* Desktop Navigation */}
+            {/* Desktop Navigation - Hidden on mobile */}
             <nav className="hidden lg:flex items-center space-x-5 header-nav">
               {currentNavigationItems.map((item) => (
                 <div key={item.name} className="relative group flex items-center">
@@ -129,16 +129,15 @@ const Header = () => {
               ))}
             </nav>
 
-            {/* Mobile Menu Button - Always visible on mobile */}
+            {/* Mobile Menu Button - Visible only on mobile */}
             <button
-              className="block lg:hidden p-6 relative w-12 h-12 bg-transparent border-0 hover:bg-gray-100 rounded-md transition-colors duration-200 z-10 mr-2"
+              className="lg:hidden p-6 relative w-12 h-12 bg-transparent border-0 hover:bg-gray-100 rounded-md transition-colors duration-200 z-10 mr-2"
               onClick={handleMobileMenuToggle}
               aria-label="Toggle menu"
             >
               <div className="absolute inset-0 flex items-center justify-center">
                 <div
-                  className={`w-6 h-6 relative transition-all duration-300 ${isMobileMenuOpen ? "rotate-180" : "rotate-0"
-                    }`}
+                  className={`w-6 h-6 relative transition-all duration-300 ${isMobileMenuOpen ? "rotate-180" : "rotate-0"}`}
                 >
                   <div
                     className={`absolute w-full h-0.5 bg-[#332d29] transition-all duration-300 
