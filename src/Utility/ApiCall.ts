@@ -80,22 +80,17 @@ export const fetchProviders = async (): Promise<Providers> => {
     // Process logo URLs in the response
     if (data.data && data.data.length > 0) {
       data.data.forEach(provider => {
-        
         // Logo status logging removed for production
       });
     }
     
     return data;
   } catch (error) {
+    console.error('❌ Failed to fetch providers with admin auth:', error);
     
-    if (axios.isAxiosError(error)) {
-      if (error.code === 'ECONNABORTED') {
-        throw new Error('Request timeout - please check your connection');
-      } else if (error.response?.status === 503) {
-        throw new Error('Service temporarily unavailable');
-      }
-    }
-    throw new Error('Unable to fetch providers data');
+    // If admin auth fails, try the state-by-state method as fallback
+    console.log('🔄 Admin providers failed, trying state-by-state fallback...');
+    return await fetchAllProvidersByState();
   }
 };
 
@@ -557,36 +552,32 @@ export const testAvailableEndpoints = async (): Promise<{ success: boolean; endp
   }
 };
 
-// Public providers function that doesn't require admin authentication
+// Public providers function that uses states endpoint (no API key required)
 export const fetchPublicProviders = async (): Promise<Providers> => {
   try {
-    // Try to use a public API key if available, otherwise fall back to admin auth
-    const response = await axios.get<Providers>(API_URL_PROVIDERS, {
-      timeout: 10000, // 10 second timeout
-      headers: {
-        'Cache-Control': 'no-cache',
-        'Pragma': 'no-cache'
-        // No Authorization header for public access
+    console.log('🔄 Fetching public providers using states endpoint...');
+    
+    // Use the states endpoint which doesn't require authentication
+    const response = await fetch(
+      'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/states/1/providers', // Utah (ID: 1)
+      {
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
       }
-    });
+    );
     
-    // Ensure we return a valid structure even if the response is unexpected
-    const data = response.data;
-    if (!data || typeof data !== 'object') {
-      return { data: [] };
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
     
-    // Process logo URLs in the response
-    if (data.data && data.data.length > 0) {
-      data.data.forEach(provider => {
-        // Logo status logging removed for production
-      });
-    }
+    const data = await response.json();
+    console.log('✅ Public providers fetched successfully from states endpoint');
     
     return data;
   } catch (error) {
-    // If public access fails, try with admin authentication as fallback
-    console.log('🔄 Public providers access failed, trying admin fallback...');
+    console.log('🔄 Public providers failed, trying admin fallback...');
     try {
       return await fetchProviders();
     } catch (adminError) {
