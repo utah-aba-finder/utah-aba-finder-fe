@@ -101,17 +101,51 @@ const SuperAdmin = () => {
   const fetchAllProviders = useCallback(async () => {
     try {
       console.log('🔄 SuperAdmin: Starting to fetch providers...');
-      // Use the correct API app URL for data operations
-      const response = await fetch(
-        `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/providers`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            'Authorization': getAdminAuthHeader(),
-          },
+      
+      // Try admin endpoint first, fallback to regular providers endpoint
+      let response;
+      let endpoint = 'admin/providers';
+      
+      try {
+        response = await fetch(
+          `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/${endpoint}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              'Authorization': getAdminAuthHeader(),
+            },
+          }
+        );
+        
+        if (response.status === 500) {
+          console.log('⚠️ SuperAdmin: Admin endpoint returned 500, trying regular providers endpoint...');
+          endpoint = 'providers';
+          response = await fetch(
+            `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/${endpoint}`,
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+                'Authorization': getAdminAuthHeader(),
+              },
+            }
+          );
         }
-      );
+      } catch (fetchError) {
+        console.log('⚠️ SuperAdmin: Admin endpoint failed, trying regular providers endpoint...');
+        endpoint = 'providers';
+        response = await fetch(
+          `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/${endpoint}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              'Authorization': getAdminAuthHeader(),
+            },
+          }
+        );
+      }
 
       console.log('📡 SuperAdmin: API response status:', response.status);
       if (!response.ok) {
@@ -127,7 +161,7 @@ const SuperAdmin = () => {
         throw new Error("Invalid response format");
       }
 
-      console.log(`✅ SuperAdmin: Processing ${data.data.length} providers...`);
+      console.log(`✅ SuperAdmin: Processing ${data.data.length} providers from ${endpoint} endpoint...`);
 
       // Update the providers state with the fresh data
       setProviders(data.data);

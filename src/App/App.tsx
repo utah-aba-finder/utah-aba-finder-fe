@@ -26,7 +26,7 @@ import {
 } from "../Utility/Types";
 import SuperAdmin from "../SuperAdmin/SuperAdmin";
 import Resources from "../Resources/Resources";
-import { fetchProviders } from "../Utility/ApiCall";
+import { fetchPublicProviders } from "../Utility/ApiCall";
 import { SuperAdminEdit } from "../SuperAdmin/SuperAdminEdit";
 import FavoriteProviders from "../FavoriteProviders-page/FavoriteProviders";
 import ServiceDisclaimer from "../Footer/servicedisclaimer";
@@ -127,7 +127,7 @@ function App() {
   useEffect(() => {
     const fetchAllProviders = async () => {
       try {
-        const providers: Providers = await fetchProviders();
+        const providers: Providers = await fetchPublicProviders();
         // Add null check and fallback for data property
         const data = providers?.data || [];
         setAllProviders(data);

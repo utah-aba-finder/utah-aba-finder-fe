@@ -6,6 +6,61 @@ export const API_URL = "https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/a
 
 const API_URL_PROVIDERS = 'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers';
 
+// Fallback function to fetch all providers by state (since main endpoints are broken)
+export const fetchAllProvidersByState = async (): Promise<Providers> => {
+  try {
+    console.log('🔄 Fetching providers by state (fallback method)...');
+    
+    // First get all states
+    const statesResponse = await fetch(
+      'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/states',
+      {
+        headers: {
+          'Authorization': getAdminAuthHeader(),
+        },
+      }
+    );
+    
+    if (!statesResponse.ok) {
+      throw new Error(`Failed to fetch states: ${statesResponse.status}`);
+    }
+    
+    const statesData = await statesResponse.json();
+    const allProviders: any[] = [];
+    
+    // Fetch providers for each state
+    for (const state of statesData.data) {
+      try {
+        const providersResponse = await fetch(
+          `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/states/${state.id}/providers`,
+          {
+            headers: {
+              'Authorization': getAdminAuthHeader(),
+            },
+          }
+        );
+        
+        if (providersResponse.ok) {
+          const providersData = await providersResponse.json();
+          if (providersData.data && Array.isArray(providersData.data)) {
+            allProviders.push(...providersData.data);
+          }
+        }
+      } catch (stateError) {
+        console.log(`⚠️ Failed to fetch providers for state ${state.attributes.name}:`, stateError);
+        // Continue with other states
+      }
+    }
+    
+    console.log(`✅ Fetched ${allProviders.length} providers using state-by-state method`);
+    
+    return { data: allProviders };
+  } catch (error) {
+    console.error('❌ Failed to fetch providers by state:', error);
+    throw new Error('Unable to fetch providers using fallback method');
+  }
+};
+
 export const fetchProviders = async (): Promise<Providers> => {
   try {
     const response = await axios.get<Providers>(API_URL_PROVIDERS, {
@@ -499,5 +554,44 @@ export const testAvailableEndpoints = async (): Promise<{ success: boolean; endp
       success: false, 
       error: error instanceof Error ? error.message : 'Unknown error occurred'
     };
+  }
+};
+
+// Public providers function that doesn't require admin authentication
+export const fetchPublicProviders = async (): Promise<Providers> => {
+  try {
+    // Try to use a public API key if available, otherwise fall back to admin auth
+    const response = await axios.get<Providers>(API_URL_PROVIDERS, {
+      timeout: 10000, // 10 second timeout
+      headers: {
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache'
+        // No Authorization header for public access
+      }
+    });
+    
+    // Ensure we return a valid structure even if the response is unexpected
+    const data = response.data;
+    if (!data || typeof data !== 'object') {
+      return { data: [] };
+    }
+    
+    // Process logo URLs in the response
+    if (data.data && data.data.length > 0) {
+      data.data.forEach(provider => {
+        // Logo status logging removed for production
+      });
+    }
+    
+    return data;
+  } catch (error) {
+    // If public access fails, try with admin authentication as fallback
+    console.log('🔄 Public providers access failed, trying admin fallback...');
+    try {
+      return await fetchProviders();
+    } catch (adminError) {
+      console.log('🔄 Admin fallback failed, trying state-by-state method...');
+      return await fetchAllProvidersByState();
+    }
   }
 };

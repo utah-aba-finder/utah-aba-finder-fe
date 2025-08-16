@@ -7,7 +7,7 @@ import ProviderCard from "./ProviderCard";
 import { ProviderData, ProviderAttributes, InsuranceData } from "../Utility/Types";
 import gearImage from "../Assets/Gear@1x-0.5s-200px-200px.svg";
 import Joyride, { Step, STATUS } from "react-joyride";
-import { fetchProviders, fetchInsurance, fetchProvidersByStateIdAndProviderType } from "../Utility/ApiCall";
+import { fetchPublicProviders, fetchInsurance, fetchProvidersByStateIdAndProviderType } from "../Utility/ApiCall";
 import SEO from "../Utility/SEO";
 interface FavoriteDate {
   [providerId: number]: string;
@@ -211,7 +211,7 @@ const ProvidersPage: React.FC = () => {
         console.log('🔄 Starting to fetch providers...');
         setIsLoading(true);
         
-        const providers = await fetchProviders();
+        const providers = await fetchPublicProviders();
         console.log('📡 API response received:', providers);
         
         // Add null check for providers.data
