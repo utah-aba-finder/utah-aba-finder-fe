@@ -40,6 +40,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   
   const [token, setTokenState] = useState<string | null>(() => {
     const storedToken = sessionStorage.getItem("authToken");
+    console.log('🔄 AuthProvider: Initializing token state', { hasStoredToken: !!storedToken });
     
     return storedToken;
   });
@@ -53,7 +54,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     JSON.parse(sessionStorage.getItem("activeProvider") || "null")
   );
   
-  // Log when activeProvider changes
+  // Debug authentication state changes
+  useEffect(() => {
+    console.log('🔄 AuthProvider: Authentication state changed', {
+      hasToken: !!token,
+      hasLoggedInProvider: !!loggedInProvider,
+      userRole: loggedInProvider?.role,
+      isAuthenticated: !!token
+    });
+  }, [token, loggedInProvider]);
 
   
   const navigate = useNavigate();
@@ -223,7 +232,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const initializeSession = useCallback(
     (newToken: string) => {
+      console.log('🔐 AuthProvider: Initializing session with token:', { 
+        hasToken: !!newToken, 
+        tokenLength: newToken?.length,
+        currentLoggedInProvider: loggedInProvider 
+      });
+      
       if (!validateToken(newToken)) {
+        console.error('❌ AuthProvider: Token validation failed');
         logout();
         return;
       }
@@ -232,11 +248,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       try {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const _decoded = JSON.parse(atob(newToken));
+        console.log('🔐 AuthProvider: Using temporary token with 24-hour expiration');
         // For temporary tokens, set a 24-hour expiration
         const expirationTime = Date.now() + (24 * 60 * 60 * 1000);
         sessionStorage.setItem("tokenExpiry", expirationTime.toString());
 
       } catch {
+        console.log('🔐 AuthProvider: Using JWT token with built-in expiration');
         // For JWT tokens, use the token's expiration
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const _decoded = jwtDecode<TokenPayload>(newToken);
@@ -246,8 +264,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       }
 
       setToken(newToken);
+      console.log('✅ AuthProvider: Session initialized successfully');
     },
-    [setToken, logout]
+    [setToken, logout, loggedInProvider]
   );
 
   const checkTokenExpiration = useCallback(

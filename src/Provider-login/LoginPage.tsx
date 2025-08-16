@@ -91,13 +91,26 @@ export const LoginPage: React.FC = () => {
             
             initializeSession(token);
 
-            // Map role numbers to role strings
-            const roleMap: { [key: number]: string } = {
-                0: 'super_admin',      // Backend clarified: 0 is Superadmin
-                1: 'provider_admin'    // Backend clarified: 1 is Provider Admin
-            };
+            // Map role numbers to role strings - handle both string and numeric roles
+            let userRole = 'unknown';
             
-            const userRole = roleMap[data.user.role] || 'unknown';
+            if (typeof data.user.role === 'string') {
+                // Backend returns string roles directly
+                userRole = data.user.role;
+            } else if (typeof data.user.role === 'number') {
+                // Backend returns numeric roles that need mapping
+                const roleMap: { [key: number]: string } = {
+                    0: 'super_admin',      // Backend clarified: 0 is Superadmin
+                    1: 'provider_admin'    // Backend clarified: 1 is Provider Admin
+                };
+                userRole = roleMap[data.user.role] || 'unknown';
+            }
+            
+            console.log('🔐 Login: User role determined:', { 
+                originalRole: data.user.role, 
+                mappedRole: userRole,
+                userData: data.user 
+            });
 
             
             if (userRole === 'super_admin') {

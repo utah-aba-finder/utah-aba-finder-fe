@@ -68,6 +68,15 @@ function App() {
   // Mobile-specific cache clearing and error handling
   useEffect(() => {
     try {
+      // Only run this once per browser session, not on every page load
+      if (localStorage.getItem('mobileIssuesHandled')) {
+        console.log('🔄 App: Mobile issues already handled this session, skipping');
+        return;
+      }
+      
+      localStorage.setItem('mobileIssuesHandled', 'true');
+      console.log('🔄 App: Handling mobile issues (first time only)');
+      
       // Use the utility function to handle mobile issues
       handleMobileIssues();
 
@@ -78,17 +87,21 @@ function App() {
         if (args[0] && typeof args[0] === 'string' && 
             (args[0].includes('Failed to load') || args[0].includes('under construction'))) {
           // Add a flag to prevent infinite reloads
-          if (!sessionStorage.getItem('reloadAttempted')) {
-            sessionStorage.setItem('reloadAttempted', 'true');
+          if (!localStorage.getItem('reloadAttempted')) {
+            console.log('⚠️ App: Cache error detected, attempting reload');
+            localStorage.setItem('reloadAttempted', 'true');
             setTimeout(() => {
+              console.log('🔄 App: Force reloading due to cache error');
               window.location.reload();
             }, 1000);
+          } else {
+            console.log('⚠️ App: Reload already attempted, not reloading again');
           }
         }
         originalError.apply(console, args);
       };
     } catch (error) {
-  
+      console.error('❌ App: Error in mobile issue handling:', error);
     }
   }, []);
 
