@@ -583,3 +583,41 @@
         font-size: 0.7rem;
     }
 }
+
+/* Service Types Badges */
+.service-types-badges {
+  margin-bottom: 0.5em;
+}
+
+.service-types-badges h4 {
+  margin-bottom: 0.3em;
+}
+
+.service-type-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3em;
+  margin-bottom: 0.5em;
+}
+
+.service-type-chip {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 0.2em 0.6em;
+  border-radius: 15px;
+  font-size: 0.75em;
+  font-weight: 600;
+  text-transform: capitalize;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.service-type-chip:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.provider-card:hover .service-type-chip {
+  background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%);
+  color: #333;
+}
