@@ -2,19 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { 
   Building2, 
-  Phone, 
-  Mail, 
-  Globe, 
-  MapPin,
-  CheckCircle,
-  ArrowLeft,
-  ArrowRight,
   Users,
   Heart,
   Brain,
   GraduationCap,
-  Home,
-  Calendar,
   Scissors,
   MessageSquare,
   Activity,
@@ -94,7 +85,6 @@ const ProviderSignup: React.FC = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [step, setStep] = useState(1);
-  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
   const [isCheckingDuplicate, setIsCheckingDuplicate] = useState(false);
   const [duplicateCheckComplete, setDuplicateCheckComplete] = useState(false);
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
@@ -217,7 +207,6 @@ const ProviderSignup: React.FC = () => {
     let token: string;
     try {
       token = await executeRecaptcha();
-      setRecaptchaToken(token);
     } catch (error) {
       toast.error('reCAPTCHA verification failed. Please refresh the page and try again.');
       return;
@@ -255,7 +244,6 @@ const ProviderSignup: React.FC = () => {
         });
         setSelectedCategory(null);
         setStep(1);
-        setRecaptchaToken(null);
         setDuplicateCheckComplete(false);
       } else {
         const errorData = await response.json();

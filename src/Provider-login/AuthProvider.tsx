@@ -174,6 +174,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     };
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const logout = useCallback((reason?: string) => {
     console.log('🔐 AuthProvider: Logging out, reason:', reason);
     
@@ -203,7 +204,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     navigate("/login");
   }, [navigate]);
 
-  const validateToken = (token: string): boolean => {
+  const validateToken = useCallback((token: string): boolean => {
     if (!token) return false;
     
     try {
@@ -227,15 +228,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         if (_decoded.exp < currentTime) {
           return false;
         }
-
         return true;
       }
     } catch (error) {
-      
       // Don't log out on validation errors, just return false
       return false;
     }
-  };
+  }, []);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const setToken = useCallback(
@@ -252,7 +251,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         sessionStorage.removeItem("authToken");
       }
     },
-    [logout]
+    [logout, validateToken]
   );
 
   const initializeSession = useCallback(
@@ -291,8 +290,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       setToken(newToken);
       console.log('✅ AuthProvider: Session initialized successfully');
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [logout, loggedInProvider]
+    [logout, loggedInProvider, validateToken, setToken]
   );
 
   const checkTokenExpiration = useCallback(
@@ -637,7 +635,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const setActiveProvider = useCallback((provider: any) => {
     setActiveProviderState(provider);
     sessionStorage.setItem("activeProvider", JSON.stringify(provider));
-  }, []);
+  }, [setActiveProviderState]);
 
   // Fetch user providers when logged in (moved here after function definition)
   useEffect(() => {
