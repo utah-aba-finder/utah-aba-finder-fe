@@ -58,28 +58,53 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
 
   
-  const [token, setTokenState] = useState<string | null>(() => {
-    const storedToken = sessionStorage.getItem("authToken");
-    console.log('🔄 AuthProvider: Initializing token state', { hasStoredToken: !!storedToken });
-    
-    return storedToken;
-  });
-
-  // Add new state for proper user management
-  const [authReady, setAuthReady] = useState(false);
-  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(
-    JSON.parse(sessionStorage.getItem('currentUser') || 'null')
-  );
-
-  const [loggedInProvider, setLoggedInProvider] = useState<any>(
-    JSON.parse(sessionStorage.getItem("loggedInProvider") || "null")
-  );
-  
-  // Multi-Provider State
-  const [userProviders, setUserProviders] = useState<any[]>([]);
+  // state
+  const [token, setTokenState] = useState<string | null>(sessionStorage.getItem("authToken"));
   const [activeProvider, setActiveProviderState] = useState<any>(
     JSON.parse(sessionStorage.getItem("activeProvider") || "null")
   );
+  const [loggedInProvider, setLoggedInProviderState] = useState<any>(
+    JSON.parse(sessionStorage.getItem("loggedInProvider") || "null")
+  );
+  const [currentUser, setCurrentUserState] = useState<CurrentUser | null>(
+    JSON.parse(sessionStorage.getItem("currentUser") || "null")
+  );
+  const [userProviders, setUserProvidersState] = useState<any[]>([]);
+  const [authReady, setAuthReady] = useState(false);
+
+  // stable wrapper: token
+  const setToken = useCallback((next: string | null) => {
+    setTokenState(next);
+    if (next) sessionStorage.setItem("authToken", next);
+    else sessionStorage.removeItem("authToken");
+  }, []);
+
+  // stable wrapper: activeProvider
+  const setActiveProvider = useCallback((provider: any) => {
+    setActiveProviderState(provider);
+    if (provider) sessionStorage.setItem("activeProvider", JSON.stringify(provider));
+    else sessionStorage.removeItem("activeProvider");
+  }, []);
+
+  // stable wrapper: loggedInProvider
+  const setLoggedInProvider = useCallback((provider: any) => {
+    setLoggedInProviderState(provider);
+    if (provider) sessionStorage.setItem("loggedInProvider", JSON.stringify(provider));
+    else sessionStorage.removeItem("loggedInProvider");
+  }, []);
+
+  // stable wrapper: currentUser
+  const setCurrentUser = useCallback((user: CurrentUser | null) => {
+    setCurrentUserState(user);
+    if (user) sessionStorage.setItem("currentUser", JSON.stringify(user));
+    else sessionStorage.removeItem("currentUser");
+  }, []);
+
+  // Multi-Provider State
+  // const [userProviders, setUserProviders] = useState<any[]>([]);
+  // const [activeProvider, setActiveProviderState] = useState<any>(
+  //   JSON.parse(sessionStorage.getItem("activeProvider") || "null")
+  // );
   
   // Debug authentication state changes
   useEffect(() => {
@@ -97,16 +122,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   // --- Helpers ---------------------------------------------------------------
 
   // Persist helpers for currentUser
-  const saveCurrentUser = (u: CurrentUser | null) => {
-    setCurrentUser(u);
-    if (u) {
-      sessionStorage.setItem('currentUser', JSON.stringify(u));
-      console.log('💾 AuthProvider: Saved currentUser to sessionStorage:', u);
-    } else {
-      sessionStorage.removeItem('currentUser');
-      console.log('🗑️ AuthProvider: Removed currentUser from sessionStorage');
-    }
-  };
+  // const saveCurrentUser = (u: CurrentUser | null) => {
+  //   setCurrentUser(u);
+  //   if (u) {
+  //     sessionStorage.setItem('currentUser', JSON.stringify(u));
+  //     console.log('💾 AuthProvider: Saved currentUser to sessionStorage:', u);
+  //   } else {
+  //     sessionStorage.removeItem('currentUser');
+  //     console.log('🗑️ AuthProvider: Removed currentUser from sessionStorage');
+  //   }
+  // };
 
   // Derived state
   const isAuthenticated = !!token && !!currentUser?.id;
@@ -174,7 +199,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     };
   };
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const logout = useCallback((reason?: string) => {
     console.log('🔐 AuthProvider: Logging out, reason:', reason);
     
@@ -183,7 +207,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     setLoggedInProvider(null);
     setCurrentUser(null);
     setActiveProvider(null);
-    setUserProviders([]);
+    setUserProvidersState([]);
     
     // Clear session storage
     sessionStorage.removeItem("authToken");
@@ -202,8 +226,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     
     // Navigate to login
     navigate("/login");
-  }, [navigate]);
+  }, [navigate, setToken, setLoggedInProvider, setCurrentUser, setActiveProvider, setUserProvidersState]);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const validateToken = useCallback((token: string): boolean => {
     if (!token) return false;
     
@@ -235,24 +260,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       return false;
     }
   }, []);
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const setToken = useCallback(
-    (newToken: string | null) => {
-      if (newToken && !validateToken(newToken)) {
-        logout();
-        return;
-      }
-
-      setTokenState(newToken);
-      if (newToken) {
-        sessionStorage.setItem("authToken", newToken);
-      } else {
-        sessionStorage.removeItem("authToken");
-      }
-    },
-    [logout, validateToken]
-  );
 
   const initializeSession = useCallback(
     (newToken: string) => {
@@ -293,6 +300,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     [logout, loggedInProvider, validateToken, setToken]
   );
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const checkTokenExpiration = useCallback(
     (token: string) => {
       try {
@@ -534,7 +542,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         return;
       }
 
-      setUserProviders(listData.providers);
+      setUserProvidersState(listData.providers);
 
       // 4) Decide which provider to activate
       //    Priority: sessionStorage.activeProvider.id → backend active_provider_id → first in list
@@ -572,12 +580,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       const detailData = await detailResp.json();
       const normalized = normalizeProviderDetail(detailData);
 
-      setActiveProviderState(normalized);
+      setActiveProvider(normalized);
       sessionStorage.setItem('activeProvider', JSON.stringify(normalized));
     } catch (err) {
       console.error('fetchUserProviders: Error', err);
     }
-  }, [token, loggedInProvider, setActiveProviderState, setUserProviders]);
+  }, [token, loggedInProvider, setActiveProvider, setUserProvidersState]);
 
   const switchProvider = useCallback(async (providerId: number) => {
     if (!token || !loggedInProvider || !providerId) return false;
@@ -623,19 +631,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       const normalized = normalizeProviderDetail(detailData);
 
       // 3) Update state + sessionStorage
-      setActiveProviderState(normalized);
+      setActiveProvider(normalized);
       sessionStorage.setItem('activeProvider', JSON.stringify(normalized));
       return true;
     } catch (err) {
       console.error('switchProvider: Error', err);
       return false;
     }
-  }, [token, loggedInProvider]);
-
-  const setActiveProvider = useCallback((provider: any) => {
-    setActiveProviderState(provider);
-    sessionStorage.setItem("activeProvider", JSON.stringify(provider));
-  }, [setActiveProviderState]);
+  }, [token, loggedInProvider, setActiveProvider]);
 
   // Fetch user providers when logged in (moved here after function definition)
   useEffect(() => {
@@ -702,7 +705,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
               active_provider_id: data.user.active_provider_id ?? null,
             };
             if (!cancelled) {
-              saveCurrentUser(u);
+              setCurrentUser(u);
               console.log('✅ AuthProvider: Successfully set currentUser:', u);
             }
           }
@@ -735,14 +738,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     loggedInProvider,
     setLoggedInProvider: (provider: any) => {
       setLoggedInProvider(provider);
-      sessionStorage.setItem("loggedInProvider", JSON.stringify(provider));
+      // sessionStorage.setItem("loggedInProvider", JSON.stringify(provider)); // This is now handled by setLoggedInProvider
     },
     logout,
     initializeSession,
     activeProvider,
     setActiveProvider,
     availableProviders: userProviders,
-    setAvailableProviders: (providers: any[]) => setUserProviders(providers),
+    setAvailableProviders: (providers: any[]) => setUserProvidersState(providers),
     switchActiveProvider: switchProvider,
     hasProviderAccess: (providerId: number) => userProviders.some(p => p.id === providerId),
     extractUserIdForAuth,
