@@ -44,7 +44,7 @@ describe('Providers Page', () => {
 
   it.skip('should redirect to signup page when sign up button is clicked', () => {
     cy.get('#signup').click()
-    cy.url().should('include', '/signup')
+    cy.url().should('include', '/provider-signup')
   })
   it.skip('should redirect to forgot password page when forgot password link is clicked', () => {
     cy.get('.forgot-password').click()

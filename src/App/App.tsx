@@ -14,7 +14,6 @@ import Footer from "../Footer/Footer";
 import Donations from "../Donations/Donations";
 import { PageNotFound } from "../PageNotFound/PageNotFound";
 import ContactUs from "../ContactUs/ContactUs";
-import { Signup } from "../Signup/Signup";
 import AboutUs from "../AboutUs/AboutUs";
 import ProviderEdit from "../Provider-edit/ProviderEdit";
 import { AuthProvider, useAuth } from "../Provider-login/AuthProvider";
@@ -38,6 +37,8 @@ import MobileDebugTest from "../Providers-page/MobileDebugTest";
 import PasswordReset from "../PasswordReset/PasswordReset";
 import ForgotPassword from "../ForgotPassword/ForgotPassword";
 import ProviderDashboard from "../Utility/ProviderDashboard";
+import ProviderSignup from "../ProviderSignup/ProviderSignup";
+import ProviderWalkthrough from "../ProviderSignup/ProviderWalkthrough";
 
 // Simple test component to check if React loads
 const TestComponent = () => {
@@ -215,7 +216,8 @@ function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/screening/cast" element={<Screening2 />} />
             <Route path="/contact" element={<ContactUs />} />
-            <Route path="/signup" element={<Signup />} />
+            <Route path="/provider-signup" element={<ProviderSignup />} />
+            <Route path="/provider-walkthrough" element={<ProviderWalkthrough />} />
             <Route path="/about" element={<AboutUs />} />
             <Route path="/resources" element={<Resources />} />
             <Route path="/favoriteproviders" element={<FavoriteProviders />} />
