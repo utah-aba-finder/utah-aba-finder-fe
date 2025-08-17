@@ -13,7 +13,6 @@ import {
   XCircle,
   Clock,
   ChevronDown,
-  Settings,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import { useAuth } from "../Provider-login/AuthProvider";
@@ -26,14 +25,14 @@ import CreateUser from "./CreateUser";
 import UserProviderLinking from "./UserProviderLinking";
 import { ProviderData, ProviderAttributes } from "../Utility/Types";
 // import { fetchProviders } from "../Utility/ApiCall";
-import { getAdminAuthHeader } from "../Utility/config";
 
 const SuperAdmin = () => {
-  const { loggedInProvider, logout } = useAuth();
+  console.log('🚀 SuperAdmin: Component mounted/rendered');
+  
+  const { loggedInProvider, logout, currentUser } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [selectedTab, setSelectedTab] = useState("view");
-  const [providers, setProviders] = useState<ProviderData[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [allProviders, setAllProviders] = useState<ProviderData[]>([]);
   const [selectedProvider, setSelectedProvider] =
     useState<ProviderData | null>(null);
   const [openNewProviderForm, setOpenNewProviderForm] = useState(false);
@@ -99,131 +98,136 @@ const SuperAdmin = () => {
 
   // Fetch providers
   const fetchAllProviders = useCallback(async () => {
+    console.log('🚀 SuperAdmin: fetchAllProviders function called!');
+    console.log('🔄 SuperAdmin: Starting to fetch providers...');
+    
     try {
-      console.log('🔄 SuperAdmin: Starting to fetch providers...');
-      // Use the correct API app URL for data operations
+      // Get the current user's ID for Bearer token authentication
+      const currentUser = JSON.parse(sessionStorage.getItem('currentUser') || 'null');
+      if (!currentUser?.id) {
+        console.error('❌ SuperAdmin: No current user ID found');
+        throw new Error('User not authenticated');
+      }
+
+      console.log('🔑 SuperAdmin: Using Bearer token with user ID:', currentUser.id);
+
+      // Use Bearer token authentication with user ID (not API key)
       const response = await fetch(
         `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/providers`,
         {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            'Authorization': getAdminAuthHeader(),
+            'Authorization': `Bearer ${currentUser.id}`, // Bearer token with user ID
           },
         }
       );
 
       console.log('📡 SuperAdmin: API response status:', response.status);
+
       if (!response.ok) {
-        console.error('❌ SuperAdmin: HTTP error:', response.status);
-        throw new Error(`HTTP error! status: ${response.status}`);
+        if (response.status === 403) {
+          throw new Error('Access forbidden - user may not have super admin privileges');
+        }
+        throw new Error(`HTTP error: ${response.status}`);
       }
 
       const data = await response.json();
-      console.log('📊 SuperAdmin: API response data:', data);
-      
-      if (!data || !data.data) {
-        console.error('❌ SuperAdmin: Invalid response format:', data);
-        throw new Error("Invalid response format");
+      console.log('📊 SuperAdmin: Providers data received:', data);
+
+      if (data && data.data) {
+        setAllProviders(data.data);
+        console.log('✅ SuperAdmin: Successfully set providers:', data.data.length);
+      } else {
+        console.log('⚠️ SuperAdmin: No providers data found in response');
+        setAllProviders([]);
       }
-
-      console.log(`✅ SuperAdmin: Processing ${data.data.length} providers...`);
-
-      // Update the providers state with the fresh data
-      setProviders(data.data);
-      
-      // Process states from the data (only once)
-      const states = new Set<string>();
-      data.data.forEach((provider: ProviderData) => {
-        provider.attributes.locations?.forEach(location => {
-          if (location.state) {
-            const cleanState = location.state.trim();
-            const matchingState = US_STATES.find(state => 
-              state.toLowerCase() === cleanState.toLowerCase() ||
-              state.toLowerCase().includes(cleanState.toLowerCase()) ||
-              cleanState.toLowerCase().includes(state.toLowerCase())
-            );
-            
-            if (matchingState) {
-              states.add(matchingState);
-            }
-          }
-        });
-      });
-      
-      // const sortedStates = Array.from(states).sort(); // Not used
-      
-      // If we have a selected provider, update it with the fresh data
-      if (selectedProvider) {
-        const updatedProvider = data.data.find(
-          (p: ProviderData) => p.id === selectedProvider.id
-        );
-        if (updatedProvider) {
-          // Add a small delay to prevent rapid state updates
-          setTimeout(() => {
-            setSelectedProvider(updatedProvider);
-          }, 100);
-        }
-      }
-
     } catch (error) {
-
-      toast.error("Failed to fetch providers");
-    } finally {
-      setIsLoading(false);
+      console.error('❌ SuperAdmin: Error fetching providers:', error);
+      setAllProviders([]);
     }
-  }, [selectedProvider, US_STATES]);
+  }, []);
 
   useEffect(() => {
-    if (loggedInProvider && loggedInProvider.role === 'super_admin') {
+    console.log('🔄 SuperAdmin: useEffect triggered', { 
+      hasCurrentUser: !!currentUser,
+      role: currentUser?.role,
+      isSuperAdmin: currentUser?.role === 'super_admin'
+    });
+    
+    // Use currentUser.role instead of loggedInProvider for role checks
+    if (currentUser && currentUser.role === 'super_admin') {
+      console.log('✅ SuperAdmin: Calling fetchAllProviders...');
       fetchAllProviders();
+    } else {
+      console.log('❌ SuperAdmin: Not calling fetchAllProviders - missing requirements:', {
+        hasCurrentUser: !!currentUser,
+        role: currentUser?.role
+      });
     }
-  }, [loggedInProvider, fetchAllProviders]);
+  }, [currentUser, fetchAllProviders]);
 
   const handleProviderUpdate = async (updatedProvider: ProviderAttributes) => {
     try {
-      if (!updatedProvider) {
+      // Get the current user's ID for Bearer token authentication
+      const currentUser = JSON.parse(sessionStorage.getItem('currentUser') || 'null');
+      if (!currentUser?.id) {
+        console.error('❌ SuperAdmin: No current user ID found for update');
+        toast.error("Authentication error - please log in again");
         return;
       }
 
+      console.log('🔑 SuperAdmin: Updating provider with Bearer token, user ID:', currentUser.id);
+
+      const response = await fetch(
+        `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/providers/${updatedProvider.id}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            'Authorization': `Bearer ${currentUser.id}`, // Bearer token with user ID
+          },
+          body: JSON.stringify({
+            data: [{
+              id: updatedProvider.id,
+              type: "provider",
+              attributes: updatedProvider,
+            }],
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        if (response.status === 403) {
+          throw new Error('Access forbidden - user may not have super admin privileges');
+        }
+        throw new Error(`HTTP error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('✅ SuperAdmin: Provider updated successfully:', data);
+
       // Update the local state immediately
-      setProviders((prevProviders) => {
+      setAllProviders((prevProviders) => {
         if (!selectedProvider?.id) {
           return prevProviders;
         }
 
-        return prevProviders.map((p) => {
-          if (!p) return p;
-          return p.id === selectedProvider.id
-            ? {
-                ...p,
-                attributes: updatedProvider,
-                states: p.states || []
-              }
-            : p;
-        });
+        return prevProviders.map((provider) =>
+          provider.id === selectedProvider.id
+            ? { ...provider, attributes: { ...provider.attributes, ...updatedProvider } }
+            : provider
+        );
       });
 
-      // Update selected provider with new data
-      if (selectedProvider) {
-        setSelectedProvider({
-          ...selectedProvider,
-          attributes: updatedProvider
-        });
-      }
-
-      // Switch back to view tab after a short delay
-      setTimeout(() => {
-        setSelectedTab("view");
-      }, 500);
-
+      toast.success("Provider updated successfully!");
     } catch (error) {
-
-      toast.error("Failed to update provider");
+      console.error("❌ SuperAdmin: Error updating provider:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to update provider");
     }
   };
 
-  const filteredProviders = providers.filter((provider) => {
+  const filteredProviders = allProviders.filter((provider) => {
     if (!provider?.attributes) {
       return false;
     }
@@ -733,140 +737,123 @@ const SuperAdmin = () => {
                         : `Occupational Therapy Providers: ${filteredProviders.length}`}
                       {searchTerm && ` (Filtered)`}
                       {(() => {
-                        const withLogos = providers.filter(p => p.attributes?.logo).length;
-                        const withoutLogos = providers.filter(p => !p.attributes?.logo).length;
+                        const withLogos = allProviders.filter(p => p.attributes?.logo).length;
+                        const withoutLogos = allProviders.filter(p => !p.attributes?.logo).length;
                         return ` • ${withLogos} with logos, ${withoutLogos} without logos`;
                       })()}
                     </p>
                   </div>
 
-                  {isLoading ? (
-                    <div className="bg-white rounded-lg shadow p-12">
-                      <div className="flex flex-col items-center justify-center space-y-4">
-                        <div className="animate-spin">
-                          <Settings className="h-12 w-12 text-blue-500" />
-                        </div>
-                        <div className="text-center">
-                          <h3 className="text-lg font-medium text-gray-900 mb-2">
-                            Loading Providers
-                          </h3>
-                          <p className="text-gray-500">
-                            Please wait while we fetch the provider data...
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="bg-white rounded-lg shadow">
-                      <div className="overflow-x-auto">
-                        <table className="min-w-full">
-                          <thead>
-                            <tr className="bg-gray-50">
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Provider Name
-                              </th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Logo
-                              </th>
-                              <th className="px-6 py-3 text-left max-w-[1rem] text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Type
-                              </th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Locations
-                              </th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Status
-                              </th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Last Updated
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody className="bg-white divide-y divide-gray-200">
-                            {filteredProviders.map((provider) => (
-                              <tr
-                                key={provider.id}
-                                className="hover:bg-gray-50 cursor-pointer"
-                                onClick={() => {
-                                  setSelectedProvider(provider);
-                                  setSelectedTab("edit");
-                                }}
-                              >
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                  <div className="text-sm font-medium text-gray-900 truncate max-w-[10rem]">
-                                    {provider.attributes.name}
-                                  </div>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                  <div className="flex items-center justify-center">
-                                    {provider.attributes.logo ? (
-                                      <div className="relative group">
-                                        <img 
-                                          src={provider.attributes.logo}
-                                          alt={`${provider.attributes.name} logo`}
-                                          className="w-10 h-10 object-contain rounded border border-gray-200"
-                                          onError={(e) => {
-                                            e.currentTarget.style.display = 'none';
-                                          }}
-                                        />
-                                        {/* Logo preview on hover */}
-                                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10">
-                                          <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-2">
-                                            <img 
-                                              src={provider.attributes.logo}
-                                              alt={`${provider.attributes.name} logo`}
-                                              className="w-32 h-32 object-contain"
-                                            />
-                                            <div className="text-xs text-gray-600 mt-1 text-center">
-                                              {provider.attributes.name}
-                                            </div>
+                  {/* isLoading is removed, so this block is always rendered */}
+                  <div className="bg-white rounded-lg shadow">
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full">
+                        <thead>
+                          <tr className="bg-gray-50">
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Provider Name
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Logo
+                            </th>
+                            <th className="px-6 py-3 text-left max-w-[1rem] text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Type
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Locations
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Status
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Last Updated
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {filteredProviders.map((provider) => (
+                            <tr
+                              key={provider.id}
+                              className="hover:bg-gray-50 cursor-pointer"
+                              onClick={() => {
+                                setSelectedProvider(provider);
+                                setSelectedTab("edit");
+                              }}
+                            >
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="text-sm font-medium text-gray-900 truncate max-w-[10rem]">
+                                  {provider.attributes.name}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="flex items-center justify-center">
+                                  {provider.attributes.logo ? (
+                                    <div className="relative group">
+                                      <img 
+                                        src={provider.attributes.logo}
+                                        alt={`${provider.attributes.name} logo`}
+                                        className="w-10 h-10 object-contain rounded border border-gray-200"
+                                        onError={(e) => {
+                                          e.currentTarget.style.display = 'none';
+                                        }}
+                                      />
+                                      {/* Logo preview on hover */}
+                                      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10">
+                                        <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-2">
+                                          <img 
+                                            src={provider.attributes.logo}
+                                            alt={`${provider.attributes.name} logo`}
+                                            className="w-32 h-32 object-contain"
+                                          />
+                                          <div className="text-xs text-gray-600 mt-1 text-center">
+                                            {provider.attributes.name}
                                           </div>
                                         </div>
                                       </div>
-                                    ) : (
-                                      <div className="w-10 h-10 bg-gray-100 rounded border border-gray-200 flex items-center justify-center">
-                                        <span className="text-gray-400 text-sm">📷</span>
-                                      </div>
-                                    )}
-                                  </div>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                  <div className="text-sm text-gray-500 max-w-[6rem] truncate">
-                                    {provider.attributes.provider_type?.map((type: { name: string }) => type.name).join(", ") || "Unknown"}
-                                  </div>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                  <div className="flex items-center text-sm text-gray-500">
-                                    <MapPin className="w-4 h-4 mr-1" />
-                                    {provider.attributes.locations?.length || 0}
-                                  </div>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                  <div
-                                    className={`flex items-center text-sm ${getStatusColor(
-                                      provider.attributes.status
-                                    )}`}
-                                  >
-                                    {getStatusIcon(provider.attributes.status)}
-                                    <span className="ml-1">
-                                      {provider.attributes.status || "Unknown"}
-                                    </span>
-                                  </div>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                  {provider.attributes.updated_last
-                                    ? moment(
-                                        provider.attributes.updated_last
-                                      ).format("MM/DD/YYYY")
-                                    : "Never"}
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
+                                    </div>
+                                  ) : (
+                                    <div className="w-10 h-10 bg-gray-100 rounded border border-gray-200 flex items-center justify-center">
+                                      <span className="text-gray-400 text-sm">📷</span>
+                                    </div>
+                                  )}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="text-sm text-gray-500 max-w-[6rem] truncate">
+                                  {provider.attributes.provider_type?.map((type: { name: string }) => type.name).join(", ") || "Unknown"}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="flex items-center text-sm text-gray-500">
+                                  <MapPin className="w-4 h-4 mr-1" />
+                                  {provider.attributes.locations?.length || 0}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div
+                                  className={`flex items-center text-sm ${getStatusColor(
+                                    provider.attributes.status
+                                  )}`}
+                                >
+                                  {getStatusIcon(provider.attributes.status)}
+                                  <span className="ml-1">
+                                    {provider.attributes.status || "Unknown"}
+                                  </span>
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {provider.attributes.updated_last
+                                  ? moment(
+                                      provider.attributes.updated_last
+                                    ).format("MM/DD/YYYY")
+                                  : "Never"}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
                     </div>
-                  )}
+                  </div>
                 </div>
               )}
 
@@ -922,7 +909,7 @@ const SuperAdmin = () => {
               )}
 
               {selectedTab === "analytics" && (
-                <Analytics providers={providers} />
+                <Analytics providers={allProviders} />
               )}
             </main>
           </div>

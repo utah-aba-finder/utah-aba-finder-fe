@@ -1,3 +1,4 @@
+import React from "react";
 import "./App.css";
 import { Routes, Route, useParams } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
@@ -13,7 +14,6 @@ import Footer from "../Footer/Footer";
 import Donations from "../Donations/Donations";
 import { PageNotFound } from "../PageNotFound/PageNotFound";
 import ContactUs from "../ContactUs/ContactUs";
-import { Signup } from "../Signup/Signup";
 import AboutUs from "../AboutUs/AboutUs";
 import ProviderEdit from "../Provider-edit/ProviderEdit";
 import { AuthProvider, useAuth } from "../Provider-login/AuthProvider";
@@ -26,7 +26,7 @@ import {
 } from "../Utility/Types";
 import SuperAdmin from "../SuperAdmin/SuperAdmin";
 import Resources from "../Resources/Resources";
-import { fetchProviders } from "../Utility/ApiCall";
+import { fetchPublicProviders } from "../Utility/ApiCall";
 import { SuperAdminEdit } from "../SuperAdmin/SuperAdminEdit";
 import FavoriteProviders from "../FavoriteProviders-page/FavoriteProviders";
 import ServiceDisclaimer from "../Footer/servicedisclaimer";
@@ -37,6 +37,8 @@ import MobileDebugTest from "../Providers-page/MobileDebugTest";
 import PasswordReset from "../PasswordReset/PasswordReset";
 import ForgotPassword from "../ForgotPassword/ForgotPassword";
 import ProviderDashboard from "../Utility/ProviderDashboard";
+import ProviderSignup from "../ProviderSignup/ProviderSignup";
+import ProviderWalkthrough from "../ProviderSignup/ProviderWalkthrough";
 
 // Simple test component to check if React loads
 const TestComponent = () => {
@@ -68,6 +70,15 @@ function App() {
   // Mobile-specific cache clearing and error handling
   useEffect(() => {
     try {
+      // Only run this once per browser session, not on every page load
+      if (localStorage.getItem('mobileIssuesHandled')) {
+        console.log('🔄 App: Mobile issues already handled this session, skipping');
+        return;
+      }
+      
+      localStorage.setItem('mobileIssuesHandled', 'true');
+      console.log('🔄 App: Handling mobile issues (first time only)');
+      
       // Use the utility function to handle mobile issues
       handleMobileIssues();
 
@@ -78,17 +89,21 @@ function App() {
         if (args[0] && typeof args[0] === 'string' && 
             (args[0].includes('Failed to load') || args[0].includes('under construction'))) {
           // Add a flag to prevent infinite reloads
-          if (!sessionStorage.getItem('reloadAttempted')) {
-            sessionStorage.setItem('reloadAttempted', 'true');
+          if (!localStorage.getItem('reloadAttempted')) {
+            console.log('⚠️ App: Cache error detected, attempting reload');
+            localStorage.setItem('reloadAttempted', 'true');
             setTimeout(() => {
+              console.log('🔄 App: Force reloading due to cache error');
               window.location.reload();
             }, 1000);
+          } else {
+            console.log('⚠️ App: Reload already attempted, not reloading again');
           }
         }
         originalError.apply(console, args);
       };
     } catch (error) {
-  
+      console.error('❌ App: Error in mobile issue handling:', error);
     }
   }, []);
 
@@ -114,7 +129,7 @@ function App() {
   useEffect(() => {
     const fetchAllProviders = async () => {
       try {
-        const providers: Providers = await fetchProviders();
+        const providers: Providers = await fetchPublicProviders();
         // Add null check and fallback for data property
         const data = providers?.data || [];
         setAllProviders(data);
@@ -201,7 +216,8 @@ function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/screening/cast" element={<Screening2 />} />
             <Route path="/contact" element={<ContactUs />} />
-            <Route path="/signup" element={<Signup />} />
+            <Route path="/provider-signup" element={<ProviderSignup />} />
+            <Route path="/provider-walkthrough" element={<ProviderWalkthrough />} />
             <Route path="/about" element={<AboutUs />} />
             <Route path="/resources" element={<Resources />} />
             <Route path="/favoriteproviders" element={<FavoriteProviders />} />

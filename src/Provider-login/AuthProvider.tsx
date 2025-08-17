@@ -8,27 +8,47 @@ import React, {
 import { jwtDecode } from "jwt-decode";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { getApiBaseUrl } from "../Utility/config";
+
+// types
+type Role = 'super_admin' | 'provider_admin' | 'user' | string;
+
+interface CurrentUser {
+  id: number;
+  email: string;
+  role: Role;
+  primary_provider_id?: number | null;
+  active_provider_id?: number | null;
+}
 
 interface TokenPayload {
   exp: number;
   role?: string;
+  id?: number;
 }
 
 interface AuthContextType {
   token: string | null;
   setToken: (token: string | null) => void;
   isAuthenticated: boolean;
+  userRole: string;
+  currentUser: CurrentUser | null;
+  authReady: boolean;
   loggedInProvider: any;
   setLoggedInProvider: (provider: any) => void;
-  userRole: string;
-  logout: (reason?: 'inactivity' | 'session-expired' | 'manual') => void;
+  logout: (reason?: string) => void;
   initializeSession: (token: string) => void;
-  // Multi-Provider Support
-  userProviders: any[];
   activeProvider: any;
   setActiveProvider: (provider: any) => void;
-  fetchUserProviders: () => Promise<void>;
+  availableProviders: any[];
+  setAvailableProviders: (providers: any[]) => void;
+  switchActiveProvider: (providerId: number) => void;
+  hasProviderAccess: (providerId: number) => boolean;
+  extractUserIdForAuth: (token: string | null, loggedInProvider: any) => string | null;
+  // Backward compatibility properties
+  userProviders: any[];
   switchProvider: (providerId: number) => Promise<boolean>;
+  fetchUserProviders: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -38,35 +58,83 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
 
   
-  const [token, setTokenState] = useState<string | null>(() => {
-    const storedToken = sessionStorage.getItem("authToken");
-    
-    return storedToken;
-  });
-  const [loggedInProvider, setLoggedInProvider] = useState<any>(
-    JSON.parse(sessionStorage.getItem("loggedInProvider") || "null")
-  );
-  
-  // Multi-Provider State
-  const [userProviders, setUserProviders] = useState<any[]>([]);
+  // state
+  const [token, setTokenState] = useState<string | null>(sessionStorage.getItem("authToken"));
   const [activeProvider, setActiveProviderState] = useState<any>(
     JSON.parse(sessionStorage.getItem("activeProvider") || "null")
   );
+  const [loggedInProvider, setLoggedInProviderState] = useState<any>(
+    JSON.parse(sessionStorage.getItem("loggedInProvider") || "null")
+  );
+  const [currentUser, setCurrentUserState] = useState<CurrentUser | null>(
+    JSON.parse(sessionStorage.getItem("currentUser") || "null")
+  );
+  const [userProviders, setUserProvidersState] = useState<any[]>([]);
+  const [authReady, setAuthReady] = useState(false);
+
+  // stable wrapper: token
+  const setToken = useCallback((next: string | null) => {
+    setTokenState(next);
+    if (next) sessionStorage.setItem("authToken", next);
+    else sessionStorage.removeItem("authToken");
+  }, []);
+
+  // stable wrapper: activeProvider
+  const setActiveProvider = useCallback((provider: any) => {
+    setActiveProviderState(provider);
+    if (provider) sessionStorage.setItem("activeProvider", JSON.stringify(provider));
+    else sessionStorage.removeItem("activeProvider");
+  }, []);
+
+  // stable wrapper: loggedInProvider
+  const setLoggedInProvider = useCallback((provider: any) => {
+    setLoggedInProviderState(provider);
+    if (provider) sessionStorage.setItem("loggedInProvider", JSON.stringify(provider));
+    else sessionStorage.removeItem("loggedInProvider");
+  }, []);
+
+  // stable wrapper: currentUser
+  const setCurrentUser = useCallback((user: CurrentUser | null) => {
+    setCurrentUserState(user);
+    if (user) sessionStorage.setItem("currentUser", JSON.stringify(user));
+    else sessionStorage.removeItem("currentUser");
+  }, []);
+
+  // Multi-Provider State
+  // const [userProviders, setUserProviders] = useState<any[]>([]);
+  // const [activeProvider, setActiveProviderState] = useState<any>(
+  //   JSON.parse(sessionStorage.getItem("activeProvider") || "null")
+  // );
   
-  // Log when activeProvider changes
+  // Debug authentication state changes
+  useEffect(() => {
+    console.log('🔄 AuthProvider: Authentication state changed', {
+      hasToken: !!token,
+      hasLoggedInProvider: !!loggedInProvider,
+      userRole: loggedInProvider?.role,
+      isAuthenticated: !!token
+    });
+  }, [token, loggedInProvider]);
 
   
   const navigate = useNavigate();
 
   // --- Helpers ---------------------------------------------------------------
 
-  const getApiBaseUrl = () => {
-    if (process.env.NODE_ENV === 'development') {
-      // You currently hit prod while dev'ing; keep that behavior
-      return 'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com';
-    }
-    return process.env.REACT_APP_API_BASE_URL || 'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com';
-  };
+  // Persist helpers for currentUser
+  // const saveCurrentUser = (u: CurrentUser | null) => {
+  //   setCurrentUser(u);
+  //   if (u) {
+  //     sessionStorage.setItem('currentUser', JSON.stringify(u));
+  //     console.log('💾 AuthProvider: Saved currentUser to sessionStorage:', u);
+  //   } else {
+  //     sessionStorage.removeItem('currentUser');
+  //     console.log('🗑️ AuthProvider: Removed currentUser from sessionStorage');
+  //   }
+  // };
+
+  // Derived state
+  const isAuthenticated = !!token && !!currentUser?.id;
 
   // Safely pull a numeric/string user id for the Authorization header
   const extractUserIdForAuth = (token: string | null, loggedInProvider: any): string | null => {
@@ -131,45 +199,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     };
   };
 
-  const logout = useCallback((reason?: 'inactivity' | 'session-expired' | 'manual') => {
-    // Clear all session-related toasts before logging out
-    toast.dismiss("session-warning-five-min");
-    toast.dismiss("session-warning-one-min");
-    toast.dismiss("session-expired");
-    toast.dismiss("inactivity-warning");
-    toast.dismiss("inactivity-logout");
+  const logout = useCallback((reason?: string) => {
+    console.log('🔐 AuthProvider: Logging out, reason:', reason);
     
-    // Store logout reason in sessionStorage for the login page to check
-    if (reason) {
-      sessionStorage.setItem("logoutReason", reason);
-    }
-    
-    setTokenState(null);
+    // Clear all auth data
+    setToken(null);
     setLoggedInProvider(null);
+    setCurrentUser(null);
+    setActiveProvider(null);
+    setUserProvidersState([]);
+    
+    // Clear session storage
     sessionStorage.removeItem("authToken");
     sessionStorage.removeItem("tokenExpiry");
-    localStorage.removeItem("authToken");
+    sessionStorage.removeItem("loggedInProvider");
+    sessionStorage.removeItem("currentUser");
+    
+    // Show appropriate message
+    if (reason === 'inactivity') {
+      toast.warning("Session expired due to inactivity. Please log in again.");
+    } else if (reason === 'session-expired') {
+      toast.warning("Your session has expired. Please log in again.");
+    } else if (reason === 'manual') {
+      toast.info("You have been logged out successfully.");
+    }
+    
+    // Navigate to login
     navigate("/login");
-    
-    // Only show toast for manual logout
-    if (reason === 'manual' || !reason) {
-      toast.info("You have been logged out", {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
-    }
-    
-    // Store logout reason for inactivity and session-expired
-    if (reason === 'inactivity' || reason === 'session-expired') {
-      sessionStorage.setItem("logoutReason", reason);
-    }
-  }, [navigate]);
+  }, [navigate, setToken, setLoggedInProvider, setCurrentUser, setActiveProvider, setUserProvidersState]);
 
-  const validateToken = (token: string): boolean => {
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const validateToken = useCallback((token: string): boolean => {
     if (!token) return false;
     
     try {
@@ -193,37 +253,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         if (_decoded.exp < currentTime) {
           return false;
         }
-
         return true;
       }
     } catch (error) {
-      
       // Don't log out on validation errors, just return false
       return false;
     }
-  };
-
-  const setToken = useCallback(
-    (newToken: string | null) => {
-      if (newToken && !validateToken(newToken)) {
-
-        logout();
-        return;
-      }
-
-      setTokenState(newToken);
-      if (newToken) {
-        sessionStorage.setItem("authToken", newToken);
-      } else {
-        sessionStorage.removeItem("authToken");
-      }
-    },
-    [logout]
-  );
+  }, []);
 
   const initializeSession = useCallback(
     (newToken: string) => {
+      console.log('🔐 AuthProvider: Initializing session with token:', { 
+        hasToken: !!newToken, 
+        tokenLength: newToken?.length,
+        currentLoggedInProvider: loggedInProvider 
+      });
+      
       if (!validateToken(newToken)) {
+        console.error('❌ AuthProvider: Token validation failed');
         logout();
         return;
       }
@@ -232,11 +279,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       try {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const _decoded = JSON.parse(atob(newToken));
+        console.log('🔐 AuthProvider: Using temporary token with 24-hour expiration');
         // For temporary tokens, set a 24-hour expiration
         const expirationTime = Date.now() + (24 * 60 * 60 * 1000);
         sessionStorage.setItem("tokenExpiry", expirationTime.toString());
 
       } catch {
+        console.log('🔐 AuthProvider: Using JWT token with built-in expiration');
         // For JWT tokens, use the token's expiration
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const _decoded = jwtDecode<TokenPayload>(newToken);
@@ -246,10 +295,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       }
 
       setToken(newToken);
+      console.log('✅ AuthProvider: Session initialized successfully');
     },
-    [setToken, logout]
+    [logout, loggedInProvider, validateToken, setToken]
   );
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const checkTokenExpiration = useCallback(
     (token: string) => {
       try {
@@ -491,7 +542,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         return;
       }
 
-      setUserProviders(listData.providers);
+      setUserProvidersState(listData.providers);
 
       // 4) Decide which provider to activate
       //    Priority: sessionStorage.activeProvider.id → backend active_provider_id → first in list
@@ -529,12 +580,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       const detailData = await detailResp.json();
       const normalized = normalizeProviderDetail(detailData);
 
-      setActiveProviderState(normalized);
+      setActiveProvider(normalized);
       sessionStorage.setItem('activeProvider', JSON.stringify(normalized));
     } catch (err) {
       console.error('fetchUserProviders: Error', err);
     }
-  }, [token, loggedInProvider]);
+  }, [token, loggedInProvider, setActiveProvider, setUserProvidersState]);
 
   const switchProvider = useCallback(async (providerId: number) => {
     if (!token || !loggedInProvider || !providerId) return false;
@@ -580,19 +631,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       const normalized = normalizeProviderDetail(detailData);
 
       // 3) Update state + sessionStorage
-      setActiveProviderState(normalized);
+      setActiveProvider(normalized);
       sessionStorage.setItem('activeProvider', JSON.stringify(normalized));
       return true;
     } catch (err) {
       console.error('switchProvider: Error', err);
       return false;
     }
-  }, [token, loggedInProvider]);
-
-  const setActiveProvider = useCallback((provider: any) => {
-    setActiveProviderState(provider);
-    sessionStorage.setItem("activeProvider", JSON.stringify(provider));
-  }, []);
+  }, [token, loggedInProvider, setActiveProvider]);
 
   // Fetch user providers when logged in (moved here after function definition)
   useEffect(() => {
@@ -602,23 +648,111 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token, loggedInProvider]); // Removed fetchUserProviders to prevent infinite loop
 
+  // Initialize session ONCE
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        console.log('🔄 AuthProvider: Starting auth initialization...');
+        
+        // If we already have a user in storage, we're good
+        if (currentUser) {
+          console.log('✅ AuthProvider: currentUser already exists, skipping fetch');
+          return;
+        }
+
+        // Try to fetch user via your existing user_providers endpoint
+        // We need an email to call it; get it from a known place
+        const emailFromStorage =
+          JSON.parse(sessionStorage.getItem('loggedInProvider') || 'null')?.attributes?.email ||
+          JSON.parse(sessionStorage.getItem('loggedInProvider') || 'null')?.email ||
+          null;
+
+        if (!token || !emailFromStorage) {
+          console.log('⚠️ AuthProvider: No token or email, skipping user fetch');
+          return;
+        }
+
+        console.log('🔄 AuthProvider: Fetching user data for email:', emailFromStorage);
+
+        // Extract user id for Authorization (matches your backend)
+        let userId = null as null | string;
+        try {
+          const decoded = JSON.parse(atob(token));
+          if (decoded?.id) userId = String(decoded.id);
+        } catch {/* ignore */}
+        if (!userId) userId = JSON.parse(sessionStorage.getItem('loggedInProvider') || 'null')?.id?.toString?.() || null;
+        if (!userId) {
+          console.log('⚠️ AuthProvider: Could not extract userId, skipping user fetch');
+          return;
+        }
+
+        const base = 'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com';
+        const resp = await fetch(`${base}/api/v1/providers/user_providers?user_email=${encodeURIComponent(emailFromStorage)}`, {
+          headers: { Authorization: userId, 'Content-Type': 'application/json' },
+        });
+
+        if (resp.ok) {
+          const data = await resp.json();
+          console.log('📊 AuthProvider: User data response:', data);
+          
+          if (data?.user?.id && data?.user?.role) {
+            const u: CurrentUser = {
+              id: Number(data.user.id),
+              email: data.user.email,
+              role: data.user.role,
+              primary_provider_id: data.user.primary_provider_id ?? null,
+              active_provider_id: data.user.active_provider_id ?? null,
+            };
+            if (!cancelled) {
+              setCurrentUser(u);
+              console.log('✅ AuthProvider: Successfully set currentUser:', u);
+            }
+          }
+          // You likely also set userProviders/activeProvider here as you already do
+        } else {
+          console.log('⚠️ AuthProvider: Failed to fetch user data, status:', resp.status);
+        }
+      } catch (error) {
+        console.error('❌ AuthProvider: Error during auth initialization:', error);
+      } finally {
+        if (!cancelled) {
+          setAuthReady(true);
+          console.log('✅ AuthProvider: Auth initialization complete, authReady set to true');
+        }
+      }
+    })();
+
+    return () => { cancelled = true; };
+    // Run once on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const contextValue: AuthContextType = {
     token,
     setToken,
-    isAuthenticated: !!token,
+    isAuthenticated,
+    userRole: currentUser?.role || '',  // <-- role now comes from currentUser
+    currentUser,                        // <-- add this
+    authReady,                          // <-- add this
     loggedInProvider,
-    logout,
-    initializeSession,
     setLoggedInProvider: (provider: any) => {
       setLoggedInProvider(provider);
-      sessionStorage.setItem("loggedInProvider", JSON.stringify(provider));
+      // sessionStorage.setItem("loggedInProvider", JSON.stringify(provider)); // This is now handled by setLoggedInProvider
     },
-    userRole: loggedInProvider?.role || "",
-    userProviders,
+    logout,
+    initializeSession,
     activeProvider,
     setActiveProvider,
-    fetchUserProviders,
+    availableProviders: userProviders,
+    setAvailableProviders: (providers: any[]) => setUserProvidersState(providers),
+    switchActiveProvider: switchProvider,
+    hasProviderAccess: (providerId: number) => userProviders.some(p => p.id === providerId),
+    extractUserIdForAuth,
+    // Add missing properties for backward compatibility
+    userProviders,
     switchProvider,
+    fetchUserProviders,
   };
 
   return (
@@ -633,3 +767,5 @@ export const useAuth = () => {
   }
   return context;
 };
+
+

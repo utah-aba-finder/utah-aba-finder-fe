@@ -49,7 +49,6 @@ export const LoginPage: React.FC = () => {
 
 
         try {
-            
             const response = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/login', {
                 method: 'POST',
                 headers: {
@@ -91,17 +90,43 @@ export const LoginPage: React.FC = () => {
             
             initializeSession(token);
 
-            // Map role numbers to role strings
-            const roleMap: { [key: number]: string } = {
-                0: 'super_admin',      // Backend clarified: 0 is Superadmin
-                1: 'provider_admin'    // Backend clarified: 1 is Provider Admin
-            };
+            // Map role numbers to role strings - handle both string and numeric roles
+            let userRole = 'unknown';
             
-            const userRole = roleMap[data.user.role] || 'unknown';
+            if (typeof data.user.role === 'string') {
+                // Backend returns string roles directly
+                userRole = data.user.role;
+            } else if (typeof data.user.role === 'number') {
+                // Backend returns numeric roles that need mapping
+                const roleMap: { [key: number]: string } = {
+                    0: 'super_admin',      // Backend clarified: 0 is Superadmin
+                    1: 'provider_admin'    // Backend clarified: 1 is Provider Admin
+                };
+                userRole = roleMap[data.user.role] || 'unknown';
+            }
+            
+            console.log('🔐 Login: User role determined:', { 
+                originalRole: data.user.role, 
+                mappedRole: userRole,
+                userData: data.user 
+            });
 
             
             if (userRole === 'super_admin') {
                 setLoggedInProvider(data.user);
+                
+                // Set currentUser immediately for proper auth context
+                const currentUserData = {
+                    id: data.user.id,
+                    email: data.user.email,
+                    role: userRole,
+                    primary_provider_id: data.user.primary_provider_id || null,
+                    active_provider_id: data.user.active_provider_id || null,
+                };
+                
+                // Save to session storage and update context
+                sessionStorage.setItem('currentUser', JSON.stringify(currentUserData));
+                
                 navigate('/superAdmin');
             } else if (userRole === 'provider_admin') {
                 const providerId = data.user?.provider_id;
@@ -240,7 +265,7 @@ export const LoginPage: React.FC = () => {
                     </div>
                     
                     <div className="submit-container">
-                        <button type='button' id='signup' className='signupButton' onClick={() => navigate('/signup')}>Sign Up</button>
+                        <button type='button' id='signup' className='signupButton' onClick={() => navigate('/provider-signup')}>Sign Up</button>
                         <button type='submit' id='login' className='loginButton'>Login</button>
                     </div>
                 </form>
