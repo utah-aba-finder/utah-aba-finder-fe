@@ -119,14 +119,17 @@ const ProviderRegistrations: React.FC = () => {
 
   // Filter registrations
   const filteredRegistrations = registrations.filter(registration => {
+    // Add null checks for registration attributes
+    if (!registration?.attributes) return false;
+    
     const matchesSearch = 
-      registration.attributes.provider_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      registration.attributes.email.toLowerCase().includes(searchTerm.toLowerCase());
+      (registration.attributes.provider_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (registration.attributes.email || '').toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesStatus = statusFilter === 'all' || registration.attributes.status === statusFilter;
     
-    const matchesServiceType = serviceTypeFilter === 'all' || 
-      registration.attributes.service_types.includes(serviceTypeFilter);
+    const matchesServiceType = statusFilter === 'all' || 
+      (registration.attributes.service_types || []).includes(statusFilter);
     
     return matchesSearch && matchesStatus && matchesServiceType;
   });
@@ -304,7 +307,7 @@ const ProviderRegistrations: React.FC = () => {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex flex-wrap gap-1">
-                        {registration.attributes.service_types.map((serviceType, index) => (
+                        {(registration.attributes.service_types || []).map((serviceType, index) => (
                           <span
                             key={index}
                             className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
@@ -315,7 +318,7 @@ const ProviderRegistrations: React.FC = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {registration.attributes.submitted_data.contact_phone || 'N/A'}
+                      {(registration.attributes.submitted_data?.contact_phone) || 'N/A'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {getStatusBadge(registration.attributes.status)}
