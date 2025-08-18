@@ -33,6 +33,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   userRole: string;
   currentUser: CurrentUser | null;
+  setCurrentUser: (user: CurrentUser | null) => void;
   authReady: boolean;
   loggedInProvider: any;
   setLoggedInProvider: (provider: any) => void;
@@ -734,6 +735,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     isAuthenticated,
     userRole: currentUser?.role || '',  // <-- role now comes from currentUser
     currentUser,                        // <-- add this
+    setCurrentUser,                     // <-- add this
     authReady,                          // <-- add this
     loggedInProvider,
     setLoggedInProvider: (provider: any) => {

@@ -15,7 +15,7 @@ export const LoginPage: React.FC = () => {
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [showInactivityMessage, setShowInactivityMessage] = useState(false);
-    const { initializeSession, setLoggedInProvider } = useAuth();
+    const { initializeSession, setLoggedInProvider, setCurrentUser } = useAuth();
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -37,34 +37,46 @@ export const LoginPage: React.FC = () => {
 
     const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        console.log('🔍 Login: Form submitted');
         
         // Prevent double submission
         if (isLoading) {
+            console.log('❌ Login: Already loading, preventing double submission');
             return;
         }
         
+        console.log('🔍 Login: Starting login process for:', username);
         setError('');
         setIsLoading(true);
 
 
 
         try {
+            console.log('📡 Login: Making API call to login endpoint');
+            const requestBody = {
+                user: {
+                    email: username,
+                    password: password
+                }
+            };
+            console.log('📡 Login: Request body:', { email: username, password: '***' });
+            
             const response = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                    user: {
-                        email: username,
-                        password: password
-                    }
-                }),
+                body: JSON.stringify(requestBody),
             });
             
+            console.log('📡 Login: API response status:', response.status);
+            console.log('📡 Login: API response headers:', Object.fromEntries(response.headers.entries()));
+            
             const data = await response.json();
+            console.log('📡 Login: API response data:', data);
 
             if (!response.ok) {
+                console.log('❌ Login: API returned error status:', response.status);
                 let errorMessage = 'Login failed';
                 if (response.status === 401) {
                     errorMessage = 'Invalid email or password';
@@ -72,22 +84,29 @@ export const LoginPage: React.FC = () => {
                     errorMessage = data.error;
                 }
 
+                console.log('❌ Login: Error message:', errorMessage);
                 throw new Error(errorMessage);
             }
+            
+            console.log('✅ Login: API call successful');
 
 
 
             // Check for Authorization header first
             const authHeader = response.headers.get('Authorization');
+            console.log('🔑 Login: Authorization header:', authHeader);
             let token = null;
             
             if (authHeader) {
                 token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : authHeader;
+                console.log('🔑 Login: Using Authorization header token');
             } else {
                 // If no Authorization header, create a session token from user data
                 token = btoa(JSON.stringify(data.user)); // Base64 encode user data as temporary token
+                console.log('🔑 Login: Created base64 token from user data');
             }
             
+            console.log('🔑 Login: Final token (preview):', token ? `${token.substring(0, 20)}...` : 'none');
             initializeSession(token);
 
             // Map role numbers to role strings - handle both string and numeric roles
@@ -105,12 +124,6 @@ export const LoginPage: React.FC = () => {
                 userRole = roleMap[data.user.role] || 'unknown';
             }
             
-            console.log('🔐 Login: User role determined:', { 
-                originalRole: data.user.role, 
-                mappedRole: userRole,
-                userData: data.user 
-            });
-
             
             if (userRole === 'super_admin') {
                 setLoggedInProvider(data.user);
@@ -127,13 +140,42 @@ export const LoginPage: React.FC = () => {
                 // Save to session storage and update context
                 sessionStorage.setItem('currentUser', JSON.stringify(currentUserData));
                 
-                navigate('/superAdmin');
+                // Update AuthProvider state
+                setCurrentUser(currentUserData);
+                console.log('🔐 Login: Updated AuthProvider currentUser state:', currentUserData);
+                
+                console.log('🎉 Login: Showing success toast for super admin');
+                toast.success(`Welcome back, ${data.user.email}! Redirecting to SuperAdmin...`);
+                console.log('🎉 Login: Success toast called, navigating to SuperAdmin');
+                // Small delay to ensure toast is visible before navigation
+                setTimeout(() => {
+                    console.log('🚀 Login: Attempting navigation to /superAdmin');
+                    console.log('🚀 Login: Current window location before navigation:', window.location.pathname);
+                    console.log('🚀 Login: Available routes check - trying multiple paths');
+                    
+                    // Try different navigation approaches
+                    try {
+                        // First try the exact path
+                        console.log('🚀 Login: Trying navigate("/superAdmin")');
+                        navigate('/superAdmin');
+                        console.log('✅ Login: Navigation function called successfully');
+                        
+                        // Check if it actually changed
+                        setTimeout(() => {
+                            console.log('🚀 Login: Location after 100ms:', window.location.pathname);
+                        }, 100);
+                        
+                    } catch (navError) {
+                        console.error('❌ Login: Navigation error:', navError);
+                        
+                        // Fallback: try window.location
+                        console.log('🚀 Login: Trying window.location.href fallback');
+                        window.location.href = '/superAdmin';
+                    }
+                }, 1000);
             } else if (userRole === 'provider_admin') {
                 const providerId = data.user?.provider_id;
                 
-                // Debug: Log the user data to see what we're getting
-                
-
                 
                 if (providerId && providerId !== null) {
                     try {
@@ -142,8 +184,13 @@ export const LoginPage: React.FC = () => {
                             ...providerDetails,
                             role: 'provider_admin'
                         });
-                        toast.info('You are logged in as ' + providerDetails.attributes.name)
-                        navigate(`/providerEdit/${providerId}`);
+                        console.log('🎉 Login: Showing success toast for provider admin');
+                        toast.success(`Welcome back, ${providerDetails.attributes.name}! Redirecting to provider dashboard...`);
+                        console.log('🎉 Login: Success toast called, navigating to provider dashboard');
+                        // Small delay to ensure toast is visible before navigation
+                        setTimeout(() => {
+                            navigate(`/providerEdit/${providerId}`);
+                        }, 1000);
                     } catch (error) {
 
                         setLoggedInProvider({
