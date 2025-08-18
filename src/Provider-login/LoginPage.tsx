@@ -38,18 +38,8 @@ export const LoginPage: React.FC = () => {
     const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         
-        console.log('🔐 Login attempt started', { username, password: password ? '***' : 'empty' });
-        
-        // Check form validation
-        if (!username || !password) {
-            console.log('🔐 Form validation failed:', { username: !!username, password: !!password });
-            setError('Please fill in all fields');
-            return;
-        }
-        
         // Prevent double submission
         if (isLoading) {
-            console.log('🔐 Login blocked - already loading');
             return;
         }
         
@@ -59,7 +49,6 @@ export const LoginPage: React.FC = () => {
 
 
         try {
-            console.log('🔐 Making API call to login endpoint');
             const response = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/login', {
                 method: 'POST',
                 headers: {
@@ -72,7 +61,6 @@ export const LoginPage: React.FC = () => {
                     }
                 }),
             });
-            console.log('🔐 API response received:', { status: response.status, ok: response.ok });
             
             const data = await response.json();
 
@@ -117,12 +105,6 @@ export const LoginPage: React.FC = () => {
                 userRole = roleMap[data.user.role] || 'unknown';
             }
             
-            console.log('🔐 Login: User role determined:', { 
-                originalRole: data.user.role, 
-                mappedRole: userRole,
-                userData: data.user 
-            });
-
             
             if (userRole === 'super_admin') {
                 setLoggedInProvider(data.user);
@@ -143,9 +125,6 @@ export const LoginPage: React.FC = () => {
             } else if (userRole === 'provider_admin') {
                 const providerId = data.user?.provider_id;
                 
-                // Debug: Log the user data to see what we're getting
-                
-
                 
                 if (providerId && providerId !== null) {
                     try {
@@ -278,7 +257,7 @@ export const LoginPage: React.FC = () => {
                     
                     <div className="submit-container">
                         <button type='button' id='signup' className='signupButton' onClick={() => navigate('/provider-signup')}>Sign Up</button>
-                        <button type='submit' id='login' className='loginButton' onClick={() => console.log('🔐 Login button clicked')}>Login</button>
+                        <button type='submit' id='login' className='loginButton'>Login</button>
                     </div>
                 </form>
             </div></div>
