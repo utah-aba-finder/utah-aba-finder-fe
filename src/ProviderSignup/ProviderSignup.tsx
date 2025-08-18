@@ -132,8 +132,6 @@ const ProviderSignup: React.FC = () => {
   const [duplicateCheckComplete, setDuplicateCheckComplete] = useState(false);
   
   // Autosave and resume functionality
-  const [lastSaved, setLastSaved] = useState<Date | null>(null);
-  const [registrationId, setRegistrationId] = useState<string | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const autosaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
@@ -152,7 +150,7 @@ const ProviderSignup: React.FC = () => {
           setCommonFields(draft.commonFields || commonFields);
           setSelectedCategories(draft.selectedCategories || []);
           setStep(draft.step || 1);
-          setLastSaved(new Date(draft.timestamp));
+          setHasUnsavedChanges(false);
           toast.info('Draft loaded from previous session');
         } else {
           localStorage.removeItem(AUTOSAVE_KEY);
@@ -162,7 +160,7 @@ const ProviderSignup: React.FC = () => {
         localStorage.removeItem(AUTOSAVE_KEY);
       }
     }
-  }, []);
+  }, [formData, commonFields]);
   
   // Autosave functionality
   const saveDraft = useCallback(() => {
@@ -174,7 +172,6 @@ const ProviderSignup: React.FC = () => {
       timestamp: Date.now()
     };
     localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(draft));
-    setLastSaved(new Date());
     setHasUnsavedChanges(false);
   }, [formData, commonFields, selectedCategories, step]);
   
@@ -217,7 +214,6 @@ const ProviderSignup: React.FC = () => {
     setDuplicateCheckComplete(false);
     setRecaptchaToken('');
     setHasUnsavedChanges(false);
-    setLastSaved(null);
     
     // Clear localStorage draft
     localStorage.removeItem(AUTOSAVE_KEY);
@@ -455,36 +451,7 @@ const ProviderSignup: React.FC = () => {
     }
   };
 
-  const executeRecaptcha = async (): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      // Wait for reCAPTCHA to be ready
-      const checkRecaptcha = () => {
-        if (typeof window.grecaptcha !== 'undefined' && window.grecaptcha.ready) {
-          window.grecaptcha.ready(() => {
-            try {
-              window.grecaptcha.execute('6LfTMGErAAAAAARfviGKHaQSMBEiUqHOZeBEmRIu', { action: 'submit' })
-                .then((token: string) => {
-                  console.log('reCAPTCHA executed successfully');
-                  resolve(token);
-                })
-                .catch((error: any) => {
-                  console.error('reCAPTCHA execution failed:', error);
-                  reject(new Error('reCAPTCHA execution failed'));
-                });
-            } catch (error) {
-              console.error('Error in reCAPTCHA execution:', error);
-              reject(new Error('reCAPTCHA execution error'));
-            }
-          });
-        } else {
-          // Retry after a short delay
-          setTimeout(checkRecaptcha, 100);
-        }
-      };
-      
-      checkRecaptcha();
-    });
-  };
+
 
   // Validate that required service-specific fields are filled out
   const validateServiceFields = (): { isValid: boolean; errors: string[] } => {
@@ -555,16 +522,6 @@ const ProviderSignup: React.FC = () => {
 
     setIsSubmitting(true);
     try {
-      // Merge common fields with submitted_data
-      const mergedSubmittedData = {
-        ...formData.submitted_data,
-        contact_phone: commonFields.contact_phone,
-        website: commonFields.website,
-        service_areas: commonFields.service_areas,
-        waitlist_status: commonFields.waitlist_status,
-        additional_notes: commonFields.additional_notes
-      };
-
       // Structure data according to new API format with service-specific fields
       const structuredSubmittedData: Record<string, any> = {};
       
@@ -722,13 +679,6 @@ const ProviderSignup: React.FC = () => {
                 'treatment_approaches', 'treatment_approach', 'interventions', 'intervention'
               ];
               
-              // Fields that should be single-select (not arrays)
-              const alwaysSingleSelect = [
-                'waitlist_status', 'waitlist', 'status', 'availability',
-                'cost', 'pricing', 'payment', 'fee_structure',
-                'experience_level', 'experience', 'years_experience', 'qualification_level'
-              ];
-              
               // Check if this field should be multi-select
               const shouldBeMultiSelect = alwaysMultiSelect.some(multiField => 
                 fieldName.includes(multiField) || multiField.includes(fieldName)
@@ -742,14 +692,6 @@ const ProviderSignup: React.FC = () => {
               
               // Final multi-select decision
               const finalMultiSelect = shouldBeMultiSelect || isExplicitMultiSelect;
-              
-              // Check if this field should be single-select
-              const shouldBeSingleSelect = alwaysSingleSelect.some(singleField => 
-                fieldName.includes(singleField) || singleField.includes(singleField)
-              );
-              
-                            // Default to multi-select for most fields unless explicitly marked as single
-              const isMultiSelect = shouldBeMultiSelect || (!shouldBeSingleSelect && fieldName.includes('type'));
               
               // Debug logging for field type detection (only in development)
               if (process.env.NODE_ENV === 'development') {

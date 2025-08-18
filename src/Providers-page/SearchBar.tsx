@@ -209,18 +209,18 @@ const SearchBar: React.FC<SearchBarProps> = ({
   return (
     <section className="provider-map-search-section">
       {/* New Multi-Provider System Notification */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-100 border border-blue-200 rounded-lg p-4 mb-4">
-        <div className="flex items-start">
-          <div className="flex-shrink-0">
-            <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+      <div className="multi-provider-notice">
+        <div className="notice-content">
+          <div className="notice-icon">
+            <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
             </svg>
           </div>
-          <div className="ml-3">
-            <h3 className="text-sm font-medium text-blue-800">
+          <div className="notice-text">
+            <h3 className="notice-title">
               🆕 New Multi-Provider System Now Available!
             </h3>
-            <p className="text-sm text-blue-700 mt-1">
+            <p className="notice-description">
               Providers can now register for multiple service types and locations. Search results now include comprehensive service offerings and expanded coverage areas.
             </p>
           </div>
@@ -380,10 +380,10 @@ const SearchBar: React.FC<SearchBarProps> = ({
                 aria-label="Select Service Type"
               >
                 <option value="">All Services</option>
-                <option value="in_home_only">In-Home Services Only</option>
+                <option value="in_home">In-Home Services</option>
                 <option value="telehealth">Telehealth Services</option>
-                <option value="at_home">At Home Services</option>
-                <option value="in_clinic">In Clinic Services</option>
+                <option value="in_clinic">In-Clinic Services</option>
+                <option value="multiple">Multiple Service Types</option>
               </select>
             </div>
 
@@ -398,10 +398,10 @@ const SearchBar: React.FC<SearchBarProps> = ({
                 aria-label="Select Waitlist Status"
               >
                 <option value="">All Waitlist Status</option>
-                <option value="in_home_available">In-Home Available</option>
-                <option value="in_clinic_available">In-Clinic Available</option>
-                <option value="both_available">Both Available</option>
-                <option value="both_waitlist">Both on Waitlist</option>
+                <option value="accepting">Currently Accepting Clients</option>
+                <option value="short_waitlist">Short Waitlist</option>
+                <option value="long_waitlist">Long Waitlist</option>
+                <option value="not_accepting">Not Accepting New Clients</option>
               </select>
             </div>
 
