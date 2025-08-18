@@ -128,6 +128,22 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
               {/* Service delivery badges */}
               {renderServiceDeliveryBadges()}
               
+              {/* Service Types Badges */}
+              {provider.provider_type && provider.provider_type.length > 0 && (
+                <div className="service-types-badges">
+                  <h4>
+                    <strong>Services Offered:</strong>
+                  </h4>
+                  <div className="service-type-chips">
+                    {provider.provider_type.map((type, index) => (
+                      <span key={index} className="service-type-chip">
+                        {type.name}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
               <h4>
                 <strong>
                   <MapPin style={{ marginRight: '8px' }} />

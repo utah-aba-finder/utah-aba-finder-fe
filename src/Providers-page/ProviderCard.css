@@ -5,7 +5,9 @@
     box-shadow: 6px 6px 20px rgba(122, 122, 122, 0.212);
     border-radius: 55px;
     overflow: hidden;
-    height: 340px;
+    height: 400px; /* Fixed height for consistent card sizes */
+    min-height: 400px; /* Ensure minimum height */
+    max-height: 400px; /* Ensure maximum height */
     font-size: .95em;
     position: relative;
     transition: transform 0.3s ease, background-color 0.3s ease, color 0.3s ease;
@@ -67,14 +69,36 @@
 
 .card-text {
     flex: 1;
-    padding: .8em;
-    gap: .6em;
+    padding: 0.8em; /* Reduced from 1em back to 0.8em */
+    gap: 0.6em; /* Reduced from 0.8em back to 0.6em */
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    overflow: hidden;
+    overflow-y: auto; /* Allow vertical scrolling if content is too long */
+    overflow-x: hidden; /* Prevent horizontal scrolling */
     font-family: "Gotham", sans-serif;
     position: relative;
+    /* Add custom scrollbar styling */
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e0 transparent;
+}
+
+/* Custom scrollbar styling for webkit browsers */
+.card-text::-webkit-scrollbar {
+    width: 6px;
+}
+
+.card-text::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.card-text::-webkit-scrollbar-thumb {
+    background-color: #cbd5e0;
+    border-radius: 3px;
+}
+
+.card-text::-webkit-scrollbar-thumb:hover {
+    background-color: #a0aec0;
 }
 
 .favorited-date {
@@ -104,14 +128,14 @@
 .card-name {
     line-height: 1.2;
     font-size: 27px;
-    overflow: hidden;
-    -webkit-box-orient: vertical;
+    overflow: visible; /* Changed from hidden to visible */
     border-bottom: 1.5px solid #9ea3a8;
     transition: border-color 0.3s ease;
     padding-bottom: 8px;
     margin-bottom: 8px;
     position: relative;
     z-index: 1;
+    word-wrap: break-word; /* Allow long names to wrap */
 }
 
 .card-text h2 {
@@ -119,17 +143,15 @@
 }
 
 .card-text h4 {
-    margin: 0;
-    font-size: 1em;
-    line-height: 1.4;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
+    margin: 0.2em 0; /* Reduced from 0.3em to 0.2em */
+    line-height: 1.4; /* Improve line height for better readability */
+    overflow: visible; /* Changed from hidden to visible */
     text-align: left;
     transition: color 0.3s ease;
-    text-indent: -27px;
-    padding-left: 27px;
+    text-indent: 0; /* Removed negative text-indent that was causing cutoff */
+    padding-left: 0; /* Removed left padding that was causing cutoff */
+    word-wrap: break-word; /* Allow long words to wrap */
+    hyphens: auto; /* Enable automatic hyphenation */
 }
 
 .card-text h4 strong {
@@ -144,8 +166,8 @@
 }
 
 .card-text>* {
-    text-indent: -27px;
-    padding-left: 27px;
+    text-indent: 0; /* Removed negative text-indent that was causing cutoff */
+    padding-left: 0; /* Removed left padding that was causing cutoff */
 }
 
 .card-text .service-delivery-badges {
@@ -581,5 +603,99 @@
     .service-badge {
         padding: 3px 6px;
         font-size: 0.7rem;
+    }
+}
+
+/* Service Types Badges */
+.service-types-badges {
+  margin-bottom: 0.5em;
+}
+
+.service-types-badges h4 {
+  margin-bottom: 0.3em;
+}
+
+.service-type-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3em; /* Reduced from 0.4em back to 0.3em */
+  margin-bottom: 0.5em; /* Reduced from 0.8em back to 0.5em */
+  margin-top: 0.3em; /* Reduced from 0.4em back to 0.3em */
+  max-width: 100%; /* Ensure chips don't overflow */
+  overflow: hidden; /* Prevent chips from overflowing the card */
+}
+
+.service-type-chip {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 0.3em 0.8em; /* Increased padding for better readability */
+  border-radius: 15px;
+  font-size: 0.75em;
+  font-weight: 600;
+  text-transform: capitalize;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+  white-space: nowrap; /* Prevent text wrapping within chips */
+  max-width: 100%; /* Ensure chips don't overflow */
+  word-break: keep-all; /* Prevent breaking of words */
+  flex-shrink: 0; /* Prevent chips from shrinking */
+}
+
+.service-type-chip:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.provider-card:hover .service-type-chip {
+  background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%);
+  color: #333;
+}
+
+/* Responsive improvements for provider cards */
+@media (max-width: 768px) {
+    .provider-card {
+        height: 420px; /* Consistent height on tablets */
+        min-height: 420px;
+        max-height: 420px;
+        border-radius: 35px; /* Smaller border radius on mobile */
+    }
+    
+    .card-text {
+        padding: 0.8em; /* Slightly less padding on mobile */
+        gap: 0.6em; /* Tighter spacing on mobile */
+    }
+    
+    .service-type-chips {
+        gap: 0.3em; /* Tighter chip spacing on mobile */
+        margin-bottom: 0.6em;
+    }
+    
+    .service-type-chip {
+        padding: 0.25em 0.6em; /* Slightly smaller padding on mobile */
+        font-size: 0.7em; /* Smaller font on mobile */
+    }
+    
+    .card-text h4 {
+        margin: 0.2em 0; /* Tighter margins on mobile */
+        font-size: 0.9em; /* Slightly smaller text on mobile */
+    }
+}
+
+@media (max-width: 480px) {
+    .provider-card {
+        height: 450px; /* Consistent height on mobile */
+        min-height: 450px;
+        max-height: 450px;
+        border-radius: 25px;
+    }
+    
+    .card-text {
+        padding: 0.6em;
+        gap: 0.5em;
+    }
+    
+    .service-type-chips {
+        gap: 0.25em;
+        margin-bottom: 0.5em;
     }
 }

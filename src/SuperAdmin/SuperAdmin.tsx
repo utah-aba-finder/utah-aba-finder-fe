@@ -13,6 +13,7 @@ import {
   XCircle,
   Clock,
   ChevronDown,
+  ClipboardCheck,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import { useAuth } from "../Provider-login/AuthProvider";
@@ -23,6 +24,7 @@ import SuperAdminAddInsurances from "./SuperAdminAddInsurances";
 import moment from "moment";
 import CreateUser from "./CreateUser";
 import UserProviderLinking from "./UserProviderLinking";
+import ProviderRegistrations from "./ProviderRegistrations";
 import { ProviderData, ProviderAttributes } from "../Utility/Types";
 // import { fetchProviders } from "../Utility/ApiCall";
 
@@ -474,6 +476,26 @@ const SuperAdmin = () => {
                 </li>
                 <li>
                   <button
+                    onClick={() => {
+                      setSelectedTab("registrations");
+                      // setOpenRegistrationsForm(true); // This line is removed
+                    }}
+                    className={`
+            w-full flex items-center space-x-3 px-3 py-2 rounded-lg
+            transition-colors hover:cursor-pointer duration-200
+            ${
+              selectedTab === "registrations"
+                ? "bg-[#4A6FA5] text-white"
+                : "text-gray-700 hover:bg-gray-100"
+            }
+          `}
+                  >
+                    <ClipboardCheck className="w-4 h-4" />
+                    <span className="text-sm">Registrations</span>
+                  </button>
+                </li>
+                <li>
+                  <button
                     onClick={() => setSelectedTab("billing")}
                     className={`
             w-full flex items-center space-x-3 px-3 py-2 rounded-lg
@@ -536,6 +558,7 @@ const SuperAdmin = () => {
                             {selectedTab === "edit" && "Edit Provider"}
                             {selectedTab === "createUser" && "Create User"}
                             {selectedTab === "linking" && "User-Provider Linking"}
+                            {selectedTab === "registrations" && "Provider Registrations"}
                           </div>
                         )}
                       </div>
@@ -895,6 +918,10 @@ const SuperAdmin = () => {
 
               {selectedTab === "linking" && (
                 <UserProviderLinking />
+              )}
+
+              {selectedTab === "registrations" && (
+                <ProviderRegistrations />
               )}
 
               {selectedTab === "billing" && (
