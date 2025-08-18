@@ -31,7 +31,7 @@ import { ProviderData, ProviderAttributes } from "../Utility/Types";
 const SuperAdmin = () => {
   console.log('🚀 SuperAdmin: Component mounted/rendered');
   
-  const { loggedInProvider, logout, currentUser } = useAuth();
+  const { loggedInProvider, logout, currentUser, token } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [selectedTab, setSelectedTab] = useState("view");
   const [allProviders, setAllProviders] = useState<ProviderData[]>([]);
@@ -104,23 +104,22 @@ const SuperAdmin = () => {
     console.log('🔄 SuperAdmin: Starting to fetch providers...');
     
     try {
-      // Get the current user's ID for Bearer token authentication
-      const currentUser = JSON.parse(sessionStorage.getItem('currentUser') || 'null');
-      if (!currentUser?.id) {
-        console.error('❌ SuperAdmin: No current user ID found');
+      if (!token) {
+        console.error('❌ SuperAdmin: No token found');
         throw new Error('User not authenticated');
       }
 
-      console.log('🔑 SuperAdmin: Using Bearer token with user ID:', currentUser.id);
+      console.log('🔑 SuperAdmin: Using Bearer token:', token.substring(0, 20) + '...');
+      console.log('🌐 SuperAdmin: Making request to:', 'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers');
 
-      // Use Bearer token authentication with user ID (not API key)
+      // Use Bearer token authentication
       const response = await fetch(
-        `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/providers`,
+        `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers`,
         {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            'Authorization': `Bearer ${currentUser.id}`, // Bearer token with user ID
+            'Authorization': `Bearer ${token}`,
           },
         }
       );
@@ -148,46 +147,47 @@ const SuperAdmin = () => {
       console.error('❌ SuperAdmin: Error fetching providers:', error);
       setAllProviders([]);
     }
-  }, []);
+  }, [token]);
 
   useEffect(() => {
     console.log('🔄 SuperAdmin: useEffect triggered', { 
       hasCurrentUser: !!currentUser,
       role: currentUser?.role,
-      isSuperAdmin: currentUser?.role === 'super_admin'
+      isSuperAdmin: currentUser?.role === 'super_admin',
+      hasToken: !!token,
+      tokenPreview: token ? token.substring(0, 20) + '...' : 'none'
     });
     
     // Use currentUser.role instead of loggedInProvider for role checks
-    if (currentUser && currentUser.role === 'super_admin') {
+    if (currentUser && currentUser.role === 'super_admin' && token) {
       console.log('✅ SuperAdmin: Calling fetchAllProviders...');
       fetchAllProviders();
     } else {
       console.log('❌ SuperAdmin: Not calling fetchAllProviders - missing requirements:', {
         hasCurrentUser: !!currentUser,
-        role: currentUser?.role
+        role: currentUser?.role,
+        hasToken: !!token
       });
     }
-  }, [currentUser, fetchAllProviders]);
+  }, [currentUser, token, fetchAllProviders]);
 
   const handleProviderUpdate = async (updatedProvider: ProviderAttributes) => {
     try {
-      // Get the current user's ID for Bearer token authentication
-      const currentUser = JSON.parse(sessionStorage.getItem('currentUser') || 'null');
-      if (!currentUser?.id) {
-        console.error('❌ SuperAdmin: No current user ID found for update');
+      if (!token) {
+        console.error('❌ SuperAdmin: No token found for update');
         toast.error("Authentication error - please log in again");
         return;
       }
 
-      console.log('🔑 SuperAdmin: Updating provider with Bearer token, user ID:', currentUser.id);
+      console.log('🔑 SuperAdmin: Updating provider with Bearer token:', token.substring(0, 20) + '...');
 
       const response = await fetch(
-        `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/providers/${updatedProvider.id}`,
+        `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${updatedProvider.id}`,
         {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
-            'Authorization': `Bearer ${currentUser.id}`, // Bearer token with user ID
+            'Authorization': `Bearer ${token}`,
           },
           body: JSON.stringify({
             data: [{

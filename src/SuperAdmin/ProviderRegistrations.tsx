@@ -24,46 +24,71 @@ interface ProviderRegistration {
 }
 
 const ProviderRegistrations: React.FC = () => {
-  const { currentUser } = useAuth();
+  const { currentUser, token } = useAuth();
   const [registrations, setRegistrations] = useState<ProviderRegistration[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
   const [serviceTypeFilter, setServiceTypeFilter] = useState<string>('all');
 
+  // Debug currentUser
+  useEffect(() => {
+    console.log('🔍 ProviderRegistrations: Component mounted/rendered', {
+      hasCurrentUser: !!currentUser,
+      currentUserId: currentUser?.id,
+      currentUserRole: currentUser?.role,
+      currentUserEmail: currentUser?.email
+    });
+  }, [currentUser]);
+
   // Fetch registrations
   const fetchRegistrations = useCallback(async () => {
-    if (!currentUser?.id) return;
+    console.log('🔍 ProviderRegistrations: fetchRegistrations called', {
+      hasCurrentUser: !!currentUser,
+      currentUserId: currentUser?.id,
+      currentUserRole: currentUser?.role
+    });
+    
+    if (!token) {
+      console.log('❌ ProviderRegistrations: No token available');
+      return;
+    }
     
     setIsLoading(true);
     try {
+      console.log('📡 ProviderRegistrations: Making API call with Authorization: Bearer', token.substring(0, 20) + '...');
       const response = await fetch(
         'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/provider_registrations',
         {
           headers: {
-            'Authorization': `Bearer ${currentUser.id}`,
+            'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
           }
         }
       );
 
+      console.log('📡 ProviderRegistrations: API response status:', response.status);
+      
       if (response.ok) {
         const data = await response.json();
+        console.log('📊 ProviderRegistrations: Data received:', data);
         setRegistrations(data.data || []);
       } else {
-        throw new Error(`HTTP error: ${response.status}`);
+        const errorText = await response.text();
+        console.error('❌ ProviderRegistrations: API error response:', errorText);
+        throw new Error(`HTTP error: ${response.status} - ${errorText}`);
       }
     } catch (error) {
-      console.error('Error fetching registrations:', error);
+      console.error('❌ ProviderRegistrations: Error fetching registrations:', error);
       toast.error('Failed to fetch registrations');
     } finally {
       setIsLoading(false);
     }
-  }, [currentUser?.id]);
+  }, [token]);
 
   // Approve registration
   const approveRegistration = async (registrationId: string) => {
-    if (!currentUser?.id) return;
+    if (!token) return;
     
     try {
       const response = await fetch(
@@ -71,7 +96,7 @@ const ProviderRegistrations: React.FC = () => {
         {
           method: 'PATCH',
           headers: {
-            'Authorization': `Bearer ${currentUser.id}`,
+            'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
           }
         }
@@ -91,7 +116,7 @@ const ProviderRegistrations: React.FC = () => {
 
   // Reject registration
   const rejectRegistration = async (registrationId: string) => {
-    if (!currentUser?.id) return;
+    if (!token) return;
     
     try {
       const response = await fetch(
@@ -99,7 +124,7 @@ const ProviderRegistrations: React.FC = () => {
         {
           method: 'PATCH',
           headers: {
-            'Authorization': `Bearer ${currentUser.id}`,
+            'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
           }
         }
@@ -128,13 +153,30 @@ const ProviderRegistrations: React.FC = () => {
     
     const matchesStatus = statusFilter === 'all' || registration.attributes.status === statusFilter;
     
-    const matchesServiceType = statusFilter === 'all' || 
-      (registration.attributes.service_types || []).includes(statusFilter);
+    const matchesServiceType = serviceTypeFilter === 'all' || 
+      (registration.attributes.service_types || []).includes(serviceTypeFilter);
+    
+    // Debug filtering
+    if (searchTerm || statusFilter !== 'all' || serviceTypeFilter !== 'all') {
+      console.log('🔍 Filtering registration:', {
+        providerName: registration.attributes.provider_name,
+        email: registration.attributes.email,
+        status: registration.attributes.status,
+        serviceTypes: registration.attributes.service_types,
+        matchesSearch,
+        matchesStatus,
+        matchesServiceType,
+        searchTerm,
+        statusFilter,
+        serviceTypeFilter
+      });
+    }
     
     return matchesSearch && matchesStatus && matchesServiceType;
   });
 
   useEffect(() => {
+    console.log('🔍 ProviderRegistrations: useEffect triggered, calling fetchRegistrations');
     fetchRegistrations();
   }, [fetchRegistrations]);
 
@@ -204,9 +246,9 @@ const ProviderRegistrations: React.FC = () => {
 
       {/* Filters */}
       <div className="bg-white p-4 rounded-lg shadow-sm border">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="flex flex-col md:flex-row gap-4">
           {/* Search */}
-          <div>
+          <div className="flex-shrink-0">
             <label className="block text-sm font-medium text-gray-700 mb-1">Search</label>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -215,7 +257,7 @@ const ProviderRegistrations: React.FC = () => {
                 placeholder="Provider name or email..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-64 pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </div>
