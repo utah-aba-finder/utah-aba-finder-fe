@@ -41,7 +41,6 @@ const SuperAdmin = () => {
   const [openNewInsuranceForm, setOpenNewInsuranceForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [openCreateUserForm, setOpenCreateUserForm] = useState(false);
-  const [openRegistrationsForm, setOpenRegistrationsForm] = useState(false);
   const [providerTypeFilter, setProviderTypeFilter] = useState<
     "all" | "ABA Therapy" | "Autism Evaluation" | "Speech Therapy" | "Occupational Therapy"
   >("all");
@@ -479,7 +478,7 @@ const SuperAdmin = () => {
                   <button
                     onClick={() => {
                       setSelectedTab("registrations");
-                      setOpenRegistrationsForm(true);
+                      // setOpenRegistrationsForm(true); // This line is removed
                     }}
                     className={`
             w-full flex items-center space-x-3 px-3 py-2 rounded-lg

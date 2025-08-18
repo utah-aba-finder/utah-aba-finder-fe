@@ -10,7 +10,6 @@ const navigationItems = [
     dropdown: [
       { name: "Provider Login", href: "/login" },
       { name: "Provider Signup", href: "/provider-signup" },
-      { name: "Provider Walkthrough", href: "/provider-walkthrough" },
     ],
   },
   {

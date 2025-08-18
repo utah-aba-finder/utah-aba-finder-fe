@@ -1,12 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { toast } from 'react-toastify';
 import { 
   CheckCircle, 
   XCircle, 
   Clock, 
-  Eye, 
   RefreshCw,
-  Filter,
   Search
 } from 'lucide-react';
 import { useAuth } from '../Provider-login/AuthProvider';
@@ -18,17 +16,7 @@ interface ProviderRegistration {
     email: string;
     provider_name: string;
     service_types: string[];
-    submitted_data: {
-      [serviceType: string]: {
-        [fieldName: string]: any;
-      };
-      contact_phone?: string;
-      website?: string;
-      service_areas?: string[];
-      waitlist_status?: string;
-      insurance_acceptance?: string;
-      additional_notes?: string;
-    };
+    submitted_data: Record<string, any>;
     status: 'pending' | 'approved' | 'rejected';
     created_at: string;
     updated_at: string;
@@ -44,7 +32,7 @@ const ProviderRegistrations: React.FC = () => {
   const [serviceTypeFilter, setServiceTypeFilter] = useState<string>('all');
 
   // Fetch registrations
-  const fetchRegistrations = async () => {
+  const fetchRegistrations = useCallback(async () => {
     if (!currentUser?.id) return;
     
     setIsLoading(true);
@@ -71,7 +59,7 @@ const ProviderRegistrations: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [currentUser?.id]);
 
   // Approve registration
   const approveRegistration = async (registrationId: string) => {
@@ -145,7 +133,7 @@ const ProviderRegistrations: React.FC = () => {
 
   useEffect(() => {
     fetchRegistrations();
-  }, [currentUser?.id]);
+  }, [fetchRegistrations]);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
