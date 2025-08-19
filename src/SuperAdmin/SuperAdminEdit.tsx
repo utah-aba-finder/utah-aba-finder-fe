@@ -332,7 +332,11 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
         
       }
       
-      onUpdate(updatedProvider.attributes);
+      // Pass both the id and attributes to onUpdate
+      onUpdate({
+        ...updatedProvider.attributes,
+        id: provider.id
+      });
       
       // Show success toast only after everything is confirmed successful
       toast.success(`Provider ${editedProvider?.name} updated successfully!`);
