@@ -143,48 +143,7 @@ const ProviderSignup: React.FC = () => {
   // Mode toggle state
   const [isClaimMode, setIsClaimMode] = useState(false);
 
-  // Initialize reCAPTCHA widget
-  const initializeRecaptcha = useCallback(() => {
-    // Only initialize reCAPTCHA if we're not in claim mode and the container exists
-    if (isClaimMode) return;
-    
-    console.log('🔄 Initializing reCAPTCHA...');
-    
-    if (typeof window.grecaptcha !== 'undefined' && window.grecaptcha.ready) {
-      console.log('✅ grecaptcha is available, proceeding with initialization');
-      window.grecaptcha.ready(() => {
-        console.log('✅ grecaptcha.ready callback executed');
-        const container = document.getElementById('recaptcha-container');
-        if (container) {
-          console.log('✅ Found recaptcha-container, rendering widget');
-          try {
-            window.grecaptcha.render('recaptcha-container', {
-              sitekey: '6LfTMGErAAAAAARfviGKHaQSMBEiUqHOZeBEmRIu',
-              callback: (token: string) => {
-                console.log('✅ reCAPTCHA success, token:', token);
-                setRecaptchaToken(token);
-              },
-              'expired-callback': () => {
-                console.log('⚠️ reCAPTCHA expired');
-                setRecaptchaToken('');
-              },
-              'error-callback': () => {
-                console.log('❌ reCAPTCHA error');
-                setRecaptchaToken('');
-              }
-            });
-            console.log('✅ reCAPTCHA widget rendered successfully');
-          } catch (error) {
-            console.error('❌ Error rendering reCAPTCHA:', error);
-          }
-        } else {
-          console.log('❌ recaptcha-container not found in DOM');
-        }
-      });
-    } else {
-      console.log('❌ grecaptcha not available yet');
-    }
-  }, [isClaimMode]);
+
   
   // Load draft from localStorage on mount
   useEffect(() => {
@@ -444,7 +403,7 @@ const ProviderSignup: React.FC = () => {
       
       // Initialize reCAPTCHA widget
       setTimeout(() => {
-        // Call initializeRecaptcha logic directly to avoid dependency issues
+        // Initialize reCAPTCHA widget directly to avoid dependency issues
         if (typeof window.grecaptcha !== 'undefined' && window.grecaptcha.ready) {
           console.log('✅ grecaptcha is available, proceeding with initialization');
           window.grecaptcha.ready(() => {
@@ -493,7 +452,7 @@ const ProviderSignup: React.FC = () => {
     if (!isClaimMode && isRecaptchaReady) {
       console.log('🔄 Claim mode changed, re-initializing reCAPTCHA...');
       setTimeout(() => {
-        // Call initializeRecaptcha directly to avoid dependency issues
+        // Initialize reCAPTCHA widget directly to avoid dependency issues
         if (typeof window.grecaptcha !== 'undefined' && window.grecaptcha.ready) {
           console.log('✅ grecaptcha is available, proceeding with initialization');
           window.grecaptcha.ready(() => {
@@ -530,7 +489,7 @@ const ProviderSignup: React.FC = () => {
         }
       }, 100);
     }
-  }, [isClaimMode, isRecaptchaReady]); // Removed initializeRecaptcha dependency
+  }, [isClaimMode, isRecaptchaReady]); // Clean dependencies only
 
   const fetchProviderCategories = async () => {
     try {
