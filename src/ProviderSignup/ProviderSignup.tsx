@@ -629,14 +629,51 @@ const ProviderSignup: React.FC = () => {
         const categorySlug = category.attributes.slug;
         const categoryData = formData.submitted_data[categorySlug] || {};
         
+        // Transform the data to ensure proper field mapping
+        const transformedData = { ...categoryData };
+        
+        // Ensure age groups are in the correct field
+        if (transformedData.age_groups) {
+          // Age groups are already in the right place
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`✅ Age groups already in correct field for ${categorySlug}:`, transformedData.age_groups);
+          }
+        } else if (transformedData.languages && Array.isArray(transformedData.languages)) {
+          // Check if languages field contains age data (wrong mapping)
+          const agePatterns = ['months', 'years', 'Adults', 'Seniors', 'All Ages'];
+          const hasAgeData = transformedData.languages.some((lang: string) => 
+            agePatterns.some(pattern => lang.includes(pattern))
+          );
+          
+          if (hasAgeData) {
+            // Move age data from languages to age_groups
+            const ageData = transformedData.languages.filter((lang: string) => 
+              agePatterns.some(pattern => lang.includes(pattern))
+            );
+            const actualLanguages = transformedData.languages.filter((lang: string) => 
+              !agePatterns.some(pattern => lang.includes(pattern))
+            );
+            
+            transformedData.age_groups = ageData;
+            transformedData.languages = actualLanguages;
+            
+            if (process.env.NODE_ENV === 'development') {
+              console.log(`🔄 Fixed field mapping for ${categorySlug}:`, {
+                movedAgeData: ageData,
+                remainingLanguages: actualLanguages
+              });
+            }
+          }
+        }
+        
         // Ensure insurance_accepted is included for each service category
-        if (categoryData.insurance_accepted && Array.isArray(categoryData.insurance_accepted)) {
+        if (transformedData.insurance_accepted && Array.isArray(transformedData.insurance_accepted)) {
           structuredSubmittedData[categorySlug] = {
-            ...categoryData,
-            insurance_accepted: categoryData.insurance_accepted
+            ...transformedData,
+            insurance_accepted: transformedData.insurance_accepted
           };
         } else {
-          structuredSubmittedData[categorySlug] = categoryData;
+          structuredSubmittedData[categorySlug] = transformedData;
         }
       });
       
@@ -784,7 +821,138 @@ const ProviderSignup: React.FC = () => {
             {field.name} {field.required && <span className="text-red-500">*</span>}
           </label>
           
-          {(field.field_type === 'select' || field.field_type === 'multi_select') && field.options && field.options.choices && (
+          {/* Age Groups Fields - Handle first, regardless of choices */}
+          {(() => {
+            const fieldName = field.name.toLowerCase();
+            const isAgeField = 
+              field.slug === 'age_groups' || field.slug === 'age_groups_served' ||
+              fieldName.toLowerCase().includes('age group') || fieldName.toLowerCase().includes('age range') ||
+              fieldName.toLowerCase().includes('age served') || fieldName.toLowerCase().includes('ages served') ||
+              field.slug.toLowerCase().includes('age_group') || field.slug.toLowerCase().includes('age_range') ||
+              field.slug.toLowerCase().includes('age_served') || field.slug.toLowerCase().includes('ages_served');
+            
+            // Debug logging to see what fields we're processing
+            if (process.env.NODE_ENV === 'development') {
+              console.log(`🔍 Processing field: "${field.name}" (${field.slug})`, {
+                isAgeField,
+                fieldType: field.field_type,
+                hasOptions: !!field.options,
+                hasChoices: !!(field.options && field.options.choices),
+                choices: field.options?.choices
+              });
+            }
+            
+            if (isAgeField) {
+              const ageFieldSlug = field.slug === 'languages' ? 'age_groups' : field.slug;
+              const enhancedAgeOptions = [
+                '0-6 months',
+                '6-12 months', 
+                '1-2 years',
+                '2-3 years',
+                '3-4 years',
+                '4-5 years',
+                '5-6 years',
+                '6-8 years',
+                '8-10 years',
+                '10-12 years',
+                '12-14 years',
+                '14-16 years',
+                '16-18 years',
+                '18-21 years',
+                '21+ years',
+                'Adults (18+)',
+                'Seniors (65+)',
+                'All Ages'
+              ];
+              
+                                                                 return (
+                     <div className="space-y-2 scroll-indicator">
+                       <div className="text-xs text-blue-600 mb-2">
+                         {field.slug === 'languages' ? 'Age groups served' : field.name} - Select multiple
+                       </div>
+                       <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto border border-gray-200 rounded-md p-3 multi-select-grid">
+                    {enhancedAgeOptions.map((option) => {
+                      const currentValues = (formData.submitted_data[categorySlug]?.[ageFieldSlug] as string[]) || [];
+                      const isChecked = currentValues.includes(option);
+                      return (
+                        <label key={option} className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={(e) => handleArrayInputChange(`submitted_data.${ageFieldSlug}`, option, e.target.checked, categorySlug)}
+                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                          />
+                          <span className="ml-2 text-sm text-gray-700">{option}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            }
+            return null;
+          })()}
+          
+          {/* Languages Fields - Handle second */}
+          {(() => {
+            const fieldName = field.name.toLowerCase();
+            const isLanguageField = field.slug === 'languages' || fieldName.toLowerCase().includes('language');
+            
+            if (isLanguageField) {
+              const languageOptions = [
+                'English',
+                'Spanish',
+                'French',
+                'German',
+                'Italian',
+                'Portuguese',
+                'Russian',
+                'Chinese (Mandarin)',
+                'Chinese (Cantonese)',
+                'Japanese',
+                'Korean',
+                'Arabic',
+                'Hindi',
+                'Vietnamese',
+                'Thai',
+                'Tagalog',
+                'American Sign Language (ASL)',
+                'Other'
+              ];
+              
+              return (
+                <div className="space-y-2 scroll-indicator">
+                  <div className="text-xs text-blue-600 mb-2">Languages spoken - Select multiple</div>
+                  <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto border border-gray-200 rounded-md p-3 multi-select-grid">
+                    {languageOptions.map((option) => {
+                      const currentValues = (formData.submitted_data[categorySlug]?.[field.slug] as string[]) || [];
+                      const isChecked = currentValues.includes(option);
+                      return (
+                        <label key={option} className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={(e) => handleArrayInputChange(`submitted_data.${field.slug}`, option, e.target.checked, categorySlug)}
+                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                          />
+                          <span className="ml-2 text-sm text-gray-700">{option}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            }
+            return null;
+          })()}
+
+          {/* Regular Fields with Choices */}
+          {(field.field_type === 'select' || field.field_type === 'multi_select') && field.options && field.options.choices && 
+           !(field.slug === 'age_groups' || field.slug === 'age_groups_served' || field.slug === 'languages' ||
+             field.name.toLowerCase().includes('age group') || field.name.toLowerCase().includes('age range') ||
+             field.name.toLowerCase().includes('age served') || field.name.toLowerCase().includes('ages served') ||
+             field.slug.toLowerCase().includes('age_group') || field.slug.toLowerCase().includes('age_range') ||
+             field.slug.toLowerCase().includes('age_served') || field.slug.toLowerCase().includes('ages_served')) && (
             // Determine if this field should be multi-select based on field name and context
             (() => {
               const fieldName = field.name.toLowerCase();
@@ -797,7 +965,7 @@ const ProviderSignup: React.FC = () => {
                 'licenses', 'license', 'therapy_types', 'therapy_type', 'therapy types',
                 'insurance', 'insurances', 'insurance_types', 'insurance_type',
                 'ages_served', 'age_served', 'populations_served', 'population_served',
-                'languages', 'language', 'modalities', 'modality',
+                'modalities', 'modality',
                 'treatment_approaches', 'treatment_approach', 'interventions', 'intervention'
               ];
               
@@ -843,53 +1011,7 @@ const ProviderSignup: React.FC = () => {
                     </div>
                   );
                 }
-                
-                // Enhanced age groups with broader selections
-                if (fieldName.includes('age') || fieldName.includes('ages')) {
-                  const enhancedAgeOptions = [
-                    '0-6 months',
-                    '6-12 months', 
-                    '1-2 years',
-                    '2-3 years',
-                    '3-4 years',
-                    '4-5 years',
-                    '5-6 years',
-                    '6-8 years',
-                    '8-10 years',
-                    '10-12 years',
-                    '12-14 years',
-                    '14-16 years',
-                    '16-18 years',
-                    '18-21 years',
-                    '21+ years',
-                    'Adults (18+)',
-                    'Seniors (65+)',
-                    'All Ages'
-                  ];
-                  
-                  return (
-                    <div className="space-y-2">
-                      <div className="text-xs text-blue-600 mb-2">Age groups served - Select multiple</div>
-                      <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto border border-gray-200 rounded-md p-3">
-                        {enhancedAgeOptions.map((option) => {
-                          const currentValues = (formData.submitted_data[categorySlug]?.[field.slug] as string[]) || [];
-                          const isChecked = currentValues.includes(option);
-                          return (
-                            <label key={option} className="flex items-center">
-                              <input
-                                type="checkbox"
-                                checked={isChecked}
-                                onChange={(e) => handleArrayInputChange(`submitted_data.${field.slug}`, option, e.target.checked, categorySlug)}
-                                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                              />
-                              <span className="ml-2 text-sm text-gray-700">{option}</span>
-                            </label>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  );
-                }
+
                 
                 // Enhanced payment options with more flexibility
                 if (fieldName.includes('payment') || fieldName.includes('cost') || fieldName.includes('pricing')) {
@@ -917,9 +1039,9 @@ const ProviderSignup: React.FC = () => {
                   ];
                   
                   return (
-                    <div className="space-y-2">
+                    <div className="space-y-2 scroll-indicator">
                       <div className="text-xs text-blue-600 mb-2">Payment options - Select multiple</div>
-                      <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto border border-gray-200 rounded-md p-3">
+                      <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto border border-gray-200 rounded-md p-3 multi-select-grid">
                         {enhancedPaymentOptions.map((option) => {
                           const currentValues = (formData.submitted_data[categorySlug]?.[field.slug] as string[]) || [];
                           const isChecked = currentValues.includes(option);
@@ -944,7 +1066,7 @@ const ProviderSignup: React.FC = () => {
                 return (
                   <div className="space-y-2">
                     <div className="text-xs text-blue-600 mb-2">Multi-select field (checkboxes)</div>
-                    {field.options.choices.map((option) => {
+                    {(field.options && field.options.choices ? field.options.choices : []).map((option) => {
                       const currentValues = (formData.submitted_data[categorySlug]?.[field.slug] as string[]) || [];
                       const isChecked = currentValues.includes(option);
                       return (
@@ -973,7 +1095,7 @@ const ProviderSignup: React.FC = () => {
                       required={field.required}
                     >
                       <option value="">Select {field.name}</option>
-                      {field.options.choices.map((option) => (
+                      {(field.options && field.options.choices ? field.options.choices : []).map((option) => (
                         <option key={option} value={option}>{option}</option>
                       ))}
                     </select>
