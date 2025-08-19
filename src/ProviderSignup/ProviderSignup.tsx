@@ -143,34 +143,7 @@ const ProviderSignup: React.FC = () => {
   // Mode toggle state
   const [isClaimMode, setIsClaimMode] = useState(false);
 
-  // Initialize reCAPTCHA widget
-  const initializeRecaptcha = useCallback(() => {
-    // Only initialize reCAPTCHA if we're not in claim mode and the container exists
-    if (isClaimMode) return;
-    
-    if (typeof window.grecaptcha !== 'undefined' && window.grecaptcha.ready) {
-      window.grecaptcha.ready(() => {
-        const container = document.getElementById('recaptcha-container');
-        if (container) {
-          window.grecaptcha.render('recaptcha-container', {
-            sitekey: '6LfTMGErAAAAAARfviGKHaQSMBEiUqHOZeBEmRIu',
-            callback: (token: string) => {
-              console.log('reCAPTCHA success, token:', token);
-              setRecaptchaToken(token);
-            },
-            'expired-callback': () => {
-              console.log('reCAPTCHA expired');
-              setRecaptchaToken('');
-            },
-            'error-callback': () => {
-              console.log('reCAPTCHA error');
-              setRecaptchaToken('');
-            }
-          });
-        }
-      });
-    }
-  }, [isClaimMode]);
+
   
   // Load draft from localStorage on mount
   useEffect(() => {
@@ -430,7 +403,41 @@ const ProviderSignup: React.FC = () => {
       
       // Initialize reCAPTCHA widget
       setTimeout(() => {
-        initializeRecaptcha();
+        // Initialize reCAPTCHA widget directly to avoid dependency issues
+        if (typeof window.grecaptcha !== 'undefined' && window.grecaptcha.ready) {
+          console.log('✅ grecaptcha is available, proceeding with initialization');
+          window.grecaptcha.ready(() => {
+            console.log('✅ grecaptcha.ready callback executed');
+            const container = document.getElementById('recaptcha-container');
+            if (container) {
+              console.log('✅ Found recaptcha-container, rendering widget');
+              try {
+                window.grecaptcha.render('recaptcha-container', {
+                  sitekey: '6LfTMGErAAAAAARfviGKHaQSMBEiUqHOZeBEmRIu',
+                  callback: (token: string) => {
+                    console.log('✅ reCAPTCHA success, token:', token);
+                    setRecaptchaToken(token);
+                  },
+                  'expired-callback': () => {
+                    console.log('⚠️ reCAPTCHA expired');
+                    setRecaptchaToken('');
+                  },
+                  'error-callback': () => {
+                    console.log('❌ reCAPTCHA error');
+                    setRecaptchaToken('');
+                  }
+                });
+                console.log('✅ reCAPTCHA widget rendered successfully');
+              } catch (error) {
+                console.error('❌ Error rendering reCAPTCHA:', error);
+              }
+            } else {
+              console.log('❌ recaptcha-container not found in DOM');
+            }
+          });
+        } else {
+          console.log('❌ grecaptcha not available yet');
+        }
       }, 100);
       
       fetchStates().then(data => {
@@ -438,7 +445,51 @@ const ProviderSignup: React.FC = () => {
         setStates(stateNames);
       });
     });
-  }, [initializeRecaptcha]);
+  }, []); // No dependencies needed
+
+  // Re-initialize reCAPTCHA when claim mode changes
+  useEffect(() => {
+    if (!isClaimMode && isRecaptchaReady) {
+      console.log('🔄 Claim mode changed, re-initializing reCAPTCHA...');
+      setTimeout(() => {
+        // Initialize reCAPTCHA widget directly to avoid dependency issues
+        if (typeof window.grecaptcha !== 'undefined' && window.grecaptcha.ready) {
+          console.log('✅ grecaptcha is available, proceeding with initialization');
+          window.grecaptcha.ready(() => {
+            console.log('✅ grecaptcha.ready callback executed');
+            const container = document.getElementById('recaptcha-container');
+            if (container) {
+              console.log('✅ Found recaptcha-container, rendering widget');
+              try {
+                window.grecaptcha.render('recaptcha-container', {
+                  sitekey: '6LfTMGErAAAAAARfviGKHaQSMBEiUqHOZeBEmRIu',
+                  callback: (token: string) => {
+                    console.log('✅ reCAPTCHA success, token:', token);
+                    setRecaptchaToken(token);
+                  },
+                  'expired-callback': () => {
+                    console.log('⚠️ reCAPTCHA expired');
+                    setRecaptchaToken('');
+                  },
+                  'error-callback': () => {
+                    console.log('❌ reCAPTCHA error');
+                    setRecaptchaToken('');
+                  }
+                });
+                console.log('✅ reCAPTCHA widget rendered successfully');
+              } catch (error) {
+                console.error('❌ Error rendering reCAPTCHA:', error);
+              }
+            } else {
+              console.log('❌ recaptcha-container not found in DOM');
+            }
+          });
+        } else {
+          console.log('❌ grecaptcha not available yet');
+        }
+      }, 100);
+    }
+  }, [isClaimMode, isRecaptchaReady]); // Clean dependencies only
 
   const fetchProviderCategories = async () => {
     try {
@@ -554,8 +605,16 @@ const ProviderSignup: React.FC = () => {
       }
     }
 
-    // Check reCAPTCHA v2 completion
+    // Check reCAPTCHA completion (real token or development fallback)
     if (!recaptchaToken) {
+      toast.error('Please complete the reCAPTCHA verification above before submitting.');
+      return;
+    }
+    
+    // In development mode, also accept the fallback checkbox
+    if (process.env.NODE_ENV === 'development' && recaptchaToken === 'dev-token') {
+      console.log('🔧 Development Mode: Using fallback reCAPTCHA checkbox');
+    } else if (!recaptchaToken || recaptchaToken === '') {
       toast.error('Please complete the reCAPTCHA verification above before submitting.');
       return;
     }
@@ -1518,30 +1577,30 @@ const ProviderSignup: React.FC = () => {
                         <span className="font-semibold">Security Verification:</span> This form is protected by reCAPTCHA to ensure you're human.
                       </p>
                       <div className="mt-2">
-                        {process.env.NODE_ENV === 'development' ? (
-                          // Development fallback - simple checkbox
-                          <div className="flex items-center space-x-2">
-                            <input
-                              type="checkbox"
-                              id="dev-recaptcha"
-                              checked={recaptchaToken === 'dev-token'}
-                              onChange={(e) => setRecaptchaToken(e.target.checked ? 'dev-token' : '')}
-                              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                            />
-                            <label htmlFor="dev-recaptcha" className="text-sm text-gray-700">
-                              I'm not a robot (Development Mode)
-                            </label>
+                        {/* Always show reCAPTCHA container for both dev and production */}
+                        <div id="recaptcha-container"></div>
+                        
+                        {/* Development fallback - simple checkbox as backup */}
+                        {process.env.NODE_ENV === 'development' && (
+                          <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                            <div className="flex items-center space-x-2">
+                              <input
+                                type="checkbox"
+                                id="dev-recaptcha"
+                                checked={recaptchaToken === 'dev-token'}
+                                onChange={(e) => setRecaptchaToken(e.target.checked ? 'dev-token' : '')}
+                                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                              />
+                              <label htmlFor="dev-recaptcha" className="text-sm text-blue-700">
+                                I'm not a robot (Development Fallback)
+                              </label>
+                            </div>
+                            <p className="mt-2 text-xs text-blue-600">
+                              🔧 Development Mode: reCAPTCHA widget should appear above. If it doesn't, use this checkbox as backup.
+                            </p>
                           </div>
-                        ) : (
-                          // Production reCAPTCHA
-                          <div id="recaptcha-container"></div>
                         )}
                       </div>
-                      {process.env.NODE_ENV === 'development' && (
-                        <p className="mt-2 text-xs text-blue-600">
-                          🔧 Development Mode: Using simple checkbox instead of reCAPTCHA
-                        </p>
-                      )}
                     </div>
                   </div>
                 </div>
