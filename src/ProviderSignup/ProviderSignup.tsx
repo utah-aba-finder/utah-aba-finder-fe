@@ -444,7 +444,41 @@ const ProviderSignup: React.FC = () => {
       
       // Initialize reCAPTCHA widget
       setTimeout(() => {
-        initializeRecaptcha();
+        // Call initializeRecaptcha logic directly to avoid dependency issues
+        if (typeof window.grecaptcha !== 'undefined' && window.grecaptcha.ready) {
+          console.log('✅ grecaptcha is available, proceeding with initialization');
+          window.grecaptcha.ready(() => {
+            console.log('✅ grecaptcha.ready callback executed');
+            const container = document.getElementById('recaptcha-container');
+            if (container) {
+              console.log('✅ Found recaptcha-container, rendering widget');
+              try {
+                window.grecaptcha.render('recaptcha-container', {
+                  sitekey: '6LfTMGErAAAAAARfviGKHaQSMBEiUqHOZeBEmRIu',
+                  callback: (token: string) => {
+                    console.log('✅ reCAPTCHA success, token:', token);
+                    setRecaptchaToken(token);
+                  },
+                  'expired-callback': () => {
+                    console.log('⚠️ reCAPTCHA expired');
+                    setRecaptchaToken('');
+                  },
+                  'error-callback': () => {
+                    console.log('❌ reCAPTCHA error');
+                    setRecaptchaToken('');
+                  }
+                });
+                console.log('✅ reCAPTCHA widget rendered successfully');
+              } catch (error) {
+                console.error('❌ Error rendering reCAPTCHA:', error);
+              }
+            } else {
+              console.log('❌ recaptcha-container not found in DOM');
+            }
+          });
+        } else {
+          console.log('❌ grecaptcha not available yet');
+        }
       }, 100);
       
       fetchStates().then(data => {
@@ -452,7 +486,7 @@ const ProviderSignup: React.FC = () => {
         setStates(stateNames);
       });
     });
-  }, []); // Remove initializeRecaptcha dependency to avoid circular issues
+  }, []); // No dependencies needed
 
   // Re-initialize reCAPTCHA when claim mode changes
   useEffect(() => {
