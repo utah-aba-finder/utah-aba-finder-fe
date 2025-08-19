@@ -269,8 +269,11 @@ export const validateLogoFile = (file: File): { isValid: boolean; error?: string
 };
 
 // Enhanced logo upload function following the exact requirements
-export const uploadProviderLogo = async (providerId: number, logoFile: File, userId: string): Promise<{ success: boolean; error?: string; updatedProvider?: any }> => {
+export const uploadProviderLogo = async (providerId: number, logoFile: File, authToken: string, isSuperAdmin: boolean = false): Promise<{ success: boolean; error?: string; updatedProvider?: any }> => {
   try {
+    console.log('🔑 uploadProviderLogo: Starting logo upload for provider:', providerId);
+    console.log('🔑 uploadProviderLogo: Is super admin:', isSuperAdmin);
+    
     // Validate file before upload
     const validation = validateLogoFile(logoFile);
     if (!validation.isValid) {
@@ -284,12 +287,16 @@ export const uploadProviderLogo = async (providerId: number, logoFile: File, use
     // Add provider data to ensure the logo gets properly associated
     formData.append('provider_id', providerId.toString());
 
+    // Set authentication header based on user type
+    const authHeader = isSuperAdmin ? authToken : `Bearer ${authToken}`;
+    console.log('🔑 uploadProviderLogo: Using auth header:', isSuperAdmin ? 'API Key' : 'Bearer Token');
+
     const response = await fetch(
       `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${providerId}`,
       {
         method: 'PUT',
         headers: {
-          'Authorization': userId,
+          'Authorization': authHeader,
           // Don't set Content-Type header - browser will set it automatically with boundary
         },
         body: formData
@@ -298,16 +305,20 @@ export const uploadProviderLogo = async (providerId: number, logoFile: File, use
 
     if (!response.ok) {
       const errorText = await response.text();
+      console.log('❌ uploadProviderLogo: Response not OK:', response.status, response.statusText);
+      console.log('❌ uploadProviderLogo: Error response text:', errorText);
       return { success: false, error: `Upload failed: ${response.status} - ${errorText}` };
     }
 
     const result = await response.json();
+    console.log('✅ uploadProviderLogo: Logo upload successful');
 
     return { 
       success: true, 
       updatedProvider: result 
     };
   } catch (error) {
+    console.error('❌ uploadProviderLogo: Unexpected error:', error);
     return { 
       success: false, 
       error: error instanceof Error ? error.message : 'Unknown error occurred' 
@@ -362,71 +373,8 @@ export const removeProviderLogo = async (providerId: number, userId: string): Pr
 
 
 
-export const uploadAdminProviderLogo = async (providerId: number, logoFile: File): Promise<{ success: boolean; error?: string; updatedProvider?: any }> => {
-  try {
-    console.log('🔑 uploadAdminProviderLogo: Starting logo upload for provider:', providerId);
-    
-    // Create FormData with just the logo file (Active Storage format)
-    const formData = new FormData();
-    formData.append('logo', logoFile); // Only send the logo file
-    
-    const adminAuthHeader = getAdminAuthHeader();
-    console.log('🔑 uploadAdminProviderLogo: Using admin auth header:', adminAuthHeader);
-    
-    const response = await fetch(
-      `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/providers/${providerId}`,
-      {
-        method: 'PATCH',
-        headers: {
-          'Authorization': adminAuthHeader
-          // Don't set Content-Type - browser handles it for FormData
-        },
-        body: formData
-      }
-    );
-
-
-
-    if (!response.ok) {
-      let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
-      console.log('❌ uploadAdminProviderLogo: Response not OK:', response.status, response.statusText);
-      
-      try {
-        const errorText = await response.text();
-        console.log('❌ uploadAdminProviderLogo: Error response text:', errorText);
-        if (errorText) {
-          try {
-            const errorData = JSON.parse(errorText);
-            errorMessage = errorData.message || errorData.error || errorMessage;
-            console.log('❌ uploadAdminProviderLogo: Parsed error data:', errorData);
-          } catch (parseError) {
-            // If it's not JSON, use the raw text
-            errorMessage = errorText || errorMessage;
-            console.log('❌ uploadAdminProviderLogo: Raw error text used');
-          }
-        }
-      } catch (textError) {
-        // If we can't read the response text, use the status
-        console.log('❌ uploadAdminProviderLogo: Could not read response text:', textError);
-      }
-      
-      console.log('❌ uploadAdminProviderLogo: Final error message:', errorMessage);
-      throw new Error(errorMessage);
-    }
-
-    const responseData = await response.json();
-    return { 
-      success: true, 
-      updatedProvider: responseData.data?.[0] 
-    };
-  } catch (error) {
-    
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Unknown error occurred' 
-    };
-  }
-};
+// Note: uploadAdminProviderLogo function has been removed and consolidated into uploadProviderLogo
+// Use uploadProviderLogo(providerId, logoFile, authToken, true) for super admin logo uploads
 
 export const testPasswordReset = async (email: string): Promise<{ success: boolean; error?: string; details?: any; status?: number }> => {
   try {

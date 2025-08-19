@@ -350,7 +350,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
           const adminAuthHeader = getAdminAuthHeader();
           console.log('🔑 SuperAdminEdit: Using admin auth header for logo upload:', adminAuthHeader);
           
-          const logoResult = await uploadProviderLogo(provider.id, selectedLogoFile, adminAuthHeader);
+          const logoResult = await uploadProviderLogo(provider.id, selectedLogoFile, adminAuthHeader, true);
           
           if (logoResult.success) {
             toast.success('Logo uploaded successfully');

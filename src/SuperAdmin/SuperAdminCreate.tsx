@@ -331,9 +331,9 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
       if (selectedLogoFile && responseData.data?.[0]?.id) {
 
         try {
-          // For SuperAdmin, we can use a default admin user ID or get it from context
-          const adminUserId = 'admin'; // You might want to get this from admin context
-          const logoResult = await uploadProviderLogo(responseData.data[0].id, selectedLogoFile, adminUserId);
+          // For SuperAdmin, use the admin API key
+          const adminAuthHeader = getAdminAuthHeader();
+          const logoResult = await uploadProviderLogo(responseData.data[0].id, selectedLogoFile, adminAuthHeader, true);
           
           if (logoResult.success) {
             toast.success('Logo uploaded successfully');
