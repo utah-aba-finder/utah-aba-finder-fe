@@ -80,7 +80,7 @@ interface ProviderCategory {
 type ProviderRegistration = {
   email: string;
   provider_name: string;
-  provider_type: string[];
+  service_types: string[]; // Changed from provider_type to service_types
   submitted_data: Record<string, any>;
   logo?: string;
 };
@@ -95,7 +95,7 @@ const ProviderSignup: React.FC = () => {
   const [formData, setFormData] = useState<ProviderRegistration>({
     email: '',
     provider_name: '',
-    provider_type: [],
+    service_types: [], // Changed from provider_type to service_types
     submitted_data: {},
     logo: ''
   });
@@ -179,13 +179,13 @@ const ProviderSignup: React.FC = () => {
       try {
         const draft = JSON.parse(savedDraft);
         if (draft.timestamp && Date.now() - draft.timestamp < 24 * 60 * 60 * 1000) { // 24 hours
-          setFormData(draft.formData || {
-            email: '',
-            provider_name: '',
-            provider_type: [],
-            submitted_data: {},
-            logo: ''
-          });
+                  setFormData(draft.formData || {
+          email: '',
+          provider_name: '',
+          service_types: [], // Changed from provider_type to service_types
+          submitted_data: {},
+          logo: ''
+        });
           setCommonFields(draft.commonFields || {
             contact_phone: '',
             website: '',
@@ -244,7 +244,7 @@ const ProviderSignup: React.FC = () => {
     setFormData({
       email: '',
       provider_name: '',
-      provider_type: [],
+      service_types: [], // Changed from provider_type to service_types
       submitted_data: {},
       logo: ''
     });
@@ -599,7 +599,8 @@ const ProviderSignup: React.FC = () => {
         provider_registration: {
           email: formData.email,
           provider_name: formData.provider_name,
-          provider_type: selectedCategories.map(cat => cat.attributes.slug),
+          service_types: selectedCategories.map(cat => cat.attributes.slug), // Changed from provider_type to service_types
+          category: selectedCategories.map(cat => cat.attributes.slug), // Add category field as backup
           submitted_data: structuredSubmittedData,
           logo: formData.logo
         },
@@ -609,6 +610,8 @@ const ProviderSignup: React.FC = () => {
       // Debug logging only in development
       if (process.env.NODE_ENV === 'development') {
         console.log('🔍 Debug: Data being sent to API:', JSON.stringify(submitData, null, 2));
+        console.log('🔍 Debug: Selected categories:', selectedCategories);
+        console.log('🔍 Debug: Service types being sent:', selectedCategories.map(cat => cat.attributes.slug));
       }
 
       // Generate idempotency key to prevent duplicate submissions
