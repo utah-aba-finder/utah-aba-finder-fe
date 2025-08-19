@@ -84,7 +84,7 @@ const ProviderRegistrations: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [token]);
+  }, [token, currentUser]);
 
   // Approve registration
   const approveRegistration = async (registrationId: string) => {
