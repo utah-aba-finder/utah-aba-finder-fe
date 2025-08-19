@@ -459,10 +459,44 @@ const ProviderSignup: React.FC = () => {
     if (!isClaimMode && isRecaptchaReady) {
       console.log('🔄 Claim mode changed, re-initializing reCAPTCHA...');
       setTimeout(() => {
-        initializeRecaptcha();
+        // Call initializeRecaptcha directly to avoid dependency issues
+        if (typeof window.grecaptcha !== 'undefined' && window.grecaptcha.ready) {
+          console.log('✅ grecaptcha is available, proceeding with initialization');
+          window.grecaptcha.ready(() => {
+            console.log('✅ grecaptcha.ready callback executed');
+            const container = document.getElementById('recaptcha-container');
+            if (container) {
+              console.log('✅ Found recaptcha-container, rendering widget');
+              try {
+                window.grecaptcha.render('recaptcha-container', {
+                  sitekey: '6LfTMGErAAAAAARfviGKHaQSMBEiUqHOZeBEmRIu',
+                  callback: (token: string) => {
+                    console.log('✅ reCAPTCHA success, token:', token);
+                    setRecaptchaToken(token);
+                  },
+                  'expired-callback': () => {
+                    console.log('⚠️ reCAPTCHA expired');
+                    setRecaptchaToken('');
+                  },
+                  'error-callback': () => {
+                    console.log('❌ reCAPTCHA error');
+                    setRecaptchaToken('');
+                  }
+                });
+                console.log('✅ reCAPTCHA widget rendered successfully');
+              } catch (error) {
+                console.error('❌ Error rendering reCAPTCHA:', error);
+              }
+            } else {
+              console.log('❌ recaptcha-container not found in DOM');
+            }
+          });
+        } else {
+          console.log('❌ grecaptcha not available yet');
+        }
       }, 100);
     }
-  }, [isClaimMode, isRecaptchaReady, initializeRecaptcha]);
+  }, [isClaimMode, isRecaptchaReady]); // Removed initializeRecaptcha dependency
 
   const fetchProviderCategories = async () => {
     try {
