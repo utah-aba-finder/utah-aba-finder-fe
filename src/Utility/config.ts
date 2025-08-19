@@ -17,12 +17,40 @@ export const API_CONFIG = {
 
 // Helper function to get admin authorization header
 export const getAdminAuthHeader = () => {
+  // For super admin operations, we need to send Bearer {user_id}
+  // The user_id should be extracted from the current user's session
+  const currentUser = sessionStorage.getItem('currentUser');
+  if (currentUser) {
+    try {
+      const user = JSON.parse(currentUser);
+      return `Bearer ${user.id}`;
+    } catch (error) {
+      console.error('Error parsing currentUser:', error);
+    }
+  }
+  
+  // Fallback to API key if no user session
   return API_CONFIG.ADMIN_API_KEY;
 };
 
 // Helper function to get user authorization header
 export const getUserAuthHeader = () => {
   return sessionStorage.getItem('authToken');
+};
+
+// Helper function specifically for super admin operations
+export const getSuperAdminAuthHeader = () => {
+  const currentUser = sessionStorage.getItem('currentUser');
+  if (currentUser) {
+    try {
+      const user = JSON.parse(currentUser);
+      return `Bearer ${user.id}`;
+    } catch (error) {
+      console.error('Error parsing currentUser for super admin:', error);
+      throw new Error('Super admin authentication failed: No valid user session');
+    }
+  }
+  throw new Error('Super admin authentication failed: No user session found');
 };
 
 // Helper function to get the appropriate API base URL

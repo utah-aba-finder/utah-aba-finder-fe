@@ -27,7 +27,7 @@ import {
 } from "../Utility/Types";
 import { fetchStates, fetchCountiesByState } from "../Utility/ApiCall";
 import { validateLogoFile, uploadProviderLogo } from "../Utility/ApiCall";
-import { getAdminAuthHeader } from "../Utility/config";
+import { getAdminAuthHeader, getSuperAdminAuthHeader } from "../Utility/config";
 
 interface SuperAdminEditProps {
   provider: ProviderData;
@@ -347,8 +347,8 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
           console.log('🔑 SuperAdminEdit: Starting logo upload for provider:', provider.id);
           
           // Use the regular provider endpoint with admin authentication
-          const adminAuthHeader = getAdminAuthHeader();
-          console.log('🔑 SuperAdminEdit: Using admin auth header for logo upload:', adminAuthHeader);
+          const adminAuthHeader = getSuperAdminAuthHeader();
+          console.log('🔑 SuperAdminEdit: Using super admin auth header for logo upload:', adminAuthHeader);
           
           const logoResult = await uploadProviderLogo(provider.id, selectedLogoFile, adminAuthHeader, true);
           

@@ -595,12 +595,32 @@ const ProviderSignup: React.FC = () => {
         };
       });
 
+      // Map category slugs to backend-expected service types
+      // Use exact database slugs to avoid validation errors
+      const mapCategoryToServiceType = (categorySlug: string): string => {
+        const serviceTypeMap: { [key: string]: string } = {
+          'aba-therapy': 'aba-therapy',           // Keep hyphen
+          'advocates': 'advocates',               // No change
+          'autism-evaluations': 'autism_evaluations', // Change to underscore
+          'barbers-hair': 'barbers-hair',         // Keep hyphen
+          'coaching-mentoring': 'coaching_mentoring', // Change to underscore
+          'dentists': 'dentists',                 // No change
+          'occupational-therapy': 'occupational_therapy', // Change to underscore
+          'orthodontists': 'orthodontists',       // No change
+          'pediatricians': 'pediatricians',       // No change
+          'physical-therapists': 'physical-therapists', // Keep hyphen
+          'speech-therapy': 'speech_therapy',     // Change to underscore
+          'therapists': 'therapists'              // No change
+        };
+        return serviceTypeMap[categorySlug] || categorySlug;
+      };
+
       const submitData = {
         provider_registration: {
           email: formData.email,
           provider_name: formData.provider_name,
-          service_types: selectedCategories.map(cat => cat.attributes.slug), // Changed from provider_type to service_types
-          category: selectedCategories.map(cat => cat.attributes.slug), // Add category field as backup
+          service_types: selectedCategories.map(cat => mapCategoryToServiceType(cat.attributes.slug)), // Map to correct service types
+          category: selectedCategories.map(cat => mapCategoryToServiceType(cat.attributes.slug)), // Map to correct service types
           submitted_data: structuredSubmittedData,
           logo: formData.logo
         },
@@ -611,7 +631,8 @@ const ProviderSignup: React.FC = () => {
       if (process.env.NODE_ENV === 'development') {
         console.log('🔍 Debug: Data being sent to API:', JSON.stringify(submitData, null, 2));
         console.log('🔍 Debug: Selected categories:', selectedCategories);
-        console.log('🔍 Debug: Service types being sent:', selectedCategories.map(cat => cat.attributes.slug));
+        console.log('🔍 Debug: Original category slugs:', selectedCategories.map(cat => cat.attributes.slug));
+        console.log('🔍 Debug: Mapped service types:', selectedCategories.map(cat => mapCategoryToServiceType(cat.attributes.slug)));
       }
 
       // Generate idempotency key to prevent duplicate submissions
