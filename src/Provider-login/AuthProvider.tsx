@@ -9,6 +9,7 @@ import { jwtDecode } from "jwt-decode";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { getApiBaseUrl } from "../Utility/config";
+import InactivityModal from "./InactivityModal";
 
 // types
 type Role = 'super_admin' | 'provider_admin' | 'user' | string;
@@ -72,6 +73,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   );
   const [userProviders, setUserProvidersState] = useState<any[]>([]);
   const [authReady, setAuthReady] = useState(false);
+  
+  // Inactivity modal state
+  const [showInactivityWarning, setShowInactivityWarning] = useState(false);
+  const [showInactivityLogout, setShowInactivityLogout] = useState(false);
+  const [inactivityCountdown, setInactivityCountdown] = useState(60);
 
   // stable wrapper: token
   const setToken = useCallback((next: string | null) => {
@@ -412,54 +418,58 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     [logout]
   );
 
-  // In inactivity monitoring useEffect:
+  // Inactivity monitoring useEffect:
   useEffect(() => {
     console.log('🔄 AuthProvider: Inactivity monitoring useEffect triggered', { token: !!token });
     if (!token) return;
 
     let inactivityTimeout: NodeJS.Timeout;
     let warningTimeout: NodeJS.Timeout;
+    let countdownInterval: NodeJS.Timeout;
 
     const resetInactivityTimer = () => {
       console.log('🔄 AuthProvider: Resetting inactivity timer');
       clearTimeout(inactivityTimeout);
       clearTimeout(warningTimeout);
+      clearInterval(countdownInterval);
 
-      toast.dismiss("inactivity-warning");
+      // Hide modals when activity is detected
+      setShowInactivityWarning(false);
+      setShowInactivityLogout(false);
+      setInactivityCountdown(60);
 
       warningTimeout = setTimeout(() => {
         // Only show inactivity warning if user is still logged in
         if (token && sessionStorage.getItem("authToken")) {
-          console.log('⚠️ AuthProvider: Showing inactivity warning');
-          toast.warning(
-            "You will be logged out in 60 seconds due to inactivity",
-            {
-              toastId: "inactivity-warning",
-              position: "top-center",
-              autoClose: false,
-              closeOnClick: false,
-              closeButton: true,
-              draggable: false,
+          console.log('⚠️ AuthProvider: Showing inactivity warning modal');
+          setShowInactivityWarning(true);
+          
+          // Start countdown
+          let countdown = 60;
+          setInactivityCountdown(countdown);
+          countdownInterval = setInterval(() => {
+            countdown--;
+            setInactivityCountdown(countdown);
+            if (countdown <= 0) {
+              clearInterval(countdownInterval);
             }
-          );
+          }, 1000);
         }
-      }, 4 * 60 * 1000); 
+      }, 4 * 60 * 1000); // 4 minutes
 
       inactivityTimeout = setTimeout(() => {
         // Only show inactivity logout if user is still logged in
         if (token && sessionStorage.getItem("authToken")) {
           console.log('⏰ AuthProvider: Logging out due to inactivity');
-          toast.dismiss("inactivity-warning"); 
-          toast.error("Logging out due to inactivity", {
-            toastId: "inactivity-logout",
-            position: "top-center",
-            autoClose: 2000,
-          });
+          setShowInactivityWarning(false);
+          setShowInactivityLogout(true);
+          
+          // Logout after 3 seconds
           setTimeout(() => {
             logout('inactivity');
-          }, 1000); 
+          }, 3000);
         }
-      }, 5 * 60 * 1000); 
+      }, 5 * 60 * 1000); // 5 minutes
     };
 
     const events = [
@@ -481,6 +491,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       });
       clearTimeout(inactivityTimeout);
       clearTimeout(warningTimeout);
+      clearInterval(countdownInterval);
       toast.dismiss("inactivity-warning");
     };
   }, [token, logout]);
@@ -758,7 +769,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   return (
-    <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
+    <>
+      <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
+      
+      {/* Inactivity Modals */}
+      <InactivityModal
+        isOpen={showInactivityWarning}
+        type="warning"
+        countdown={inactivityCountdown}
+        onClose={() => setShowInactivityWarning(false)}
+      />
+      
+      <InactivityModal
+        isOpen={showInactivityLogout}
+        type="logout"
+        onClose={() => setShowInactivityLogout(false)}
+      />
+    </>
   );
 };
 
