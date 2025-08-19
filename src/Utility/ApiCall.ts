@@ -364,20 +364,21 @@ export const removeProviderLogo = async (providerId: number, userId: string): Pr
 
 export const uploadAdminProviderLogo = async (providerId: number, logoFile: File): Promise<{ success: boolean; error?: string; updatedProvider?: any }> => {
   try {
-    
+    console.log('🔑 uploadAdminProviderLogo: Starting logo upload for provider:', providerId);
     
     // Create FormData with just the logo file (Active Storage format)
     const formData = new FormData();
     formData.append('logo', logoFile); // Only send the logo file
     
-
+    const adminAuthHeader = getAdminAuthHeader();
+    console.log('🔑 uploadAdminProviderLogo: Using admin auth header:', adminAuthHeader);
     
     const response = await fetch(
       `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/providers/${providerId}`,
       {
         method: 'PATCH',
         headers: {
-          'Authorization': 'be6205db57ce01863f69372308c41e3a'
+          'Authorization': adminAuthHeader
           // Don't set Content-Type - browser handles it for FormData
         },
         body: formData
@@ -388,24 +389,28 @@ export const uploadAdminProviderLogo = async (providerId: number, logoFile: File
 
     if (!response.ok) {
       let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+      console.log('❌ uploadAdminProviderLogo: Response not OK:', response.status, response.statusText);
       
       try {
         const errorText = await response.text();
+        console.log('❌ uploadAdminProviderLogo: Error response text:', errorText);
         if (errorText) {
           try {
             const errorData = JSON.parse(errorText);
             errorMessage = errorData.message || errorData.error || errorMessage;
+            console.log('❌ uploadAdminProviderLogo: Parsed error data:', errorData);
           } catch (parseError) {
             // If it's not JSON, use the raw text
             errorMessage = errorText || errorMessage;
+            console.log('❌ uploadAdminProviderLogo: Raw error text used');
           }
         }
       } catch (textError) {
         // If we can't read the response text, use the status
-
+        console.log('❌ uploadAdminProviderLogo: Could not read response text:', textError);
       }
       
-      
+      console.log('❌ uploadAdminProviderLogo: Final error message:', errorMessage);
       throw new Error(errorMessage);
     }
 

@@ -26,7 +26,7 @@ import {
   Service,
 } from "../Utility/Types";
 import { fetchStates, fetchCountiesByState } from "../Utility/ApiCall";
-import { validateLogoFile, uploadProviderLogo, uploadAdminProviderLogo } from "../Utility/ApiCall";
+import { validateLogoFile, uploadProviderLogo } from "../Utility/ApiCall";
 import { getAdminAuthHeader } from "../Utility/config";
 
 interface SuperAdminEditProps {
@@ -344,15 +344,13 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
       // Handle logo upload separately if a file is selected
       if (selectedLogoFile) {
         try {
-          // Try the admin upload first
-          let logoResult = await uploadAdminProviderLogo(provider.id, selectedLogoFile);
+          console.log('🔑 SuperAdminEdit: Starting logo upload for provider:', provider.id);
           
-          // If the admin upload fails, try the regular method
-          if (!logoResult.success) {
-            // For SuperAdmin, we can use a default admin user ID or get it from context
-            const adminUserId = 'admin'; // You might want to get this from admin context
-            logoResult = await uploadProviderLogo(provider.id, selectedLogoFile, adminUserId);
-          }
+          // Use the regular provider endpoint with admin authentication
+          const adminAuthHeader = getAdminAuthHeader();
+          console.log('🔑 SuperAdminEdit: Using admin auth header for logo upload:', adminAuthHeader);
+          
+          const logoResult = await uploadProviderLogo(provider.id, selectedLogoFile, adminAuthHeader);
           
           if (logoResult.success) {
             toast.success('Logo uploaded successfully');
@@ -361,6 +359,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
             toast.error(`Logo upload failed: ${logoResult.error}`);
           }
         } catch (logoError) {
+          console.error('❌ SuperAdminEdit: Logo upload error:', logoError);
           toast.error('Failed to upload logo');
         }
       }
