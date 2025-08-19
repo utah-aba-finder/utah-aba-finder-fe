@@ -57,7 +57,7 @@ const ClaimAccount: React.FC<ClaimAccountProps> = ({ onBackToSignup }) => {
       );
 
       if (response.ok) {
-        const data = await response.json();
+        await response.json(); // Response is consumed but data not needed
         toast.success('Account claim request submitted successfully! We will verify your identity and send you login credentials within 24-48 hours.');
         
         // Reset form
