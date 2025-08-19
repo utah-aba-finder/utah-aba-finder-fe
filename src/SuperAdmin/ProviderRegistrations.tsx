@@ -24,7 +24,7 @@ interface ProviderRegistration {
 }
 
 const ProviderRegistrations: React.FC = () => {
-  const { currentUser, token } = useAuth();
+  const { currentUser } = useAuth();
   const [registrations, setRegistrations] = useState<ProviderRegistration[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -49,19 +49,19 @@ const ProviderRegistrations: React.FC = () => {
       currentUserRole: currentUser?.role
     });
     
-    if (!token) {
-      console.log('❌ ProviderRegistrations: No token available');
+    if (!currentUser?.id) {
+      console.log('❌ ProviderRegistrations: No currentUser.id available');
       return;
     }
     
     setIsLoading(true);
     try {
-      console.log('📡 ProviderRegistrations: Making API call with Authorization: Bearer', token.substring(0, 20) + '...');
+      console.log('📡 ProviderRegistrations: Making API call with Authorization: Bearer', currentUser.id);
       const response = await fetch(
         'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/provider_registrations',
         {
           headers: {
-            'Authorization': `Bearer ${token}`,
+            'Authorization': `Bearer ${currentUser.id}`,
             'Content-Type': 'application/json'
           }
         }
@@ -84,11 +84,11 @@ const ProviderRegistrations: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [token, currentUser]);
+  }, [currentUser]);
 
   // Approve registration
   const approveRegistration = async (registrationId: string) => {
-    if (!token) return;
+    if (!currentUser?.id) return;
     
     try {
       const response = await fetch(
@@ -96,7 +96,7 @@ const ProviderRegistrations: React.FC = () => {
         {
           method: 'PATCH',
           headers: {
-            'Authorization': `Bearer ${token}`,
+            'Authorization': `Bearer ${currentUser.id}`,
             'Content-Type': 'application/json'
           }
         }
@@ -116,7 +116,7 @@ const ProviderRegistrations: React.FC = () => {
 
   // Reject registration
   const rejectRegistration = async (registrationId: string) => {
-    if (!token) return;
+    if (!currentUser?.id) return;
     
     try {
       const response = await fetch(
@@ -124,7 +124,7 @@ const ProviderRegistrations: React.FC = () => {
         {
           method: 'PATCH',
           headers: {
-            'Authorization': `Bearer ${token}`,
+            'Authorization': `Bearer ${currentUser.id}`,
             'Content-Type': 'application/json'
           }
         }

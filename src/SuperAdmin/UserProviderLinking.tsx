@@ -433,27 +433,18 @@ const UserProviderLinking: React.FC = () => {
 
   const fetchProviders = async () => {
     try {
-
-      
-      const response = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/users/providers_list', {
-        headers: {
-          'Authorization': getAdminAuthHeader(),
-        }
-      });
-      
-
-      
+      // Public providers endpoint (no auth required)
+      const response = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers');
       if (response.ok) {
         const data = await response.json();
-
-        setProviders(data.providers || []);
+        // Normalize to simple id/name list expected by this UI
+        const list = (data.data || []).map((p: any) => ({ id: p.id, name: p.attributes?.name })) as Provider[];
+        setProviders(list);
       } else {
         await response.text();
-
         toast.error(`Failed to fetch providers: ${response.status}`);
       }
     } catch (error) {
-
       toast.error('Failed to fetch providers');
     }
   };
@@ -478,15 +469,15 @@ const UserProviderLinking: React.FC = () => {
 
       }
       
-      // Use the working multi-provider endpoint with correct format
-      const response = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/assign_provider_to_user', {
+      // Use the recommended manual link endpoint for super admin use
+      const response = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/users/manual_link', {
         method: 'POST',
         headers: {
           'Authorization': getAdminAuthHeader(),
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          user_email: selectedUserObj.email, // API expects user_email, not user_id
+          user_email: selectedUserObj.email,
           provider_id: selectedProvider
         })
       });
@@ -569,14 +560,14 @@ const UserProviderLinking: React.FC = () => {
             continue;
           }
 
-          const individualResponse = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/assign_provider_to_user', {
+          const individualResponse = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/users/manual_link', {
             method: 'POST',
             headers: {
               'Authorization': getAdminAuthHeader(),
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              user_email: email, // API expects user_email, not user_id
+              user_email: email,
               provider_id: providerId
             })
           });

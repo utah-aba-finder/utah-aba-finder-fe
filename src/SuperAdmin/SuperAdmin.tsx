@@ -51,6 +51,7 @@ const SuperAdmin = () => {
   const [serviceFilter, setServiceFilter] = useState<string>("all");
   const [locationCountFilter, setLocationCountFilter] = useState<string>("all");
   const [logoFilter, setLogoFilter] = useState<"all" | "with_logo" | "without_logo">("all");
+  const [isLoadingProviders, setIsLoadingProviders] = useState(false);
 
   // Hardcoded list of all US states
   const US_STATES = useMemo(() => [
@@ -104,6 +105,7 @@ const SuperAdmin = () => {
     console.log('🔄 SuperAdmin: Starting to fetch providers...');
     
     try {
+      setIsLoadingProviders(true);
       if (!token) {
         console.error('❌ SuperAdmin: No token found');
         throw new Error('User not authenticated');
@@ -146,6 +148,8 @@ const SuperAdmin = () => {
     } catch (error) {
       console.error('❌ SuperAdmin: Error fetching providers:', error);
       setAllProviders([]);
+    } finally {
+      setIsLoadingProviders(false);
     }
   }, [token]);
 
@@ -767,10 +771,16 @@ const SuperAdmin = () => {
                     </p>
                   </div>
 
-                  {/* isLoading is removed, so this block is always rendered */}
+                  {/* Providers Table */}
                   <div className="bg-white rounded-lg shadow">
-                    <div className="overflow-x-auto">
-                      <table className="min-w-full">
+                    {isLoadingProviders ? (
+                      <div className="flex items-center justify-center py-12">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mr-3"></div>
+                        <span className="text-gray-600">Loading providers...</span>
+                      </div>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <table className="min-w-full">
                         <thead>
                           <tr className="bg-gray-50">
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -875,8 +885,9 @@ const SuperAdmin = () => {
                           ))}
                         </tbody>
                       </table>
+                        </div>
+                      )}
                     </div>
-                  </div>
                 </div>
               )}
 
