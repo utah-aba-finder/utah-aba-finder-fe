@@ -5,7 +5,7 @@ import CountiesModal from "../Provider-edit/CountiesModal";
 import { CountiesServed, Insurance, StateData, CountyData, Service } from "../Utility/Types";
 import InsuranceModal from "../Provider-edit/InsuranceModal";
 import { fetchStates, fetchCountiesByState, fetchProviders, validateLogoFile, uploadProviderLogo } from "../Utility/ApiCall";
-import { getAdminAuthHeader } from "../Utility/config";
+import { getAdminAuthHeader, getSuperAdminAuthHeader } from "../Utility/config";
 import "react-toastify/dist/ReactToastify.css";
 
 interface SuperAdminCreateProps {
@@ -332,8 +332,8 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
 
         try {
           // For SuperAdmin, use the admin API key
-          const adminAuthHeader = getAdminAuthHeader();
-          const logoResult = await uploadProviderLogo(responseData.data[0].id, selectedLogoFile, adminAuthHeader, true);
+                  const adminAuthHeader = getSuperAdminAuthHeader();
+        const logoResult = await uploadProviderLogo(responseData.data[0].id, selectedLogoFile, adminAuthHeader, true);
           
           if (logoResult.success) {
             toast.success('Logo uploaded successfully');
