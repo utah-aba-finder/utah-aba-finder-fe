@@ -83,7 +83,7 @@ interface ProviderCategory {
 type ProviderRegistration = {
   email: string;
   provider_name: string;
-  service_types: string[];
+  provider_type: string[];
   submitted_data: Record<string, any>;
   logo?: string;
 };
@@ -98,7 +98,7 @@ const ProviderSignup: React.FC = () => {
   const [formData, setFormData] = useState<ProviderRegistration>({
     email: '',
     provider_name: '',
-    service_types: [],
+    provider_type: [],
     submitted_data: {},
     logo: ''
   });
@@ -176,7 +176,7 @@ const ProviderSignup: React.FC = () => {
           setFormData(draft.formData || {
             email: '',
             provider_name: '',
-            service_types: [],
+            provider_type: [],
             submitted_data: {},
             logo: ''
           });
@@ -238,7 +238,7 @@ const ProviderSignup: React.FC = () => {
     setFormData({
       email: '',
       provider_name: '',
-      service_types: [],
+      provider_type: [],
       submitted_data: {},
       logo: ''
     });
@@ -609,7 +609,7 @@ const ProviderSignup: React.FC = () => {
         provider_registration: {
           email: formData.email,
           provider_name: formData.provider_name,
-          service_types: selectedCategories.map(cat => cat.attributes.slug),
+          provider_type: selectedCategories.map(cat => cat.attributes.slug),
           submitted_data: structuredSubmittedData,
           logo: formData.logo
         },
