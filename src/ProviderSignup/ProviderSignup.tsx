@@ -16,6 +16,7 @@ declare global {
     grecaptcha: {
       ready: (callback: () => void) => void;
       execute: (siteKey: string, options: { action: string }) => Promise<string>;
+      render: (container: string, options: any) => number;
     };
   }
 }
@@ -29,7 +30,7 @@ declare global {
       }
       
       const script = document.createElement('script');
-      script.src = 'https://www.google.com/recaptcha/api.js';
+      script.src = 'https://www.google.com/recaptcha/api.js?render=explicit';
       script.onload = () => {
         console.log('reCAPTCHA script loaded successfully');
         resolve();
@@ -41,6 +42,8 @@ declare global {
       document.head.appendChild(script);
     });
   };
+
+
 
 
 
@@ -139,6 +142,29 @@ const ProviderSignup: React.FC = () => {
   // Success state
   const [showSuccess, setShowSuccess] = useState(false);
   const [successData, setSuccessData] = useState<{ providerName: string; email: string } | null>(null);
+
+  // Initialize reCAPTCHA widget
+  const initializeRecaptcha = useCallback(() => {
+    if (typeof window.grecaptcha !== 'undefined' && window.grecaptcha.ready) {
+      window.grecaptcha.ready(() => {
+        window.grecaptcha.render('recaptcha-container', {
+          sitekey: '6LfTMGErAAAAAARfviGKHaQSMBEiUqHOZeBEmRIu',
+          callback: (token: string) => {
+            console.log('reCAPTCHA success, token:', token);
+            setRecaptchaToken(token);
+          },
+          'expired-callback': () => {
+            console.log('reCAPTCHA expired');
+            setRecaptchaToken('');
+          },
+          'error-callback': () => {
+            console.log('reCAPTCHA error');
+            setRecaptchaToken('');
+          }
+        });
+      });
+    }
+  }, []);
   
   // Load draft from localStorage on mount
   useEffect(() => {
@@ -401,17 +427,6 @@ const ProviderSignup: React.FC = () => {
     markChanged();
   }, [markChanged]);
 
-  // reCAPTCHA v2 callback functions
-  const onRecaptchaSuccess = useCallback((token: string) => {
-    console.log('reCAPTCHA v2 completed successfully');
-    setRecaptchaToken(token);
-  }, []);
-
-  const onRecaptchaExpired = useCallback(() => {
-    console.log('reCAPTCHA v2 expired');
-    setRecaptchaToken('');
-  }, []);
-
   // Fetch provider categories on component mount
   useEffect(() => {
     fetchProviderCategories();
@@ -419,16 +434,17 @@ const ProviderSignup: React.FC = () => {
       // reCAPTCHA script is now loaded, proceed with other effects
       setIsRecaptchaReady(true);
       
-      // Add reCAPTCHA callbacks to window object
-      (window as any).onRecaptchaSuccess = onRecaptchaSuccess;
-      (window as any).onRecaptchaExpired = onRecaptchaExpired;
+      // Initialize reCAPTCHA widget
+      setTimeout(() => {
+        initializeRecaptcha();
+      }, 100);
       
       fetchStates().then(data => {
         const stateNames = data.map(state => state.attributes.name);
         setStates(stateNames);
       });
     });
-  }, [onRecaptchaSuccess, onRecaptchaExpired]);
+  }, [initializeRecaptcha]);
 
   const fetchProviderCategories = async () => {
     try {
@@ -1440,12 +1456,7 @@ const ProviderSignup: React.FC = () => {
                       </div>
                     ) : (
                       // Production reCAPTCHA
-                      <div 
-                        className="g-recaptcha" 
-                        data-sitekey="6LfTMGErAAAAAARfviGKHaQSMBEiUqHOZeBEmRIu"
-                        data-callback="onRecaptchaSuccess"
-                        data-expired-callback="onRecaptchaExpired"
-                      ></div>
+                      <div id="recaptcha-container"></div>
                     )}
                   </div>
                   {process.env.NODE_ENV === 'development' && (
