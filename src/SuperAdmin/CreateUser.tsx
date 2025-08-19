@@ -11,9 +11,11 @@ const CreateUser = ({ handleCloseForm }: { handleCloseForm: () => void }) => {
     const [role, setRole] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        setIsSubmitting(true);
         const requestBody = {
             user: {
                 email: email,
@@ -63,6 +65,9 @@ const CreateUser = ({ handleCloseForm }: { handleCloseForm: () => void }) => {
     
             toast.error(`Error creating user: ${error.message}`);
             // Don't close form on error so user can fix and retry
+        })
+        .finally(() => {
+            setIsSubmitting(false);
         });
     };
 
@@ -133,10 +138,10 @@ const CreateUser = ({ handleCloseForm }: { handleCloseForm: () => void }) => {
         </select>
         <button 
           type="submit" 
-          className="bg-[#4A6FA5] text-white px-4 py-2 rounded-md disabled:opacity-50"
-          disabled={password !== passwordConfirmation}
+          className="bg-[#4A6FA5] text-white px-4 py-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={password !== passwordConfirmation || isSubmitting}
         >
-          Create User
+          {isSubmitting ? 'Creating...' : 'Create User'}
         </button>
         <button onClick={handleCloseForm} className="bg-gray-200 text-gray-700 px-4 py-2 rounded-md">Close</button>
       </form>

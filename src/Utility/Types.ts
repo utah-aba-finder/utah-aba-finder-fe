@@ -75,6 +75,19 @@ export interface ProviderAttributes {
     // New fields from API update
     in_home_only: boolean;
     service_delivery: ServiceDelivery;
+    // Additional common fields for registration and editing
+    contact_phone?: string | null;
+    service_areas?: string[];
+    waitlist_status?: string | null;
+    additional_notes?: string | null;
+    primary_address?: {
+        street: string;
+        suite: string;
+        city: string;
+        state: string;
+        zip: string;
+        phone: string;
+    } | null;
 }
 
 export interface InsuranceData {

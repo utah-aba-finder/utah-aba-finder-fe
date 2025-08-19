@@ -57,6 +57,28 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
   const [isCountiesModalOpen, setIsCountiesModalOpen] = useState(false);
   const [isInsuranceModalOpen, setIsInsuranceModalOpen] = useState(false);
 
+  // Enhanced common fields state (matching registration form structure)
+  const [commonFields, setCommonFields] = useState({
+    contact_phone: '',
+    website: '',
+    service_areas: [] as string[],
+    waitlist_status: '',
+    additional_notes: '',
+    primary_address: {
+      street: '',
+      suite: '',
+      city: '',
+      state: '',
+      zip: '',
+      phone: ''
+    },
+    service_delivery: {
+      in_clinic: false,
+      in_home: false,
+      telehealth: false
+    }
+  });
+
   // Track the previous provider ID to detect actual switches
   const previousProviderId = useRef<number | null>(null);
 
@@ -93,6 +115,31 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
     }
     return loggedInProvider.id?.toString();
   }, [token, loggedInProvider.id]);
+
+  // Handler for common field changes
+  const handleCommonFieldChange = useCallback((field: string, value: any) => {
+    setCommonFields(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  }, []);
+
+  // Handler for nested common field changes (like service_delivery)
+  const handleNestedCommonFieldChange = useCallback((parentField: keyof typeof commonFields, field: string, value: any) => {
+    setCommonFields(prev => {
+      const parentValue = prev[parentField];
+      if (typeof parentValue === 'object' && parentValue !== null) {
+        return {
+          ...prev,
+          [parentField]: {
+            ...parentValue,
+            [field]: value
+          }
+        };
+      }
+      return prev;
+    });
+  }, []);
 
   // Debug effect to track activeProvider changes
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -204,6 +251,28 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       setLocations(newProviderData.attributes.locations || []);
     setSelectedLogoFile(null);
     
+    // Initialize common fields with provider data
+    setCommonFields({
+      contact_phone: newProviderData.attributes.contact_phone || '',
+      website: newProviderData.attributes.website || '',
+      service_areas: newProviderData.attributes.service_areas || [],
+      waitlist_status: newProviderData.attributes.waitlist_status || '',
+      additional_notes: newProviderData.attributes.additional_notes || '',
+      primary_address: newProviderData.attributes.primary_address || {
+        street: '',
+        suite: '',
+        city: '',
+        state: '',
+        zip: '',
+        phone: ''
+      },
+      service_delivery: newProviderData.attributes.service_delivery || {
+        in_clinic: false,
+        in_home: false,
+        telehealth: false
+      }
+    });
+    
     // Reset form state when switching providers
     setSelectedTab("dashboard");
     setIsOpen(false);
@@ -231,6 +300,28 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       setSelectedInsurances(initialProviderData.attributes.insurance || []);
       setLocations(initialProviderData.attributes.locations || []);
       previousProviderId.current = initialProviderData.id;
+      
+      // Initialize common fields with initial provider data
+      setCommonFields({
+        contact_phone: initialProviderData.attributes.contact_phone || '',
+        website: initialProviderData.attributes.website || '',
+        service_areas: initialProviderData.attributes.service_areas || [],
+        waitlist_status: initialProviderData.attributes.waitlist_status || '',
+        additional_notes: initialProviderData.attributes.additional_notes || '',
+        primary_address: initialProviderData.attributes.primary_address || {
+          street: '',
+          suite: '',
+          city: '',
+          state: '',
+          zip: '',
+          phone: ''
+        },
+        service_delivery: initialProviderData.attributes.service_delivery || {
+          in_clinic: false,
+          in_home: false,
+          telehealth: false
+        }
+      });
     }
   }, [loggedInProvider, currentProvider]);
   const { logout } = useAuth();
@@ -599,6 +690,14 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
         states: providerState,
         services: currentLocations.map(location => location.services || []).flat(),
         logo: currentLogo, // Explicitly preserve logo URL
+        // Include common fields in the update
+        contact_phone: commonFields.contact_phone,
+        website: commonFields.website,
+        service_areas: commonFields.service_areas,
+        waitlist_status: commonFields.waitlist_status,
+        additional_notes: commonFields.additional_notes,
+        primary_address: commonFields.primary_address,
+        service_delivery: commonFields.service_delivery
       };
 
       // Debug logging to track what's being saved
@@ -737,6 +836,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                       {selectedTab === "coverage" && "Coverage & Counties"}
                       {selectedTab === "locations" && "Location Management"}
                       {selectedTab === "provider-types" && "Provider Services"}
+                      {selectedTab === "common-fields" && "Contact & Services"}
                       {selectedTab === "billing" && "Billing Management"}
                     </h1>
                   </div>
@@ -877,6 +977,22 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
           >
                 <Tag className="w-4 h-4" />
             <span className="text-sm">Provider Services</span>
+          </button>
+
+          <button
+            onClick={() => setSelectedTab("common-fields")}
+            className={`
+              hidden md:flex items-center justify-center gap-2 px-3 py-2 rounded-lg
+              transition-colors duration-200
+              ${
+                selectedTab === "common-fields"
+                  ? "bg-[#4A6FA5] text-white"
+                  : "text-gray-700 hover:bg-gray-100"
+              }
+            `}
+          >
+            <DollarSign className="w-4 h-4" />
+            <span className="text-sm">Contact & Services</span>
           </button>
 
           <button
@@ -1219,6 +1335,144 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                           </button>
                         </div>
                       </div>
+                </div>
+              )}
+              {selectedTab === "common-fields" && (
+                <div className="space-y-6">
+                  <div className="bg-white rounded-lg shadow p-6">
+                    <h2 className="text-xl font-semibold mb-4">Contact & Service Information</h2>
+                    
+                    {/* Contact Information */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Contact Phone</label>
+                        <input
+                          type="tel"
+                          value={commonFields.contact_phone || ''}
+                          onChange={(e) => handleCommonFieldChange('contact_phone', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="Enter contact phone number"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Website</label>
+                        <input
+                          type="url"
+                          value={commonFields.website || ''}
+                          onChange={(e) => handleCommonFieldChange('website', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="https://example.com"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Service Delivery Options */}
+                    <div className="mb-6">
+                      <h3 className="text-sm font-medium text-gray-700 mb-3">Service Delivery Options</h3>
+                      <div className="space-y-3">
+                        <label className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={commonFields.service_delivery?.in_clinic || false}
+                            onChange={(e) => handleNestedCommonFieldChange('service_delivery', 'in_clinic', e.target.checked)}
+                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                          />
+                          <span className="ml-2 text-sm text-gray-700">In-Clinic Services</span>
+                        </label>
+                        
+                        <label className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={commonFields.service_delivery?.in_home || false}
+                            onChange={(e) => handleNestedCommonFieldChange('service_delivery', 'in_home', e.target.checked)}
+                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                          />
+                          <span className="ml-2 text-sm text-gray-700">In-Home Services</span>
+                        </label>
+                        
+                        <label className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={commonFields.service_delivery?.telehealth || false}
+                            onChange={(e) => handleNestedCommonFieldChange('service_delivery', 'telehealth', e.target.checked)}
+                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                          />
+                          <span className="ml-2 text-sm text-gray-700">Telehealth Services</span>
+                        </label>
+                      </div>
+                    </div>
+
+                    {/* Waitlist Status */}
+                    <div className="mb-6">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Waitlist Status</label>
+                      <select
+                        value={commonFields.waitlist_status || ''}
+                        onChange={(e) => handleCommonFieldChange('waitlist_status', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      >
+                        <option value="">Select waitlist status...</option>
+                        <option value="accepting">Accepting New Clients</option>
+                        <option value="waitlist">Waitlist Only</option>
+                        <option value="closed">Not Accepting New Clients</option>
+                        <option value="limited">Limited Availability</option>
+                      </select>
+                    </div>
+
+                    {/* Additional Notes */}
+                    <div className="mb-6">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Additional Notes</label>
+                      <textarea
+                        value={commonFields.additional_notes || ''}
+                        onChange={(e) => handleCommonFieldChange('additional_notes', e.target.value)}
+                        rows={4}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Enter any additional information about your services..."
+                      />
+                    </div>
+
+                    {/* Save and Discard Buttons */}
+                    <div className="mt-6 flex justify-end space-x-4">
+                      <button
+                        onClick={() => {
+                          // Reset to original values
+                          setCommonFields({
+                            contact_phone: currentProvider?.attributes?.contact_phone || '',
+                            website: currentProvider?.attributes?.website || '',
+                            service_areas: currentProvider?.attributes?.service_areas || [],
+                            waitlist_status: currentProvider?.attributes?.waitlist_status || '',
+                            additional_notes: currentProvider?.attributes?.additional_notes || '',
+                            primary_address: currentProvider?.attributes?.primary_address || {
+                              street: '',
+                              suite: '',
+                              city: '',
+                              state: '',
+                              zip: '',
+                              phone: ''
+                            },
+                            service_delivery: currentProvider?.attributes?.service_delivery || {
+                              in_clinic: false,
+                              in_home: false,
+                              telehealth: false
+                            }
+                          });
+                          toast.info("Contact & service changes discarded");
+                        }}
+                        className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                      >
+                        Discard Changes
+                      </button>
+                      <button
+                        onClick={async () => {
+                          await handleSaveChanges();
+                        }}
+                        disabled={isSaving}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                      >
+                        {isSaving ? "Saving..." : "Save Changes"}
+                      </button>
+                    </div>
+                  </div>
                 </div>
               )}
               {selectedTab === "coverage" && (

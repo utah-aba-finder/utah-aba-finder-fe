@@ -290,6 +290,35 @@ export const uploadProviderLogo = async (providerId: number, logoFile: File, aut
     // Set authentication header based on user type
     const authHeader = isSuperAdmin ? authToken : `Bearer ${authToken}`;
     console.log('🔑 uploadProviderLogo: Using auth header:', isSuperAdmin ? 'API Key' : 'Bearer Token');
+    console.log('🔑 uploadProviderLogo: Auth header value:', authHeader);
+    console.log('🔑 uploadProviderLogo: Endpoint:', `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${providerId}`);
+    console.log('🔑 uploadProviderLogo: Method: PUT');
+    console.log('🔑 uploadProviderLogo: FormData contents:');
+    for (let [key, value] of formData.entries()) {
+      console.log(`  ${key}:`, value);
+    }
+
+    // First, let's test if we can access the endpoint with a GET request
+    console.log('🔑 uploadProviderLogo: Testing endpoint access with GET request...');
+    try {
+      const testResponse = await fetch(
+        `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${providerId}`,
+        {
+          method: 'GET',
+          headers: {
+            'Authorization': authHeader,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      console.log('🔑 uploadProviderLogo: GET test response status:', testResponse.status);
+      if (!testResponse.ok) {
+        const testErrorText = await testResponse.text();
+        console.log('🔑 uploadProviderLogo: GET test error:', testErrorText);
+      }
+    } catch (testError) {
+      console.log('🔑 uploadProviderLogo: GET test failed:', testError);
+    }
 
     const response = await fetch(
       `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${providerId}`,
