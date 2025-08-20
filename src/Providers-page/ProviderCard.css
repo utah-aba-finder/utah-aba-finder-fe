@@ -681,6 +681,8 @@
     }
 }
 
+
+
 @media (max-width: 480px) {
     .provider-card {
         height: 450px; /* Consistent height on mobile */

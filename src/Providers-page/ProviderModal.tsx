@@ -169,6 +169,28 @@ const ProviderModal: React.FC<ProviderModalProps> = ({
                 </div>
               </div>
               
+              {/* Waitlist Information */}
+              {(provider.attributes.waitlist || (provider.attributes as any).waitlist_status) && (
+                <div className="waitlist-section">
+                  <h4><strong>Waitlist Information:</strong></h4>
+                  <div className="waitlist-details">
+                    {provider.attributes.waitlist && (
+                      <p className="waitlist-item">
+                        <span className="waitlist-label">General Waitlist:</span>
+                        <span className="waitlist-value">{provider.attributes.waitlist}</span>
+                      </p>
+                    )}
+                    
+                    {(provider.attributes as any).waitlist_status && (
+                      <p className="waitlist-item">
+                        <span className="waitlist-label">Waitlist Status:</span>
+                        <span className="waitlist-value">{(provider.attributes as any).waitlist_status}</span>
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+              
               <div className="provider-contact text">
                 <p><Phone style={{ marginRight: '8px' }} />
                   <strong>Phone: </strong>

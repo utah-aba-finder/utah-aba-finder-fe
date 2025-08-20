@@ -4,7 +4,7 @@ import { User, Lock, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from './AuthProvider';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import gearImage from '../Assets/Gear@1x-0.5s-200px-200px.svg';
+
 import { fetchSingleProvider } from '../Utility/ApiCall';
 import { useNavigate } from 'react-router-dom';
 
@@ -14,8 +14,9 @@ export const LoginPage: React.FC = () => {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [isRedirecting, setIsRedirecting] = useState(false);
     const [showInactivityMessage, setShowInactivityMessage] = useState(false);
-    const { initializeSession, setLoggedInProvider, setCurrentUser } = useAuth();
+    const { initializeSession, setLoggedInProvider, setCurrentUser, currentUser } = useAuth();
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -34,6 +35,30 @@ export const LoginPage: React.FC = () => {
             sessionStorage.removeItem("logoutReason");
         }
     }, []);
+
+
+
+    // Reactive navigation when auth state is ready
+    useEffect(() => {
+        if (!currentUser) return;
+        
+        console.log('🚀 Login: Auth state ready, navigating based on role:', currentUser.role);
+        setIsRedirecting(true);
+        
+        if (currentUser.role === 'super_admin') {
+            console.log('🚀 Login: Navigating super admin to /superAdmin');
+            navigate('/superAdmin', { replace: true });
+        } else if (currentUser.role === 'provider_admin') {
+            const providerId = currentUser.active_provider_id || currentUser.primary_provider_id;
+            if (providerId) {
+                console.log('🚀 Login: Navigating provider to /providerEdit/' + providerId);
+                navigate(`/providerEdit/${providerId}`, { replace: true });
+            } else {
+                console.log('🚀 Login: No provider ID, navigating to /contact');
+                navigate('/contact', { replace: true });
+            }
+        }
+    }, [currentUser, navigate]);
 
     const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -144,38 +169,24 @@ export const LoginPage: React.FC = () => {
                 setCurrentUser(currentUserData);
                 console.log('🔐 Login: Updated AuthProvider currentUser state:', currentUserData);
                 
-                console.log('🎉 Login: Showing success toast for super admin');
-                toast.success(`Welcome back, ${data.user.email}! Redirecting to SuperAdmin...`);
-                console.log('🎉 Login: Success toast called, navigating to SuperAdmin');
-                // Small delay to ensure toast is visible before navigation
-                setTimeout(() => {
-                    console.log('🚀 Login: Attempting navigation to /superAdmin');
-                    console.log('🚀 Login: Current window location before navigation:', window.location.pathname);
-                    console.log('🚀 Login: Available routes check - trying multiple paths');
-                    
-                    // Try different navigation approaches
-                    try {
-                        // First try the exact path
-                        console.log('🚀 Login: Trying navigate("/superAdmin")');
-                        navigate('/superAdmin');
-                        console.log('✅ Login: Navigation function called successfully');
-                        
-                        // Check if it actually changed
-                        setTimeout(() => {
-                            console.log('🚀 Login: Location after 100ms:', window.location.pathname);
-                        }, 100);
-                        
-                    } catch (navError) {
-                        console.error('❌ Login: Navigation error:', navError);
-                        
-                        // Fallback: try window.location
-                        console.log('🚀 Login: Trying window.location.href fallback');
-                        window.location.href = '/superAdmin';
-                    }
-                }, 1000);
+                console.log('🎉 Login: Success toast for super admin');
+                toast.success(`Welcome back, ${data.user.email}!`);
             } else if (userRole === 'provider_admin') {
                 const providerId = data.user?.provider_id;
                 
+                // Set currentUser immediately for proper auth context and navigation
+                const currentUserData = {
+                    id: data.user.id,
+                    email: data.user.email,
+                    role: userRole,
+                    primary_provider_id: providerId || null,
+                    active_provider_id: data.user.active_provider_id || providerId || null,
+                };
+                
+                // Save to session storage and update context
+                sessionStorage.setItem('currentUser', JSON.stringify(currentUserData));
+                setCurrentUser(currentUserData);
+                console.log('🔐 Login: Updated AuthProvider currentUser state for provider:', currentUserData);
                 
                 if (providerId && providerId !== null) {
                     try {
@@ -184,30 +195,26 @@ export const LoginPage: React.FC = () => {
                             ...providerDetails,
                             role: 'provider_admin'
                         });
-                        console.log('🎉 Login: Showing success toast for provider admin');
-                        toast.success(`Welcome back, ${providerDetails.attributes.name}! Redirecting to provider dashboard...`);
-                        console.log('🎉 Login: Success toast called, navigating to provider dashboard');
-                        // Small delay to ensure toast is visible before navigation
-                        setTimeout(() => {
-                            navigate(`/providerEdit/${providerId}`);
-                        }, 1000);
+                        console.log('🎉 Login: Success toast for provider admin');
+                        toast.success(`Welcome back, ${providerDetails.attributes.name}!`);
                     } catch (error) {
-
+                        console.log('⚠️ Login: Failed to load provider details, but auth state will still trigger navigation');
                         setLoggedInProvider({
                             ...data.user,
                             role: 'provider_admin'
                         });
                         toast.error('Error loading provider details. Please contact support.');
-                        navigate('/');
+                        // Navigation will still be handled by the useEffect based on currentUser
                     }
                 } else {
-                    // For users without a provider_id, show an error and redirect to contact page
+                    // For users without a provider_id, show an error
+                    console.log('⚠️ Login: No provider ID found, auth state will trigger navigation to contact');
                     setLoggedInProvider({
                         ...data.user,
                         role: 'provider_admin'
                     });
                     toast.error('Account configuration error: No provider ID found. Please contact support.');
-                    navigate('/contact'); // Redirect to contact page instead of non-existent route
+                    // Navigation will be handled by the useEffect based on currentUser
                 }
             } else {
                 toast.error('Unknown user role');
@@ -239,19 +246,33 @@ export const LoginPage: React.FC = () => {
         setShowPassword(!showPassword);
     }
 
-    if (isLoading) {
-        return (
-            <div className="loading-container">
-                <img src={gearImage} alt="Loading..." className="loading-gear" />
-                <p>Loading...</p>
-            </div>
-        );
-    }
+
 
 
 
     return (
         <div className='loginWrapper'>
+            {/* Loading Overlay */}
+            {(isLoading || isRedirecting) && (
+                <div className="loading-overlay">
+                    <div className="loading-content">
+                        <div className="loading-spinner"></div>
+                        <h3>{isLoading ? 'Logging you in...' : 'Redirecting...'}</h3>
+                        <p>
+                            {isLoading 
+                                ? 'Please wait while we authenticate your account.' 
+                                : 'Please wait while we redirect you to your dashboard.'
+                            }
+                        </p>
+                        <div className="loading-dots">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                </div>
+            )}
+            
             {showInactivityMessage && (
                 <div className="inactivity-message">
                     <div className="inactivity-message-content">

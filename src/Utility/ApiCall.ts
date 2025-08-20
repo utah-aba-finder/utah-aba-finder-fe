@@ -298,27 +298,7 @@ export const uploadProviderLogo = async (providerId: number, logoFile: File, aut
       console.log(`  ${key}:`, value);
     }
 
-    // First, let's test if we can access the endpoint with a GET request
-    console.log('🔑 uploadProviderLogo: Testing endpoint access with GET request...');
-    try {
-      const testResponse = await fetch(
-        `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${providerId}`,
-        {
-          method: 'GET',
-          headers: {
-            'Authorization': authHeader,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-      console.log('🔑 uploadProviderLogo: GET test response status:', testResponse.status);
-      if (!testResponse.ok) {
-        const testErrorText = await testResponse.text();
-        console.log('🔑 uploadProviderLogo: GET test error:', testErrorText);
-      }
-    } catch (testError) {
-      console.log('🔑 uploadProviderLogo: GET test failed:', testError);
-    }
+    // Removed unnecessary GET test request that was causing confusion
 
     const response = await fetch(
       `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${providerId}`,
@@ -336,11 +316,26 @@ export const uploadProviderLogo = async (providerId: number, logoFile: File, aut
       const errorText = await response.text();
       console.log('❌ uploadProviderLogo: Response not OK:', response.status, response.statusText);
       console.log('❌ uploadProviderLogo: Error response text:', errorText);
+      
+      // Additional debugging for S3 integration issues
+      if (response.status === 500) {
+        console.log('🔍 uploadProviderLogo: 500 error detected - this might be an S3 integration issue');
+        console.log('🔍 uploadProviderLogo: Check backend logs for S3 configuration errors');
+      }
+      
       return { success: false, error: `Upload failed: ${response.status} - ${errorText}` };
     }
 
     const result = await response.json();
     console.log('✅ uploadProviderLogo: Logo upload successful');
+    console.log('🔍 uploadProviderLogo: Response data structure:', result);
+    
+    // Check if the response contains the new logo URL
+    if (result && result.data && result.data[0] && result.data[0].attributes) {
+      console.log('🔍 uploadProviderLogo: New logo URL:', result.data[0].attributes.logo);
+    } else {
+      console.log('⚠️ uploadProviderLogo: Response structure unexpected - logo URL might be missing');
+    }
 
     return { 
       success: true, 
@@ -377,7 +372,7 @@ export const removeProviderLogo = async (providerId: number, userId: string): Pr
       {
         method: 'DELETE',
         headers: {
-          'Authorization': userId,
+          'Authorization': `Bearer ${userId}`,
         }
       }
     );

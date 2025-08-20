@@ -39,7 +39,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
   const [sessionTimeLeft, setSessionTimeLeft] = useState<number | null>(null);
   
   // Get auth context for multi-provider support
-  const { activeProvider, token } = useAuth();
+  const { activeProvider, token, currentUser } = useAuth();
   
   // Local state for the currently edited provider
   const [currentProvider, setCurrentProvider] = useState<ProviderData | null>(null);
@@ -105,16 +105,30 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
 
   // Helper function to extract user ID from token
   const extractUserId = useCallback(() => {
+    // First try to get the user ID from currentUser (most reliable)
+    if (currentUser?.id) {
+      console.log('🔍 ProviderEdit: Using currentUser.id for authorization:', currentUser.id);
+      return currentUser.id.toString();
+    }
+    
+    // Fallback to token decoding
     if (token) {
       try {
         const decodedToken = JSON.parse(atob(token));
-        return decodedToken.id?.toString();
+        const userId = decodedToken.id?.toString();
+        if (userId) {
+          console.log('🔍 ProviderEdit: Using decoded token user ID for authorization:', userId);
+          return userId;
+        }
       } catch (e) {
-        console.log('🔍 ProviderEdit: Could not decode token, using loggedInProvider.id');
+        console.log('🔍 ProviderEdit: Could not decode token');
       }
     }
-    return loggedInProvider.id?.toString();
-  }, [token, loggedInProvider.id]);
+    
+    // Last resort - this should not happen if auth is working properly
+    console.error('❌ ProviderEdit: No user ID available for authorization');
+    return null;
+  }, [currentUser?.id, token]);
 
   // Handler for common field changes
   const handleCommonFieldChange = useCallback((field: string, value: any) => {
@@ -343,13 +357,21 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
 
   const fetchManagedProviders = useCallback(async () => {
     try {
-  
+      // Get the proper user ID for authorization
+      const userId = extractUserId();
+      
+      if (!userId) {
+        console.error('🔍 ProviderEdit: No user ID available for authorization in fetchManagedProviders');
+        // Fallback to just the current provider
+        setAvailableProviders([loggedInProvider]);
+        return;
+      }
       
       const response = await fetch(
         'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/accessible_providers',
         {
           headers: {
-            'Authorization': loggedInProvider.id.toString(),
+            'Authorization': `Bearer ${userId}`,
           }
         }
       );
@@ -369,7 +391,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       setAvailableProviders([loggedInProvider]);
     } finally {
     }
-  }, [loggedInProvider]);
+  }, [loggedInProvider, extractUserId]);
 
   const refreshProviderData = useCallback(async () => {
     try {
@@ -388,7 +410,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
         `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${currentProvider?.id}`,
         {
           headers: {
-            'Authorization': userId,
+            'Authorization': `Bearer ${userId}`,
           },
         }
       );
@@ -625,7 +647,8 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       }
 
       // Use the corrected uploadProviderLogo function
-      const result = await uploadProviderLogo(currentProvider?.id || 0, selectedLogoFile, userId);
+      // For regular providers, isSuperAdmin should be false to use Bearer token
+      const result = await uploadProviderLogo(currentProvider?.id || 0, selectedLogoFile, userId, false);
       
       if (!result.success) {
         toast.error(`Failed to upload logo: ${result.error}`);
@@ -724,7 +747,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
-            'Authorization': userId,
+            'Authorization': `Bearer ${userId}`,
           },
           body: JSON.stringify(requestBody),
         }

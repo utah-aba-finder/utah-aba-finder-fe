@@ -355,6 +355,26 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
           if (logoResult.success) {
             toast.success('Logo uploaded successfully');
             setSelectedLogoFile(null);
+            
+            // Update the local provider state with the new logo URL
+            if (logoResult.updatedProvider && logoResult.updatedProvider.data) {
+              const updatedProviderData = logoResult.updatedProvider.data[0];
+              if (updatedProviderData && updatedProviderData.attributes && updatedProviderData.attributes.logo) {
+                // Update the provider object with the new logo
+                const updatedProvider = {
+                  ...provider,
+                  attributes: {
+                    ...provider.attributes,
+                    logo: updatedProviderData.attributes.logo
+                  }
+                };
+                
+                // Call the onUpdate function to update the parent state
+                onUpdate(updatedProvider.attributes);
+                
+                console.log('🔄 SuperAdminEdit: Updated provider logo in local state:', updatedProviderData.attributes.logo);
+              }
+            }
           } else {
             toast.error(`Logo upload failed: ${logoResult.error}`);
           }
