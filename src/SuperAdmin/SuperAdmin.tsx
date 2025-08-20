@@ -177,13 +177,13 @@ const SuperAdmin = () => {
 
   const handleProviderUpdate = async (updatedProvider: ProviderAttributes) => {
     try {
-      if (!token) {
-        console.error('❌ SuperAdmin: No token found for update');
+      if (!currentUser) {
+        console.error('❌ SuperAdmin: No current user found for update');
         toast.error("Authentication error - please log in again");
         return;
       }
 
-      console.log('🔑 SuperAdmin: Updating provider with Bearer token:', token.substring(0, 20) + '...');
+      console.log('🔑 SuperAdmin: Updating provider with Bearer user ID:', currentUser.id);
 
       const response = await fetch(
         `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${updatedProvider.id}`,
@@ -191,7 +191,7 @@ const SuperAdmin = () => {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
-            'Authorization': `Bearer ${token}`,
+            'Authorization': `Bearer ${currentUser.id}`,
           },
           body: JSON.stringify({
             data: [{
