@@ -372,7 +372,7 @@ export const removeProviderLogo = async (providerId: number, userId: string): Pr
       {
         method: 'DELETE',
         headers: {
-          'Authorization': userId,
+          'Authorization': `Bearer ${userId}`,
         }
       }
     );

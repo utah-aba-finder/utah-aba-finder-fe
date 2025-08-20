@@ -14,11 +14,11 @@ const LoadingScreen = () => (
 );
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedRoles = [] }) => {
-  const { authReady, isAuthenticated, currentUser, activeProvider } = useAuth();
+  const { authReady, authLoading, isAuthenticated, currentUser, activeProvider } = useAuth();
   const location = useLocation();
 
-  // Don't decide anything until auth has hydrated
-  if (!authReady) return <LoadingScreen />;
+  // Don't decide anything until auth has hydrated and loading is complete
+  if (!authReady || authLoading) return <LoadingScreen />;
 
   if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />;

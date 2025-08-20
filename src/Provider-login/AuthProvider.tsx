@@ -36,6 +36,7 @@ interface AuthContextType {
   currentUser: CurrentUser | null;
   setCurrentUser: (user: CurrentUser | null) => void;
   authReady: boolean;
+  authLoading: boolean;
   loggedInProvider: any;
   setLoggedInProvider: (provider: any) => void;
   logout: (reason?: string) => void;
@@ -73,6 +74,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   );
   const [userProviders, setUserProvidersState] = useState<any[]>([]);
   const [authReady, setAuthReady] = useState(false);
+  const [authLoading, setAuthLoading] = useState(true);
   
   // Inactivity modal state
   const [showInactivityWarning, setShowInactivityWarning] = useState(false);
@@ -215,6 +217,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     setCurrentUser(null);
     setActiveProvider(null);
     setUserProvidersState([]);
+    setAuthLoading(false);
     
     // Clear session storage
     sessionStorage.removeItem("authToken");
@@ -302,7 +305,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       }
 
       setToken(newToken);
-      console.log('✅ AuthProvider: Session initialized successfully');
+      setAuthLoading(false);
+      console.log('✅ AuthProvider: Session initialized successfully, authLoading set to false');
     },
     [logout, loggedInProvider, validateToken, setToken]
   );
@@ -428,7 +432,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     let countdownInterval: NodeJS.Timeout;
 
     const resetInactivityTimer = () => {
-      console.log('🔄 AuthProvider: Resetting inactivity timer');
+      // Removed excessive logging that was causing infinite loop in console
       clearTimeout(inactivityTimeout);
       clearTimeout(warningTimeout);
       clearInterval(countdownInterval);
@@ -730,7 +734,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       } finally {
         if (!cancelled) {
           setAuthReady(true);
-          console.log('✅ AuthProvider: Auth initialization complete, authReady set to true');
+          setAuthLoading(false);
+          console.log('✅ AuthProvider: Auth initialization complete, authReady set to true, authLoading set to false');
         }
       }
     })();
@@ -748,6 +753,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     currentUser,                        // <-- add this
     setCurrentUser,                     // <-- add this
     authReady,                          // <-- add this
+    authLoading,                        // <-- add this
     loggedInProvider,
     setLoggedInProvider: (provider: any) => {
       setLoggedInProvider(provider);
