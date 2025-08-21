@@ -123,6 +123,8 @@
 .card-text-and-buttons {
     display: flex;
     flex-direction: column;
+    height: 100%;
+    justify-content: space-between;
 }
 
 .card-name {
@@ -187,8 +189,11 @@
 
 /* Provider Card Buttons */
 .provider-card-buttons {
-    padding-bottom: 1.2em;
-    gap: .1em;
+    padding: 1em 0;
+    gap: 0.5em;
+    display: flex;
+    justify-content: center;
+    margin-top: auto; /* Push buttons to bottom */
 }
 
 .view-details-button {
@@ -654,15 +659,17 @@
 /* Responsive improvements for provider cards */
 @media (max-width: 768px) {
     .provider-card {
-        height: 420px; /* Consistent height on tablets */
-        min-height: 420px;
-        max-height: 420px;
+        height: auto; /* Allow height to adjust to content */
+        min-height: 380px; /* Minimum height for tablets */
+        max-height: none; /* Remove max height constraint */
         border-radius: 35px; /* Smaller border radius on mobile */
     }
     
     .card-text {
         padding: 0.8em; /* Slightly less padding on mobile */
         gap: 0.6em; /* Tighter spacing on mobile */
+        max-height: 280px; /* Limit text area height */
+        overflow-y: auto; /* Enable scrolling for text content */
     }
     
     .service-type-chips {
@@ -679,25 +686,99 @@
         margin: 0.2em 0; /* Tighter margins on mobile */
         font-size: 0.9em; /* Slightly smaller text on mobile */
     }
+    
+    /* Ensure buttons are always visible */
+    .provider-card-buttons {
+        position: sticky;
+        bottom: 0;
+        background: white;
+        padding: 0.8em;
+        margin-top: auto;
+        border-top: 1px solid #eee;
+        z-index: 10;
+    }
 }
 
 
 
 @media (max-width: 480px) {
     .provider-card {
-        height: 450px; /* Consistent height on mobile */
-        min-height: 450px;
-        max-height: 450px;
+        height: auto; /* Allow height to adjust to content */
+        min-height: 320px; /* Minimum height for mobile */
+        max-height: none; /* Remove max height constraint */
         border-radius: 25px;
     }
     
     .card-text {
         padding: 0.6em;
         gap: 0.5em;
+        max-height: 200px; /* Limit text area height on mobile */
+        overflow-y: auto; /* Enable scrolling for text content */
     }
     
     .service-type-chips {
         gap: 0.25em;
         margin-bottom: 0.5em;
+    }
+    
+    /* Ensure buttons are always visible on mobile */
+    .provider-card-buttons {
+        position: sticky;
+        bottom: 0;
+        background: white;
+        padding: 0.6em;
+        margin-top: auto;
+        border-top: 1px solid #eee;
+        z-index: 10;
+        display: flex;
+        justify-content: center;
+        gap: 0.5em;
+    }
+    
+    .view-details-button,
+    .favorite-button {
+        width: 120px; /* Smaller buttons on mobile */
+        height: 32px;
+        font-size: 16px;
+    }
+}
+
+/* Special handling for horizontal orientation on mobile */
+@media (max-width: 480px) and (orientation: landscape) {
+    .provider-card {
+        min-height: 280px; /* Even smaller height for horizontal */
+    }
+    
+    .card-text {
+        max-height: 150px; /* Smaller text area for horizontal */
+        padding: 0.4em;
+        gap: 0.3em;
+    }
+    
+    .card-text h4 {
+        font-size: 0.8em;
+        margin: 0.1em 0;
+    }
+    
+    .service-type-chips {
+        gap: 0.2em;
+        margin-bottom: 0.3em;
+    }
+    
+    .service-type-chip {
+        padding: 0.2em 0.5em;
+        font-size: 0.65em;
+    }
+    
+    .provider-card-buttons {
+        padding: 0.4em;
+        gap: 0.3em;
+    }
+    
+    .view-details-button,
+    .favorite-button {
+        width: 100px;
+        height: 28px;
+        font-size: 14px;
     }
 }
