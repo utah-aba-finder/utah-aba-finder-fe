@@ -382,7 +382,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
         'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/accessible_providers',
         {
           headers: {
-            'Authorization': `Bearer ${token}`,
+            'Authorization': currentUser?.id?.toString() || '',
           }
         }
       );
@@ -419,7 +419,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
         `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${currentProvider?.id}`,
         {
           headers: {
-            'Authorization': `Bearer ${token}`,
+            'Authorization': currentUser?.id?.toString() || '',
           },
         }
       );
@@ -766,19 +766,24 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       
       console.log('🔍 ProviderEdit: Final provider ID being used:', providerId);
       console.log('🔍 ProviderEdit: API URL:', `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/provider_self`);
-      console.log('🔍 ProviderEdit: Authorization header being sent:', `Bearer ${token}`);
+      console.log('🔍 ProviderEdit: Authorization header being sent:', currentUser?.id?.toString() || 'No user ID');
       console.log('🔍 ProviderEdit: Current user object:', currentUser);
       console.log('🔍 ProviderEdit: Token:', token);
       console.log('🔍 ProviderEdit: Note: Using JWT token now that backend is properly configured');
 
       // Step 1: Set the active provider context before updating
       console.log('🔍 ProviderEdit: Setting active provider context for provider ID:', providerId);
+      
+      if (!currentUser?.id) {
+        throw new Error('No current user ID available for authorization');
+      }
+      
       const contextResponse = await fetch(
         'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/provider_context',
         {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${token}`,
+            'Authorization': currentUser.id.toString(),
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({ provider_id: providerId })
@@ -799,7 +804,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
           method: "PUT", // Use PUT method as specified in your analysis
           headers: {
             "Content-Type": "application/json",
-            'Authorization': `Bearer ${token}`, // Use JWT token now that backend is properly configured
+            'Authorization': currentUser.id.toString(), // Use user ID directly for backend authentication
           },
           body: JSON.stringify(requestBody),
         }

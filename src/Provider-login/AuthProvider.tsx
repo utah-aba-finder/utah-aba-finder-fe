@@ -543,7 +543,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       // 3) Call user_providers (list is lightweight; no attributes)
       const url = `${getApiBaseUrl()}/api/v1/providers/user_providers?user_email=${encodeURIComponent(userEmail)}`;
       const listResp = await fetch(url, {
-        headers: { Authorization: userId, 'Content-Type': 'application/json' },
+        headers: { 
+          'Authorization': userId,
+          'Content-Type': 'application/json' 
+        },
       });
 
       if (!listResp.ok) {
@@ -584,7 +587,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
       // 5) Fetch full provider detail (with attributes) BEFORE setting activeProvider
       const detailResp = await fetch(`${getApiBaseUrl()}/api/v1/providers/${targetId}`, {
-        headers: { Authorization: userId, 'Content-Type': 'application/json' },
+        headers: { 
+          'Authorization': userId,
+          'Content-Type': 'application/json' 
+        },
       });
 
       if (!detailResp.ok) {
@@ -616,7 +622,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       // 1) Tell backend to set the context
       const setResp = await fetch(`${getApiBaseUrl()}/api/v1/providers/set_active_provider`, {
         method: 'POST',
-        headers: { Authorization: userId, 'Content-Type': 'application/json' },
+        headers: { 
+          'Authorization': userId,
+          'Content-Type': 'application/json' 
+        },
         body: JSON.stringify({ provider_id: providerId }),
       });
 
@@ -634,7 +643,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
       // 2) Fetch the full provider record (the editor needs attributes)
       const detailResp = await fetch(`${getApiBaseUrl()}/api/v1/providers/${providerId}`, {
-        headers: { Authorization: userId, 'Content-Type': 'application/json' },
+        headers: { 
+          'Authorization': userId,
+          'Content-Type': 'application/json' 
+        },
       });
 
       if (!detailResp.ok) {
@@ -705,7 +717,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
         const base = 'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com';
         const resp = await fetch(`${base}/api/v1/providers/user_providers?user_email=${encodeURIComponent(emailFromStorage)}`, {
-          headers: { Authorization: userId, 'Content-Type': 'application/json' },
+          headers: { 
+            'Authorization': userId,
+            'Content-Type': 'application/json' 
+          },
         });
 
         if (resp.ok) {
