@@ -29,8 +29,6 @@ import { ProviderData, ProviderAttributes } from "../Utility/Types";
 // import { fetchProviders } from "../Utility/ApiCall";
 
 const SuperAdmin = () => {
-  console.log('🚀 SuperAdmin: Component mounted/rendered');
-  
   const { loggedInProvider, logout, currentUser, token } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [selectedTab, setSelectedTab] = useState("view");
@@ -101,48 +99,32 @@ const SuperAdmin = () => {
 
   // Fetch providers
   const fetchAllProviders = useCallback(async () => {
-    console.log('🚀 SuperAdmin: fetchAllProviders function called!');
-    console.log('🔄 SuperAdmin: Starting to fetch providers...');
-    
     try {
       setIsLoadingProviders(true);
-      if (!token) {
-        console.error('❌ SuperAdmin: No token found');
-        throw new Error('User not authenticated');
-      }
-
-      console.log('🔑 SuperAdmin: Using Bearer token:', token.substring(0, 20) + '...');
-      console.log('🌐 SuperAdmin: Making request to:', 'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers');
-
-      // Use Bearer token authentication
+      
+      // Use the same working approach as the main providers page
+      // The main providers endpoint works without authentication
       const response = await fetch(
         `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers`,
         {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            'Authorization': `Bearer ${token}`,
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
           },
         }
       );
 
-      console.log('📡 SuperAdmin: API response status:', response.status);
-
       if (!response.ok) {
-        if (response.status === 403) {
-          throw new Error('Access forbidden - user may not have super admin privileges');
-        }
         throw new Error(`HTTP error: ${response.status}`);
       }
 
       const data = await response.json();
-      console.log('📊 SuperAdmin: Providers data received:', data);
 
       if (data && data.data) {
         setAllProviders(data.data);
-        console.log('✅ SuperAdmin: Successfully set providers:', data.data.length);
       } else {
-        console.log('⚠️ SuperAdmin: No providers data found in response');
         setAllProviders([]);
       }
     } catch (error) {
@@ -151,29 +133,13 @@ const SuperAdmin = () => {
     } finally {
       setIsLoadingProviders(false);
     }
-  }, [token]);
+  }, []);
 
   useEffect(() => {
-    console.log('🔄 SuperAdmin: useEffect triggered', { 
-      hasCurrentUser: !!currentUser,
-      role: currentUser?.role,
-      isSuperAdmin: currentUser?.role === 'super_admin',
-      hasToken: !!token,
-      tokenPreview: token ? token.substring(0, 20) + '...' : 'none'
-    });
-    
-    // Use currentUser.role instead of loggedInProvider for role checks
-    if (currentUser && currentUser.role === 'super_admin' && token) {
-      console.log('✅ SuperAdmin: Calling fetchAllProviders...');
+    if (currentUser && currentUser.role === 'super_admin') {
       fetchAllProviders();
-    } else {
-      console.log('❌ SuperAdmin: Not calling fetchAllProviders - missing requirements:', {
-        hasCurrentUser: !!currentUser,
-        role: currentUser?.role,
-        hasToken: !!token
-      });
     }
-  }, [currentUser, token, fetchAllProviders]);
+  }, [currentUser, fetchAllProviders]);
 
   const handleProviderUpdate = async (updatedProvider: ProviderAttributes) => {
     try {
@@ -182,8 +148,6 @@ const SuperAdmin = () => {
         toast.error("Authentication error - please log in again");
         return;
       }
-
-      console.log('🔑 SuperAdmin: Updating provider with Bearer user ID:', currentUser.id);
 
       const response = await fetch(
         `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${updatedProvider.id}`,
@@ -211,7 +175,6 @@ const SuperAdmin = () => {
       }
 
       const data = await response.json();
-      console.log('✅ SuperAdmin: Provider updated successfully:', data);
 
       // Update the local state immediately
       setAllProviders((prevProviders) => {
@@ -233,22 +196,22 @@ const SuperAdmin = () => {
     }
   };
 
-  const filteredProviders = allProviders.filter((provider) => {
-    if (!provider?.attributes) {
-      return false;
-    }
+  const filteredProviders = useMemo(() => {
+    return allProviders.filter((provider) => {
+      if (!provider?.attributes) {
+        return false;
+      }
 
-    const nameMatch = provider.attributes.name
-      ? provider.attributes.name.toLowerCase().includes(searchTerm.toLowerCase())
-      : false;
-    
-    const typeMatch =
-      providerTypeFilter === "all"
-        ? true
-        : provider.attributes.provider_type?.some(
-            (type: { name: string }) =>
-              type.name === providerTypeFilter
-          );
+      const nameMatch = provider.attributes.name
+        ? provider.attributes.name.toLowerCase().includes(searchTerm.toLowerCase())
+        : false;
+      
+      const typeMatch =
+        providerTypeFilter === "all"
+          ? true
+          : provider.attributes.provider_type?.some(
+              (type: { name: string }) => type.name === providerTypeFilter
+            ) || false;
 
     const statusMatch =
       statusFilter === "all"
@@ -295,6 +258,7 @@ const SuperAdmin = () => {
     const nameB = b.attributes.name?.toLowerCase() || "";
     return nameA.localeCompare(nameB);
   });
+  }, [allProviders, searchTerm, providerTypeFilter, statusFilter, stateFilter, serviceFilter, locationCountFilter, logoFilter]);
 
   const getStatusColor = (status: string | null | undefined) => {
     switch (status?.toLowerCase()) {
