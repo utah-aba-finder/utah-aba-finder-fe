@@ -743,6 +743,13 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       console.log('🔍 Saving provider with attributes:', updatedAttributes);
       console.log('🔍 Current logo URL:', currentLogo);
       console.log('🔍 Current provider logo:', currentProvider?.attributes?.logo);
+      
+      // Validate the data being sent
+      console.log('🔍 ProviderEdit: Data validation check:');
+      console.log('🔍 ProviderEdit: - updatedAttributes keys:', Object.keys(updatedAttributes));
+      console.log('🔍 ProviderEdit: - updatedAttributes values:', Object.values(updatedAttributes));
+      console.log('🔍 ProviderEdit: - Any undefined values:', Object.entries(updatedAttributes).filter(([k, v]) => v === undefined).map(([k]) => k));
+      console.log('🔍 ProviderEdit: - Any null values:', Object.entries(updatedAttributes).filter(([k, v]) => v === null).map(([k]) => k));
 
       // Get the proper user ID for authorization using the existing helper
       const userId = extractUserId();
@@ -836,12 +843,21 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       
       if (!response.ok) {
         const errorText = await response.text();
+        console.error('❌ ProviderEdit: Server error response:', {
+          status: response.status,
+          statusText: response.statusText,
+          url: apiEndpoint,
+          requestBody: requestBody,
+          errorText: errorText
+        });
 
         let errorData;
         try {
           errorData = JSON.parse(errorText);
+          console.error('❌ ProviderEdit: Parsed error data:', errorData);
         } catch (e) {
           errorData = { message: errorText };
+          console.error('❌ ProviderEdit: Could not parse error response as JSON:', errorText);
         }
 
         throw new Error(`HTTP ${response.status}: ${errorData.message || response.statusText}`);
