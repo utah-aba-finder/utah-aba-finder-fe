@@ -760,19 +760,64 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
         throw new Error('No provider ID available for update');
       }
 
+      // Debug: Log all available provider information
+      console.log('🔍 ProviderEdit: Provider ID Debug Info:');
+      console.log('🔍 ProviderEdit: - loggedInProvider:', loggedInProvider);
+      console.log('🔍 ProviderEdit: - currentProvider:', currentProvider);
+      console.log('🔍 ProviderEdit: - selected providerId:', providerId);
+      console.log('🔍 ProviderEdit: - user role:', currentUser?.role);
+      console.log('🔍 ProviderEdit: - user ID:', currentUser?.id);
+      
+      // Check if this provider ID makes sense
+      if (typeof providerId !== 'number' || providerId <= 0) {
+        console.error('❌ ProviderEdit: Invalid provider ID:', providerId);
+        throw new Error(`Invalid provider ID: ${providerId}`);
+      }
+
+      // Verify currentUser exists before proceeding
+      if (!currentUser?.id) {
+        throw new Error('No current user ID available for provider verification');
+      }
+
+      // Verify the provider exists before attempting update
+      console.log('🔍 ProviderEdit: Verifying provider exists before update...');
+      try {
+        const verifyResponse = await fetch(
+          `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${providerId}`,
+          {
+            headers: {
+              'Authorization': `Bearer ${currentUser.id.toString()}`,
+            },
+          }
+        );
+        
+        if (!verifyResponse.ok) {
+          if (verifyResponse.status === 404) {
+            throw new Error(`Provider ID ${providerId} does not exist in the database`);
+          } else {
+            throw new Error(`Failed to verify provider: ${verifyResponse.status} ${verifyResponse.statusText}`);
+          }
+        }
+        
+        const verifyData = await verifyResponse.json();
+        console.log('✅ ProviderEdit: Provider verified successfully:', verifyData);
+      } catch (verifyError) {
+        console.error('❌ ProviderEdit: Provider verification failed:', verifyError);
+        throw verifyError;
+      }
+
       // Determine which endpoint to use based on what provider is being edited
       const isEditingOwnProvider = providerId === loggedInProvider?.id;
-      const apiEndpoint = isEditingOwnProvider 
-        ? 'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/provider_self'
-        : `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${providerId}`;
+      // For provider self-editing, always use provider_self endpoint
+      const apiEndpoint = 'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/provider_self';
       
       console.log('🔍 ProviderEdit: Is editing own provider:', isEditingOwnProvider);
       console.log('🔍 ProviderEdit: Using API endpoint:', apiEndpoint);
 
       const requestBody = {
-        data: {
+        data: [{
           attributes: updatedAttributes,
-        }
+        }]
       };
 
       // Debug logging to see what's being sent
@@ -795,10 +840,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       // Step 1: Set the active provider context before updating (optional - don't fail if it doesn't work)
       console.log('🔍 ProviderEdit: Setting active provider context for provider ID:', providerId);
       
-      if (!currentUser?.id) {
-        throw new Error('No current user ID available for authorization');
-      }
-      
+      // currentUser.id is already verified above, so we can use it safely here
       try {
         const contextResponse = await fetch(
           'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/provider_context',

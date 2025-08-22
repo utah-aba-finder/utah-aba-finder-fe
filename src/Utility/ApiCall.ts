@@ -325,21 +325,24 @@ export const uploadProviderLogo = async (providerId: number, logoFile: File, aut
     // Add provider data to ensure the logo gets properly associated
     formData.append('provider_id', providerId.toString());
 
-    // Set authentication header based on user type
-    const authHeader = isSuperAdmin ? authToken : `Bearer ${authToken}`;
-    console.log('🔑 uploadProviderLogo: Using auth header:', isSuperAdmin ? 'API Key' : 'Bearer Token');
+    // Determine the correct endpoint based on user type
+    const endpoint = isSuperAdmin 
+      ? `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/providers/${providerId}`
+      : `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/provider_self`;
+
+    // Set authentication header - always use Bearer {user_id} format
+    const authHeader = `Bearer ${authToken}`;
+    console.log('🔑 uploadProviderLogo: Using auth header: Bearer Token');
     console.log('🔑 uploadProviderLogo: Auth header value:', authHeader);
-    console.log('🔑 uploadProviderLogo: Endpoint:', `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${providerId}`);
+    console.log('🔑 uploadProviderLogo: Endpoint:', endpoint);
     console.log('🔑 uploadProviderLogo: Method: PUT');
     console.log('🔑 uploadProviderLogo: FormData contents:');
     for (let [key, value] of formData.entries()) {
       console.log(`  ${key}:`, value);
     }
 
-    // Removed unnecessary GET test request that was causing confusion
-
     const response = await fetch(
-      `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${providerId}`,
+      endpoint,
       {
         method: 'PUT',
         headers: {

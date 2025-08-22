@@ -42,12 +42,20 @@ interface ProviderType {
 
 const getProviderTypeId = (typeName: string): number => {
   const typeMap: { [key: string]: number } = {
-    "ABA Therapy": 1,
-    "Autism Evaluation": 2,
-    "Speech Therapy": 3,
-    "Occupational Therapy": 4,
+    "ABA Therapy": 115,
+    "Autism Evaluation": 201,
+    "Speech Therapy": 202,
+    "Occupational Therapy": 203,
+    "Physical Therapy": 204,
+    "Dentists": 301,
+    "Orthodontists": 302,
+    "Coaching/Mentoring": 401,
+    "Therapists": 402,
+    "Advocates": 403,
+    "Barbers/Hair": 404,
+    "Pediatricians": 405,
   };
-  return typeMap[typeName] || 1;
+  return typeMap[typeName] || 115; // Default to ABA Therapy
 };
 
 export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
@@ -271,32 +279,34 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
         services: location.services
       }));
 
-      const requestBody = {
-        data: [{
-          id: provider.id,
-          type: "provider",
-          attributes: {
-            ...editedProvider,
-            provider_type: selectedProviderTypes.map(type => ({
-              id: type.id,
-              name: type.name
-            })),
-            insurance: selectedInsurances,
-            counties_served: selectedCounties,
-            locations: filteredLocations,
-            states: providerState,
-            services: filteredLocations.map(location => location.services).flat()
-          },
-        }],
+      // Build attributes object with only what the API expects
+      const attributes: any = {
+        ...editedProvider,
+        // Remove fields the API doesn't accept
+        state: undefined,
+        updated_last: undefined,
+        // Keep only what API expects
+        provider_type: selectedProviderTypes.map(type => ({ id: type.id, name: type.name })),
+        insurance: selectedInsurances,
+        counties_served: selectedCounties.map(c => ({ 
+          county_id: c.county_id, 
+          county_name: c.county_name 
+        })),
+        locations: filteredLocations,
+        states: providerState,
+        services: filteredLocations.flatMap(l => l.services || []),
       };
 
+      const requestBody = { data: [{ attributes }] };
+
+      // Use correct endpoint and method per spec
       const response = await fetch(
-        `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${provider.id}`,
+        `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/providers/${provider.id}`,
         {
-          method: "PATCH",
+          method: "PUT", // PUT per spec, not PATCH
           headers: {
             "Content-Type": "application/json",
-            'Authorization': getAdminAuthHeader(),
+            'Authorization': getSuperAdminAuthHeader(), // Use super admin header
           },
           body: JSON.stringify(requestBody),
         }
@@ -305,8 +315,6 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
       const responseText = await response.text();
 
       if (!response.ok) {
-
-        
         throw new Error(`Failed to update provider: ${response.status} - ${responseText}`);
       }
 
@@ -314,13 +322,11 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
       try {
         responseData = JSON.parse(responseText);
       } catch (parseError) {
-
         throw new Error('Invalid JSON response from server');
       }
       
       // Check if response has the expected structure
       if (!responseData?.data?.[0]?.attributes) {
-        
         throw new Error('Invalid response format from server - missing provider data');
       }
 
@@ -329,7 +335,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
       // Verify that all locations were saved
       const savedLocations = updatedProvider.attributes.locations || [];
       if (savedLocations.length !== filteredLocations.length) {
-        
+        console.warn('⚠️ Some locations may not have been saved properly');
       }
       
       // Pass both the id and attributes to onUpdate
