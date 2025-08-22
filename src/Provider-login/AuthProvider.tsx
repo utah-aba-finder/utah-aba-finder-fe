@@ -47,7 +47,7 @@ interface AuthContextType {
   setAvailableProviders: (providers: any[]) => void;
   switchActiveProvider: (providerId: number) => void;
   hasProviderAccess: (providerId: number) => boolean;
-  extractUserIdForAuth: (token: string | null, loggedInProvider: any) => string | null;
+  extractUserIdForAuth: (token: string, loggedInProvider: any) => string | null;
   // Backward compatibility properties
   userProviders: any[];
   switchProvider: (providerId: number) => Promise<boolean>;
@@ -146,10 +146,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const isAuthenticated = !!token && !!currentUser?.id;
 
   // Safely pull a numeric/string user id for the Authorization header
-  const extractUserIdForAuth = (token: string | null, loggedInProvider: any): string | null => {
+  const extractUserIdForAuth = useCallback((token: string, loggedInProvider: any): string | null => {
     if (!token) return loggedInProvider?.id?.toString?.() || null;
 
-    // Try base64 JSON (your current approach)
+    // First, check if token is already a user ID (new approach)
+    if (/^\d+$/.test(token)) {
+      console.log('🔍 AuthProvider: Token is already a user ID:', token);
+      return token;
+    }
+
+    // Try base64 JSON (legacy JWT approach)
     try {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const _decoded = JSON.parse(atob(token));
@@ -157,9 +163,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     } catch {
       /* noop */
     }
+    
     // Fallback to using loggedInProvider.id (should be user id in your flow)
     return loggedInProvider?.id?.toString?.() || null;
-  };
+  }, []);
 
   // Normalize /providers/:id responses into { id, type, states, attributes: {...} }
   const normalizeProviderDetail = (raw: any) => {
@@ -242,6 +249,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const validateToken = useCallback((token: string): boolean => {
     if (!token) return false;
     
+    // Check if token is already a user ID (new approach)
+    if (/^\d+$/.test(token)) {
+      console.log('🔍 AuthProvider: Token is a user ID, always valid');
+      return true;
+    }
+    
     try {
       // Check if this is a temporary token (base64 encoded user data)
       try {
@@ -295,13 +308,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         sessionStorage.setItem("tokenExpiry", expirationTime.toString());
 
       } catch {
-        console.log('🔐 AuthProvider: Using JWT token with built-in expiration');
-        // For JWT tokens, use the token's expiration
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const _decoded = jwtDecode<TokenPayload>(newToken);
-        const expirationTime = _decoded.exp * 1000;
-        sessionStorage.setItem("tokenExpiry", expirationTime.toString());
-
+        // Check if this is a user ID token
+        if (/^\d+$/.test(newToken)) {
+          console.log('🔐 AuthProvider: Using user ID token with 24-hour expiration');
+          // For user ID tokens, set a 24-hour expiration
+          const expirationTime = Date.now() + (24 * 60 * 60 * 1000);
+          sessionStorage.setItem("tokenExpiry", expirationTime.toString());
+        } else {
+          console.log('🔐 AuthProvider: Using JWT token with built-in expiration');
+          // For JWT tokens, use the token's expiration
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const _decoded = jwtDecode<TokenPayload>(newToken);
+          const expirationTime = _decoded.exp * 1000;
+          sessionStorage.setItem("tokenExpiry", expirationTime.toString());
+        }
       }
 
       setToken(newToken);
@@ -326,10 +346,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           const storedExpiry = sessionStorage.getItem("tokenExpiry");
           expirationTime = storedExpiry ? parseInt(storedExpiry) : Date.now() + (24 * 60 * 60 * 1000);
         } catch {
-          // For JWT tokens, decode and use token expiration
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const _decoded = jwtDecode<TokenPayload>(token);
-          expirationTime = _decoded.exp * 1000;
+          // Check if this is a user ID token
+          if (/^\d+$/.test(token)) {
+            // For user ID tokens, use the stored expiration time
+            const storedExpiry = sessionStorage.getItem("tokenExpiry");
+            expirationTime = storedExpiry ? parseInt(storedExpiry) : Date.now() + (24 * 60 * 60 * 1000);
+          } else {
+            // For JWT tokens, decode and use token expiration
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const _decoded = jwtDecode<TokenPayload>(token);
+            expirationTime = _decoded.exp * 1000;
+          }
         }
         
         const currentTime = Date.now();
@@ -705,10 +732,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
         // Extract user id for Authorization (matches your backend)
         let userId = null as null | string;
-        try {
-          const decoded = JSON.parse(atob(token));
-          if (decoded?.id) userId = String(decoded.id);
-        } catch {/* ignore */}
+        
+        // Check if token is already a user ID
+        if (/^\d+$/.test(token)) {
+          userId = token;
+          console.log('🔍 AuthProvider: Token is already a user ID:', userId);
+        } else {
+          // Try to decode as JWT token
+          try {
+            const decoded = JSON.parse(atob(token));
+            if (decoded?.id) userId = String(decoded.id);
+          } catch {/* ignore */}
+        }
+        
         if (!userId) userId = JSON.parse(sessionStorage.getItem('loggedInProvider') || 'null')?.id?.toString?.() || null;
         if (!userId) {
           console.log('⚠️ AuthProvider: Could not extract userId, skipping user fetch');

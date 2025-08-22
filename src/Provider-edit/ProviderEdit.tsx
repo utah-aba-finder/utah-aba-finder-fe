@@ -124,6 +124,13 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
     
     // Fallback to token decoding
     if (token) {
+      // Check if token is already a user ID
+      if (/^\d+$/.test(token)) {
+        console.log('🔍 ProviderEdit: Token is already a user ID:', token);
+        return token;
+      }
+      
+      // Try to decode as JWT token
       try {
         const decodedToken = JSON.parse(atob(token));
         const userId = decodedToken.id?.toString();
