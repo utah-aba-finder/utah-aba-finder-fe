@@ -727,14 +727,17 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       
       const updatedAttributes = {
         // Basic fields only - remove complex nested objects temporarily
-        name: editedProvider?.name,
-        email: editedProvider?.email,
-        website: editedProvider?.website,
-        logo: currentLogo,
+        name: editedProvider?.name || '',
+        email: editedProvider?.email || '',
+        website: editedProvider?.website || '',
+        logo: currentLogo || null,
         provider_type: selectedProviderTypes.map(type => type.name), // Send just names, not objects
         insurance: selectedInsurances.map(ins => ins.name || ins), // Send just names
         counties_served: selectedCounties.map(county => county.name || county), // Send just names
-        states: providerState,
+        states: providerState || [],
+        // Add some fields that might be required by the backend
+        status: editedProvider?.status || 'approved',
+        in_home_only: editedProvider?.in_home_only || false,
         // Remove complex nested objects temporarily to test
         // primary_address: commonFields.primary_address,
         // service_delivery: commonFields.service_delivery,
@@ -742,17 +745,33 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
         // services: currentLocations.map(location => location.services || []).flat(),
       };
 
+      // Data type validation and cleaning
+      const cleanedAttributes: any = {};
+      Object.entries(updatedAttributes).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          // Ensure arrays are actually arrays
+          if (Array.isArray(value)) {
+            cleanedAttributes[key] = value.filter(item => item !== undefined && item !== null);
+          } else {
+            cleanedAttributes[key] = value;
+          }
+        }
+      });
+
       // Debug logging to track what's being saved
-      console.log('🔍 Saving provider with attributes:', updatedAttributes);
+      console.log('🔍 Saving provider with attributes:', cleanedAttributes);
       console.log('🔍 Current logo URL:', currentLogo);
       console.log('🔍 Current provider logo:', currentProvider?.attributes?.logo);
       
       // Validate the data being sent
       console.log('🔍 ProviderEdit: Data validation check:');
-      console.log('🔍 ProviderEdit: - updatedAttributes keys:', Object.keys(updatedAttributes));
-      console.log('🔍 ProviderEdit: - updatedAttributes values:', Object.values(updatedAttributes));
-      console.log('🔍 ProviderEdit: - Any undefined values:', Object.entries(updatedAttributes).filter(([k, v]) => v === undefined).map(([k]) => k));
-      console.log('🔍 ProviderEdit: - Any null values:', Object.entries(updatedAttributes).filter(([k, v]) => v === null).map(([k]) => k));
+      console.log('🔍 ProviderEdit: - cleanedAttributes keys:', Object.keys(cleanedAttributes));
+      console.log('🔍 ProviderEdit: - cleanedAttributes values:', Object.values(cleanedAttributes));
+      console.log('🔍 ProviderEdit: - Any undefined values:', Object.entries(cleanedAttributes).filter(([k, v]) => v === undefined).map(([k]) => k));
+      console.log('🔍 ProviderEdit: - Any null values:', Object.entries(cleanedAttributes).filter(([k, v]) => v === null).map(([k]) => k));
+      
+      // Log the exact data structure being sent
+      console.log('🔍 ProviderEdit: Full cleanedAttributes object:', JSON.stringify(cleanedAttributes, null, 2));
 
       // Get the proper user ID for authorization using the existing helper
       const userId = extractUserId();
@@ -824,7 +843,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
 
       const requestBody = {
         data: [{
-          attributes: updatedAttributes,
+          attributes: cleanedAttributes,
         }]
       };
 
@@ -834,6 +853,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       console.log('🔍 ProviderEdit: Logged in provider ID:', loggedInProvider?.id);
       console.log('🔍 ProviderEdit: Current provider object:', currentProvider);
       console.log('🔍 ProviderEdit: Request body:', requestBody);
+      console.log('🔍 ProviderEdit: Final request body JSON:', JSON.stringify(requestBody, null, 2));
       console.log('🔍 ProviderEdit: User role:', currentUser?.role);
       console.log('🔍 ProviderEdit: User ID:', currentUser?.id);
       console.log('🔍 ProviderEdit: Is editing own provider:', isEditingOwnProvider);
