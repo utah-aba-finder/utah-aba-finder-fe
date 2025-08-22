@@ -389,7 +389,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
         'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/accessible_providers',
         {
           headers: {
-            'Authorization': currentUser?.id?.toString() || '',
+            'Authorization': `Bearer ${currentUser?.id?.toString() || ''}`,
           }
         }
       );
@@ -426,7 +426,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
         `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${currentProvider?.id}`,
         {
           headers: {
-            'Authorization': currentUser?.id?.toString() || '',
+            'Authorization': `Bearer ${currentUser?.id?.toString() || ''}`,
           },
         }
       );
@@ -758,6 +758,15 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
         throw new Error('No provider ID available for update');
       }
 
+      // Determine which endpoint to use based on what provider is being edited
+      const isEditingOwnProvider = providerId === loggedInProvider?.id;
+      const apiEndpoint = isEditingOwnProvider 
+        ? 'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/provider_self'
+        : `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${providerId}`;
+      
+      console.log('🔍 ProviderEdit: Is editing own provider:', isEditingOwnProvider);
+      console.log('🔍 ProviderEdit: Using API endpoint:', apiEndpoint);
+
       const requestBody = {
         data: {
           attributes: updatedAttributes,
@@ -770,48 +779,56 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       console.log('🔍 ProviderEdit: Logged in provider ID:', loggedInProvider?.id);
       console.log('🔍 ProviderEdit: Current provider object:', currentProvider);
       console.log('🔍 ProviderEdit: Request body:', requestBody);
+      console.log('🔍 ProviderEdit: User role:', currentUser?.role);
+      console.log('🔍 ProviderEdit: User ID:', currentUser?.id);
+      console.log('🔍 ProviderEdit: Is editing own provider:', isEditingOwnProvider);
       
       console.log('🔍 ProviderEdit: Final provider ID being used:', providerId);
-      console.log('🔍 ProviderEdit: API URL:', `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/provider_self`);
-      console.log('🔍 ProviderEdit: Authorization header being sent:', currentUser?.id?.toString() || 'No user ID');
+      console.log('🔍 ProviderEdit: API URL:', apiEndpoint);
+      console.log('🔍 ProviderEdit: Authorization header being sent:', `Bearer ${currentUser?.id?.toString() || 'No user ID'}`);
       console.log('🔍 ProviderEdit: Current user object:', currentUser);
       console.log('🔍 ProviderEdit: Token:', token);
-      console.log('🔍 ProviderEdit: Note: Using JWT token now that backend is properly configured');
+      console.log('🔍 ProviderEdit: Note: Using user ID with Bearer prefix for backend authentication');
 
-      // Step 1: Set the active provider context before updating
+      // Step 1: Set the active provider context before updating (optional - don't fail if it doesn't work)
       console.log('🔍 ProviderEdit: Setting active provider context for provider ID:', providerId);
       
       if (!currentUser?.id) {
         throw new Error('No current user ID available for authorization');
       }
       
-      const contextResponse = await fetch(
-        'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/provider_context',
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': currentUser.id.toString(),
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ provider_id: providerId })
-        }
-      );
+      try {
+        const contextResponse = await fetch(
+          'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/provider_context',
+          {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${currentUser.id.toString()}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ provider_id: providerId })
+          }
+        );
 
-      if (!contextResponse.ok) {
-        const contextErrorText = await contextResponse.text();
-        console.error('❌ ProviderEdit: Failed to set active provider context:', contextResponse.status, contextErrorText);
-        throw new Error(`Failed to set active provider context: ${contextResponse.status}`);
+        if (contextResponse.ok) {
+          console.log('✅ ProviderEdit: Active provider context set successfully');
+        } else {
+          const contextErrorText = await contextResponse.text();
+          console.warn('⚠️ ProviderEdit: Failed to set active provider context:', contextResponse.status, contextErrorText);
+          console.log('🔍 ProviderEdit: Continuing with provider update despite context failure...');
+        }
+      } catch (contextError) {
+        console.warn('⚠️ ProviderEdit: Error setting provider context:', contextError);
+        console.log('🔍 ProviderEdit: Continuing with provider update despite context error...');
       }
 
-      console.log('✅ ProviderEdit: Active provider context set successfully');
-
       const response = await fetch(
-        `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/provider_self`,
+        apiEndpoint,
         {
           method: "PUT", // Use PUT method as specified in your analysis
           headers: {
             "Content-Type": "application/json",
-            'Authorization': currentUser.id.toString(), // Use user ID directly for backend authentication
+            'Authorization': `Bearer ${currentUser.id.toString()}`, // Use user ID with Bearer prefix for backend authentication
           },
           body: JSON.stringify(requestBody),
         }
