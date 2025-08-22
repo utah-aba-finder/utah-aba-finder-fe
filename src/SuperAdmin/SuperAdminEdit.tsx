@@ -55,8 +55,24 @@ const getProviderTypeId = (typeName: string): number => {
     "Barbers/Hair": 404,
     "Pediatricians": 405,
   };
-  return typeMap[typeName] || 115; // Default to ABA Therapy
+  return typeMap[typeName] ?? 0; // Return 0 (invalid) for unknown types
 };
+
+// Complete list of supported provider types
+const PROVIDER_TYPES = [
+  "ABA Therapy",
+  "Autism Evaluation",
+  "Speech Therapy",
+  "Occupational Therapy",
+  "Physical Therapy",
+  "Dentists",
+  "Orthodontists",
+  "Coaching/Mentoring",
+  "Therapists",
+  "Advocates",
+  "Barbers/Hair",
+  "Pediatricians",
+];
 
 export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
   provider,
@@ -264,20 +280,30 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
 
     try {
       // Filter out locations that have no services before sending to the server
-      const filteredLocations = locations.filter(location => 
-        location.services && location.services.length > 0 && location.phone
-      ).map(location => ({
-        ...location,
-        // Set default values for optional fields if they're empty
-        name: location.name || 'Virtual Location',
-        address_1: location.address_1 || null,
-        address_2: location.address_2 || null,
-        city: location.city || null,
-        state: location.state || null,
-        zip: location.zip || null,
-        phone: location.phone,
-        services: location.services
-      }));
+      // Strip null IDs from new locations to prevent validation issues
+      const filteredLocations = locations
+        .filter(location => 
+          location.services && location.services.length > 0 && location.phone
+        )
+        .map(({ id, in_home_waitlist, in_clinic_waitlist, ...rest }) => {
+          const base = {
+            ...rest,
+            // Set default values for optional fields if they're empty
+            name: rest.name || 'Virtual Location',
+            address_1: rest.address_1 || null,
+            address_2: rest.address_2 || null,
+            city: rest.city || null,
+            state: rest.state || null,
+            zip: rest.zip || null,
+            phone: rest.phone!,
+            services: rest.services || [],
+            // Note: location waitlist fields may not be supported by API
+            // Only include if confirmed the API accepts them
+          };
+          
+          // Only include id if it's a real number (existing location)
+          return (typeof id === 'number' && id > 0) ? { id, ...base } : base;
+        });
 
       // Build attributes object with only what the API expects
       const attributes: any = {
@@ -294,7 +320,8 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
         })),
         locations: filteredLocations,
         states: providerState,
-        services: filteredLocations.flatMap(l => l.services || []),
+        // Remove top-level services array - API may not expect it
+        // services: filteredLocations.flatMap(l => l.services || []),
       };
 
       const requestBody = { data: [{ attributes }] };
@@ -584,17 +611,20 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                         <select
                           onChange={(e) => {
                             const type = e.target.value;
+                            if (!type) return;
                             if (!selectedProviderTypes.some(t => t.name === type)) {
-                              setSelectedProviderTypes(prev => [...prev, {
-                                id: getProviderTypeId(type),
-                                name: type
-                              }]);
+                              const id = getProviderTypeId(type);
+                              if (id === 0) {
+                                toast.error(`Unknown provider type: ${type}`);
+                                return;
+                              }
+                              setSelectedProviderTypes(prev => [...prev, { id, name: type }]);
                             }
                           }}
                           className="block w-[95%] px-3 py-2 rounded-lg border border-gray-300"
                         >
                           <option value="">Add a provider type...</option>
-                          {["ABA Therapy", "Autism Evaluation", "Speech Therapy", "Occupational Therapy"]
+                          {PROVIDER_TYPES
                             .filter(type => !selectedProviderTypes.some(t => t.name === type))
                             .map(type => (
                               <option key={type} value={type}>{type}</option>
@@ -1192,7 +1222,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                             <option value="">Select Option</option>
                             <option value="Yes">Yes</option>
                             <option value="No">No</option>
-                            <option value="Contact Us">Contact Us</option>
+                            <option value="Contact us">Contact us</option>
                           </select>
                         </div>
                       </div>

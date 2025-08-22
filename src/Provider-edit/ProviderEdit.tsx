@@ -639,12 +639,20 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
 
   const getProviderTypeId = (typeName: string): number => {
     const typeMap: { [key: string]: number } = {
-      "ABA Therapy": 1,
-      "Autism Evaluation": 2,
-      "Speech Therapy": 3,
-      "Occupational Therapy": 4,
+      "ABA Therapy": 115,
+      "Autism Evaluation": 201,
+      "Speech Therapy": 202,
+      "Occupational Therapy": 203,
+      "Physical Therapy": 204,
+      "Dentists": 301,
+      "Orthodontists": 302,
+      "Coaching/Mentoring": 401,
+      "Therapists": 402,
+      "Advocates": 403,
+      "Barbers/Hair": 404,
+      "Pediatricians": 405,
     };
-    return typeMap[typeName] || 1;
+    return typeMap[typeName] ?? 0; // Return 0 (invalid) for unknown types
   };
 
   const handleLogoUpload = async () => {
@@ -1757,7 +1765,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                                         if (!remaining.some(c => c.state === activeStateForCounties)) {
                                           setSelectedCounties(prev => [...prev.filter(c => c.state !== activeStateForCounties), {
                                             county_id: 0,
-                                            county_name: 'Contact Us',
+                                            county_name: 'Contact us',
                                             state: activeStateForCounties,
                                           }]);
                                         } else {
@@ -1765,7 +1773,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                                         }
                                       } else {
                                         setSelectedCounties(prev => [
-                                          ...prev.filter(c => !(c.state === activeStateForCounties && c.county_name === 'Contact Us')),
+                                          ...prev.filter(c => !(c.state === activeStateForCounties && c.county_name === 'Contact us')),
                                           {
                                             county_id: county.id,
                                             county_name: county.attributes.name,
