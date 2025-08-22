@@ -718,25 +718,20 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       const currentLogo = currentProvider?.attributes?.logo || editedProvider?.logo || null;
       
       const updatedAttributes = {
-        ...editedProvider,
-        provider_type: selectedProviderTypes.map(type => ({
-          id: type.id,
-          name: type.name
-        })),
-        insurance: selectedInsurances,
-        counties_served: selectedCounties,
-        locations: currentLocations, // Explicitly preserve locations
+        // Basic fields only - remove complex nested objects temporarily
+        name: editedProvider?.name,
+        email: editedProvider?.email,
+        website: editedProvider?.website,
+        logo: currentLogo,
+        provider_type: selectedProviderTypes.map(type => type.name), // Send just names, not objects
+        insurance: selectedInsurances.map(ins => ins.name || ins), // Send just names
+        counties_served: selectedCounties.map(county => county.name || county), // Send just names
         states: providerState,
-        services: currentLocations.map(location => location.services || []).flat(),
-        logo: currentLogo, // Explicitly preserve logo URL
-        // Include common fields in the update
-        contact_phone: commonFields.contact_phone,
-        website: commonFields.website,
-        service_areas: commonFields.service_areas,
-        waitlist_status: commonFields.waitlist_status,
-        additional_notes: commonFields.additional_notes,
-        primary_address: commonFields.primary_address,
-        service_delivery: commonFields.service_delivery
+        // Remove complex nested objects temporarily to test
+        // primary_address: commonFields.primary_address,
+        // service_delivery: commonFields.service_delivery,
+        // locations: currentLocations,
+        // services: currentLocations.map(location => location.services || []).flat(),
       };
 
       // Debug logging to track what's being saved
