@@ -424,10 +424,10 @@ const SearchBar: React.FC<SearchBarProps> = ({
                 aria-label="Select Waitlist Status"
               >
                 <option value="">All Waitlist Status</option>
-                <option value="accepting">Currently Accepting Clients</option>
-                <option value="short_waitlist">Short Waitlist</option>
-                <option value="long_waitlist">Long Waitlist</option>
-                <option value="not_accepting">Not Accepting New Clients</option>
+                <option value="Currently accepting clients">Currently accepting clients</option>
+                <option value="Short waitlist">Short waitlist</option>
+                <option value="Long waitlist">Long waitlist</option>
+                <option value="Not accepting new clients">Not accepting new clients</option>
               </select>
             </div>
 

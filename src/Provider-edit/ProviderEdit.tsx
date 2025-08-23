@@ -16,7 +16,7 @@ import {
   Tag,
 } from "lucide-react";
 import "react-toastify/dist/ReactToastify.css";
-import { ProviderData, ProviderAttributes } from "../Utility/Types";
+import { ProviderData, ProviderAttributes, ProviderType } from "../Utility/Types";
 import { fetchStates, fetchCountiesByState, uploadProviderLogo, removeProviderLogo } from "../Utility/ApiCall";
 import InsuranceModal from "./InsuranceModal";
 import CountiesModal from "./CountiesModal";
@@ -41,17 +41,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
   // Get auth context for multi-provider support
   const { activeProvider, token, currentUser } = useAuth();
   
-  // Debug authentication state
-  console.log('🔍 ProviderEdit: Auth context loaded:', {
-    hasToken: !!token,
-    tokenLength: token?.length || 0,
-    hasCurrentUser: !!currentUser,
-    currentUserId: currentUser?.id,
-    currentUserRole: currentUser?.role,
-    hasActiveProvider: !!activeProvider,
-    activeProviderId: activeProvider?.id
-  });
-  
   // Local state for the currently edited provider
   const [currentProvider, setCurrentProvider] = useState<ProviderData | null>(null);
   const [editedProvider, setEditedProvider] = useState<ProviderAttributes | null>(null);
@@ -60,7 +49,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
   const [selectedCounties, setSelectedCounties] = useState<any[]>([]);
   const [selectedProviderTypes, setSelectedProviderTypes] = useState<any[]>([]);
   const [selectedInsurances, setSelectedInsurances] = useState<any[]>([]);
-  const [locations, setLocations] = useState<any[]>([]);
   const [selectedLogoFile, setSelectedLogoFile] = useState<File | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [availableStates, setAvailableStates] = useState<any[]>([]);
@@ -118,7 +106,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
   const extractUserId = useCallback(() => {
     // First try to get the user ID from currentUser (most reliable)
     if (currentUser?.id) {
-      console.log('🔍 ProviderEdit: Using currentUser.id for authorization:', currentUser.id);
       return currentUser.id.toString();
     }
     
@@ -126,7 +113,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
     if (token) {
       // Check if token is already a user ID
       if (/^\d+$/.test(token)) {
-        console.log('🔍 ProviderEdit: Token is already a user ID:', token);
         return token;
       }
       
@@ -135,11 +121,10 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
         const decodedToken = JSON.parse(atob(token));
         const userId = decodedToken.id?.toString();
         if (userId) {
-          console.log('🔍 ProviderEdit: Using decoded token user ID for authorization:', userId);
           return userId;
         }
       } catch (e) {
-        console.log('🔍 ProviderEdit: Could not decode token');
+        // console.log('🔍 ProviderEdit: Could not decode token'); // Removed excessive logging
       }
     }
     
@@ -280,8 +265,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       setSelectedCounties(newProviderData.attributes.counties_served || []);
       setSelectedProviderTypes(newProviderData.attributes.provider_type || []);
       setSelectedInsurances(newProviderData.attributes.insurance || []);
-      setLocations(newProviderData.attributes.locations || []);
-    setSelectedLogoFile(null);
+      setSelectedLogoFile(null);
     
     // Initialize common fields with provider data
     setCommonFields({
@@ -330,7 +314,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       setSelectedCounties(initialProviderData.attributes.counties_served || []);
       setSelectedProviderTypes(initialProviderData.attributes.provider_type || []);
       setSelectedInsurances(initialProviderData.attributes.insurance || []);
-      setLocations(initialProviderData.attributes.locations || []);
+      setSelectedLogoFile(null);
       previousProviderId.current = initialProviderData.id;
       
       // Initialize common fields with initial provider data
@@ -373,44 +357,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
     }, 2000);
   }, [logout, clearProviderData]);
 
-  const fetchManagedProviders = useCallback(async () => {
-    try {
-      // Get the proper user ID for authorization
-      const userId = extractUserId();
-      
-      if (!userId) {
-        console.error('🔍 ProviderEdit: No user ID available for authorization in fetchManagedProviders');
-        // Fallback to just the current provider
-        setAvailableProviders([loggedInProvider]);
-        return;
-      }
-      
-      const response = await fetch(
-        'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/accessible_providers',
-        {
-          headers: {
-            'Authorization': `Bearer ${currentUser?.id?.toString() || ''}`,
-          }
-        }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-
-        setAvailableProviders(data.providers || []);
-      } else {
-        
-        // Fallback to just the current provider
-        setAvailableProviders([loggedInProvider]);
-      }
-    } catch (error) {
-      
-      // Fallback to just the current provider
-      setAvailableProviders([loggedInProvider]);
-    } finally {
-    }
-  }, [loggedInProvider, extractUserId]);
-
   const refreshProviderData = useCallback(async () => {
     try {
       
@@ -432,8 +378,14 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       );
 
       if (!response.ok) {
-        await response.text();
-        throw new Error("Failed to refresh provider data");
+        const errorText = await response.text();
+        console.error('❌ ProviderEdit: Server error response:', {
+          status: response.status,
+          statusText: response.statusText,
+          errorText: errorText
+        });
+
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
       }
 
       const data = await response.json();
@@ -480,14 +432,14 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       setSelectedCounties(updatedProvider.attributes.counties_served || []);
       setSelectedProviderTypes(updatedProvider.attributes.provider_type || []);
       setSelectedInsurances(updatedProvider.attributes.insurance || []);
-      setLocations(updatedProvider.attributes.locations || []);
+      setSelectedLogoFile(null);
       
       toast.success('Provider data refreshed successfully');
     } catch (error) {
       console.error('🔍 ProviderEdit: Error in refreshProviderData:', error);
       toast.error('Failed to refresh provider data');
     }
-  }, [currentProvider?.id, extractUserId]);
+  }, [currentProvider?.id, extractUserId, currentUser?.id, token]);
 
   // Initialize provider state and fetch counties for saved states
   useEffect(() => {
@@ -540,7 +492,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
   //   setSelectedCounties(loggedInProvider.attributes.counties_served || []);
   //   setSelectedProviderTypes(loggedInProvider.attributes.provider_type || []);
   //   setSelectedInsurances(loggedInProvider.attributes.insurance || []);
-  //   setLocations(loggedInProvider.attributes.locations || []);
+  //   setSelectedLogoFile(null);
   // }, [loggedInProvider]);
 
   useEffect(() => {
@@ -701,7 +653,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
           logo: newLogoUrl
         } : null);
         
-        console.log('🔍 Logo updated in state:', newLogoUrl);
+        // console.log('🔍 Logo updated in state:', newLogoUrl); // Removed excessive logging
       }
       
       // Refresh provider data to get the new logo URL from backend
@@ -719,9 +671,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
     try {
       setIsSaving(true);
       
-      // Ensure we preserve the current locations and don't overwrite them
-      const currentLocations = locations || currentProvider?.attributes?.locations || [];
-      
       // Ensure we preserve the current logo URL if it exists
       const currentLogo = currentProvider?.attributes?.logo || editedProvider?.logo || null;
       
@@ -731,7 +680,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
         email: editedProvider?.email || '',
         website: editedProvider?.website || '',
         logo: currentLogo || null,
-        provider_type: selectedProviderTypes.map(type => type.name), // Send just names, not objects
+        provider_type: selectedProviderTypes.map(type => ({ name: type.name })), // Send objects with name property as per API docs
         insurance: selectedInsurances.map(ins => ins.name || ins), // Send just names
         counties_served: selectedCounties.map(county => county.name || county), // Send just names
         states: providerState || [],
@@ -758,21 +707,9 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
         }
       });
 
-      // Debug logging to track what's being saved
-      console.log('🔍 Saving provider with attributes:', cleanedAttributes);
-      console.log('🔍 Current logo URL:', currentLogo);
-      console.log('🔍 Current provider logo:', currentProvider?.attributes?.logo);
+      // Essential debugging for provider_type issue
+      console.log('🔍 ProviderEdit: Provider type being sent:', cleanedAttributes.provider_type);
       
-      // Validate the data being sent
-      console.log('🔍 ProviderEdit: Data validation check:');
-      console.log('🔍 ProviderEdit: - cleanedAttributes keys:', Object.keys(cleanedAttributes));
-      console.log('🔍 ProviderEdit: - cleanedAttributes values:', Object.values(cleanedAttributes));
-      console.log('🔍 ProviderEdit: - Any undefined values:', Object.entries(cleanedAttributes).filter(([k, v]) => v === undefined).map(([k]) => k));
-      console.log('🔍 ProviderEdit: - Any null values:', Object.entries(cleanedAttributes).filter(([k, v]) => v === null).map(([k]) => k));
-      
-      // Log the exact data structure being sent
-      console.log('🔍 ProviderEdit: Full cleanedAttributes object:', JSON.stringify(cleanedAttributes, null, 2));
-
       // Get the proper user ID for authorization using the existing helper
       const userId = extractUserId();
 
@@ -787,14 +724,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
         throw new Error('No provider ID available for update');
       }
 
-      // Debug: Log all available provider information
-      console.log('🔍 ProviderEdit: Provider ID Debug Info:');
-      console.log('🔍 ProviderEdit: - loggedInProvider:', loggedInProvider);
-      console.log('🔍 ProviderEdit: - currentProvider:', currentProvider);
-      console.log('🔍 ProviderEdit: - selected providerId:', providerId);
-      console.log('🔍 ProviderEdit: - user role:', currentUser?.role);
-      console.log('🔍 ProviderEdit: - user ID:', currentUser?.id);
-      
       // Check if this provider ID makes sense
       if (typeof providerId !== 'number' || providerId <= 0) {
         console.error('❌ ProviderEdit: Invalid provider ID:', providerId);
@@ -827,7 +756,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
         }
         
         const verifyData = await verifyResponse.json();
-        console.log('✅ ProviderEdit: Provider verified successfully:', verifyData);
+        console.log('✅ ProviderEdit: Provider verified successfully');
       } catch (verifyError) {
         console.error('❌ ProviderEdit: Provider verification failed:', verifyError);
         throw verifyError;
@@ -835,40 +764,27 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
 
       // Determine which endpoint to use based on what provider is being edited
       const isEditingOwnProvider = providerId === loggedInProvider?.id;
-      // For provider self-editing, always use provider_self endpoint
+      // Use the correct provider_self endpoint as per API documentation
       const apiEndpoint = 'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/provider_self';
       
-      console.log('🔍 ProviderEdit: Is editing own provider:', isEditingOwnProvider);
       console.log('🔍 ProviderEdit: Using API endpoint:', apiEndpoint);
 
       const requestBody = {
         data: [{
+          id: providerId, // Add the provider ID so backend knows which provider to update
           attributes: cleanedAttributes,
         }]
       };
 
-      // Debug logging to see what's being sent
-      console.log('🔍 ProviderEdit: Updating provider with ID:', currentProvider?.id);
-      console.log('🔍 ProviderEdit: Current provider attributes ID:', currentProvider?.attributes?.id);
-      console.log('🔍 ProviderEdit: Logged in provider ID:', loggedInProvider?.id);
-      console.log('🔍 ProviderEdit: Current provider object:', currentProvider);
-      console.log('🔍 ProviderEdit: Request body:', requestBody);
-      console.log('🔍 ProviderEdit: Final request body JSON:', JSON.stringify(requestBody, null, 2));
-      console.log('🔍 ProviderEdit: User role:', currentUser?.role);
-      console.log('🔍 ProviderEdit: User ID:', currentUser?.id);
-      console.log('🔍 ProviderEdit: Is editing own provider:', isEditingOwnProvider);
-      
-      console.log('🔍 ProviderEdit: Final provider ID being used:', providerId);
-      console.log('🔍 ProviderEdit: API URL:', apiEndpoint);
-      console.log('🔍 ProviderEdit: Authorization header being sent:', `Bearer ${currentUser?.id?.toString() || 'No user ID'}`);
-      console.log('🔍 ProviderEdit: Current user object:', currentUser);
-      console.log('🔍 ProviderEdit: Token:', token);
-      console.log('🔍 ProviderEdit: Note: Using user ID with Bearer prefix for backend authentication');
+      // Debug: Log the exact data being sent to help debug 500 error
+      console.log('🔍 ProviderEdit: Full request body being sent:', requestBody);
+      console.log('🔍 ProviderEdit: Provider type in request:', cleanedAttributes.provider_type);
+      console.log('🔍 ProviderEdit: Insurance in request:', cleanedAttributes.insurance);
+      console.log('🔍 ProviderEdit: Counties in request:', cleanedAttributes.counties_served);
 
       // Step 1: Set the active provider context before updating (optional - don't fail if it doesn't work)
-      console.log('🔍 ProviderEdit: Setting active provider context for provider ID:', providerId);
-      
-      // currentUser.id is already verified above, so we can use it safely here
+      // Removed provider context call due to 403 errors - going straight to provider update
+      /*
       try {
         const contextResponse = await fetch(
           'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/provider_context',
@@ -887,17 +803,16 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
         } else {
           const contextErrorText = await contextResponse.text();
           console.warn('⚠️ ProviderEdit: Failed to set active provider context:', contextResponse.status, contextErrorText);
-          console.log('🔍 ProviderEdit: Continuing with provider update despite context failure...');
         }
       } catch (contextError) {
         console.warn('⚠️ ProviderEdit: Error setting provider context:', contextError);
-        console.log('🔍 ProviderEdit: Continuing with provider update despite context error...');
       }
+      */
 
       const response = await fetch(
         apiEndpoint,
         {
-          method: "PUT", // Use PUT method as specified in your analysis
+          method: "PATCH", // Use PATCH method as specified in API documentation
           headers: {
             "Content-Type": "application/json",
             'Authorization': `Bearer ${currentUser.id.toString()}`, // Use user ID with Bearer prefix for backend authentication
@@ -911,21 +826,10 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
         console.error('❌ ProviderEdit: Server error response:', {
           status: response.status,
           statusText: response.statusText,
-          url: apiEndpoint,
-          requestBody: requestBody,
           errorText: errorText
         });
 
-        let errorData;
-        try {
-          errorData = JSON.parse(errorText);
-          console.error('❌ ProviderEdit: Parsed error data:', errorData);
-        } catch (e) {
-          errorData = { message: errorText };
-          console.error('❌ ProviderEdit: Could not parse error response as JSON:', errorText);
-        }
-
-        throw new Error(`HTTP ${response.status}: ${errorData.message || response.statusText}`);
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
       }
 
       const responseData = await response.json();
@@ -1608,15 +1512,16 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                     <div className="mb-6">
                       <label className="block text-sm font-medium text-gray-700 mb-2">Waitlist Status</label>
                       <select
+                        name="waitlist_status"
                         value={commonFields.waitlist_status || ''}
                         onChange={(e) => handleCommonFieldChange('waitlist_status', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       >
                         <option value="">Select waitlist status...</option>
-                        <option value="accepting">Accepting New Clients</option>
-                        <option value="waitlist">Waitlist Only</option>
-                        <option value="closed">Not Accepting New Clients</option>
-                        <option value="limited">Limited Availability</option>
+                        <option value="Currently accepting clients">Currently accepting clients</option>
+                        <option value="Short waitlist">Short waitlist</option>
+                        <option value="Long waitlist">Long waitlist</option>
+                        <option value="Not accepting new clients">Not accepting new clients</option>
                       </select>
                     </div>
 
@@ -1856,7 +1761,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                             }
                           };
                           setCurrentProvider(updatedProvider);
-                          setLocations(locations);
                         }
                       }}
                     />

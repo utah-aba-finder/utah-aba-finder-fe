@@ -330,16 +330,16 @@ export const uploadProviderLogo = async (providerId: number, logoFile: File, aut
       ? `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/providers/${providerId}`
       : `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/provider_self`;
 
-    // Set authentication header - always use Bearer {user_id} format
-    const authHeader = `Bearer ${authToken}`;
-    console.log('🔑 uploadProviderLogo: Using auth header: Bearer Token');
-    console.log('🔑 uploadProviderLogo: Auth header value:', authHeader);
+    // Set authentication header - authToken already contains "Bearer {user_id}"
+    const authHeader = authToken; // Don't add extra "Bearer " prefix
+    console.log('🔑 uploadProviderLogo: Using auth header:', authHeader);
     console.log('🔑 uploadProviderLogo: Endpoint:', endpoint);
     console.log('🔑 uploadProviderLogo: Method: PUT');
     console.log('🔑 uploadProviderLogo: FormData contents:');
     for (let [key, value] of formData.entries()) {
       console.log(`  ${key}:`, value);
     }
+    console.log('🔑 uploadProviderLogo: About to make fetch request...');
 
     const response = await fetch(
       endpoint,
@@ -353,6 +353,9 @@ export const uploadProviderLogo = async (providerId: number, logoFile: File, aut
       }
     );
 
+    console.log('🔍 uploadProviderLogo: Response status:', response.status);
+    console.log('🔍 uploadProviderLogo: Response headers:', Object.fromEntries(response.headers.entries()));
+    
     if (!response.ok) {
       const errorText = await response.text();
       console.log('❌ uploadProviderLogo: Response not OK:', response.status, response.statusText);
@@ -369,13 +372,20 @@ export const uploadProviderLogo = async (providerId: number, logoFile: File, aut
 
     const result = await response.json();
     console.log('✅ uploadProviderLogo: Logo upload successful');
+    console.log('🔍 uploadProviderLogo: Full response data:', result);
     console.log('🔍 uploadProviderLogo: Response data structure:', result);
     
     // Check if the response contains the new logo URL
     if (result && result.data && result.data[0] && result.data[0].attributes) {
       console.log('🔍 uploadProviderLogo: New logo URL:', result.data[0].attributes.logo);
+      console.log('🔍 uploadProviderLogo: Full attributes:', result.data[0].attributes);
     } else {
       console.log('⚠️ uploadProviderLogo: Response structure unexpected - logo URL might be missing');
+      console.log('⚠️ uploadProviderLogo: Response keys:', Object.keys(result || {}));
+      if (result?.data) {
+        console.log('⚠️ uploadProviderLogo: Data array length:', result.data.length);
+        console.log('⚠️ uploadProviderLogo: First data item:', result.data[0]);
+      }
     }
 
     return { 

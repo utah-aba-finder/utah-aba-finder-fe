@@ -302,17 +302,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       try {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const _decoded = JSON.parse(atob(newToken));
-        console.log('🔐 AuthProvider: Using temporary token with 24-hour expiration');
-        // For temporary tokens, set a 24-hour expiration
-        const expirationTime = Date.now() + (24 * 60 * 60 * 1000);
+        console.log('🔐 AuthProvider: Using temporary token with 7-day expiration');
+        // For temporary tokens, set a 7-day expiration
+        const expirationTime = Date.now() + (7 * 24 * 60 * 60 * 1000);
         sessionStorage.setItem("tokenExpiry", expirationTime.toString());
 
       } catch {
         // Check if this is a user ID token
         if (/^\d+$/.test(newToken)) {
-          console.log('🔐 AuthProvider: Using user ID token with 24-hour expiration');
-          // For user ID tokens, set a 24-hour expiration
-          const expirationTime = Date.now() + (24 * 60 * 60 * 1000);
+          console.log('🔐 AuthProvider: Using user ID token with 7-day expiration');
+          // For user ID tokens, set a 7-day expiration
+          const expirationTime = Date.now() + (7 * 24 * 60 * 60 * 1000);
           sessionStorage.setItem("tokenExpiry", expirationTime.toString());
         } else {
           console.log('🔐 AuthProvider: Using JWT token with built-in expiration');
@@ -344,13 +344,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           const _decoded = JSON.parse(atob(token));
           // For temporary tokens, use the stored expiration time
           const storedExpiry = sessionStorage.getItem("tokenExpiry");
-          expirationTime = storedExpiry ? parseInt(storedExpiry) : Date.now() + (24 * 60 * 60 * 1000);
+          expirationTime = storedExpiry ? parseInt(storedExpiry) : Date.now() + (7 * 24 * 60 * 60 * 1000);
         } catch {
           // Check if this is a user ID token
           if (/^\d+$/.test(token)) {
             // For user ID tokens, use the stored expiration time
             const storedExpiry = sessionStorage.getItem("tokenExpiry");
-            expirationTime = storedExpiry ? parseInt(storedExpiry) : Date.now() + (24 * 60 * 60 * 1000);
+            expirationTime = storedExpiry ? parseInt(storedExpiry) : Date.now() + (7 * 24 * 60 * 60 * 1000);
           } else {
             // For JWT tokens, decode and use token expiration
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -486,7 +486,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             }
           }, 1000);
         }
-      }, 4 * 60 * 1000); // 4 minutes
+      }, 25 * 60 * 1000); // 25 minutes (was 4 minutes) - Admin-friendly timeout
 
       inactivityTimeout = setTimeout(() => {
         // Only show inactivity logout if user is still logged in
@@ -500,7 +500,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             logout('inactivity');
           }, 3000);
         }
-      }, 5 * 60 * 1000); // 5 minutes
+      }, 30 * 60 * 1000); // 30 minutes (was 5 minutes) - Admin-friendly timeout
     };
 
     const events = [
@@ -634,7 +634,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     } catch (err) {
       console.error('fetchUserProviders: Error', err);
     }
-  }, [token, loggedInProvider, setActiveProvider, setUserProvidersState]);
+  }, [token, loggedInProvider, setActiveProvider, setUserProvidersState, extractUserIdForAuth]);
 
   const switchProvider = useCallback(async (providerId: number) => {
     if (!token || !loggedInProvider || !providerId) return false;
@@ -693,7 +693,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       console.error('switchProvider: Error', err);
       return false;
     }
-  }, [token, loggedInProvider, setActiveProvider]);
+  }, [token, loggedInProvider, setActiveProvider, extractUserIdForAuth]);
 
   // Fetch user providers when logged in (moved here after function definition)
   useEffect(() => {
