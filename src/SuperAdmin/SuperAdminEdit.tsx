@@ -27,7 +27,7 @@ import {
 } from "../Utility/Types";
 import { fetchStates, fetchCountiesByState } from "../Utility/ApiCall";
 import { validateLogoFile, uploadProviderLogo } from "../Utility/ApiCall";
-import { getAdminAuthHeader, getSuperAdminAuthHeader } from "../Utility/config";
+import { getSuperAdminAuthHeader } from "../Utility/config";
 
 interface SuperAdminEditProps {
   provider: ProviderData;

@@ -16,7 +16,7 @@ import {
   Tag,
 } from "lucide-react";
 import "react-toastify/dist/ReactToastify.css";
-import { ProviderData, ProviderAttributes, ProviderType } from "../Utility/Types";
+import { ProviderData, ProviderAttributes } from "../Utility/Types";
 import { fetchStates, fetchCountiesByState, uploadProviderLogo, removeProviderLogo } from "../Utility/ApiCall";
 import InsuranceModal from "./InsuranceModal";
 import CountiesModal from "./CountiesModal";
@@ -341,7 +341,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
     }
   }, [loggedInProvider, currentProvider]);
   const { logout } = useAuth();
-  const [availableProviders, setAvailableProviders] = useState<ProviderData[]>([]);
 
   const handleLogout = useCallback(() => {
     toast.dismiss("session-warning");
@@ -439,7 +438,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       console.error('🔍 ProviderEdit: Error in refreshProviderData:', error);
       toast.error('Failed to refresh provider data');
     }
-  }, [currentProvider?.id, extractUserId, currentUser?.id, token]);
+  }, [currentProvider?.id, currentUser?.id, token]);
 
   // Initialize provider state and fetch counties for saved states
   useEffect(() => {
@@ -511,7 +510,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
   // Monitor accessible providers (silent)
   useEffect(() => {
     // Silent monitoring - no console output
-  }, [availableProviders]);
+  }, []);
 
   useEffect(() => {
     const tokenExpiry = sessionStorage.getItem("tokenExpiry");
@@ -755,7 +754,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
           }
         }
         
-        const verifyData = await verifyResponse.json();
         console.log('✅ ProviderEdit: Provider verified successfully');
       } catch (verifyError) {
         console.error('❌ ProviderEdit: Provider verification failed:', verifyError);
@@ -763,7 +761,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       }
 
       // Determine which endpoint to use based on what provider is being edited
-      const isEditingOwnProvider = providerId === loggedInProvider?.id;
       // Use the correct provider_self endpoint as per API documentation
       const apiEndpoint = 'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/provider_self';
       
