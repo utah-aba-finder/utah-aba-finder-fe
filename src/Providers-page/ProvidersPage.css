@@ -3,8 +3,8 @@
   flex-direction: column;
   gap: 0.5rem;
   padding-bottom: 1rem;
-  background: #f7eee4;
-  /* background: linear-gradient(to right top, #d2bb86b5, #f1efda); */
+  background: #f0f2f5;
+  min-height: 100vh;
 }
 
 .find-your-provider-section {
@@ -90,29 +90,43 @@
 
 .provider-cards-grid {
   display: grid;
-  grid-template-columns: repeat(minmax(280px, 1fr));
-  gap: 20px;
-  padding: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 30px;
+  padding: 40px 20px;
+  margin: 0;
 }
 
 /* Providers Page Responsiveness */
 
 
 
-@media (min-width: 1150px) {
+@media (min-width: 1200px) {
   .card-container {
-    max-width: 1500px;
+    max-width: 1600px;
   }
 
   .provider-cards-grid {
     grid-template-columns: repeat(2, 1fr);
+    gap: 40px;
+    padding: 50px 30px;
+  }
+}
+
+@media (min-width: 1400px) {
+  .card-container {
+    max-width: 1800px;
+  }
+
+  .provider-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 50px;
+    padding: 60px 40px;
   }
 }
 
 @media (min-width: 344px) {
   .provider-card {
     width: 100%;
-    max-width: 280px;
     margin: 0 auto;
   }
 }

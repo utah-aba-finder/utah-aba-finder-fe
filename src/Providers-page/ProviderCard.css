@@ -1,76 +1,93 @@
 .provider-card {
     display: flex;
     background-color: white;
-    /* background: linear-gradient(to left top, rgb(249, 249, 249), rgba(223, 223, 223, 0.848)); */
-    box-shadow: 6px 6px 20px rgba(122, 122, 122, 0.212);
-    border-radius: 55px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border-radius: 20px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
     overflow: hidden;
     height: 400px; /* Fixed height for consistent card sizes */
     min-height: 400px; /* Ensure minimum height */
     max-height: 400px; /* Ensure maximum height */
     font-size: .95em;
     position: relative;
-    transition: transform 0.3s ease, background-color 0.3s ease, color 0.3s ease;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .provider-card:hover {
     transform: translateY(-8px) scale(1);
-    background: linear-gradient(to left top, rgb(210, 195, 149), rgb(210, 195, 149));
-    color: #ffffff;
-    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.25), 0 8px 24px rgba(0, 0, 0, 0.15);
 }
 
 .provider-card:hover h2 {
-    color: #fff;
+    color: inherit;
 }
 
 .provider-card:hover h4 {
-    color: #fff;
+    color: inherit;
 }
 
-.provider-card::before {
-    content: '';
-    position: absolute;
-    top: 5px;
-    left: 5px;
-    right: 5px;
-    bottom: 5px;
-    border: 1.5px solid #EAEAEA;
-    border-radius: 50px;
-    pointer-events: none;
-}
+
 
 .card-logo-and-text {
     display: flex;
+    flex-direction: column;
     width: 100%;
     height: 100%;
 }
 
-.card-grid-logo {
-    width: 33.33%;
-    background-color: rgb(210, 195, 149);
+.card-header {
+    display: flex;
+    align-items: center;
+    padding: 1.5em;
+    background: transparent;
+    transition: all 0.3s ease;
+    gap: 1.2em;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.provider-card:hover .card-header {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+}
+
+.card-logo-section {
+    width: 65px;
+    height: 65px;
+    background: #f8f9fa;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 10px;
-    transition: background-color 0.3s ease;
+    flex-shrink: 0;
+    transition: all 0.3s ease;
+    overflow: hidden;
+    position: relative;
 }
 
-.provider-card:hover .card-grid-logo {
-    background-color: #ffffff;
+.provider-card:hover .card-logo-section {
+    border-color: #667eea;
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+    transform: translateY(-2px);
 }
 
 .provider-logo {
-    max-width: 100%;
-    border-radius: 20px;
+    width: 85%;
+    height: 85%;
     object-fit: contain;
-    padding: 1em;
+    padding: 0;
+    transition: transform 0.3s ease;
+}
+
+.provider-card:hover .provider-logo {
+    transform: scale(1.05);
 }
 
 .card-text {
     flex: 1;
-    padding: 0.8em; /* Reduced from 1em back to 0.8em */
-    gap: 0.6em; /* Reduced from 0.8em back to 0.6em */
+    padding: 1.2em;
+    gap: 0.8em;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
@@ -78,6 +95,11 @@
     overflow-x: hidden; /* Prevent horizontal scrolling */
     font-family: "Gotham", sans-serif;
     position: relative;
+    min-height: 0; /* Allow flex shrinking */
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); /* Subtle gradient */
+    color: #333;
+    border-top: 1px solid rgba(74, 111, 165, 0.1);
+    border-bottom: 1px solid rgba(74, 111, 165, 0.1);
     /* Add custom scrollbar styling */
     scrollbar-width: thin;
     scrollbar-color: #cbd5e0 transparent;
@@ -112,30 +134,35 @@
 }
 
 .provider-card:hover .favorited-date {
-    color: #ffffff;
-    border-top: 1px solid rgba(255, 255, 255, 0.3);
+    color: inherit;
+    border-top: 1px solid rgba(86, 63, 95, 0.3);
 }
 
 .card-text strong {
-    color: #424266;
+    color: #4A6FA5;
+    font-weight: 700;
 }
 
 .card-text-and-buttons {
     display: flex;
     flex-direction: column;
+    flex: 1;
+    min-height: 0;
 }
 
 .card-name {
     line-height: 1.2;
-    font-size: 27px;
-    overflow: visible; /* Changed from hidden to visible */
-    border-bottom: 1.5px solid #9ea3a8;
-    transition: border-color 0.3s ease;
-    padding-bottom: 8px;
-    margin-bottom: 8px;
-    position: relative;
-    z-index: 1;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #4A6FA5;
+    margin: 0;
+    flex: 1;
     word-wrap: break-word; /* Allow long names to wrap */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
 }
 
 .card-text h2 {
@@ -187,8 +214,14 @@
 
 /* Provider Card Buttons */
 .provider-card-buttons {
-    padding-bottom: 1.2em;
-    gap: .1em;
+    padding: 1.2em;
+    gap: 0.8em;
+    display: flex;
+    justify-content: center;
+    margin-top: auto; /* Push buttons to bottom */
+    background: linear-gradient(135deg, #f1f3f4 0%, #e8eaed 100%);
+    border-top: 1px solid rgba(74, 111, 165, 0.15);
+    flex-shrink: 0;
 }
 
 .view-details-button {
@@ -606,7 +639,52 @@
     }
 }
 
-/* Service Types Badges */
+/* Provider Type Badges */
+.provider-type-badges {
+  margin-bottom: 0.5em;
+}
+
+.provider-type-badges h4 {
+  margin-bottom: 0.3em;
+}
+
+.provider-type-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3em;
+  margin-bottom: 0.5em;
+  margin-top: 0.3em;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.provider-type-chip {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 0.3em 0.8em;
+  border-radius: 15px;
+  font-size: 0.75em;
+  font-weight: 600;
+  text-transform: capitalize;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  max-width: 100%;
+  word-break: keep-all;
+  flex-shrink: 0;
+}
+
+.provider-type-chip:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.provider-card:hover .provider-type-chip {
+  background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%);
+  color: #333;
+}
+
+/* Service Types Badges (keeping for backward compatibility) */
 .service-types-badges {
   margin-bottom: 0.5em;
 }
@@ -618,27 +696,27 @@
 .service-type-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.3em; /* Reduced from 0.4em back to 0.3em */
-  margin-bottom: 0.5em; /* Reduced from 0.8em back to 0.5em */
-  margin-top: 0.3em; /* Reduced from 0.4em back to 0.3em */
-  max-width: 100%; /* Ensure chips don't overflow */
-  overflow: hidden; /* Prevent chips from overflowing the card */
+  gap: 0.3em;
+  margin-bottom: 0.5em;
+  margin-top: 0.3em;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .service-type-chip {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
-  padding: 0.3em 0.8em; /* Increased padding for better readability */
+  padding: 0.3em 0.8em;
   border-radius: 15px;
   font-size: 0.75em;
   font-weight: 600;
   text-transform: capitalize;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   transition: all 0.2s ease;
-  white-space: nowrap; /* Prevent text wrapping within chips */
-  max-width: 100%; /* Ensure chips don't overflow */
-  word-break: keep-all; /* Prevent breaking of words */
-  flex-shrink: 0; /* Prevent chips from shrinking */
+  white-space: nowrap;
+  max-width: 100%;
+  word-break: keep-all;
+  flex-shrink: 0;
 }
 
 .service-type-chip:hover {
@@ -652,17 +730,56 @@
 }
 
 /* Responsive improvements for provider cards */
+@media (max-width: 1024px) {
+    .provider-card {
+        height: auto; /* Allow height to adjust to content */
+        min-height: 420px; /* Minimum height for medium screens */
+        max-height: none; /* Remove max height constraint */
+    }
+    
+    .card-text {
+        padding: 1em;
+        gap: 0.7em;
+    }
+    
+    .provider-card-buttons {
+        padding: 1em 0;
+        margin-top: auto;
+        display: flex;
+        justify-content: center;
+        gap: 0.5em;
+        background: white;
+        border-top: 1px solid #eee;
+    }
+    
+    /* Optimize logo size for medium screens */
+    .card-header {
+        padding: 0.8em;
+        gap: 0.8em;
+    }
+    
+      .card-logo-section {
+    width: 60px;
+    height: 60px;
+  }
+    
+    .card-name {
+        font-size: 1.3rem;
+    }
+}
+
 @media (max-width: 768px) {
     .provider-card {
-        height: 420px; /* Consistent height on tablets */
-        min-height: 420px;
-        max-height: 420px;
+        height: auto; /* Allow height to adjust to content */
+        min-height: 400px; /* Minimum height for tablets */
+        max-height: none; /* Remove max height constraint */
         border-radius: 35px; /* Smaller border radius on mobile */
     }
     
     .card-text {
         padding: 0.8em; /* Slightly less padding on mobile */
         gap: 0.6em; /* Tighter spacing on mobile */
+        /* Remove max-height and overflow to prevent content cutoff */
     }
     
     .service-type-chips {
@@ -679,25 +796,145 @@
         margin: 0.2em 0; /* Tighter margins on mobile */
         font-size: 0.9em; /* Slightly smaller text on mobile */
     }
+    
+    /* Ensure buttons are always visible */
+    .provider-card-buttons {
+        padding: 0.8em;
+        margin-top: auto;
+        display: flex;
+        justify-content: center;
+        gap: 0.5em;
+        background: white;
+        border-top: 1px solid #eee;
+    }
+    
+    /* Optimize logo size for tablets */
+    .card-header {
+        padding: 0.6em;
+        gap: 0.6em;
+    }
+    
+    .card-logo-section {
+        width: 55px;
+        height: 55px;
+    }
+    
+    .card-name {
+        font-size: 1.2rem;
+    }
 }
 
 
 
 @media (max-width: 480px) {
     .provider-card {
-        height: 450px; /* Consistent height on mobile */
-        min-height: 450px;
-        max-height: 450px;
+        height: auto; /* Allow height to adjust to content */
+        min-height: 350px; /* Minimum height for mobile */
+        max-height: none; /* Remove max height constraint */
         border-radius: 25px;
     }
     
     .card-text {
         padding: 0.6em;
         gap: 0.5em;
+        /* Remove max-height and overflow to prevent content cutoff */
     }
     
     .service-type-chips {
         gap: 0.25em;
         margin-bottom: 0.5em;
+    }
+    
+    /* Ensure buttons are always visible on mobile */
+    .provider-card-buttons {
+        padding: 0.6em;
+        margin-top: auto;
+        display: flex;
+        justify-content: center;
+        gap: 0.5em;
+        background: white;
+        border-top: 1px solid #eee;
+    }
+    
+    .view-details-button,
+    .favorite-button {
+        width: 120px; /* Smaller buttons on mobile */
+        height: 32px;
+        font-size: 16px;
+    }
+    
+    /* Optimize header for mobile */
+    .card-header {
+        padding: 0.5em;
+        gap: 0.5em;
+    }
+    
+    .card-logo-section {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .card-name {
+        font-size: 1.1rem;
+    }
+}
+
+/* Special handling for horizontal orientation on mobile */
+@media (max-width: 480px) and (orientation: landscape) {
+    .provider-card {
+        min-height: 300px; /* Adequate height for horizontal */
+    }
+    
+    .card-text {
+        padding: 0.4em;
+        gap: 0.3em;
+        /* Remove max-height to prevent content cutoff */
+    }
+    
+    .card-text h4 {
+        font-size: 0.8em;
+        margin: 0.1em 0;
+    }
+    
+    .service-type-chips {
+        gap: 0.2em;
+        margin-bottom: 0.3em;
+    }
+    
+    .service-type-chip {
+        padding: 0.2em 0.5em;
+        font-size: 0.65em;
+    }
+    
+    .provider-card-buttons {
+        padding: 0.4em;
+        gap: 0.3em;
+        margin-top: auto;
+        display: flex;
+        justify-content: center;
+        background: white;
+        border-top: 1px solid #eee;
+    }
+    
+    .view-details-button,
+    .favorite-button {
+        width: 100px;
+        height: 28px;
+        font-size: 14px;
+    }
+    
+    /* Optimize header for horizontal orientation */
+    .card-header {
+        padding: 0.3em;
+        gap: 0.3em;
+    }
+    
+    .card-logo-section {
+        width: 45px;
+        height: 45px;
+    }
+    
+    .card-name {
+        font-size: 1rem;
     }
 }

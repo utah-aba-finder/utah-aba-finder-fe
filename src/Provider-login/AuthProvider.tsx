@@ -47,7 +47,7 @@ interface AuthContextType {
   setAvailableProviders: (providers: any[]) => void;
   switchActiveProvider: (providerId: number) => void;
   hasProviderAccess: (providerId: number) => boolean;
-  extractUserIdForAuth: (token: string | null, loggedInProvider: any) => string | null;
+  extractUserIdForAuth: (token: string, loggedInProvider: any) => string | null;
   // Backward compatibility properties
   userProviders: any[];
   switchProvider: (providerId: number) => Promise<boolean>;
@@ -146,10 +146,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const isAuthenticated = !!token && !!currentUser?.id;
 
   // Safely pull a numeric/string user id for the Authorization header
-  const extractUserIdForAuth = (token: string | null, loggedInProvider: any): string | null => {
+  const extractUserIdForAuth = useCallback((token: string, loggedInProvider: any): string | null => {
     if (!token) return loggedInProvider?.id?.toString?.() || null;
 
-    // Try base64 JSON (your current approach)
+    // First, check if token is already a user ID (new approach)
+    if (/^\d+$/.test(token)) {
+      console.log('🔍 AuthProvider: Token is already a user ID:', token);
+      return token;
+    }
+
+    // Try base64 JSON (legacy JWT approach)
     try {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const _decoded = JSON.parse(atob(token));
@@ -157,9 +163,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     } catch {
       /* noop */
     }
+    
     // Fallback to using loggedInProvider.id (should be user id in your flow)
     return loggedInProvider?.id?.toString?.() || null;
-  };
+  }, []);
 
   // Normalize /providers/:id responses into { id, type, states, attributes: {...} }
   const normalizeProviderDetail = (raw: any) => {
@@ -242,6 +249,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const validateToken = useCallback((token: string): boolean => {
     if (!token) return false;
     
+    // Check if token is already a user ID (new approach)
+    if (/^\d+$/.test(token)) {
+      console.log('🔍 AuthProvider: Token is a user ID, always valid');
+      return true;
+    }
+    
     try {
       // Check if this is a temporary token (base64 encoded user data)
       try {
@@ -289,19 +302,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       try {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const _decoded = JSON.parse(atob(newToken));
-        console.log('🔐 AuthProvider: Using temporary token with 24-hour expiration');
-        // For temporary tokens, set a 24-hour expiration
-        const expirationTime = Date.now() + (24 * 60 * 60 * 1000);
+        console.log('🔐 AuthProvider: Using temporary token with 7-day expiration');
+        // For temporary tokens, set a 7-day expiration
+        const expirationTime = Date.now() + (7 * 24 * 60 * 60 * 1000);
         sessionStorage.setItem("tokenExpiry", expirationTime.toString());
 
       } catch {
-        console.log('🔐 AuthProvider: Using JWT token with built-in expiration');
-        // For JWT tokens, use the token's expiration
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const _decoded = jwtDecode<TokenPayload>(newToken);
-        const expirationTime = _decoded.exp * 1000;
-        sessionStorage.setItem("tokenExpiry", expirationTime.toString());
-
+        // Check if this is a user ID token
+        if (/^\d+$/.test(newToken)) {
+          console.log('🔐 AuthProvider: Using user ID token with 7-day expiration');
+          // For user ID tokens, set a 7-day expiration
+          const expirationTime = Date.now() + (7 * 24 * 60 * 60 * 1000);
+          sessionStorage.setItem("tokenExpiry", expirationTime.toString());
+        } else {
+          console.log('🔐 AuthProvider: Using JWT token with built-in expiration');
+          // For JWT tokens, use the token's expiration
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const _decoded = jwtDecode<TokenPayload>(newToken);
+          const expirationTime = _decoded.exp * 1000;
+          sessionStorage.setItem("tokenExpiry", expirationTime.toString());
+        }
       }
 
       setToken(newToken);
@@ -324,12 +344,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           const _decoded = JSON.parse(atob(token));
           // For temporary tokens, use the stored expiration time
           const storedExpiry = sessionStorage.getItem("tokenExpiry");
-          expirationTime = storedExpiry ? parseInt(storedExpiry) : Date.now() + (24 * 60 * 60 * 1000);
+          expirationTime = storedExpiry ? parseInt(storedExpiry) : Date.now() + (7 * 24 * 60 * 60 * 1000);
         } catch {
-          // For JWT tokens, decode and use token expiration
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const _decoded = jwtDecode<TokenPayload>(token);
-          expirationTime = _decoded.exp * 1000;
+          // Check if this is a user ID token
+          if (/^\d+$/.test(token)) {
+            // For user ID tokens, use the stored expiration time
+            const storedExpiry = sessionStorage.getItem("tokenExpiry");
+            expirationTime = storedExpiry ? parseInt(storedExpiry) : Date.now() + (7 * 24 * 60 * 60 * 1000);
+          } else {
+            // For JWT tokens, decode and use token expiration
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const _decoded = jwtDecode<TokenPayload>(token);
+            expirationTime = _decoded.exp * 1000;
+          }
         }
         
         const currentTime = Date.now();
@@ -459,7 +486,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             }
           }, 1000);
         }
-      }, 4 * 60 * 1000); // 4 minutes
+      }, 25 * 60 * 1000); // 25 minutes (was 4 minutes) - Admin-friendly timeout
 
       inactivityTimeout = setTimeout(() => {
         // Only show inactivity logout if user is still logged in
@@ -473,7 +500,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             logout('inactivity');
           }, 3000);
         }
-      }, 5 * 60 * 1000); // 5 minutes
+      }, 30 * 60 * 1000); // 30 minutes (was 5 minutes) - Admin-friendly timeout
     };
 
     const events = [
@@ -543,7 +570,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       // 3) Call user_providers (list is lightweight; no attributes)
       const url = `${getApiBaseUrl()}/api/v1/providers/user_providers?user_email=${encodeURIComponent(userEmail)}`;
       const listResp = await fetch(url, {
-        headers: { Authorization: userId, 'Content-Type': 'application/json' },
+        headers: { 
+          'Authorization': userId,
+          'Content-Type': 'application/json' 
+        },
       });
 
       if (!listResp.ok) {
@@ -584,7 +614,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
       // 5) Fetch full provider detail (with attributes) BEFORE setting activeProvider
       const detailResp = await fetch(`${getApiBaseUrl()}/api/v1/providers/${targetId}`, {
-        headers: { Authorization: userId, 'Content-Type': 'application/json' },
+        headers: { 
+          'Authorization': userId,
+          'Content-Type': 'application/json' 
+        },
       });
 
       if (!detailResp.ok) {
@@ -601,7 +634,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     } catch (err) {
       console.error('fetchUserProviders: Error', err);
     }
-  }, [token, loggedInProvider, setActiveProvider, setUserProvidersState]);
+  }, [token, loggedInProvider, setActiveProvider, setUserProvidersState, extractUserIdForAuth]);
 
   const switchProvider = useCallback(async (providerId: number) => {
     if (!token || !loggedInProvider || !providerId) return false;
@@ -616,7 +649,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       // 1) Tell backend to set the context
       const setResp = await fetch(`${getApiBaseUrl()}/api/v1/providers/set_active_provider`, {
         method: 'POST',
-        headers: { Authorization: userId, 'Content-Type': 'application/json' },
+        headers: { 
+          'Authorization': userId,
+          'Content-Type': 'application/json' 
+        },
         body: JSON.stringify({ provider_id: providerId }),
       });
 
@@ -634,7 +670,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
       // 2) Fetch the full provider record (the editor needs attributes)
       const detailResp = await fetch(`${getApiBaseUrl()}/api/v1/providers/${providerId}`, {
-        headers: { Authorization: userId, 'Content-Type': 'application/json' },
+        headers: { 
+          'Authorization': userId,
+          'Content-Type': 'application/json' 
+        },
       });
 
       if (!detailResp.ok) {
@@ -654,7 +693,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       console.error('switchProvider: Error', err);
       return false;
     }
-  }, [token, loggedInProvider, setActiveProvider]);
+  }, [token, loggedInProvider, setActiveProvider, extractUserIdForAuth]);
 
   // Fetch user providers when logged in (moved here after function definition)
   useEffect(() => {
@@ -693,10 +732,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
         // Extract user id for Authorization (matches your backend)
         let userId = null as null | string;
-        try {
-          const decoded = JSON.parse(atob(token));
-          if (decoded?.id) userId = String(decoded.id);
-        } catch {/* ignore */}
+        
+        // Check if token is already a user ID
+        if (/^\d+$/.test(token)) {
+          userId = token;
+          console.log('🔍 AuthProvider: Token is already a user ID:', userId);
+        } else {
+          // Try to decode as JWT token
+          try {
+            const decoded = JSON.parse(atob(token));
+            if (decoded?.id) userId = String(decoded.id);
+          } catch {/* ignore */}
+        }
+        
         if (!userId) userId = JSON.parse(sessionStorage.getItem('loggedInProvider') || 'null')?.id?.toString?.() || null;
         if (!userId) {
           console.log('⚠️ AuthProvider: Could not extract userId, skipping user fetch');
@@ -705,7 +753,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
         const base = 'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com';
         const resp = await fetch(`${base}/api/v1/providers/user_providers?user_email=${encodeURIComponent(emailFromStorage)}`, {
-          headers: { Authorization: userId, 'Content-Type': 'application/json' },
+          headers: { 
+            'Authorization': userId,
+            'Content-Type': 'application/json' 
+          },
         });
 
         if (resp.ok) {

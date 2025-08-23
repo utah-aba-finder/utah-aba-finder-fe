@@ -49,7 +49,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
   const [selectedCounties, setSelectedCounties] = useState<any[]>([]);
   const [selectedProviderTypes, setSelectedProviderTypes] = useState<any[]>([]);
   const [selectedInsurances, setSelectedInsurances] = useState<any[]>([]);
-  const [locations, setLocations] = useState<any[]>([]);
   const [selectedLogoFile, setSelectedLogoFile] = useState<File | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [availableStates, setAvailableStates] = useState<any[]>([]);
@@ -107,21 +106,25 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
   const extractUserId = useCallback(() => {
     // First try to get the user ID from currentUser (most reliable)
     if (currentUser?.id) {
-      console.log('🔍 ProviderEdit: Using currentUser.id for authorization:', currentUser.id);
       return currentUser.id.toString();
     }
     
     // Fallback to token decoding
     if (token) {
+      // Check if token is already a user ID
+      if (/^\d+$/.test(token)) {
+        return token;
+      }
+      
+      // Try to decode as JWT token
       try {
         const decodedToken = JSON.parse(atob(token));
         const userId = decodedToken.id?.toString();
         if (userId) {
-          console.log('🔍 ProviderEdit: Using decoded token user ID for authorization:', userId);
           return userId;
         }
       } catch (e) {
-        console.log('🔍 ProviderEdit: Could not decode token');
+        // console.log('🔍 ProviderEdit: Could not decode token'); // Removed excessive logging
       }
     }
     
@@ -262,8 +265,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       setSelectedCounties(newProviderData.attributes.counties_served || []);
       setSelectedProviderTypes(newProviderData.attributes.provider_type || []);
       setSelectedInsurances(newProviderData.attributes.insurance || []);
-      setLocations(newProviderData.attributes.locations || []);
-    setSelectedLogoFile(null);
+      setSelectedLogoFile(null);
     
     // Initialize common fields with provider data
     setCommonFields({
@@ -312,7 +314,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       setSelectedCounties(initialProviderData.attributes.counties_served || []);
       setSelectedProviderTypes(initialProviderData.attributes.provider_type || []);
       setSelectedInsurances(initialProviderData.attributes.insurance || []);
-      setLocations(initialProviderData.attributes.locations || []);
+      setSelectedLogoFile(null);
       previousProviderId.current = initialProviderData.id;
       
       // Initialize common fields with initial provider data
@@ -339,7 +341,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
     }
   }, [loggedInProvider, currentProvider]);
   const { logout } = useAuth();
-  const [availableProviders, setAvailableProviders] = useState<ProviderData[]>([]);
 
   const handleLogout = useCallback(() => {
     toast.dismiss("session-warning");
@@ -355,54 +356,14 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
     }, 2000);
   }, [logout, clearProviderData]);
 
-  const fetchManagedProviders = useCallback(async () => {
-    try {
-      // Get the proper user ID for authorization
-      const userId = extractUserId();
-      
-      if (!userId) {
-        console.error('🔍 ProviderEdit: No user ID available for authorization in fetchManagedProviders');
-        // Fallback to just the current provider
-        setAvailableProviders([loggedInProvider]);
-        return;
-      }
-      
-      const response = await fetch(
-        'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/accessible_providers',
-        {
-          headers: {
-            'Authorization': `Bearer ${userId}`,
-          }
-        }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-
-        setAvailableProviders(data.providers || []);
-      } else {
-        
-        // Fallback to just the current provider
-        setAvailableProviders([loggedInProvider]);
-      }
-    } catch (error) {
-      
-      // Fallback to just the current provider
-      setAvailableProviders([loggedInProvider]);
-    } finally {
-    }
-  }, [loggedInProvider, extractUserId]);
-
   const refreshProviderData = useCallback(async () => {
     try {
       
       
-      // Get the user ID from the auth context token
-      const userId = extractUserId();
-      
-      if (!userId) {
-        console.error('🔍 ProviderEdit: No user ID available for authorization');
-        toast.error('Failed to refresh provider data - no user ID');
+      // Check if we have a valid token for authorization
+      if (!token) {
+        console.error('🔍 ProviderEdit: No JWT token available for authorization');
+        toast.error('Failed to refresh provider data - no authentication token');
         return;
       }
       
@@ -410,14 +371,20 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
         `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${currentProvider?.id}`,
         {
           headers: {
-            'Authorization': `Bearer ${userId}`,
+            'Authorization': `Bearer ${currentUser?.id?.toString() || ''}`,
           },
         }
       );
 
       if (!response.ok) {
-        await response.text();
-        throw new Error("Failed to refresh provider data");
+        const errorText = await response.text();
+        console.error('❌ ProviderEdit: Server error response:', {
+          status: response.status,
+          statusText: response.statusText,
+          errorText: errorText
+        });
+
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
       }
 
       const data = await response.json();
@@ -464,14 +431,14 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       setSelectedCounties(updatedProvider.attributes.counties_served || []);
       setSelectedProviderTypes(updatedProvider.attributes.provider_type || []);
       setSelectedInsurances(updatedProvider.attributes.insurance || []);
-      setLocations(updatedProvider.attributes.locations || []);
+      setSelectedLogoFile(null);
       
       toast.success('Provider data refreshed successfully');
     } catch (error) {
       console.error('🔍 ProviderEdit: Error in refreshProviderData:', error);
       toast.error('Failed to refresh provider data');
     }
-  }, [currentProvider?.id, extractUserId]);
+  }, [currentProvider?.id, currentUser?.id, token]);
 
   // Initialize provider state and fetch counties for saved states
   useEffect(() => {
@@ -524,7 +491,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
   //   setSelectedCounties(loggedInProvider.attributes.counties_served || []);
   //   setSelectedProviderTypes(loggedInProvider.attributes.provider_type || []);
   //   setSelectedInsurances(loggedInProvider.attributes.insurance || []);
-  //   setLocations(loggedInProvider.attributes.locations || []);
+  //   setSelectedLogoFile(null);
   // }, [loggedInProvider]);
 
   useEffect(() => {
@@ -535,14 +502,15 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
   }, []);
 
   // Fetch managed providers on component mount
-  useEffect(() => {
-    fetchManagedProviders();
-  }, [fetchManagedProviders]);
+  // Temporarily disabled due to 404 error on accessible_providers endpoint
+  // useEffect(() => {
+  //   fetchManagedProviders();
+  // }, [fetchManagedProviders]);
 
   // Monitor accessible providers (silent)
   useEffect(() => {
     // Silent monitoring - no console output
-  }, [availableProviders]);
+  }, []);
 
   useEffect(() => {
     const tokenExpiry = sessionStorage.getItem("tokenExpiry");
@@ -622,12 +590,20 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
 
   const getProviderTypeId = (typeName: string): number => {
     const typeMap: { [key: string]: number } = {
-      "ABA Therapy": 1,
-      "Autism Evaluation": 2,
-      "Speech Therapy": 3,
-      "Occupational Therapy": 4,
+      "ABA Therapy": 115,
+      "Autism Evaluation": 201,
+      "Speech Therapy": 202,
+      "Occupational Therapy": 203,
+      "Physical Therapy": 204,
+      "Dentists": 301,
+      "Orthodontists": 302,
+      "Coaching/Mentoring": 401,
+      "Therapists": 402,
+      "Advocates": 403,
+      "Barbers/Hair": 404,
+      "Pediatricians": 405,
     };
-    return typeMap[typeName] || 1;
+    return typeMap[typeName] ?? 0; // Return 0 (invalid) for unknown types
   };
 
   const handleLogoUpload = async () => {
@@ -639,16 +615,15 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
     try {
       setIsSaving(true);
       
-      // Get the proper user ID for authorization
-      const userId = extractUserId();
-      if (!userId) {
-        toast.error('No user ID available for authorization');
+      // Check if we have a valid token for authorization
+      if (!token) {
+        toast.error('No authentication token available');
         return;
       }
 
       // Use the corrected uploadProviderLogo function
       // For regular providers, isSuperAdmin should be false to use Bearer token
-      const result = await uploadProviderLogo(currentProvider?.id || 0, selectedLogoFile, userId, false);
+      const result = await uploadProviderLogo(currentProvider?.id || 0, selectedLogoFile, token, false);
       
       if (!result.success) {
         toast.error(`Failed to upload logo: ${result.error}`);
@@ -677,7 +652,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
           logo: newLogoUrl
         } : null);
         
-        console.log('🔍 Logo updated in state:', newLogoUrl);
+        // console.log('🔍 Logo updated in state:', newLogoUrl); // Removed excessive logging
       }
       
       // Refresh provider data to get the new logo URL from backend
@@ -695,45 +670,45 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
     try {
       setIsSaving(true);
       
-      // Ensure we preserve the current locations and don't overwrite them
-      const currentLocations = locations || currentProvider?.attributes?.locations || [];
-      
       // Ensure we preserve the current logo URL if it exists
       const currentLogo = currentProvider?.attributes?.logo || editedProvider?.logo || null;
       
       const updatedAttributes = {
-        ...editedProvider,
-        provider_type: selectedProviderTypes.map(type => ({
-          id: type.id,
-          name: type.name
-        })),
-        insurance: selectedInsurances,
-        counties_served: selectedCounties,
-        locations: currentLocations, // Explicitly preserve locations
-        states: providerState,
-        services: currentLocations.map(location => location.services || []).flat(),
-        logo: currentLogo, // Explicitly preserve logo URL
-        // Include common fields in the update
-        contact_phone: commonFields.contact_phone,
-        website: commonFields.website,
-        service_areas: commonFields.service_areas,
-        waitlist_status: commonFields.waitlist_status,
-        additional_notes: commonFields.additional_notes,
-        primary_address: commonFields.primary_address,
-        service_delivery: commonFields.service_delivery
+        // Basic fields only - remove complex nested objects temporarily
+        name: editedProvider?.name || '',
+        email: editedProvider?.email || '',
+        website: editedProvider?.website || '',
+        logo: currentLogo || null,
+        provider_type: selectedProviderTypes.map(type => ({ name: type.name })), // Send objects with name property as per API docs
+        insurance: selectedInsurances.map(ins => ins.name || ins), // Send just names
+        counties_served: selectedCounties.map(county => county.name || county), // Send just names
+        states: providerState || [],
+        // Add some fields that might be required by the backend
+        status: editedProvider?.status || 'approved',
+        in_home_only: editedProvider?.in_home_only || false,
+        // Remove complex nested objects temporarily to test
+        // primary_address: commonFields.primary_address,
+        // service_delivery: commonFields.service_delivery,
+        // locations: currentLocations,
+        // services: currentLocations.map(location => location.services || []).flat(),
       };
 
-      // Debug logging to track what's being saved
-      console.log('🔍 Saving provider with attributes:', updatedAttributes);
-      console.log('🔍 Current logo URL:', currentLogo);
-      console.log('🔍 Current provider logo:', currentProvider?.attributes?.logo);
-
-      const requestBody = {
-        data: {
-          attributes: updatedAttributes,
+      // Data type validation and cleaning
+      const cleanedAttributes: any = {};
+      Object.entries(updatedAttributes).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          // Ensure arrays are actually arrays
+          if (Array.isArray(value)) {
+            cleanedAttributes[key] = value.filter(item => item !== undefined && item !== null);
+          } else {
+            cleanedAttributes[key] = value;
+          }
         }
-      };
+      });
 
+      // Essential debugging for provider_type issue
+      console.log('🔍 ProviderEdit: Provider type being sent:', cleanedAttributes.provider_type);
+      
       // Get the proper user ID for authorization using the existing helper
       const userId = extractUserId();
 
@@ -741,13 +716,103 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
         throw new Error('No user ID available for authorization');
       }
 
+      // Use loggedInProvider ID as the primary source, fallback to currentProvider ID
+      const providerId = loggedInProvider?.id || currentProvider?.id;
+      
+      if (!providerId) {
+        throw new Error('No provider ID available for update');
+      }
+
+      // Check if this provider ID makes sense
+      if (typeof providerId !== 'number' || providerId <= 0) {
+        console.error('❌ ProviderEdit: Invalid provider ID:', providerId);
+        throw new Error(`Invalid provider ID: ${providerId}`);
+      }
+
+      // Verify currentUser exists before proceeding
+      if (!currentUser?.id) {
+        throw new Error('No current user ID available for provider verification');
+      }
+
+      // Verify the provider exists before attempting update
+      console.log('🔍 ProviderEdit: Verifying provider exists before update...');
+      try {
+        const verifyResponse = await fetch(
+          `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${providerId}`,
+          {
+            headers: {
+              'Authorization': `Bearer ${currentUser.id.toString()}`,
+            },
+          }
+        );
+        
+        if (!verifyResponse.ok) {
+          if (verifyResponse.status === 404) {
+            throw new Error(`Provider ID ${providerId} does not exist in the database`);
+          } else {
+            throw new Error(`Failed to verify provider: ${verifyResponse.status} ${verifyResponse.statusText}`);
+          }
+        }
+        
+        console.log('✅ ProviderEdit: Provider verified successfully');
+      } catch (verifyError) {
+        console.error('❌ ProviderEdit: Provider verification failed:', verifyError);
+        throw verifyError;
+      }
+
+      // Determine which endpoint to use based on what provider is being edited
+      // Use the correct provider_self endpoint as per API documentation
+      const apiEndpoint = 'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/provider_self';
+      
+      console.log('🔍 ProviderEdit: Using API endpoint:', apiEndpoint);
+
+      const requestBody = {
+        data: [{
+          id: providerId, // Add the provider ID so backend knows which provider to update
+          attributes: cleanedAttributes,
+        }]
+      };
+
+      // Debug: Log the exact data being sent to help debug 500 error
+      console.log('🔍 ProviderEdit: Full request body being sent:', requestBody);
+      console.log('🔍 ProviderEdit: Provider type in request:', cleanedAttributes.provider_type);
+      console.log('🔍 ProviderEdit: Insurance in request:', cleanedAttributes.insurance);
+      console.log('🔍 ProviderEdit: Counties in request:', cleanedAttributes.counties_served);
+
+      // Step 1: Set the active provider context before updating (optional - don't fail if it doesn't work)
+      // Removed provider context call due to 403 errors - going straight to provider update
+      /*
+      try {
+        const contextResponse = await fetch(
+          'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/provider_context',
+          {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${currentUser.id.toString()}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ provider_id: providerId })
+          }
+        );
+
+        if (contextResponse.ok) {
+          console.log('✅ ProviderEdit: Active provider context set successfully');
+        } else {
+          const contextErrorText = await contextResponse.text();
+          console.warn('⚠️ ProviderEdit: Failed to set active provider context:', contextResponse.status, contextErrorText);
+        }
+      } catch (contextError) {
+        console.warn('⚠️ ProviderEdit: Error setting provider context:', contextError);
+      }
+      */
+
       const response = await fetch(
-        `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${currentProvider?.id}`,
+        apiEndpoint,
         {
-          method: "PATCH",
+          method: "PATCH", // Use PATCH method as specified in API documentation
           headers: {
             "Content-Type": "application/json",
-            'Authorization': `Bearer ${userId}`,
+            'Authorization': `Bearer ${currentUser.id.toString()}`, // Use user ID with Bearer prefix for backend authentication
           },
           body: JSON.stringify(requestBody),
         }
@@ -755,15 +820,13 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       
       if (!response.ok) {
         const errorText = await response.text();
+        console.error('❌ ProviderEdit: Server error response:', {
+          status: response.status,
+          statusText: response.statusText,
+          errorText: errorText
+        });
 
-        let errorData;
-        try {
-          errorData = JSON.parse(errorText);
-        } catch (e) {
-          errorData = { message: errorText };
-        }
-
-        throw new Error(`HTTP ${response.status}: ${errorData.message || response.statusText}`);
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
       }
 
       const responseData = await response.json();
@@ -807,19 +870,20 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading provider data...</p>
-
+          <p className="text-sm text-gray-500 mt-2">Please wait while we load your information...</p>
         </div>
       </div>
     );
   }
 
-  if (isSaving) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-      </div>
-    );
-  }
+  // Don't hide the entire page while saving - just show a loading indicator
+  // if (isSaving) {
+  //   return (
+  //     <div className="flex items-center justify-center min-h-screen">
+  //       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+  //     </div>
+  //   );
+  // }
 
   const renderSessionWarning = () => {
     if (sessionTimeLeft && sessionTimeLeft <= 300) {
@@ -852,16 +916,24 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                     >
                       <Menu className="w-5 h-5" />
                     </button>
-                    <h1 className="text-lg font-semibold">
-                      {selectedTab === "dashboard" && "Provider Dashboard"}
-                      {selectedTab === "edit" && "Edit Provider Details"}
-                      {selectedTab === "details" && "Provider Logo"}
-                      {selectedTab === "coverage" && "Coverage & Counties"}
-                      {selectedTab === "locations" && "Location Management"}
-                      {selectedTab === "provider-types" && "Provider Services"}
-                      {selectedTab === "common-fields" && "Contact & Services"}
-                      {selectedTab === "billing" && "Billing Management"}
-                    </h1>
+                    <div className="flex items-center space-x-2">
+                      <h1 className="text-lg font-semibold">
+                        {selectedTab === "dashboard" && "Provider Dashboard"}
+                        {selectedTab === "edit" && "Edit Provider Details"}
+                        {selectedTab === "details" && "Provider Logo"}
+                        {selectedTab === "coverage" && "Coverage & Counties"}
+                        {selectedTab === "locations" && "Location Management"}
+                        {selectedTab === "provider-types" && "Provider Services"}
+                        {selectedTab === "common-fields" && "Contact & Services"}
+                        {selectedTab === "billing" && "Billing Management"}
+                      </h1>
+                      {isSaving && (
+                        <div className="flex items-center space-x-2 text-blue-600">
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                          <span className="text-sm font-medium">Saving...</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                   <div className="flex items-center space-x-4">
                     {currentProvider?.attributes?.logo ? (
@@ -917,7 +989,15 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
               <div className="w-7 h-7 bg-[#4A6FA5] rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-sm">ASL</span>
               </div>
-              <span className="text-lg font-semibold">Provider Panel</span>
+              <div className="flex items-center space-x-2">
+                <span className="text-lg font-semibold">Provider Panel</span>
+                {isSaving && (
+                  <div className="flex items-center space-x-1">
+                    <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
+                    <span className="text-xs text-white opacity-80">Saving</span>
+                  </div>
+                )}
+              </div>
             </div>
             <div className="flex items-center space-x-2">
               {/* Mobile Logout Button */}
@@ -1222,15 +1302,14 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                                 try {
                                   setIsSaving(true);
                                   
-                                  // Get the proper user ID for authorization
-                                  const userId = extractUserId();
-                                  if (!userId) {
-                                    toast.error('No user ID available for authorization');
+                                  // Check if we have a valid token for authorization
+                                  if (!token) {
+                                    toast.error('No authentication token available');
                                     return;
                                   }
 
                                   // Use the corrected removeProviderLogo function
-                                  const result = await removeProviderLogo(currentProvider?.id || 0, userId);
+                                  const result = await removeProviderLogo(currentProvider?.id || 0, token);
                                   
                                   if (!result.success) {
                                     toast.error(`Failed to remove logo: ${result.error}`);
@@ -1430,15 +1509,16 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                     <div className="mb-6">
                       <label className="block text-sm font-medium text-gray-700 mb-2">Waitlist Status</label>
                       <select
+                        name="waitlist_status"
                         value={commonFields.waitlist_status || ''}
                         onChange={(e) => handleCommonFieldChange('waitlist_status', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       >
                         <option value="">Select waitlist status...</option>
-                        <option value="accepting">Accepting New Clients</option>
-                        <option value="waitlist">Waitlist Only</option>
-                        <option value="closed">Not Accepting New Clients</option>
-                        <option value="limited">Limited Availability</option>
+                        <option value="Currently accepting clients">Currently accepting clients</option>
+                        <option value="Short waitlist">Short waitlist</option>
+                        <option value="Long waitlist">Long waitlist</option>
+                        <option value="Not accepting new clients">Not accepting new clients</option>
                       </select>
                     </div>
 
@@ -1607,7 +1687,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                                         if (!remaining.some(c => c.state === activeStateForCounties)) {
                                           setSelectedCounties(prev => [...prev.filter(c => c.state !== activeStateForCounties), {
                                             county_id: 0,
-                                            county_name: 'Contact Us',
+                                            county_name: 'Contact us',
                                             state: activeStateForCounties,
                                           }]);
                                         } else {
@@ -1615,7 +1695,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                                         }
                                       } else {
                                         setSelectedCounties(prev => [
-                                          ...prev.filter(c => !(c.state === activeStateForCounties && c.county_name === 'Contact Us')),
+                                          ...prev.filter(c => !(c.state === activeStateForCounties && c.county_name === 'Contact us')),
                                           {
                                             county_id: county.id,
                                             county_name: county.attributes.name,
@@ -1678,7 +1758,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                             }
                           };
                           setCurrentProvider(updatedProvider);
-                          setLocations(locations);
                         }
                       }}
                     />
@@ -1751,17 +1830,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
         </button>
       </div>
       
-      {/* Loading overlay for save operations */}
-      {isSaving && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg">
-            <div className="flex items-center justify-center space-x-3">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
-              <span className="text-gray-700">Saving changes...</span>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Loading overlay removed - replaced with subtle header indicators */}
       
       {authModalOpen && (
         <AuthModal

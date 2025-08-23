@@ -190,23 +190,61 @@ export const testAPIHealth = async (): Promise<{ status: string; message: string
 
 export const fetchProvidersByStateIdAndProviderType = async (stateId: string, providerType: string) => {
   try {
-    const url = `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/states/${stateId}/providers?provider_type=${encodeURIComponent(providerType)}`;
-    const response = await fetch(url, {
-      headers: {
-        'Authorization': 'be6205db57ce01863f69372308c41e3a'
-      }
-    });
-    if (!response.ok) throw new Error('Failed to fetch providers');
-    const data = await response.json();
+    console.log('🔍 API Call:', { stateId, providerType });
     
-    // Ensure we return a valid structure
-    if (!data || typeof data !== 'object') {
-      return { data: [] };
+    // Since the states endpoint is returning empty data, use the main providers endpoint
+    // and filter client-side for now
+    const url = 'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers';
+    
+    console.log('🔍 URL:', url);
+    console.log('🔍 Note: Using main providers endpoint due to states endpoint issue');
+    
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache'
+      },
+      cache: 'no-store'
+    });
+    
+    console.log('🔍 Response:', response.status, response.statusText);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
+    
+    const data = await response.json();
+    console.log('🔍 Data received:', data);
+    
+    // Filter by state and provider type client-side since states endpoint is broken
+    if (data && data.data && Array.isArray(data.data)) {
+      let filteredData = data.data;
+      
+      // Filter by state (Utah = ID 1)
+      if (stateId && stateId !== 'none') {
+        filteredData = filteredData.filter((provider: any) => 
+          provider.states && provider.states.includes('Utah')
+        );
+        console.log('🔍 Filtered by Utah state:', filteredData.length, 'providers');
+      }
+      
+      // Filter by provider type
+      if (providerType && providerType !== 'none' && providerType.trim() !== '') {
+        filteredData = filteredData.filter((provider: any) =>
+          provider.attributes.provider_type && 
+          provider.attributes.provider_type.some((type: any) => type.name === providerType)
+        );
+        console.log('🔍 Filtered by provider type', providerType + ':', filteredData.length, 'providers');
+      }
+      
+      return { data: filteredData };
+    }
+    
     return data;
   } catch (error) {
-    
-    // Return empty data structure instead of throwing
+    console.error('❌ Fetch error:', error);
     return { data: [] };
   }
 };
@@ -287,21 +325,24 @@ export const uploadProviderLogo = async (providerId: number, logoFile: File, aut
     // Add provider data to ensure the logo gets properly associated
     formData.append('provider_id', providerId.toString());
 
-    // Set authentication header based on user type
-    const authHeader = isSuperAdmin ? authToken : `Bearer ${authToken}`;
-    console.log('🔑 uploadProviderLogo: Using auth header:', isSuperAdmin ? 'API Key' : 'Bearer Token');
-    console.log('🔑 uploadProviderLogo: Auth header value:', authHeader);
-    console.log('🔑 uploadProviderLogo: Endpoint:', `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${providerId}`);
+    // Determine the correct endpoint based on user type
+    const endpoint = isSuperAdmin 
+      ? `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/providers/${providerId}`
+      : `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/provider_self`;
+
+    // Set authentication header - authToken already contains "Bearer {user_id}"
+    const authHeader = authToken; // Don't add extra "Bearer " prefix
+    console.log('🔑 uploadProviderLogo: Using auth header:', authHeader);
+    console.log('🔑 uploadProviderLogo: Endpoint:', endpoint);
     console.log('🔑 uploadProviderLogo: Method: PUT');
     console.log('🔑 uploadProviderLogo: FormData contents:');
     for (let [key, value] of formData.entries()) {
       console.log(`  ${key}:`, value);
     }
-
-    // Removed unnecessary GET test request that was causing confusion
+    console.log('🔑 uploadProviderLogo: About to make fetch request...');
 
     const response = await fetch(
-      `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${providerId}`,
+      endpoint,
       {
         method: 'PUT',
         headers: {
@@ -312,6 +353,9 @@ export const uploadProviderLogo = async (providerId: number, logoFile: File, aut
       }
     );
 
+    console.log('🔍 uploadProviderLogo: Response status:', response.status);
+    console.log('🔍 uploadProviderLogo: Response headers:', Object.fromEntries(response.headers.entries()));
+    
     if (!response.ok) {
       const errorText = await response.text();
       console.log('❌ uploadProviderLogo: Response not OK:', response.status, response.statusText);
@@ -328,13 +372,20 @@ export const uploadProviderLogo = async (providerId: number, logoFile: File, aut
 
     const result = await response.json();
     console.log('✅ uploadProviderLogo: Logo upload successful');
+    console.log('🔍 uploadProviderLogo: Full response data:', result);
     console.log('🔍 uploadProviderLogo: Response data structure:', result);
     
     // Check if the response contains the new logo URL
     if (result && result.data && result.data[0] && result.data[0].attributes) {
       console.log('🔍 uploadProviderLogo: New logo URL:', result.data[0].attributes.logo);
+      console.log('🔍 uploadProviderLogo: Full attributes:', result.data[0].attributes);
     } else {
       console.log('⚠️ uploadProviderLogo: Response structure unexpected - logo URL might be missing');
+      console.log('⚠️ uploadProviderLogo: Response keys:', Object.keys(result || {}));
+      if (result?.data) {
+        console.log('⚠️ uploadProviderLogo: Data array length:', result.data.length);
+        console.log('⚠️ uploadProviderLogo: First data item:', result.data[0]);
+      }
     }
 
     return { 
@@ -532,11 +583,11 @@ export const testAvailableEndpoints = async (): Promise<{ success: boolean; endp
 // Public providers function that uses states endpoint (no API key required)
 export const fetchPublicProviders = async (): Promise<Providers> => {
   try {
-    console.log('🔄 Fetching public providers using states endpoint...');
+    console.log('🔄 Fetching public providers using main providers endpoint...');
     
-    // Use the states endpoint which doesn't require authentication
+    // Use the main providers endpoint since states endpoint is returning empty data
     const response = await fetch(
-      'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/states/1/providers', // Utah (ID: 1)
+      'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers', // Main providers endpoint (working)
       {
         headers: {
           'Cache-Control': 'no-cache',
@@ -550,7 +601,9 @@ export const fetchPublicProviders = async (): Promise<Providers> => {
     }
     
     const data = await response.json();
-    console.log('✅ Public providers fetched successfully from states endpoint');
+    console.log('✅ Public providers fetched successfully from main providers endpoint');
+    console.log('📊 All provider types found:', data?.data?.length || 0);
+    console.log('🎯 This should show ABA Therapy, Autism Evaluation, Speech Therapy, Occupational Therapy, etc.');
     
     return data;
   } catch (error) {

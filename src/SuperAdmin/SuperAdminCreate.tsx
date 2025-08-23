@@ -1023,18 +1023,17 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
                 </label>
                 <select
                   name="waitlist"
-                  value={formData.waitlist}
+                  value={formData.waitlist || ""}
                   onChange={handleChange}
-                  className="w-1/2 px-3 py-2 rounded-lg border border-gray-300 hover:cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm"
-                  required
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 hover:cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm"
                 >
                   <option value="" disabled>
                     Select Waitlist Status
                   </option>
-                  <option value="Contact us">Contact us</option>
-                  <option value="No waitlist">No waitlist</option>
-                  <option value="6 months or less">6 months or less</option>
-                  <option value="6 months or more">6 months or more</option>
+                  <option value="Currently accepting clients">Currently accepting clients</option>
+                  <option value="Short waitlist">Short waitlist</option>
+                  <option value="Long waitlist">Long waitlist</option>
+                  <option value="Not accepting new clients">Not accepting new clients</option>
                 </select>
               </div>
 

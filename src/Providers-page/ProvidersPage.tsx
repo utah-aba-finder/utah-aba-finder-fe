@@ -286,17 +286,28 @@ const ProvidersPage: React.FC = () => {
   }, []);
 
   const handleSearch = async (searchParams: any) => {
+    console.log('🔍 handleSearch called with params:', searchParams);
     setIsLoading(true);
     setShowResultMessage(false); // Hide result message immediately when search starts
     setIsSearchRefined(false); // Reset search refined state until we have results
     setShowSearchNotification(false); // Reset search notification
     try {
       const { stateId, providerType, query, county_name, insurance, spanish, service, waitlist, age, hasReviews } = searchParams;
+      console.log('🔍 Calling API with stateId:', stateId, 'providerType:', providerType);
+      
       const results = await fetchProvidersByStateIdAndProviderType(stateId, providerType);
+      console.log('🔍 API results received:', results);
       
       // Add null check for results.data
+      console.log('🔍 Checking results structure:', {
+        hasResults: !!results,
+        hasData: !!results?.data,
+        isArray: Array.isArray(results?.data),
+        dataLength: results?.data?.length
+      });
+      
       if (!results || !results.data || !Array.isArray(results.data)) {
-
+        console.warn('⚠️ Invalid results structure, setting empty providers');
         setFilteredProviders([]);
         setCurrentPage(1);
         setIsLoading(false);
@@ -414,6 +425,15 @@ const ProvidersPage: React.FC = () => {
           // Check if the provider's age range overlaps with the selected age range
           return providerMinAge <= maxAge && providerMaxAge >= minAge;
         });
+      }
+
+      // Provider Type filter (frontend backup to API filtering)
+      if (providerType && providerType !== 'none' && providerType.trim() !== '') {
+        filteredResults = filteredResults.filter((provider: ProviderAttributes) => 
+          provider.provider_type && provider.provider_type.some(type => 
+            type.name === providerType
+          )
+        );
       }
 
       // Reviews filter

@@ -113,30 +113,32 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
             <span className="reviews-badge-text">⭐ Has Reviews</span>
           </div>
         )}
-        <div className="card-logo-and-text">
-          <div className="card-grid-logo">
-            <ProviderLogo 
-              provider={provider} 
+              <div className="card-logo-and-text">
+        <div className="card-header">
+          <div className="card-logo-section">
+            <ProviderLogo
+              provider={provider}
               className="provider-logo"
               size="medium"
             />
           </div>
+          <div className="card-name title">{provider.name}</div>
+        </div>
           <div className="card-text-and-buttons">
             <div className="card-text text">
-              <div className="card-name title">{provider.name}</div>
               
               {/* Service delivery badges */}
               {renderServiceDeliveryBadges()}
               
-              {/* Service Types Badges */}
+              {/* Provider Type Badges */}
               {provider.provider_type && provider.provider_type.length > 0 && (
-                <div className="service-types-badges">
+                <div className="provider-type-badges">
                   <h4>
-                    <strong>Services Offered:</strong>
+                    <strong>Provider Specialties:</strong>
                   </h4>
-                  <div className="service-type-chips">
+                  <div className="provider-type-chips">
                     {provider.provider_type.map((type, index) => (
-                      <span key={index} className="service-type-chip">
+                      <span key={index} className="provider-type-chip">
                         {type.name}
                       </span>
                     ))}

@@ -29,9 +29,7 @@ import { ProviderData, ProviderAttributes } from "../Utility/Types";
 // import { fetchProviders } from "../Utility/ApiCall";
 
 const SuperAdmin = () => {
-  console.log('🚀 SuperAdmin: Component mounted/rendered');
-  
-  const { loggedInProvider, logout, currentUser, token } = useAuth();
+  const { loggedInProvider, logout, currentUser } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [selectedTab, setSelectedTab] = useState("view");
   const [allProviders, setAllProviders] = useState<ProviderData[]>([]);
@@ -41,16 +39,11 @@ const SuperAdmin = () => {
   const [openNewInsuranceForm, setOpenNewInsuranceForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [openCreateUserForm, setOpenCreateUserForm] = useState(false);
-  const [providerTypeFilter, setProviderTypeFilter] = useState<
-    "all" | "ABA Therapy" | "Autism Evaluation" | "Speech Therapy" | "Occupational Therapy"
-  >("all");
-  const [statusFilter, setStatusFilter] = useState<
-    "all" | "approved" | "pending" | "denied"
-  >("all");
+  const [providerTypeFilter, setProviderTypeFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
   const [stateFilter, setStateFilter] = useState<string>("all");
-  const [serviceFilter, setServiceFilter] = useState<string>("all");
   const [locationCountFilter, setLocationCountFilter] = useState<string>("all");
-  const [logoFilter, setLogoFilter] = useState<"all" | "with_logo" | "without_logo">("all");
+  const [logoFilter, setLogoFilter] = useState<string>("all");
   const [isLoadingProviders, setIsLoadingProviders] = useState(false);
 
   // Hardcoded list of all US states
@@ -67,14 +60,6 @@ const SuperAdmin = () => {
 
   // Extract states that are actually used by providers
   // const [availableStates, setAvailableStates] = useState<string[]>([]);
-
-  // Add this constant for available services
-  const AVAILABLE_SERVICES = [
-    { id: 1, name: "ABA Therapy" },
-    { id: 2, name: "Autism Evaluation" },
-    { id: 3, name: "Speech Therapy" },
-    { id: 4, name: "Occupational Therapy" }
-  ];
 
   // Add this constant for location count options
   const LOCATION_COUNT_OPTIONS = [
@@ -101,32 +86,22 @@ const SuperAdmin = () => {
 
   // Fetch providers
   const fetchAllProviders = useCallback(async () => {
-    console.log('🚀 SuperAdmin: fetchAllProviders function called!');
-    console.log('🔄 SuperAdmin: Starting to fetch providers...');
-    
     try {
       setIsLoadingProviders(true);
-      if (!token) {
-        console.error('❌ SuperAdmin: No token found');
-        throw new Error('User not authenticated');
-      }
-
-      console.log('🔑 SuperAdmin: Using Bearer token:', token.substring(0, 20) + '...');
-      console.log('🌐 SuperAdmin: Making request to:', 'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers');
-
-      // Use Bearer token authentication
+      
+      // Use the same working approach as the main providers page
+      // The main providers endpoint works without authentication
       const response = await fetch(
         `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers`,
         {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            'Authorization': `Bearer ${token}`,
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
           },
         }
       );
-
-      console.log('📡 SuperAdmin: API response status:', response.status);
 
       if (!response.ok) {
         if (response.status === 403) {
@@ -136,13 +111,10 @@ const SuperAdmin = () => {
       }
 
       const data = await response.json();
-      console.log('📊 SuperAdmin: Providers data received:', data);
 
       if (data && data.data) {
         setAllProviders(data.data);
-        console.log('✅ SuperAdmin: Successfully set providers:', data.data.length);
       } else {
-        console.log('⚠️ SuperAdmin: No providers data found in response');
         setAllProviders([]);
       }
     } catch (error) {
@@ -151,104 +123,108 @@ const SuperAdmin = () => {
     } finally {
       setIsLoadingProviders(false);
     }
-  }, [token]);
+  }, []);
 
   useEffect(() => {
-    console.log('🔄 SuperAdmin: useEffect triggered', { 
-      hasCurrentUser: !!currentUser,
-      role: currentUser?.role,
-      isSuperAdmin: currentUser?.role === 'super_admin',
-      hasToken: !!token,
-      tokenPreview: token ? token.substring(0, 20) + '...' : 'none'
-    });
-    
-    // Use currentUser.role instead of loggedInProvider for role checks
-    if (currentUser && currentUser.role === 'super_admin' && token) {
-      console.log('✅ SuperAdmin: Calling fetchAllProviders...');
+    if (currentUser && currentUser.role === 'super_admin') {
       fetchAllProviders();
-    } else {
-      console.log('❌ SuperAdmin: Not calling fetchAllProviders - missing requirements:', {
-        hasCurrentUser: !!currentUser,
-        role: currentUser?.role,
-        hasToken: !!token
-      });
     }
-  }, [currentUser, token, fetchAllProviders]);
+  }, [currentUser, fetchAllProviders]);
 
   const handleProviderUpdate = async (updatedProvider: ProviderAttributes) => {
     try {
+      console.log('🔄 SuperAdmin: handleProviderUpdate called with:', updatedProvider);
+      
       if (!currentUser) {
         console.error('❌ SuperAdmin: No current user found for update');
         toast.error("Authentication error - please log in again");
         return;
       }
 
-      console.log('🔑 SuperAdmin: Updating provider with Bearer user ID:', currentUser.id);
-
-      const response = await fetch(
-        `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${updatedProvider.id}`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            'Authorization': `Bearer ${currentUser.id}`,
-          },
-          body: JSON.stringify({
-            data: [{
-              id: updatedProvider.id,
-              type: "provider",
-              attributes: updatedProvider,
-            }],
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        if (response.status === 403) {
-          throw new Error('Access forbidden - user may not have super admin privileges');
-        }
-        throw new Error(`HTTP error: ${response.status}`);
-      }
-
-      const data = await response.json();
-      console.log('✅ SuperAdmin: Provider updated successfully:', data);
-
-      // Update the local state immediately
+      // Update the local state immediately with the data from SuperAdminEdit
       setAllProviders((prevProviders) => {
+        console.log('🔄 SuperAdmin: Updating allProviders, current count:', prevProviders.length);
+        
         if (!selectedProvider?.id) {
+          console.warn('⚠️ SuperAdmin: No selectedProvider ID for update');
           return prevProviders;
         }
 
-        return prevProviders.map((provider) =>
+        const updatedProviders = prevProviders.map((provider) =>
           provider.id === selectedProvider.id
-            ? { ...provider, attributes: { ...provider.attributes, ...updatedProvider } }
+            ? { 
+                ...provider, 
+                attributes: { 
+                  ...provider.attributes, 
+                  // Only update fields that are actually provided (not undefined)
+                  ...Object.fromEntries(
+                    Object.entries(updatedProvider).filter(([_, value]) => value !== undefined)
+                  )
+                } 
+              }
             : provider
         );
+        
+        console.log('🔄 SuperAdmin: Updated provider in allProviders:', 
+          updatedProviders.find(p => p.id === selectedProvider.id)?.attributes
+        );
+        
+        return updatedProviders;
       });
 
-      toast.success("Provider updated successfully!");
+      // Also update the selectedProvider state to reflect changes immediately
+      if (selectedProvider) {
+        setSelectedProvider(prev => {
+          if (!prev) return null;
+          
+          const updatedAttributes = {
+            ...prev.attributes,
+            // Only update fields that are actually provided (not undefined)
+            ...Object.fromEntries(
+              Object.entries(updatedProvider).filter(([_, value]) => value !== undefined)
+            )
+          };
+          
+          console.log('🔄 SuperAdmin: Updated selectedProvider attributes:', updatedAttributes);
+          
+          return { ...prev, attributes: updatedAttributes };
+        });
+      }
+
+      // Don't show generic success toast - SuperAdminEdit will show a comprehensive one
+      // toast.success("Provider updated successfully!");
     } catch (error) {
       console.error("❌ SuperAdmin: Error updating provider:", error);
       toast.error(error instanceof Error ? error.message : "Failed to update provider");
     }
   };
 
-  const filteredProviders = allProviders.filter((provider) => {
-    if (!provider?.attributes) {
-      return false;
-    }
-
-    const nameMatch = provider.attributes.name
-      ? provider.attributes.name.toLowerCase().includes(searchTerm.toLowerCase())
-      : false;
+  const filteredProviders = useMemo(() => {
+    console.log('🔍 SuperAdmin: Filtering providers with:', {
+      totalProviders: allProviders.length,
+      searchTerm,
+      providerTypeFilter,
+      statusFilter,
+      stateFilter,
+      locationCountFilter,
+      logoFilter
+    });
     
-    const typeMatch =
-      providerTypeFilter === "all"
-        ? true
-        : provider.attributes.provider_type?.some(
-            (type: { name: string }) =>
-              type.name === providerTypeFilter
-          );
+    return allProviders.filter((provider) => {
+      if (!provider?.attributes) {
+        return false;
+      }
+
+      const nameMatch = provider.attributes.name
+        ? provider.attributes.name.toLowerCase().includes(searchTerm.toLowerCase())
+        : false;
+      
+      const typeMatch =
+        providerTypeFilter === "all"
+          ? true
+          : provider.attributes.provider_type?.some(
+              (type: { name: string }) => type.name === providerTypeFilter
+            ) || false;
 
     const statusMatch =
       statusFilter === "all"
@@ -261,15 +237,6 @@ const SuperAdmin = () => {
         : (provider.states || provider.attributes.states || [])?.some(state => {
             return state.toLowerCase() === stateFilter.toLowerCase();
           });
-
-    const serviceMatch =
-      serviceFilter === "all"
-        ? true
-        : provider.attributes.locations?.some(location => 
-            location.services?.some(service => 
-              service.name === serviceFilter
-            )
-          );
 
     const locationCount = provider.attributes.locations?.length || 0;
     const locationCountMatch = (() => {
@@ -288,13 +255,28 @@ const SuperAdmin = () => {
       return true;
     })();
 
-    const result = nameMatch && typeMatch && statusMatch && stateMatch && serviceMatch && locationCountMatch && logoMatch;
+    const result = nameMatch && typeMatch && statusMatch && stateMatch && locationCountMatch && logoMatch;
+    
+    // Debug: Log filter results for first few providers
+    if (allProviders.indexOf(provider) < 3) {
+      console.log('🔍 SuperAdmin: Provider filter results for', provider.attributes.name, {
+        nameMatch,
+        typeMatch,
+        statusMatch,
+        stateMatch,
+        locationCountMatch,
+        logoMatch,
+        finalResult: result
+      });
+    }
+    
     return result;
   }).sort((a, b) => {
     const nameA = a.attributes.name?.toLowerCase() || "";
     const nameB = b.attributes.name?.toLowerCase() || "";
     return nameA.localeCompare(nameB);
   });
+  }, [allProviders, searchTerm, providerTypeFilter, statusFilter, stateFilter, locationCountFilter, logoFilter]);
 
   const getStatusColor = (status: string | null | undefined) => {
     switch (status?.toLowerCase()) {
@@ -648,27 +630,6 @@ const SuperAdmin = () => {
                           </div>
                         </div>
 
-                        {/* Service Filter */}
-                        <div className="w-[calc(50%-0.375rem)] sm:w-40 flex-shrink-0">
-                          <div className="relative">
-                            <select
-                              value={serviceFilter}
-                              onChange={(e) => setServiceFilter(e.target.value)}
-                              className="w-full pl-2.5 pr-8 py-1.5 rounded-lg border border-gray-300 bg-white 
-                             focus:outline-none focus:ring-2 focus:ring-blue-500 
-                             appearance-none cursor-pointer text-gray-700 text-sm"
-                            >
-                              <option value="all">All Services</option>
-                              {AVAILABLE_SERVICES.map((service) => (
-                                <option key={service.id} value={service.name}>
-                                  {service.name}
-                                </option>
-                              ))}
-                            </select>
-                            <ChevronDown className="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 transform -translate-y-1/2 pointer-events-none" />
-                          </div>
-                        </div>
-
                         {/* Location Count Filter */}
                         <div className="w-[calc(50%-0.375rem)] sm:w-40 flex-shrink-0">
                           <div className="relative">
@@ -853,7 +814,23 @@ const SuperAdmin = () => {
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
                                 <div className="text-sm text-gray-500 max-w-[6rem] truncate">
-                                  {provider.attributes.provider_type?.map((type: { name: string }) => type.name).join(", ") || "Unknown"}
+                                  {/* Debug: Show current provider_type data */}
+                                  {(() => {
+                                    const providerTypes = provider.attributes.provider_type;
+                                    if (provider.attributes.name === "Honey Beehavior Analysis") {
+                                      console.log('🔍 Debug Honey Beehavior Analysis provider_type:', providerTypes);
+                                      console.log('🔍 Debug provider_type type:', typeof providerTypes);
+                                      console.log('🔍 Debug provider_type length:', providerTypes?.length);
+                                    }
+                                    
+                                    if (providerTypes && Array.isArray(providerTypes) && providerTypes.length > 0) {
+                                      return providerTypes.map((type: { name: string }) => type.name).join(", ");
+                                    } else if (providerTypes && typeof providerTypes === 'string') {
+                                      return providerTypes;
+                                    } else {
+                                      return "Unknown";
+                                    }
+                                  })()}
                                 </div>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">

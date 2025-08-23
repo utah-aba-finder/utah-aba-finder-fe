@@ -126,9 +126,9 @@ export const LoginPage: React.FC = () => {
                 token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : authHeader;
                 console.log('🔑 Login: Using Authorization header token');
             } else {
-                // If no Authorization header, create a session token from user data
-                token = btoa(JSON.stringify(data.user)); // Base64 encode user data as temporary token
-                console.log('🔑 Login: Created base64 token from user data');
+                // If no Authorization header, use the user ID directly for backend authentication
+                token = data.user.id.toString(); // Use user ID directly, not JWT
+                console.log('🔑 Login: Using user ID directly for backend authentication:', token);
             }
             
             console.log('🔑 Login: Final token (preview):', token ? `${token.substring(0, 20)}...` : 'none');
