@@ -74,8 +74,6 @@ export const LoginPage: React.FC = () => {
         setError('');
         setIsLoading(true);
 
-
-
         try {
             console.log('📡 Login: Making API call to login endpoint');
             const requestBody = {
@@ -86,143 +84,158 @@ export const LoginPage: React.FC = () => {
             };
             console.log('📡 Login: Request body:', { email: username, password: '***' });
             
-            const response = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(requestBody),
-            });
+            // Create AbortController for timeout
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
             
-            console.log('📡 Login: API response status:', response.status);
-            console.log('📡 Login: API response headers:', Object.fromEntries(response.headers.entries()));
-            
-            const data = await response.json();
-            console.log('📡 Login: API response data:', data);
+            try {
+                const response = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody),
+                    signal: controller.signal
+                });
+                
+                clearTimeout(timeoutId); // Clear timeout if request succeeds
+                
+                console.log('📡 Login: API response status:', response.status);
+                console.log('📡 Login: API response headers:', Object.fromEntries(response.headers.entries()));
+                
+                const data = await response.json();
+                console.log('📡 Login: API response data:', data);
 
-            if (!response.ok) {
-                console.log('❌ Login: API returned error status:', response.status);
-                let errorMessage = 'Login failed';
-                if (response.status === 401) {
-                    errorMessage = 'Invalid email or password';
-                } else if (data.error) {
-                    errorMessage = data.error;
+                if (!response.ok) {
+                    console.log('❌ Login: API returned error status:', response.status);
+                    let errorMessage = 'Login failed';
+                    if (response.status === 401) {
+                        errorMessage = 'Invalid email or password';
+                    } else if (data.error) {
+                        errorMessage = data.error;
+                    }
+
+                    console.log('❌ Login: Error message:', errorMessage);
+                    throw new Error(errorMessage);
                 }
+                
+                console.log('✅ Login: API call successful');
 
-                console.log('❌ Login: Error message:', errorMessage);
-                throw new Error(errorMessage);
-            }
-            
-            console.log('✅ Login: API call successful');
+                // Check for Authorization header first
+                const authHeader = response.headers.get('Authorization');
+                console.log('🔑 Login: Authorization header:', authHeader);
+                let token = null;
+                
+                if (authHeader) {
+                    token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : authHeader;
+                    console.log('🔑 Login: Using Authorization header token');
+                } else {
+                    // If no Authorization header, use the user ID directly for backend authentication
+                    token = data.user.id.toString(); // Use user ID directly, not JWT
+                    console.log('🔑 Login: Using user ID directly for backend authentication:', token);
+                }
+                
+                console.log('🔑 Login: Final token (preview):', token ? `${token.substring(0, 20)}...` : 'none');
+                initializeSession(token);
 
-
-
-            // Check for Authorization header first
-            const authHeader = response.headers.get('Authorization');
-            console.log('🔑 Login: Authorization header:', authHeader);
-            let token = null;
-            
-            if (authHeader) {
-                token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : authHeader;
-                console.log('🔑 Login: Using Authorization header token');
-            } else {
-                // If no Authorization header, use the user ID directly for backend authentication
-                token = data.user.id.toString(); // Use user ID directly, not JWT
-                console.log('🔑 Login: Using user ID directly for backend authentication:', token);
-            }
-            
-            console.log('🔑 Login: Final token (preview):', token ? `${token.substring(0, 20)}...` : 'none');
-            initializeSession(token);
-
-            // Map role numbers to role strings - handle both string and numeric roles
-            let userRole = 'unknown';
-            
-            if (typeof data.user.role === 'string') {
-                // Backend returns string roles directly
-                userRole = data.user.role;
-            } else if (typeof data.user.role === 'number') {
-                // Backend returns numeric roles that need mapping
-                const roleMap: { [key: number]: string } = {
-                    0: 'super_admin',      // Backend clarified: 0 is Superadmin
-                    1: 'provider_admin'    // Backend clarified: 1 is Provider Admin
-                };
-                userRole = roleMap[data.user.role] || 'unknown';
-            }
-            
-            
-            if (userRole === 'super_admin') {
-                setLoggedInProvider(data.user);
+                // Map role numbers to role strings - handle both string and numeric roles
+                let userRole = 'unknown';
                 
-                // Set currentUser immediately for proper auth context
-                const currentUserData = {
-                    id: data.user.id,
-                    email: data.user.email,
-                    role: userRole,
-                    primary_provider_id: data.user.primary_provider_id || null,
-                    active_provider_id: data.user.active_provider_id || null,
-                };
+                if (typeof data.user.role === 'string') {
+                    // Backend returns string roles directly
+                    userRole = data.user.role;
+                } else if (typeof data.user.role === 'number') {
+                    // Backend returns numeric roles that need mapping
+                    const roleMap: { [key: number]: string } = {
+                        0: 'super_admin',      // Backend clarified: 0 is Superadmin
+                        1: 'provider_admin'    // Backend clarified: 1 is Provider Admin
+                    };
+                    userRole = roleMap[data.user.role] || 'unknown';
+                }
                 
-                // Save to session storage and update context
-                sessionStorage.setItem('currentUser', JSON.stringify(currentUserData));
-                
-                // Update AuthProvider state
-                setCurrentUser(currentUserData);
-                console.log('🔐 Login: Updated AuthProvider currentUser state:', currentUserData);
-                
-                console.log('🎉 Login: Success toast for super admin');
-                toast.success(`Welcome back, ${data.user.email}!`);
-            } else if (userRole === 'provider_admin') {
-                const providerId = data.user?.provider_id;
-                
-                // Set currentUser immediately for proper auth context and navigation
-                const currentUserData = {
-                    id: data.user.id,
-                    email: data.user.email,
-                    role: userRole,
-                    primary_provider_id: providerId || null,
-                    active_provider_id: data.user.active_provider_id || providerId || null,
-                };
-                
-                // Save to session storage and update context
-                sessionStorage.setItem('currentUser', JSON.stringify(currentUserData));
-                setCurrentUser(currentUserData);
-                console.log('🔐 Login: Updated AuthProvider currentUser state for provider:', currentUserData);
-                
-                if (providerId && providerId !== null) {
-                    try {
-                        const providerDetails = await fetchSingleProvider(providerId);
-                        setLoggedInProvider({
-                            ...providerDetails,
-                            role: 'provider_admin'
-                        });
-                        console.log('🎉 Login: Success toast for provider admin');
-                        toast.success(`Welcome back, ${providerDetails.attributes.name}!`);
-                    } catch (error) {
-                        console.log('⚠️ Login: Failed to load provider details, but auth state will still trigger navigation');
+                if (userRole === 'super_admin') {
+                    setLoggedInProvider(data.user);
+                    
+                    // Set currentUser immediately for proper auth context
+                    const currentUserData = {
+                        id: data.user.id,
+                        email: data.user.email,
+                        role: userRole,
+                        primary_provider_id: data.user.primary_provider_id || null,
+                        active_provider_id: data.user.active_provider_id || null,
+                    };
+                    
+                    // Save to session storage and update context
+                    sessionStorage.setItem('currentUser', JSON.stringify(currentUserData));
+                    
+                    // Update AuthProvider state
+                    setCurrentUser(currentUserData);
+                    console.log('🔐 Login: Updated AuthProvider currentUser state:', currentUserData);
+                    
+                    console.log('🎉 Login: Success toast for super admin');
+                    toast.success(`Welcome back, ${data.user.email}!`);
+                } else if (userRole === 'provider_admin') {
+                    const providerId = data.user?.provider_id;
+                    
+                    // Set currentUser immediately for proper auth context and navigation
+                    const currentUserData = {
+                        id: data.user.id,
+                        email: data.user.email,
+                        role: userRole,
+                        primary_provider_id: providerId || null,
+                        active_provider_id: data.user.active_provider_id || providerId || null,
+                    };
+                    
+                    // Save to session storage and update context
+                    sessionStorage.setItem('currentUser', JSON.stringify(currentUserData));
+                    setCurrentUser(currentUserData);
+                    console.log('🔐 Login: Updated AuthProvider currentUser state for provider:', currentUserData);
+                    
+                    if (providerId && providerId !== null) {
+                        try {
+                            const providerDetails = await fetchSingleProvider(providerId);
+                            setLoggedInProvider({
+                                ...providerDetails,
+                                role: 'provider_admin'
+                            });
+                            console.log('🎉 Login: Success toast for provider admin');
+                            toast.success(`Welcome back, ${providerDetails.attributes.name}!`);
+                        } catch (error) {
+                            console.log('⚠️ Login: Failed to load provider details, but auth state will still trigger navigation');
+                            setLoggedInProvider({
+                                ...data.user,
+                                role: 'provider_admin'
+                            });
+                            toast.error('Error loading provider details. Please contact support.');
+                            // Navigation will still be handled by the useEffect based on currentUser
+                        }
+                    } else {
+                        // For users without a provider_id, show an error
+                        console.log('⚠️ Login: No provider ID found, auth state will trigger navigation to contact');
                         setLoggedInProvider({
                             ...data.user,
                             role: 'provider_admin'
                         });
-                        toast.error('Error loading provider details. Please contact support.');
-                        // Navigation will still be handled by the useEffect based on currentUser
+                        toast.error('Account configuration error: No provider ID found. Please contact support.');
+                        // Navigation will be handled by the useEffect based on currentUser
                     }
                 } else {
-                    // For users without a provider_id, show an error
-                    console.log('⚠️ Login: No provider ID found, auth state will trigger navigation to contact');
-                    setLoggedInProvider({
-                        ...data.user,
-                        role: 'provider_admin'
-                    });
-                    toast.error('Account configuration error: No provider ID found. Please contact support.');
-                    // Navigation will be handled by the useEffect based on currentUser
+                    toast.error('Unknown user role');
+                    throw new Error('Unknown user role');
                 }
-            } else {
-                toast.error('Unknown user role');
-                throw new Error('Unknown user role');
-            }
 
-            setUsername('');
-            setPassword('');
+                setUsername('');
+                setPassword('');
+            } catch (fetchError) {
+                clearTimeout(timeoutId); // Clear timeout on error
+                
+                if (fetchError instanceof Error && fetchError.name === 'AbortError') {
+                    console.log('⏰ Login: Request timed out after 15 seconds');
+                    throw new Error('Login request timed out. The server is not responding. Please try again later.');
+                }
+                
+                throw fetchError; // Re-throw other errors
+            }
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred';
             setError(errorMessage);
@@ -230,6 +243,8 @@ export const LoginPage: React.FC = () => {
             // Provide more specific error messages
             if (errorMessage.includes('Invalid email or password')) {
                 toast.error('Invalid email or password. Please try again.');
+            } else if (errorMessage.includes('timed out')) {
+                toast.error('Login request timed out. The server is not responding. Please try again later.');
             } else if (errorMessage.includes('network') || errorMessage.includes('fetch')) {
                 toast.error('Network error. Please check your connection and try again.');
             } else if (errorMessage.includes('Provider ID not found')) {
