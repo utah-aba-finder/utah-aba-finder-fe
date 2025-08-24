@@ -911,10 +911,11 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                 <div className="flex justify-between items-center">
                   <div className="flex items-center space-x-3">
                     <button
-                      className="md:hidden p-1.5 hover:bg-gray-100 hover:cursor-pointer rounded-lg"
+                      className="md:hidden p-2 hover:bg-gray-100 hover:cursor-pointer rounded-lg border border-gray-200 bg-white shadow-sm"
                       onClick={() => setIsOpen(true)}
+                      aria-label="Open menu"
                     >
-                      <Menu className="w-5 h-5" />
+                      <Menu className="w-5 h-5 text-gray-700" />
                     </button>
                     <div className="flex items-center space-x-2">
                       <h1 className="text-lg font-semibold">
@@ -972,11 +973,19 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
           </header>
 
     <div className="flex">
+      {/* Mobile Backdrop Overlay */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+      
       {/* Sidebar */}
       <aside
         className={`
-          bg-white shadow-lg w-64 flex flex-col
-          fixed md:static h-[calc(100vh-2rem)] my-4 rounded-lg mx-4
+          bg-white shadow-lg w-80 md:w-64 flex flex-col
+          fixed md:static h-[calc(100vh-2rem)] my-4 mx-0 md:mx-4
           transform transition-transform duration-300 ease-in-out
           ${isOpen ? "translate-x-0" : "-translate-x-full"}
           md:translate-x-0 z-40
@@ -1021,7 +1030,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
           <button
             onClick={() => setSelectedTab("dashboard")}
             className={`
-              hidden md:flex items-center justify-center gap-2 px-3 py-2 rounded-lg
+              flex items-center justify-center gap-2 px-3 py-2 rounded-lg
               transition-colors duration-200
               ${
                 selectedTab === "dashboard"
@@ -1037,7 +1046,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
           <button
             onClick={() => setSelectedTab("edit")}
             className={`
-              hidden md:flex items-center justify-center gap-2 px-3 py-2 rounded-lg
+              flex items-center justify-center gap-2 px-3 py-2 rounded-lg
               transition-colors duration-200
               ${
                 selectedTab === "edit"
@@ -1053,7 +1062,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
           <button
                 onClick={() => setSelectedTab("details")}
             className={`
-              hidden md:flex items-center justify-center gap-2 px-3 py-2 rounded-lg
+              flex items-center justify-center gap-2 px-3 py-2 rounded-lg
               transition-colors duration-200
               ${
                     selectedTab === "details"
@@ -1069,7 +1078,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
           <button
                 onClick={() => setSelectedTab("provider-types")}
             className={`
-              hidden md:flex items-center justify-center gap-2 px-3 py-2 rounded-lg
+              flex items-center justify-center gap-2 px-3 py-2 rounded-lg
               transition-colors duration-200
               ${
                     selectedTab === "provider-types"
@@ -1085,7 +1094,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
           <button
             onClick={() => setSelectedTab("common-fields")}
             className={`
-              hidden md:flex items-center justify-center gap-2 px-3 py-2 rounded-lg
+              flex items-center justify-center gap-2 px-3 py-2 rounded-lg
               transition-colors duration-200
               ${
                 selectedTab === "common-fields"
@@ -1101,7 +1110,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
           <button
             onClick={() => setSelectedTab("coverage")}
             className={`
-              hidden md:flex items-center justify-center gap-2 px-3 py-2 rounded-lg
+              flex items-center justify-center gap-2 px-3 py-2 rounded-lg
               transition-colors duration-200
               ${
                 selectedTab === "coverage"
@@ -1117,7 +1126,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                   <button
                     onClick={() => setSelectedTab("locations")}
                     className={`
-                      hidden md:flex items-center justify-center gap-2 px-3 py-2 rounded-lg
+                      flex items-center justify-center gap-2 px-3 py-2 rounded-lg
                       transition-colors duration-200
                       ${
                         selectedTab === "locations"
@@ -1133,7 +1142,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
               <button
                 onClick={() => setSelectedTab("insurance")}
                 className={`
-                  hidden md:flex items-center justify-center gap-2 px-3 py-2 rounded-lg
+                  flex items-center justify-center gap-2 px-3 py-2 rounded-lg
                   transition-colors duration-200
                   ${
                     selectedTab === "insurance"
