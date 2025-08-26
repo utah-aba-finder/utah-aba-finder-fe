@@ -1518,6 +1518,41 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                           ) : (
                             <p className="text-sm text-gray-500">Please select a state first</p>
                           )}
+                          
+                          {/* Add All Counties Button - Only show when a state is selected and has counties */}
+                          {activeStateForCounties && providerState.length > 0 && availableCounties.filter(county => 
+                            county.attributes.state === activeStateForCounties &&
+                            !selectedCounties.some(c => c.county_id === county.id)
+                          ).length > 0 && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const countiesToAdd = availableCounties
+                                  .filter(county => 
+                                    county.attributes.state === activeStateForCounties &&
+                                    !selectedCounties.some(c => c.county_id === county.id)
+                                  )
+                                  .map(county => ({
+                                    county_id: county.id,
+                                    county_name: county.attributes.name
+                                  }));
+                                
+                                setSelectedCounties(prev => [...prev, ...countiesToAdd]);
+                                
+                                toast.success(`Added ${countiesToAdd.length} counties for ${activeStateForCounties}`, {
+                                  position: "top-right",
+                                  autoClose: 3000,
+                                });
+                              }}
+                              className="mt-3 w-full inline-flex items-center justify-center px-3 py-2 border border-green-300 rounded-lg shadow-sm text-sm font-medium text-green-700 bg-green-50 hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                            >
+                              <MapPin className="w-4 h-4 mr-2" />
+                              Add All {activeStateForCounties} Counties ({availableCounties.filter(county => 
+                                county.attributes.state === activeStateForCounties &&
+                                !selectedCounties.some(c => c.county_id === county.id)
+                              ).length})
+                            </button>
+                          )}
                         </div>
                       </div>
                     </div>
