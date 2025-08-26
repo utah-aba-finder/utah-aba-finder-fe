@@ -222,6 +222,142 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
     setLocations(updatedLocations);
   };
 
+  // Address parsing function - automatically splits full address into components
+  const parseAddress = (fullAddress: string, locationIndex: number) => {
+    if (!fullAddress.trim()) return;
+    
+    let address = fullAddress.trim();
+    address = address.replace(/\n+/g, ', ').replace(/\s+/g, ' ').trim();
+    
+    // Extract phone number first
+    const phoneMatch = address.match(/phone:\s*\(?(\d{3})\)?\s*-?\s*(\d{3})\s*-?\s*(\d{4})/i);
+    let phone = '';
+    if (phoneMatch) {
+      phone = `(${phoneMatch[1]}) ${phoneMatch[2]}-${phoneMatch[3]}`;
+      address = address.replace(phoneMatch[0], '').trim();
+    }
+    
+    // Extract ZIP code
+    const zipMatch = address.match(/\b(\d{5}(?:-\d{4})?)\b/);
+    let zip = '';
+    if (zipMatch) {
+      zip = zipMatch[1];
+      address = address.replace(zipMatch[0], '').trim();
+    }
+    
+    // Extract state
+    const stateMatch = address.match(/\b([A-Z]{2,3})\b/);
+    let state = '';
+    if (stateMatch) {
+      state = stateMatch[1];
+      address = address.replace(stateMatch[0], '').trim();
+    }
+    
+    // Clean up any trailing commas
+    address = address.replace(/,\s*$/, '').trim();
+    
+    // Split by commas and process
+    const parts = address.split(',').map(part => part.trim()).filter(part => part);
+    
+    let streetAddress = '';
+    let suite = '';
+    let city = '';
+    let locationName = '';
+    
+    if (parts.length >= 1) {
+      // For your format: "4927 Calloway Dr. Bakersfield CA, 93312"
+      // We want: street = "4927 Calloway Dr.", city = "Bakersfield", state = "CA", zip = "93312"
+      
+      // First part contains both street and city - we need to separate them
+      const firstPart = parts[0];
+      
+      // Find where the street address ends and city begins
+      // Look for the last occurrence of a street type word
+      const words = firstPart.split(' ');
+      let lastStreetTypeIndex = -1;
+      for (let i = 0; i < words.length; i++) {
+        const word = words[i];
+        if (/\b(st|street|ave|avenue|rd|road|blvd|boulevard|ln|lane|dr|drive|way|pl|place|ct|court)\b/i.test(word)) {
+          lastStreetTypeIndex = i;
+        }
+      }
+      
+      let streetWords = [];
+      let cityWords = [];
+      
+      if (lastStreetTypeIndex >= 0) {
+        // Everything up to and including the street type is street address
+        streetWords = words.slice(0, lastStreetTypeIndex + 1);
+        // Everything after the street type is city
+        cityWords = words.slice(lastStreetTypeIndex + 1);
+      } else {
+        // Fallback: if no street type found, assume last word is city
+        streetWords = words.slice(0, -1);
+        cityWords = words.slice(-1);
+      }
+      
+      // Join the words back together
+      streetAddress = streetWords.join(' ');
+      city = cityWords.join(' ');
+    }
+    
+    // Extract suite/unit from street address
+    const suiteMatch = streetAddress.match(/\b(suite|ste|unit|apt|apartment|#)\s*\.?\s*([a-z0-9-]+)\b/i);
+    if (suiteMatch) {
+      suite = `${suiteMatch[1]} ${suiteMatch[2]}`;
+      streetAddress = streetAddress.replace(suiteMatch[0], '').trim();
+    }
+    
+    // Auto-generate location name based on city
+    if (city) {
+      locationName = `${city} Clinic`;
+    } else if (state) {
+      locationName = `${state} Clinic`;
+    } else {
+      locationName = 'Main Clinic';
+    }
+    
+    // Update the locations state
+    const updatedLocations = [...locations];
+    updatedLocations[locationIndex] = {
+      ...updatedLocations[locationIndex],
+      address_1: streetAddress,
+      address_2: suite,
+      city: city,
+      state: state,
+      zip: zip,
+      phone: phone,
+      name: locationName
+    };
+    setLocations(updatedLocations);
+    
+    // Update editedProvider state to trigger re-render
+    setEditedProvider(prev => prev ? {
+      ...prev,
+      locations: updatedLocations
+    } : null);
+  };
+
+  // Clear all address fields for a location
+  const clearAddressFields = (locationIndex: number) => {
+    const updatedLocations = [...locations];
+    updatedLocations[locationIndex] = {
+      ...updatedLocations[locationIndex],
+      address_1: null,
+      address_2: null,
+      city: null,
+      state: null,
+      zip: null
+    };
+    
+    setLocations(updatedLocations);
+    
+    toast.info('Address fields cleared', {
+      position: "top-right",
+      autoClose: 1500,
+    });
+  };
+
   const addNewLocation = () => {
     const newLocation: ProviderLocation = {
       id: null,
@@ -842,6 +978,32 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                             }
                             className="w-[95%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                           />
+                        </div>
+
+                        {/* Address Parser - Paste Full Address */}
+                        <div className="md:col-span-2">
+                          <label className="block text-sm text-gray-600 mb-2">
+                            🚀 Quick Address Entry - Paste Full Address
+                          </label>
+                          <div className="flex space-x-2">
+                            <input
+                              type="text"
+                              placeholder="Paste full address from Google Maps, business listing, etc..."
+                              className="flex-1 px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                              onBlur={(e) => parseAddress(e.target.value, index)}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => clearAddressFields(index)}
+                              className="px-3 py-2 text-sm text-gray-600 hover:text-red-600 border border-gray-300 rounded-lg hover:bg-gray-50"
+                              title="Clear all address fields"
+                            >
+                              Clear
+                            </button>
+                          </div>
+                          <p className="mt-1 text-xs text-gray-500">
+                            Paste a full address like: "123 Main St, Suite 100, Salt Lake City, UT 84101"
+                          </p>
                         </div>
 
                         <div className="md:col-span-2">
