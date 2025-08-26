@@ -507,6 +507,18 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
         id: provider.id
       });
       
+      // Update local state to reflect the changes immediately
+      setEditedProvider(prev => prev ? {
+        ...prev,
+        ...updatedProvider.attributes,
+        locations: updatedProvider.attributes.locations || []
+      } : null);
+      
+      // Update local locations state to match what was saved
+      if (updatedProvider.attributes.locations) {
+        setLocations(updatedProvider.attributes.locations);
+      }
+      
       // Show success toast only after everything is confirmed successful
       toast.success(`Provider ${editedProvider?.name} updated successfully!`);
       
@@ -553,9 +565,10 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
         }
       }
       
-      if (setSelectedTab) {
-        setSelectedTab("view");
-      }
+      // Don't redirect - let user stay on edit page to see the updated data
+      // if (setSelectedTab) {
+      //   setSelectedTab("view");
+      // }
     } catch (error) {
       
       toast.error(error instanceof Error ? error.message : "Failed to update provider", {
