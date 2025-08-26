@@ -178,6 +178,20 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
     loadCountiesForState();
   }, [activeStateForCounties, availableStates]);
 
+  // Clean up counties when states change to maintain data consistency
+  useEffect(() => {
+    if (providerState.length > 0) {
+      // Remove counties that are no longer associated with any selected state
+      setSelectedCounties(prev => prev.filter(county => {
+        const countyData = availableCounties.find(c => c.id === county.county_id);
+        return countyData && providerState.includes(countyData.attributes.state);
+      }));
+    } else {
+      // If no states selected, clear all counties
+      setSelectedCounties([]);
+    }
+  }, [providerState, availableCounties]);
+
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
@@ -450,10 +464,16 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
         // Keep only what API expects
         provider_type: selectedProviderTypes.map(type => ({ id: type.id, name: type.name })),
         insurance: selectedInsurances,
-        counties_served: selectedCounties.map(c => ({ 
-          county_id: c.county_id, 
-          county_name: c.county_name 
-        })),
+        counties_served: selectedCounties
+          .filter(county => {
+            // Only include counties that are associated with selected states
+            const countyData = availableCounties.find(c => c.id === county.county_id);
+            return countyData && providerState.includes(countyData.attributes.state);
+          })
+          .map(c => ({ 
+            county_id: c.county_id, 
+            county_name: c.county_name 
+          })),
         locations: filteredLocations,
         states: providerState,
         // Remove top-level services array - API may not expect it
@@ -1446,6 +1466,13 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                                   onClick={(e) => {
                                     e.stopPropagation(); // Prevent state selection when clicking X
                                     setProviderState(prev => prev.filter(s => s !== state));
+                                    
+                                    // Remove all counties associated with this state
+                                    setSelectedCounties(prev => prev.filter(county => {
+                                      const countyData = availableCounties.find(c => c.id === county.county_id);
+                                      return countyData?.attributes.state !== state;
+                                    }));
+                                    
                                     if (activeStateForCounties === state) {
                                       setActiveStateForCounties(providerState[0] || '');
                                     }
