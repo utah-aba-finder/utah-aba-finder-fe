@@ -181,16 +181,22 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
   // Clean up counties when states change to maintain data consistency
   useEffect(() => {
     if (providerState.length > 0) {
-      // Remove counties that are no longer associated with any selected state
+      // Only remove counties that are explicitly associated with removed states
+      // Don't remove counties that might be for states we're adding
       setSelectedCounties(prev => prev.filter(county => {
+        // If we have county data and it's not associated with any selected state, remove it
         const countyData = availableCounties.find(c => c.id === county.county_id);
-        return countyData && providerState.includes(countyData.attributes.state);
+        if (countyData) {
+          return providerState.includes(countyData.attributes.state);
+        }
+        // If we don't have county data yet, keep it (it might be for a state we're adding)
+        return true;
       }));
     } else {
       // If no states selected, clear all counties
       setSelectedCounties([]);
     }
-  }, [providerState, availableCounties]);
+  }, [providerState, availableCounties]); // Add availableCounties back to satisfy ESLint
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
@@ -1465,13 +1471,15 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                                   className="ml-2 w-4 h-4 cursor-pointer" 
                                   onClick={(e) => {
                                     e.stopPropagation(); // Prevent state selection when clicking X
-                                    setProviderState(prev => prev.filter(s => s !== state));
                                     
-                                    // Remove all counties associated with this state
+                                    // Remove all counties associated with this specific state
                                     setSelectedCounties(prev => prev.filter(county => {
                                       const countyData = availableCounties.find(c => c.id === county.county_id);
                                       return countyData?.attributes.state !== state;
                                     }));
+                                    
+                                    // Remove the state from providerState
+                                    setProviderState(prev => prev.filter(s => s !== state));
                                     
                                     if (activeStateForCounties === state) {
                                       setActiveStateForCounties(providerState[0] || '');
@@ -1484,8 +1492,21 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                           <select
                             onChange={(e) => {
                               if (!providerState.includes(e.target.value)) {
-                                setProviderState(prev => [...prev, e.target.value]);
-                                setActiveStateForCounties(e.target.value);
+                                const newState = e.target.value;
+                                setProviderState(prev => [...prev, newState]);
+                                setActiveStateForCounties(newState);
+                                
+                                // Load counties for the new state
+                                const stateData = availableStates.find(s => s.attributes.name === newState);
+                                if (stateData) {
+                                  fetchCountiesByState(stateData.id)
+                                    .then(counties => {
+                                      setAvailableCounties(prev => [...prev, ...counties]);
+                                    })
+                                    .catch(error => {
+                                      toast.error(`Failed to load counties for ${newState}`);
+                                    });
+                                }
                               }
                             }}
                             className="block w-full px-3 py-2 rounded-lg border border-gray-300"
