@@ -502,10 +502,16 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
       }
       
       // Pass both the id and attributes to onUpdate
-      onUpdate({
-        ...updatedProvider.attributes,
+      // Include ALL the updated data, not just what the API returns
+      const completeUpdatedData = {
+        ...editedProvider, // Include all current edited data
+        ...updatedProvider.attributes, // Override with API response data
+        locations: locations, // Use current local locations state
+        states: providerState, // Use current local states state
         id: provider.id
-      });
+      };
+      
+      onUpdate(completeUpdatedData);
       
       // Update local state to reflect the changes immediately
       setEditedProvider(prev => prev ? {
