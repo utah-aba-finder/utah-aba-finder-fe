@@ -508,6 +508,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
         ...updatedProvider.attributes, // Override with API response data
         locations: locations, // Use current local locations state
         states: providerState, // Use current local states state
+        counties_served: selectedCounties, // Use current local counties state
         id: provider.id
       };
       
@@ -523,6 +524,11 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
       // Update local locations state to match what was saved
       if (updatedProvider.attributes.locations) {
         setLocations(updatedProvider.attributes.locations);
+      }
+      
+      // Update local counties state to match what was saved
+      if (updatedProvider.attributes.counties_served) {
+        setSelectedCounties(updatedProvider.attributes.counties_served);
       }
       
       // Show success toast only after everything is confirmed successful
