@@ -88,6 +88,9 @@ const SuperAdmin = () => {
   const fetchAllProviders = useCallback(async () => {
     try {
       setIsLoadingProviders(true);
+      // setApiStatus('loading'); // This line was removed
+      // setApiError(null); // This line was removed
+      // setLastFetchAttempt(new Date()); // This line was removed
       
       // Use the same working approach as the main providers page
       // The main providers endpoint works without authentication
@@ -114,12 +117,17 @@ const SuperAdmin = () => {
 
       if (data && data.data) {
         setAllProviders(data.data);
+        // setApiStatus('success'); // This line was removed
       } else {
         setAllProviders([]);
+        // setApiStatus('error'); // This line was removed
+        // setApiError('Failed to fetch providers from API.'); // This line was removed
       }
     } catch (error) {
       console.error('❌ SuperAdmin: Error fetching providers:', error);
       setAllProviders([]);
+      // setApiStatus('error'); // This line was removed
+      // setApiError(error instanceof Error ? error.message : "Failed to fetch providers."); // This line was removed
     } finally {
       setIsLoadingProviders(false);
     }
@@ -133,8 +141,6 @@ const SuperAdmin = () => {
 
   const handleProviderUpdate = async (updatedProvider: ProviderAttributes) => {
     try {
-      console.log('🔄 SuperAdmin: handleProviderUpdate called with:', updatedProvider);
-      
       if (!currentUser) {
         console.error('❌ SuperAdmin: No current user found for update');
         toast.error("Authentication error - please log in again");
@@ -143,8 +149,6 @@ const SuperAdmin = () => {
 
       // Update the local state immediately with the data from SuperAdminEdit
       setAllProviders((prevProviders) => {
-        console.log('🔄 SuperAdmin: Updating allProviders, current count:', prevProviders.length);
-        
         if (!selectedProvider?.id) {
           console.warn('⚠️ SuperAdmin: No selectedProvider ID for update');
           return prevProviders;
@@ -156,17 +160,31 @@ const SuperAdmin = () => {
                 ...provider, 
                 attributes: { 
                   ...provider.attributes, 
-                  // Only update fields that are actually provided (not undefined)
-                  ...Object.fromEntries(
-                    Object.entries(updatedProvider).filter(([_, value]) => value !== undefined)
-                  )
+                  // Handle specific fields that need special treatment
+                  ...(updatedProvider.name !== undefined && { name: updatedProvider.name }),
+                  ...(updatedProvider.logo !== undefined && { logo: updatedProvider.logo }),
+                  ...(updatedProvider.email !== undefined && { email: updatedProvider.email }),
+                  ...(updatedProvider.website !== undefined && { website: updatedProvider.website }),
+                  ...(updatedProvider.cost !== undefined && { cost: updatedProvider.cost }),
+                  ...(updatedProvider.min_age !== undefined && { min_age: updatedProvider.min_age }),
+                  ...(updatedProvider.max_age !== undefined && { max_age: updatedProvider.max_age }),
+                  ...(updatedProvider.waitlist !== undefined && { waitlist: updatedProvider.waitlist }),
+                  ...(updatedProvider.telehealth_services !== undefined && { telehealth_services: updatedProvider.telehealth_services }),
+                  ...(updatedProvider.spanish_speakers !== undefined && { spanish_speakers: updatedProvider.spanish_speakers }),
+                  ...(updatedProvider.at_home_services !== undefined && { at_home_services: updatedProvider.at_home_services }),
+                  ...(updatedProvider.in_clinic_services !== undefined && { in_clinic_services: updatedProvider.in_clinic_services }),
+                  ...(updatedProvider.in_home_only !== undefined && { in_home_only: updatedProvider.in_home_only }),
+                  ...(updatedProvider.service_delivery !== undefined && { service_delivery: updatedProvider.service_delivery }),
+                  ...(updatedProvider.provider_type !== undefined && { provider_type: updatedProvider.provider_type }),
+                  ...(updatedProvider.insurance !== undefined && { insurance: updatedProvider.insurance }),
+                  ...(updatedProvider.counties_served !== undefined && { counties_served: updatedProvider.counties_served }),
+                  ...(updatedProvider.locations !== undefined && { locations: updatedProvider.locations }),
+                  ...(updatedProvider.states !== undefined && { states: updatedProvider.states }),
+                  ...(updatedProvider.status !== undefined && { status: updatedProvider.status }),
+                  ...(updatedProvider.updated_last !== undefined && { updated_last: updatedProvider.updated_last }),
                 } 
               }
             : provider
-        );
-        
-        console.log('🔄 SuperAdmin: Updated provider in allProviders:', 
-          updatedProviders.find(p => p.id === selectedProvider.id)?.attributes
         );
         
         return updatedProviders;
@@ -179,13 +197,29 @@ const SuperAdmin = () => {
           
           const updatedAttributes = {
             ...prev.attributes,
-            // Only update fields that are actually provided (not undefined)
-            ...Object.fromEntries(
-              Object.entries(updatedProvider).filter(([_, value]) => value !== undefined)
-            )
+            // Handle specific fields that need special treatment
+            ...(updatedProvider.name !== undefined && { name: updatedProvider.name }),
+            ...(updatedProvider.logo !== undefined && { logo: updatedProvider.logo }),
+            ...(updatedProvider.email !== undefined && { email: updatedProvider.email }),
+            ...(updatedProvider.website !== undefined && { website: updatedProvider.website }),
+            ...(updatedProvider.cost !== undefined && { cost: updatedProvider.cost }),
+            ...(updatedProvider.min_age !== undefined && { min_age: updatedProvider.min_age }),
+            ...(updatedProvider.max_age !== undefined && { max_age: updatedProvider.max_age }),
+            ...(updatedProvider.waitlist !== undefined && { waitlist: updatedProvider.waitlist }),
+            ...(updatedProvider.telehealth_services !== undefined && { telehealth_services: updatedProvider.telehealth_services }),
+            ...(updatedProvider.spanish_speakers !== undefined && { spanish_speakers: updatedProvider.spanish_speakers }),
+            ...(updatedProvider.at_home_services !== undefined && { at_home_services: updatedProvider.at_home_services }),
+            ...(updatedProvider.in_clinic_services !== undefined && { in_clinic_services: updatedProvider.in_clinic_services }),
+            ...(updatedProvider.in_home_only !== undefined && { in_home_only: updatedProvider.in_home_only }),
+            ...(updatedProvider.service_delivery !== undefined && { service_delivery: updatedProvider.service_delivery }),
+            ...(updatedProvider.provider_type !== undefined && { provider_type: updatedProvider.provider_type }),
+            ...(updatedProvider.insurance !== undefined && { insurance: updatedProvider.insurance }),
+            ...(updatedProvider.counties_served !== undefined && { counties_served: updatedProvider.counties_served }),
+            ...(updatedProvider.locations !== undefined && { locations: updatedProvider.locations }),
+            ...(updatedProvider.states !== undefined && { states: updatedProvider.states }),
+            ...(updatedProvider.status !== undefined && { status: updatedProvider.status }),
+            ...(updatedProvider.updated_last !== undefined && { updated_last: updatedProvider.updated_last }),
           };
-          
-          console.log('🔄 SuperAdmin: Updated selectedProvider attributes:', updatedAttributes);
           
           return { ...prev, attributes: updatedAttributes };
         });
@@ -200,17 +234,7 @@ const SuperAdmin = () => {
   };
 
   const filteredProviders = useMemo(() => {
-    console.log('🔍 SuperAdmin: Filtering providers with:', {
-      totalProviders: allProviders.length,
-      searchTerm,
-      providerTypeFilter,
-      statusFilter,
-      stateFilter,
-      locationCountFilter,
-      logoFilter
-    });
-    
-    return allProviders.filter((provider) => {
+    const filtered = allProviders.filter((provider) => {
       if (!provider?.attributes) {
         return false;
       }
@@ -226,56 +250,46 @@ const SuperAdmin = () => {
               (type: { name: string }) => type.name === providerTypeFilter
             ) || false;
 
-    const statusMatch =
-      statusFilter === "all"
-        ? true
-        : provider.attributes.status?.toLowerCase() === statusFilter;
+      const statusMatch =
+        statusFilter === "all"
+          ? true
+          : provider.attributes.status?.toLowerCase() === statusFilter;
 
-    const stateMatch =
-      stateFilter === "all"
-        ? true
-        : (provider.states || provider.attributes.states || [])?.some(state => {
-            return state.toLowerCase() === stateFilter.toLowerCase();
-          });
+      const stateMatch =
+        stateFilter === "all"
+          ? true
+          : (provider.states || provider.attributes.states || [])?.some(state => {
+              return state.toLowerCase() === stateFilter.toLowerCase();
+            });
 
-    const locationCount = provider.attributes.locations?.length || 0;
-    const locationCountMatch = (() => {
-      if (locationCountFilter === "all") return true;
-      if (locationCountFilter === "1") return locationCount === 1;
-      if (locationCountFilter === "2-3") return locationCount >= 2 && locationCount <= 3;
-      if (locationCountFilter === "4-5") return locationCount >= 4 && locationCount <= 5;
-      if (locationCountFilter === "6+") return locationCount >= 6;
-      return true;
-    })();
+      const locationCount = provider.attributes.locations?.length || 0;
+      const locationCountMatch = (() => {
+        if (locationCountFilter === "all") return true;
+        if (locationCountFilter === "1") return locationCount === 1;
+        if (locationCountFilter === "2-3") return locationCount >= 2 && locationCount <= 3;
+        if (locationCountFilter === "4-5") return locationCount >= 4 && locationCount <= 5;
+        if (locationCountFilter === "6+") return locationCount >= 6;
+        return true;
+      })();
 
-    const logoMatch = (() => {
-      if (logoFilter === "all") return true;
-      if (logoFilter === "with_logo") return !!provider.attributes.logo;
-      if (logoFilter === "without_logo") return !provider.attributes.logo;
-      return true;
-    })();
+      const logoMatch = (() => {
+        if (logoFilter === "all") return true;
+        if (logoFilter === "with_logo") return !!provider.attributes.logo;
+        if (logoFilter === "without_logo") return !provider.attributes.logo;
+        return true;
+      })();
 
-    const result = nameMatch && typeMatch && statusMatch && stateMatch && locationCountMatch && logoMatch;
-    
-    // Debug: Log filter results for first few providers
-    if (allProviders.indexOf(provider) < 3) {
-      console.log('🔍 SuperAdmin: Provider filter results for', provider.attributes.name, {
-        nameMatch,
-        typeMatch,
-        statusMatch,
-        stateMatch,
-        locationCountMatch,
-        logoMatch,
-        finalResult: result
-      });
-    }
-    
-    return result;
-  }).sort((a, b) => {
-    const nameA = a.attributes.name?.toLowerCase() || "";
-    const nameB = b.attributes.name?.toLowerCase() || "";
-    return nameA.localeCompare(nameB);
-  });
+      const result = nameMatch && typeMatch && statusMatch && stateMatch && locationCountMatch && logoMatch;
+      
+      return result;
+    });
+
+    // Sort the filtered results
+    return filtered.sort((a, b) => {
+      const nameA = a.attributes.name?.toLowerCase() || "";
+      const nameB = b.attributes.name?.toLowerCase() || "";
+      return nameA.localeCompare(nameB);
+    });
   }, [allProviders, searchTerm, providerTypeFilter, statusFilter, stateFilter, locationCountFilter, logoFilter]);
 
   const getStatusColor = (status: string | null | undefined) => {
@@ -817,11 +831,6 @@ const SuperAdmin = () => {
                                   {/* Debug: Show current provider_type data */}
                                   {(() => {
                                     const providerTypes = provider.attributes.provider_type;
-                                    if (provider.attributes.name === "Honey Beehavior Analysis") {
-                                      console.log('🔍 Debug Honey Beehavior Analysis provider_type:', providerTypes);
-                                      console.log('🔍 Debug provider_type type:', typeof providerTypes);
-                                      console.log('🔍 Debug provider_type length:', providerTypes?.length);
-                                    }
                                     
                                     if (providerTypes && Array.isArray(providerTypes) && providerTypes.length > 0) {
                                       return providerTypes.map((type: { name: string }) => type.name).join(", ");

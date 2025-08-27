@@ -79,93 +79,69 @@
   
   <!-- TEMPORARY: Service Worker Cleanup (remove after one deploy) -->
   <script>
+    // Aggressive service worker cleanup
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => r.unregister()));
+      // Unregister all service workers
+      navigator.serviceWorker.getRegistrations().then(registrations => {
+        registrations.forEach(registration => {
+          registration.unregister();
+          console.log('Service worker unregistered:', registration);
+        });
+      });
+      
+      // Also try to unregister by scope
+      navigator.serviceWorker.getRegistration().then(registration => {
+        if (registration) {
+          registration.unregister();
+          console.log('Main service worker unregistered');
+        }
+      });
     }
+    
+    // Clear all caches
     if (window.caches) {
-      caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k))));
+      caches.keys().then(keys => {
+        keys.forEach(key => {
+          caches.delete(key);
+          console.log('Cache deleted:', key);
+        });
+      });
+    }
+    
+    // Preserve authentication data - only clear non-auth storage
+    try {
+      // Save current auth data
+      const authToken = sessionStorage.getItem('authToken');
+      const currentUser = sessionStorage.getItem('currentUser');
+      
+      // Clear all storage
+      localStorage.clear();
+      sessionStorage.clear();
+      
+      // Restore auth data
+      if (authToken) {
+        sessionStorage.setItem('authToken', authToken);
+        console.log('Auth token preserved');
+      }
+      if (currentUser) {
+        sessionStorage.setItem('currentUser', currentUser);
+        console.log('Current user preserved');
+      }
+      
+      console.log('Storage cleared (auth preserved)');
+    } catch (e) {
+      console.log('Storage clear failed:', e);
     }
   </script>
   
-  <!-- Service Worker Registration with mobile-friendly settings -->
-  <script>
-    // Service Worker Registration - Safe + Graceful
-    (function() {
-      if (!('serviceWorker' in navigator)) {
-        console.log('Service Worker not supported');
-        return;
-      }
-
-      window.addEventListener('load', async () => {
-        try {
-          const isMobileSafari =
-            /iPad|iPhone|iPod/.test(navigator.userAgent) &&
-            /Safari/.test(navigator.userAgent) &&
-            !/Chrome/.test(navigator.userAgent);
-
-          // Avoid previous reload loops
-          let reloadedForSW = sessionStorage.getItem('sw-reloaded') === '1';
-
-          // Gracefully verify sw.js exists (and bypass HTTP cache)
-          const swUrl = '/sw.js';
-          let swExists = false;
-          try {
-            const head = await fetch(swUrl, { method: 'GET', cache: 'no-store' });
-            swExists = head.ok;
-            if (!swExists) {
-              console.warn('Service worker file missing at', swUrl);
-            }
-          } catch (e) {
-            console.warn('Could not verify /sw.js (network issue?):', e);
-          }
-          if (!swExists) return; // Don't register if it's not there
-
-          const registration = await navigator.serviceWorker.register(swUrl, {
-            scope: '/',
-            updateViaCache: 'none'
-          });
-          console.log('SW registered:', registration);
-
-          // Listen for updates
-          registration.addEventListener('updatefound', () => {
-            const newWorker = registration.installing;
-            if (!newWorker) return;
-
-            newWorker.addEventListener('statechange', async () => {
-              if (newWorker.state === 'installed') {
-                // If there's an existing controller, a new SW is ready to activate
-                if (navigator.serviceWorker.controller) {
-                  console.log('New service worker available');
-                  // Ask it to activate immediately
-                  newWorker.postMessage({ type: 'SKIP_WAITING' });
-                } else {
-                  console.log('Service worker installed for the first time');
-                }
-              }
-            });
-          });
-
-          // When the new SW activates, reload once (avoid infinite loop)
-          navigator.serviceWorker.addEventListener('controllerchange', () => {
-            if (reloadedForSW) return;
-            reloadedForSW = true;
-            sessionStorage.setItem('sw-reloaded', '1');
-            window.location.reload();
-          });
-
-          // Optional: handle errors
-          registration.addEventListener('error', (err) => {
-            console.error('Service worker error:', err);
-            if (isMobileSafari) {
-              console.log('Mobile Safari: if issues persist, visit /disable-sw.html');
-            }
-          });
-        } catch (err) {
-          console.error('Service worker registration error:', err);
-        }
-      });
-    })();
-  </script>
+  <!-- Service Worker Registration DISABLED TEMPORARILY to fix login issues -->
+  <!-- 
+    DISABLED: Service worker was causing net::ERR_INTERNET_DISCONNECTED errors
+    during login, preventing authentication from working properly.
+    
+    TO RE-ENABLE: Uncomment this section after fixing the service worker
+    network handling issues.
+  -->
   
   <!--
       Notice the use of %PUBLIC_URL% in the tags above.

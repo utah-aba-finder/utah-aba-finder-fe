@@ -356,8 +356,8 @@ State: ${location.state}
 ZIP: ${location.zip}
 Phone: ${location.phone}
 Services: ${location.services}
-In-Home Waitlist: ${location.in_home_waitlist === true ? "Yes" : location.in_home_waitlist === false ? "No" : "Not specified"}
-In-Clinic Waitlist: ${location.in_clinic_waitlist === true ? "Yes" : location.in_clinic_waitlist === false ? "No" : "Not specified"}
+In-Home Waitlist: ${location.in_home_waitlist || "Not specified"}
+In-Clinic Waitlist: ${location.in_clinic_waitlist || "Not specified"}
 `).join('\n')}
 
 COVERAGE AREA
@@ -959,38 +959,50 @@ In-Home Services Only: ${providerData.in_home_only ? "Yes" : "No"}
                     </div>
                     <div className="form-group">
                       <label htmlFor={`location-in-home-waitlist-${index}`}>In-Home Waitlist</label>
-                      <p className="text-sm text-gray-500 mb-2">If you don't provide this service or don't have a waitlist please select "No". If you put 'Contact Us' for in-home services below please put 'Yes'.</p>
+                      <p className="text-sm text-gray-500 mb-2">Select the current waitlist status for in-home services</p>
                       <select
                         id={`location-in-home-waitlist-${index}`}
-                        value={location.in_home_waitlist === true ? "true" : location.in_home_waitlist === false ? "false" : ""}
+                        value={location.in_home_waitlist || ""}
                         onChange={(e) => {
                           const value = e.target.value;
-                          handleLocationChange(index, "in_home_waitlist", value === "" ? null : value === "true");
+                          handleLocationChange(index, "in_home_waitlist", value || null);
                         }}
                         className="w-1/2 px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         required
                       >
-                        <option value="">Select...</option>
-                        <option value="true">Yes</option>
-                        <option value="false">No</option>
+                        <option value="">Select waitlist status...</option>
+                        <option value="No waitlist">No waitlist</option>
+                        <option value="1-2 weeks">1-2 weeks</option>
+                        <option value="2-4 weeks">2-4 weeks</option>
+                        <option value="1-3 months">1-3 months</option>
+                        <option value="3-6 months">3-6 months</option>
+                        <option value="6+ months">6+ months</option>
+                        <option value="Not accepting new clients">Not accepting new clients</option>
+                        <option value="Contact for availability">Contact for availability</option>
                       </select>
                     </div>
                     <div className="form-group">
                       <label htmlFor={`location-in-clinic-waitlist-${index}`}>In-Clinic Waitlist</label>
-                      <p className="text-sm text-gray-500 mb-2">If you don't provide this service or don't have a waitlist please select "No". If you put 'Contact Us' for in-clinic services below please put 'Yes'.</p>
+                      <p className="text-sm text-gray-500 mb-2">Select the current waitlist status for in-clinic services</p>
                       <select
                         id={`location-in-clinic-waitlist-${index}`}
-                        value={location.in_clinic_waitlist === true ? "true" : location.in_clinic_waitlist === false ? "false" : ""}
+                        value={location.in_clinic_waitlist || ""}
                         onChange={(e) => {
                           const value = e.target.value;
-                          handleLocationChange(index, "in_clinic_waitlist", value === "" ? null : value === "true");
+                          handleLocationChange(index, "in_clinic_waitlist", value || null);
                         }}
                         className="w-1/2 px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         required
                       >
-                        <option value="">Select...</option>
-                        <option value="true">Yes</option>
-                        <option value="false">No</option>
+                        <option value="">Select waitlist status...</option>
+                        <option value="No waitlist">No waitlist</option>
+                        <option value="1-2 weeks">1-2 weeks</option>
+                        <option value="2-4 weeks">2-4 weeks</option>
+                        <option value="1-3 months">1-3 months</option>
+                        <option value="3-6 months">3-6 months</option>
+                        <option value="6+ months">6+ months</option>
+                        <option value="Not accepting new clients">Not accepting new clients</option>
+                        <option value="Contact for availability">Contact for availability</option>
                       </select>
                     </div>
                   </div>

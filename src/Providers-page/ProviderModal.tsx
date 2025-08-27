@@ -16,8 +16,8 @@ interface Location {
   zip: string | null;
   phone?: string | null;
   services?: Service[];
-  in_home_waitlist?: boolean | null;
-  in_clinic_waitlist?: boolean | null;
+  in_home_waitlist?: string | null;
+  in_clinic_waitlist?: string | null;
 }
 
 interface Insurance {
@@ -296,25 +296,13 @@ const ProviderModal: React.FC<ProviderModalProps> = ({
                     </p>
                     <p className="text-gray-600">
                       <span className="font-semibold">In-Home Waitlist:</span>{" "}
-                      {location.in_home_waitlist === true
-                        ? "Yes"
-                        : location.in_home_waitlist === false
-                        ? "No"
-                        : location.in_home_waitlist === null
-                        ? "Service not provided"
-                        : "Contact us"}
+                      {location.in_home_waitlist || "Contact us"}
                     </p>
                     <p className="text-gray-600">
                       <span className="font-semibold">In-Clinic Waitlist:</span>{" "}
-                      {provider.attributes.in_clinic_services === "No" && location.in_clinic_waitlist === true 
+                      {provider.attributes.in_clinic_services === "No" 
                         ? "This service isn't provided at this clinic" 
-                        : location.in_clinic_waitlist === true 
-                          ? "Yes" 
-                          : location.in_clinic_waitlist === false 
-                            ? "No" 
-                            : location.in_clinic_waitlist === null
-                            ? "Service not provided"
-                            : "Contact us"}
+                        : location.in_clinic_waitlist || "Contact us"}
                     </p>
                     <p><Briefcase style={{ marginRight: '8px' }} />
                       <strong>Services: </strong>

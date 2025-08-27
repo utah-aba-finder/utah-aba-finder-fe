@@ -105,7 +105,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
   const [selectedLogoFile, setSelectedLogoFile] = useState<File | null>(null);
 
   useEffect(() => {
-    if (provider) {
+    if (provider && !editedProvider) { // Only run on initial load
       setEditedProvider({
         ...provider.attributes,
         // Initialize new fields with defaults if they don't exist
@@ -121,13 +121,20 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
       setSelectedInsurances(provider.attributes.insurance || []);
       const mappedLocations = provider.attributes.locations.map(location => ({
         ...location,
-        services: location.services || []
+        services: location.services || [],
+        // Convert old boolean waitlist values to new descriptive string format
+        in_home_waitlist: typeof location.in_home_waitlist === 'boolean' 
+          ? (location.in_home_waitlist ? "Contact for availability" : "No waitlist")
+          : location.in_home_waitlist || "Contact for availability",
+        in_clinic_waitlist: typeof location.in_clinic_waitlist === 'boolean'
+          ? (location.in_clinic_waitlist ? "Contact for availability" : "No waitlist")
+          : location.in_clinic_waitlist || "Contact for availability"
       })) || [];
       setLocations(mappedLocations);
-              setSelectedProviderTypes(provider.attributes.provider_type || []);
-        setIsLoading(false);
+      setSelectedProviderTypes(provider.attributes.provider_type || []);
+      setIsLoading(false);
     }
-  }, [provider]);
+  }, [provider, editedProvider]); // Add editedProvider to prevent re-running
 
   useEffect(() => {
     const loadInitialData = async () => {
@@ -178,6 +185,26 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
     loadCountiesForState();
   }, [activeStateForCounties, availableStates]);
 
+  // Clean up counties when states change to maintain data consistency
+  useEffect(() => {
+    // Only run this effect if we have both providerState and availableCounties
+    // AND if we're not in the middle of adding new states/counties
+    if (providerState.length > 0 && availableCounties.length > 0) {
+      // Only remove counties that are explicitly associated with removed states
+      // Don't remove counties that might be for states we're adding
+      setSelectedCounties(prev => prev.filter(county => {
+        // If we have county data and it's not associated with any selected state, remove it
+        const countyData = availableCounties.find(c => c.id === county.county_id);
+        if (countyData) {
+          return providerState.includes(countyData.attributes.state);
+        }
+        // If we don't have county data yet, keep it (it might be for a state we're adding)
+        return true;
+      }));
+    }
+    // Don't clear counties if we have no states - this might be during initialization
+  }, [providerState, availableCounties]); // Add availableCounties back to satisfy ESLint
+
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
@@ -189,17 +216,20 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
       );
       
       if (selectedState) {
-        setProviderState([value]); // Update providerState when state is selected
-        setEditedProvider(prev => 
-          prev ? { ...prev, state: [value] } : null
-        );
+        // Add the new state to the existing array instead of replacing it
+        setProviderState(prev => {
+          if (prev.includes(value)) {
+            return prev; // State already exists
+          }
+          return [...prev, value]; // Add new state
+        });
         
         // Set active state for counties
         setActiveStateForCounties(value);
         
         fetchCountiesByState(selectedState.id)
           .then(counties => {
-            setAvailableCounties(counties);
+            setAvailableCounties(prev => [...prev, ...counties]);
           })
           .catch(error => {
             toast.error("Failed to load counties");
@@ -220,6 +250,152 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
     const updatedLocations = [...locations];
     updatedLocations[index] = { ...updatedLocations[index], [field]: value };
     setLocations(updatedLocations);
+    
+    // Also update the editedProvider state to keep it synchronized
+    if (editedProvider) {
+      const updatedEditedProvider = { ...editedProvider };
+      if (!updatedEditedProvider.locations) {
+        updatedEditedProvider.locations = [];
+      }
+      updatedEditedProvider.locations[index] = { ...updatedEditedProvider.locations[index], [field]: value };
+      setEditedProvider(updatedEditedProvider);
+    }
+  };
+
+  // Address parsing function - automatically splits full address into components
+  const parseAddress = (fullAddress: string, locationIndex: number) => {
+    if (!fullAddress.trim()) return;
+    
+    let address = fullAddress.trim();
+    address = address.replace(/\n+/g, ', ').replace(/\s+/g, ' ').trim();
+    
+    // Extract phone number first
+    const phoneMatch = address.match(/phone:\s*\(?(\d{3})\)?\s*-?\s*(\d{3})\s*-?\s*(\d{4})/i);
+    let phone = '';
+    if (phoneMatch) {
+      phone = `(${phoneMatch[1]}) ${phoneMatch[2]}-${phoneMatch[3]}`;
+      address = address.replace(phoneMatch[0], '').trim();
+    }
+    
+    // Extract ZIP code
+    const zipMatch = address.match(/\b(\d{5}(?:-\d{4})?)\b/);
+    let zip = '';
+    if (zipMatch) {
+      zip = zipMatch[1];
+      address = address.replace(zipMatch[0], '').trim();
+    }
+    
+    // Extract state
+    const stateMatch = address.match(/\b([A-Z]{2,3})\b/);
+    let state = '';
+    if (stateMatch) {
+      state = stateMatch[1];
+      address = address.replace(stateMatch[0], '').trim();
+    }
+    
+    // Clean up any trailing commas
+    address = address.replace(/,\s*$/, '').trim();
+    
+    // Split by commas and process
+    const parts = address.split(',').map(part => part.trim()).filter(part => part);
+    
+    let streetAddress = '';
+    let suite = '';
+    let city = '';
+    let locationName = '';
+    
+    if (parts.length >= 1) {
+      // For your format: "4927 Calloway Dr. Bakersfield CA, 93312"
+      // We want: street = "4927 Calloway Dr.", city = "Bakersfield", state = "CA", zip = "93312"
+      
+      // First part contains both street and city - we need to separate them
+      const firstPart = parts[0];
+      
+      // Find where the street address ends and city begins
+      // Look for the last occurrence of a street type word
+      const words = firstPart.split(' ');
+      let lastStreetTypeIndex = -1;
+      for (let i = 0; i < words.length; i++) {
+        const word = words[i];
+        if (/\b(st|street|ave|avenue|rd|road|blvd|boulevard|ln|lane|dr|drive|way|pl|place|ct|court)\b/i.test(word)) {
+          lastStreetTypeIndex = i;
+        }
+      }
+      
+      let streetWords = [];
+      let cityWords = [];
+      
+      if (lastStreetTypeIndex >= 0) {
+        // Everything up to and including the street type is street address
+        streetWords = words.slice(0, lastStreetTypeIndex + 1);
+        // Everything after the street type is city
+        cityWords = words.slice(lastStreetTypeIndex + 1);
+      } else {
+        // Fallback: if no street type found, assume last word is city
+        streetWords = words.slice(0, -1);
+        cityWords = words.slice(-1);
+      }
+      
+      // Join the words back together
+      streetAddress = streetWords.join(' ');
+      city = cityWords.join(' ');
+    }
+    
+    // Extract suite/unit from street address
+    const suiteMatch = streetAddress.match(/\b(suite|ste|unit|apt|apartment|#)\s*\.?\s*([a-z0-9-]+)\b/i);
+    if (suiteMatch) {
+      suite = `${suiteMatch[1]} ${suiteMatch[2]}`;
+      streetAddress = streetAddress.replace(suiteMatch[0], '').trim();
+    }
+    
+    // Auto-generate location name based on city
+    if (city) {
+      locationName = `${city} Clinic`;
+    } else if (state) {
+      locationName = `${state} Clinic`;
+    } else {
+      locationName = 'Main Clinic';
+    }
+    
+    // Update the locations state
+    const updatedLocations = [...locations];
+    updatedLocations[locationIndex] = {
+      ...updatedLocations[locationIndex],
+      address_1: streetAddress,
+      address_2: suite,
+      city: city,
+      state: state,
+      zip: zip,
+      phone: phone,
+      name: locationName
+    };
+    setLocations(updatedLocations);
+    
+    // Update editedProvider state to trigger re-render
+    setEditedProvider(prev => prev ? {
+      ...prev,
+      locations: updatedLocations
+    } : null);
+  };
+
+  // Clear all address fields for a location
+  const clearAddressFields = (locationIndex: number) => {
+    const updatedLocations = [...locations];
+    updatedLocations[locationIndex] = {
+      ...updatedLocations[locationIndex],
+      address_1: null,
+      address_2: null,
+      city: null,
+      state: null,
+      zip: null
+    };
+    
+    setLocations(updatedLocations);
+    
+    toast.info('Address fields cleared', {
+      position: "top-right",
+      autoClose: 1500,
+    });
   };
 
   const addNewLocation = () => {
@@ -233,8 +409,8 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
       zip: null,
       phone: null,
       services: [],
-      in_home_waitlist: null,
-      in_clinic_waitlist: null
+      in_home_waitlist: "Contact for availability",
+      in_clinic_waitlist: "Contact for availability"
     };
     setLocations([newLocation, ...locations]);
   };
@@ -283,7 +459,9 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
       // Strip null IDs from new locations to prevent validation issues
       const filteredLocations = locations
         .filter(location => 
-          location.services && location.services.length > 0 && location.phone
+          // Only filter out completely empty locations
+          // Allow locations with partial data to be saved
+          location.name || location.address_1 || location.city || location.state || location.phone
         )
         .map(({ id, in_home_waitlist, in_clinic_waitlist, ...rest }) => {
           const base = {
@@ -295,29 +473,59 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
             city: rest.city || null,
             state: rest.state || null,
             zip: rest.zip || null,
-            phone: rest.phone!,
+            phone: rest.phone || null, // Allow null phone numbers
             services: rest.services || [],
-            // Note: location waitlist fields may not be supported by API
-            // Only include if confirmed the API accepts them
+            // Convert boolean waitlist values to descriptive strings
+            in_home_waitlist: typeof in_home_waitlist === 'boolean' 
+              ? (in_home_waitlist ? "Contact for availability" : "No waitlist")
+              : (in_home_waitlist || "Contact for availability"),
+            in_clinic_waitlist: typeof in_clinic_waitlist === 'boolean'
+              ? (in_clinic_waitlist ? "Contact for availability" : "No waitlist")
+              : (in_clinic_waitlist || "Contact for availability")
           };
           
           // Only include id if it's a real number (existing location)
+          // For new locations, omit the id field entirely
           return (typeof id === 'number' && id > 0) ? { id, ...base } : base;
         });
 
       // Build attributes object with only what the API expects
       const attributes: any = {
-        ...editedProvider,
-        // Remove fields the API doesn't accept
-        state: undefined,
-        updated_last: undefined,
+        // Don't spread editedProvider - it might contain conflicting fields
+        // Only include the specific fields we want to update
+        name: editedProvider?.name,
+        logo: editedProvider?.logo,
+        email: editedProvider?.email,
+        website: editedProvider?.website,
+        cost: editedProvider?.cost,
+        min_age: editedProvider?.min_age,
+        max_age: editedProvider?.max_age,
+        waitlist: editedProvider?.waitlist,
+        telehealth_services: editedProvider?.telehealth_services,
+        spanish_speakers: editedProvider?.spanish_speakers,
+        at_home_services: editedProvider?.at_home_services,
+        in_clinic_services: editedProvider?.in_clinic_services,
+        in_home_only: editedProvider?.in_home_only,
+        service_delivery: editedProvider?.service_delivery,
         // Keep only what API expects
         provider_type: selectedProviderTypes.map(type => ({ id: type.id, name: type.name })),
         insurance: selectedInsurances,
-        counties_served: selectedCounties.map(c => ({ 
-          county_id: c.county_id, 
-          county_name: c.county_name 
-        })),
+        counties_served: selectedCounties
+          .filter(county => {
+            // Don't filter out counties if we don't have state data yet
+            // This prevents losing counties for states we're adding
+            const countyData = availableCounties.find(c => c.id === county.county_id);
+            if (!countyData) {
+              // If we don't have county data yet, keep it (it might be for a state we're adding)
+              return true;
+            }
+            // Only include counties that are associated with selected states
+            return providerState.includes(countyData.attributes.state);
+          })
+          .map(c => ({ 
+            county_id: c.county_id, 
+            county_name: c.county_name 
+          })),
         locations: filteredLocations,
         states: providerState,
         // Remove top-level services array - API may not expect it
@@ -365,11 +573,44 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
         console.warn('⚠️ Some locations may not have been saved properly');
       }
       
-      // Pass both the id and attributes to onUpdate
-      onUpdate({
-        ...updatedProvider.attributes,
+      // Build the complete updated data object for the parent component
+      const completeUpdatedData = {
+        ...updatedProvider.attributes, // Override with API response data
+        // Merge API response with local state for critical fields
+        locations: (updatedProvider.attributes.locations || []).map((apiLocation: any, index: number) => {
+          // If API location has no services but local location does, preserve local services
+          const localLocation = locations[index];
+          if (apiLocation.services && apiLocation.services.length === 0 && 
+              localLocation && localLocation.services && localLocation.services.length > 0) {
+            return {
+              ...apiLocation,
+              services: localLocation.services // Keep local services if API didn't save them
+            };
+          }
+          return apiLocation;
+        }),
+        states: updatedProvider.attributes.states || providerState, // Use API response if available, fallback to local
+        counties_served: updatedProvider.attributes.counties_served || selectedCounties, // Use API response if available, fallback to local
         id: provider.id
-      });
+      };
+      
+      onUpdate(completeUpdatedData);
+      
+      // Update local state to reflect the changes immediately
+      setEditedProvider(prev => prev ? {
+        ...prev,
+        ...updatedProvider.attributes,
+        // Use API response locations if available, otherwise keep local
+        locations: completeUpdatedData.locations // Use our merged locations
+      } : null);
+      
+      // Update local locations state with our merged locations
+      setLocations(completeUpdatedData.locations);
+      
+      // Update local counties state to match what was saved
+      if (updatedProvider.attributes.counties_served) {
+        setSelectedCounties(updatedProvider.attributes.counties_served);
+      }
       
       // Show success toast only after everything is confirmed successful
       toast.success(`Provider ${editedProvider?.name} updated successfully!`);
@@ -417,9 +658,10 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
         }
       }
       
-      if (setSelectedTab) {
-        setSelectedTab("view");
-      }
+      // Don't redirect - let user stay on edit page to see the updated data
+      // if (setSelectedTab) {
+      //   setSelectedTab("view");
+      // }
     } catch (error) {
       
       toast.error(error instanceof Error ? error.message : "Failed to update provider", {
@@ -452,6 +694,19 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
     }
     
     setLocations(updatedLocations);
+    
+    // Also update the editedProvider state to keep it synchronized
+    if (editedProvider) {
+      const updatedEditedProvider = { ...editedProvider };
+      if (!updatedEditedProvider.locations) {
+        updatedEditedProvider.locations = [];
+      }
+      updatedEditedProvider.locations[locationIndex] = { 
+        ...updatedEditedProvider.locations[locationIndex], 
+        services: updatedLocations[locationIndex].services 
+      };
+      setEditedProvider(updatedEditedProvider);
+    }
   };
 
   if (isLoading) {
@@ -844,6 +1099,32 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                           />
                         </div>
 
+                        {/* Address Parser - Paste Full Address */}
+                        <div className="md:col-span-2">
+                          <label className="block text-sm text-gray-600 mb-2">
+                            🚀 Quick Address Entry - Paste Full Address
+                          </label>
+                          <div className="flex space-x-2">
+                            <input
+                              type="text"
+                              placeholder="Paste full address from Google Maps, business listing, etc..."
+                              className="flex-1 px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                              onBlur={(e) => parseAddress(e.target.value, index)}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => clearAddressFields(index)}
+                              className="px-3 py-2 text-sm text-gray-600 hover:text-red-600 border border-gray-300 rounded-lg hover:bg-gray-50"
+                              title="Clear all address fields"
+                            >
+                              Clear
+                            </button>
+                          </div>
+                          <p className="mt-1 text-xs text-gray-500">
+                            Paste a full address like: "123 Main St, Suite 100, Salt Lake City, UT 84101"
+                          </p>
+                        </div>
+
                         <div className="md:col-span-2">
                           <label className="block text-sm text-gray-600 mb-2">
                             Street Address
@@ -918,17 +1199,23 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                           <label className="block text-sm text-gray-600 mb-2">
                             In-Home Waitlist
                           </label>
-                          <p className="text-sm text-gray-500 mb-2">If you don't provide this service please select "No"</p>
+                          <p className="text-sm text-gray-500 mb-2">Select the current waitlist status for in-home services</p>
                           <select
-                            value={location.in_home_waitlist === true ? "true" : location.in_home_waitlist === false ? "false" : ""}
+                            value={typeof location.in_home_waitlist === 'boolean' ? '' : String(location.in_home_waitlist || '')}
                             onChange={(e) =>
-                              handleLocationChange(index, "in_home_waitlist", e.target.value === "true")
+                              handleLocationChange(index, "in_home_waitlist", e.target.value)
                             }
                             className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                           >
-                            <option value="">Select...</option>
-                            <option value="true">Yes</option>
-                            <option value="false">No</option>
+                            <option value="">Select waitlist status...</option>
+                            <option value="No waitlist">No waitlist</option>
+                            <option value="1-2 weeks">1-2 weeks</option>
+                            <option value="2-4 weeks">2-4 weeks</option>
+                            <option value="1-3 months">1-3 months</option>
+                            <option value="3-6 months">3-6 months</option>
+                            <option value="6+ months">6+ months</option>
+                            <option value="Not accepting new clients">Not accepting new clients</option>
+                            <option value="Contact for availability">Contact for availability</option>
                           </select>
                         </div>
 
@@ -936,17 +1223,23 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                           <label className="block text-sm text-gray-600 mb-2">
                             In-Clinic Waitlist
                           </label>
-                          <p className="text-sm text-gray-500 mb-2">If you don't provide this service please select "No"</p>
+                          <p className="text-sm text-gray-500 mb-2">Select the current waitlist status for in-clinic services</p>
                           <select
-                            value={location.in_clinic_waitlist === true ? "true" : location.in_clinic_waitlist === false ? "false" : ""}
+                            value={typeof location.in_clinic_waitlist === 'boolean' ? '' : String(location.in_clinic_waitlist || '')}
                             onChange={(e) =>
-                              handleLocationChange(index, "in_clinic_waitlist", e.target.value === "true")
+                              handleLocationChange(index, "in_clinic_waitlist", e.target.value)
                             }
                             className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                           >
-                            <option value="">Select...</option>
-                            <option value="true">Yes</option>
-                            <option value="false">No</option>
+                            <option value="">Select waitlist status...</option>
+                            <option value="No waitlist">No waitlist</option>
+                            <option value="1-2 weeks">1-2 weeks</option>
+                            <option value="2-4 weeks">2-4 weeks</option>
+                            <option value="1-3 months">1-3 months</option>
+                            <option value="3-6 months">3-6 months</option>
+                            <option value="6+ months">6+ months</option>
+                            <option value="Not accepting new clients">Not accepting new clients</option>
+                            <option value="Contact for availability">Contact for availability</option>
                           </select>
                         </div>
                       </div>
@@ -1258,7 +1551,16 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                                   className="ml-2 w-4 h-4 cursor-pointer" 
                                   onClick={(e) => {
                                     e.stopPropagation(); // Prevent state selection when clicking X
+                                    
+                                    // Remove all counties associated with this specific state
+                                    setSelectedCounties(prev => prev.filter(county => {
+                                      const countyData = availableCounties.find(c => c.id === county.county_id);
+                                      return countyData?.attributes.state !== state;
+                                    }));
+                                    
+                                    // Remove the state from providerState
                                     setProviderState(prev => prev.filter(s => s !== state));
+                                    
                                     if (activeStateForCounties === state) {
                                       setActiveStateForCounties(providerState[0] || '');
                                     }
@@ -1270,8 +1572,21 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                           <select
                             onChange={(e) => {
                               if (!providerState.includes(e.target.value)) {
-                                setProviderState(prev => [...prev, e.target.value]);
-                                setActiveStateForCounties(e.target.value);
+                                const newState = e.target.value;
+                                setProviderState(prev => [...prev, newState]);
+                                setActiveStateForCounties(newState);
+                                
+                                // Load counties for the new state
+                                const stateData = availableStates.find(s => s.attributes.name === newState);
+                                if (stateData) {
+                                  fetchCountiesByState(stateData.id)
+                                    .then(counties => {
+                                      setAvailableCounties(prev => [...prev, ...counties]);
+                                    })
+                                    .catch(error => {
+                                      toast.error(`Failed to load counties for ${newState}`);
+                                    });
+                                }
                               }
                             }}
                             className="block w-full px-3 py-2 rounded-lg border border-gray-300"
@@ -1337,6 +1652,48 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                           ) : (
                             <p className="text-sm text-gray-500">Please select a state first</p>
                           )}
+                          
+                          {/* Add All Counties Button - Only show when a state is selected and has counties */}
+                          {activeStateForCounties && providerState.length > 0 && availableCounties.filter(county => 
+                            county.attributes.state === activeStateForCounties &&
+                            !selectedCounties.some(c => c.county_id === county.id)
+                          ).length > 0 && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const countiesToAdd = availableCounties
+                                  .filter(county => 
+                                    county.attributes.state === activeStateForCounties &&
+                                    !selectedCounties.some(c => c.county_id === county.id)
+                                  )
+                                  .map(county => ({
+                                    county_id: county.id,
+                                    county_name: county.attributes.name
+                                  }));
+                                
+                                setSelectedCounties(prev => [...prev, ...countiesToAdd]);
+                                
+                                toast.success(`Added ${countiesToAdd.length} counties for ${activeStateForCounties}`, {
+                                  position: "top-right",
+                                  autoClose: 3000,
+                                });
+                              }}
+                              className="mt-3 w-full inline-flex items-center justify-center px-3 py-2 border border-green-300 rounded-lg shadow-sm text-sm font-medium text-green-700 bg-green-50 hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                            >
+                              <MapPin className="w-4 h-4 mr-2" />
+                              Add All {activeStateForCounties} Counties ({availableCounties.filter(county => 
+                                county.attributes.state === activeStateForCounties &&
+                                !selectedCounties.some(c => c.county_id === county.id)
+                              ).length})
+                            </button>
+                          )}
+                          
+                          {/* Debug info */}
+                          <div className="mt-2 text-xs text-gray-500">
+                            Debug: activeState={activeStateForCounties}, 
+                            providerState={JSON.stringify(providerState)}, 
+                            availableCounties for {activeStateForCounties}={availableCounties.filter(c => c.attributes.state === activeStateForCounties).length}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -1356,7 +1713,14 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                         setSelectedInsurances(provider.attributes.insurance || []);
                         setLocations(provider.attributes.locations.map(location => ({
                           ...location,
-                          services: location.services || []
+                          services: location.services || [],
+                          // Convert old boolean waitlist values to new descriptive string format
+                          in_home_waitlist: typeof location.in_home_waitlist === 'boolean' 
+                            ? (location.in_home_waitlist ? "Contact for availability" : "No waitlist")
+                            : location.in_home_waitlist || "Contact for availability",
+                          in_clinic_waitlist: typeof location.in_clinic_waitlist === 'boolean'
+                            ? (location.in_clinic_waitlist ? "Contact for availability" : "No waitlist")
+                            : location.in_clinic_waitlist || "Contact for availability"
                         })) || []);
                         setSelectedProviderTypes(provider.attributes.provider_type || []);
                       }

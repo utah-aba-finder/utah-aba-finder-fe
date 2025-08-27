@@ -9,6 +9,7 @@ import gearImage from "../Assets/Gear@1x-0.5s-200px-200px.svg";
 import Joyride, { Step, STATUS } from "react-joyride";
 import { fetchPublicProviders, fetchInsurance, fetchProvidersByStateIdAndProviderType } from "../Utility/ApiCall";
 import SEO from "../Utility/SEO";
+import { AlertTriangle, RefreshCw, Wifi, WifiOff } from "lucide-react";
 interface FavoriteDate {
   [providerId: number]: string;
 }
@@ -62,6 +63,9 @@ const ProvidersPage: React.FC = () => {
   const [isSearchRefined, setIsSearchRefined] = useState(false);
   const [showResultMessage, setShowResultMessage] = useState(false);
   const [showSearchNotification, setShowSearchNotification] = useState(false);
+  const [apiStatus, setApiStatus] = useState<'loading' | 'success' | 'error' | 'offline'>('loading');
+  const [lastFetchAttempt, setLastFetchAttempt] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
   
   const [steps] = useState<Step[]>([
     {
@@ -205,13 +209,35 @@ const ProvidersPage: React.FC = () => {
       const loadingTimeout = setTimeout(() => {
         console.log('⏰ Loading timeout - forcing loading to false');
         setIsLoading(false);
+        setApiStatus('error');
+        setShowError("Request timed out. The server may be experiencing issues.");
       }, 15000); // 15 second timeout
       
       try {
         console.log('🔄 Starting to fetch providers...');
         setIsLoading(true);
+        setApiStatus('loading');
+        setShowError("");
+        setLastFetchAttempt(new Date());
         
-        const providers = await fetchPublicProviders();
+        // Add a more aggressive timeout for the fetch request itself
+        const fetchTimeout = setTimeout(() => {
+          console.log('⏰ Fetch timeout - API request taking too long');
+          setApiStatus('error');
+          setShowError("API request is taking too long. The server may be experiencing issues.");
+          setIsLoading(false);
+        }, 10000); // 10 second timeout for fetch
+        
+        let providers;
+        try {
+          providers = await fetchPublicProviders();
+          clearTimeout(fetchTimeout); // Clear timeout if successful
+        } catch (fetchError) {
+          clearTimeout(fetchTimeout);
+          console.log('❌ fetchPublicProviders threw error:', fetchError);
+          throw fetchError; // Re-throw to be caught by outer catch
+        }
+        
         console.log('📡 API response received:', providers);
         
         // Add null check for providers.data
@@ -219,6 +245,20 @@ const ProvidersPage: React.FC = () => {
           console.warn('⚠️ Invalid providers data structure:', providers);
           setAllProviders([]);
           setFilteredProviders([]);
+          setApiStatus('error');
+          setShowError("Invalid data received from server. Please try again later.");
+          clearTimeout(loadingTimeout);
+          setIsLoading(false);
+          return;
+        }
+        
+        // Check if we actually got any providers
+        if (providers.data.length === 0) {
+          console.warn('⚠️ No providers returned from API');
+          setAllProviders([]);
+          setFilteredProviders([]);
+          setApiStatus('error');
+          setShowError("We are experiencing issues on our end. Please try again later.");
           clearTimeout(loadingTimeout);
           setIsLoading(false);
           return;
@@ -261,9 +301,28 @@ const ProvidersPage: React.FC = () => {
         console.log('📝 Mapped providers:', mappedProviders);
         setAllProviders(mappedProviders);
         setFilteredProviders(mappedProviders);
+        setApiStatus('success');
+        setRetryCount(0);
       } catch (error) {
         console.error('❌ Error fetching providers:', error);
-        setShowError("Failed to load providers. Please try again later.");
+        setApiStatus('error');
+        setRetryCount(prev => prev + 1);
+        
+        // Provide more specific error messages based on error type
+        if (error instanceof Error) {
+          if (error.message.includes('fetch') || error.message.includes('Failed to fetch')) {
+            setShowError("Network error - unable to connect to our servers. Please check your internet connection and try again.");
+          } else if (error.message.includes('timeout') || error.message.includes('timed out')) {
+            setShowError("Request timed out. Our servers may be experiencing high traffic. Please try again in a few minutes.");
+          } else if (error.message.includes('HTTP error')) {
+            setShowError("Server error - our servers are experiencing issues. Please try again later.");
+          } else {
+            setShowError(`Failed to load providers: ${error.message}. Please try again later.`);
+          }
+        } else {
+          setShowError("Failed to load providers. Our servers may be experiencing issues. Please try again later.");
+        }
+        
         setAllProviders([]);
         setFilteredProviders([]);
         setIsLoading(false);
@@ -285,18 +344,86 @@ const ProvidersPage: React.FC = () => {
     };
   }, []);
 
+  // Add retry function
+  const handleRetryFetch = useCallback(async () => {
+    setRetryCount(prev => prev + 1);
+    setShowError("");
+    setApiStatus('loading');
+    setIsLoading(true);
+    
+    try {
+      const providers = await fetchPublicProviders();
+      
+      if (!providers || !providers.data || !Array.isArray(providers.data)) {
+        throw new Error('Invalid data received from server');
+      }
+      
+      const mappedProviders = providers.data.map((p: ProviderData) => ({
+        id: p.attributes.id,
+        name: p.attributes.name,
+        locations: p.attributes.locations,
+        insurance: p.attributes.insurance,
+        counties_served: p.attributes.counties_served,
+        password: p.attributes.password,
+        username: p.attributes.username,
+        website: p.attributes.website,
+        email: p.attributes.email,
+        cost: p.attributes.cost,
+        min_age: p.attributes.min_age,
+        max_age: p.attributes.max_age,
+        waitlist: p.attributes.waitlist,
+        telehealth_services: p.attributes.telehealth_services,
+        spanish_speakers: p.attributes.spanish_speakers,
+        at_home_services: p.attributes.at_home_services,
+        in_clinic_services: p.attributes.in_clinic_services,
+        logo: p.attributes.logo,
+        states: p.states || [],
+        provider_type: p.attributes.provider_type || [],
+        updated_last: p.attributes.updated_last,
+        status: p.attributes.status,
+        in_home_only: p.attributes.in_home_only || false,
+        service_delivery: p.attributes.service_delivery || {
+          in_home: false,
+          in_clinic: false,
+          telehealth: false
+        }
+      }));
+      
+      setAllProviders(mappedProviders);
+      setFilteredProviders(mappedProviders);
+      setApiStatus('success');
+      setRetryCount(0);
+    } catch (error) {
+      console.error('❌ Retry failed:', error);
+      setApiStatus('error');
+      setShowError("Retry failed. Please check your connection and try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   const handleSearch = async (searchParams: any) => {
     console.log('🔍 handleSearch called with params:', searchParams);
     setIsLoading(true);
     setShowResultMessage(false); // Hide result message immediately when search starts
     setIsSearchRefined(false); // Reset search refined state until we have results
     setShowSearchNotification(false); // Reset search notification
+    setShowError(""); // Clear any previous errors
+    
     try {
       const { stateId, providerType, query, county_name, insurance, spanish, service, waitlist, age, hasReviews } = searchParams;
       console.log('🔍 Calling API with stateId:', stateId, 'providerType:', providerType);
       
-      const results = await fetchProvidersByStateIdAndProviderType(stateId, providerType);
-      console.log('🔍 API results received:', results);
+      let results;
+      try {
+        results = await fetchProvidersByStateIdAndProviderType(stateId, providerType);
+        console.log('🔍 API results received:', results);
+      } catch (apiError) {
+        console.error('❌ API call failed:', apiError);
+        setShowError("Unable to search providers at this time. Please check your connection and try again.");
+        setIsLoading(false);
+        return;
+      }
       
       // Add null check for results.data
       console.log('🔍 Checking results structure:', {
@@ -311,6 +438,7 @@ const ProvidersPage: React.FC = () => {
         setFilteredProviders([]);
         setCurrentPage(1);
         setIsLoading(false);
+        setShowError("Search completed but no valid results were returned. Please try again.");
         return;
       }
       
@@ -328,6 +456,25 @@ const ProvidersPage: React.FC = () => {
 
       // Apply comprehensive filtering
       let filteredResults = mappedProviders;
+      
+      // State filter - ensure providers actually serve the selected state
+      if (stateId && stateId !== 'none' && stateId.trim() !== '') {
+        filteredResults = filteredResults.filter((provider: ProviderAttributes) => {
+          // Check if provider has states array and serves the selected state
+          if (provider.states && Array.isArray(provider.states)) {
+            return provider.states.some(state => 
+              state.toLowerCase() === stateId.toLowerCase()
+            );
+          }
+          // Fallback: check locations for state
+          if (provider.locations && Array.isArray(provider.locations)) {
+            return provider.locations.some(location => 
+              location.state && location.state.toLowerCase() === stateId.toLowerCase()
+            );
+          }
+          return false; // If no state info, exclude the provider
+        });
+      }
       
       // Name filter
       if (query && query.trim()) {
@@ -436,6 +583,20 @@ const ProvidersPage: React.FC = () => {
         );
       }
 
+      // Log filtering results for debugging
+      console.log('🔍 Search filtering results:', {
+        originalCount: mappedProviders.length,
+        afterStateFilter: stateId && stateId !== 'none' ? filteredResults.length : 'N/A',
+        afterNameFilter: query && query.trim() ? 'Applied' : 'N/A',
+        afterCountyFilter: county_name && county_name.trim() ? 'Applied' : 'N/A',
+        afterInsuranceFilter: insurance && insurance.trim() ? 'Applied' : 'N/A',
+        afterProviderTypeFilter: providerType && providerType !== 'none' ? 'Applied' : 'N/A',
+        finalCount: filteredResults.length,
+        selectedState: stateId,
+        selectedProviderType: providerType,
+        selectedInsurance: insurance
+      });
+
       // Reviews filter
       if (hasReviews && hasReviews.trim()) {
         switch (hasReviews) {
@@ -483,7 +644,8 @@ const ProvidersPage: React.FC = () => {
     } catch (err) {
       // Error handled, setting loading to false
       if (isMountedRef.current) {
-        setShowError('Error filtering providers. Please try again.');
+        console.error('❌ Search error:', err);
+        setShowError('An unexpected error occurred during search. Please try again.');
         setIsLoading(false);
       }
     }
@@ -869,20 +1031,163 @@ const ProvidersPage: React.FC = () => {
                   </div>
                 </div>
               ) : showError ? (
-                <div className="error-message-container">{showError}</div>
+                <div className="error-message-container">
+                  <div className="max-w-2xl mx-auto text-center py-12 px-4">
+                    <div className="mb-6">
+                      {apiStatus === 'error' ? (
+                        <AlertTriangle className="w-16 h-16 mx-auto text-red-500 mb-4" />
+                      ) : (
+                        <WifiOff className="w-16 h-16 mx-auto text-orange-500 mb-4" />
+                      )}
+                    </div>
+                    <h3 className="text-xl font-semibold text-gray-700 mb-4">
+                      {apiStatus === 'error' ? 'Unable to Load Providers' : 'Connection Issue'}
+                    </h3>
+                    <p className="text-gray-600 mb-6 text-lg">
+                      {showError}
+                    </p>
+                    
+                    {/* Retry Button */}
+                    <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+                      <button
+                        onClick={handleRetryFetch}
+                        className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
+                      >
+                        <RefreshCw className="w-5 h-5 mr-2" />
+                        Try Again
+                      </button>
+                      
+                      {/* Show retry count if multiple attempts */}
+                      {retryCount > 0 && (
+                        <div className="text-sm text-gray-500">
+                          Attempt {retryCount + 1}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Additional Help */}
+                    <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-4 max-w-lg mx-auto">
+                      <h4 className="font-medium text-blue-800 mb-2">💡 What you can do:</h4>
+                      <ul className="text-sm text-blue-700 space-y-1 text-left">
+                        <li>Check your internet connection</li>
+                        <li>Try refreshing the page</li>
+                        <li>Wait a few minutes and try again</li>
+                        <li>Contact support if the issue persists</li>
+                      </ul>
+                    </div>
+
+                    {/* Last attempt info */}
+                    {lastFetchAttempt && (
+                      <div className="mt-4 text-xs text-gray-400">
+                        Last attempt: {lastFetchAttempt.toLocaleString()}
+                      </div>
+                    )}
+                  </div>
+                </div>
               ) : (
                 <div className="card-container">
-                  {!isSearchRefined && (
-                    <>
-                      <p className="text-center text-red-500">Currently showing all providers within the United States.</p>
-                      <p className="text-center text-red-500">If you are looking for a provider in a specific state, please use the search bar to filter by state and provider type.</p>
-                    </>
+                  {/* Fallback error display - show when no providers and no explicit error */}
+                  {!isLoading && !showError && allProviders.length === 0 && (
+                    <div className="error-message-container">
+                      <div className="max-w-2xl mx-auto text-center py-12 px-4">
+                        <div className="mb-6">
+                          <AlertTriangle className="w-16 h-16 mx-auto text-red-500 mb-4" />
+                        </div>
+                        <h3 className="text-xl font-semibold text-gray-700 mb-4">
+                          No Providers Available
+                        </h3>
+                        <p className="text-gray-600 mb-6 text-lg">
+                          Unable to load provider information. This could be due to:
+                        </p>
+                        
+                        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6 max-w-lg mx-auto">
+                          <ul className="text-sm text-red-700 space-y-1 text-left">
+                            <li>Server maintenance or downtime</li>
+                            <li>Network connectivity issues</li>
+                            <li>Database connection problems</li>
+                            <li>API service interruptions</li>
+                          </ul>
+                        </div>
+                        
+                        {/* Retry Button */}
+                        <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+                          <button
+                            onClick={handleRetryFetch}
+                            className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
+                          >
+                            <RefreshCw className="w-5 h-5 mr-2" />
+                            Try Again
+                          </button>
+                        </div>
+
+                        {/* Additional Help */}
+                        <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-4 max-w-lg mx-auto">
+                          <h4 className="font-medium text-blue-800 mb-2">💡 What you can do:</h4>
+                          <ul className="text-sm text-blue-700 space-y-1 text-left">
+                            <li>Check your internet connection</li>
+                            <li>Try refreshing the page</li>
+                            <li>Wait a few minutes and try again</li>
+                            <li>Contact support if the issue persists</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
                   )}
-                  {selectedHasReviews && providersWithReviews.size > 0 && showResultMessage && (
-                    <div className="text-center mb-4">
-                      <p className="text-green-600 font-semibold">
-                        ⭐ {providersWithReviews.size} provider{providersWithReviews.size !== 1 ? 's' : ''} with Google reviews found
+                  
+                  {/* Only show the "all providers" message when we actually have providers and no search is active */}
+                  {!isSearchRefined && allProviders.length > 0 && (
+                    <div className="text-center mb-6 p-4 bg-gradient-to-r from-blue-50 to-green-50 border border-blue-200 rounded-lg">
+                      <div className="flex items-center justify-center mb-3">
+                        <Wifi className="w-5 h-5 text-blue-600 mr-2" />
+                        <span className="text-blue-800 font-semibold text-lg">Welcome to Our Provider Network! 🎉</span>
+                      </div>
+                      <p className="text-blue-700 text-sm mb-3">
+                        We're excited to show you {allProviders.length} amazing providers from our growing network. 
+                        Use the search filters above to find providers in specific states or with particular services.
                       </p>
+                      
+                      {/* Enhanced Provider Registration Call-to-Action */}
+                      <div className="bg-white border border-green-200 rounded-lg p-4 mt-3">
+                        <div className="flex items-center justify-center mb-3">
+                          <span className="text-green-600 font-semibold text-sm">🌟 Join Our Growing Network - It's FREE!</span>
+                        </div>
+                        <p className="text-green-700 text-xs leading-relaxed mb-3">
+                          We're building the largest network of providers serving the Autism Community in the country, and we'd love you to be part of it!
+                        </p>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                          <div className="text-left">
+                            <h5 className="font-medium text-green-800 text-xs mb-2">For Healthcare Providers:</h5>
+                            <ul className="text-xs text-green-700 space-y-1">
+                              <li>Register your practice in minutes - completely FREE</li>
+                              <li>Get discovered by families in the Autism Community</li>
+                              <li>Manage insurance and location information easily</li>
+                              <li>Join {allProviders.length}+ providers already helping families</li>
+                            </ul>
+                          </div>
+                          <div className="text-left">
+                            <h5 className="font-medium text-green-800 text-xs mb-2">What You Get:</h5>
+                            <ul className="text-xs text-green-700 space-y-1">
+                              <li>Professional online presence</li>
+                              <li>Increased visibility in your area</li>
+                              <li>Easy profile management</li>
+                              <li>Community support and resources</li>
+                            </ul>
+                          </div>
+                        </div>
+                        
+                        <div className="flex flex-col sm:flex-row gap-2 justify-center items-center">
+                          <a 
+                            href="/provider-signup" 
+                            className="inline-flex items-center px-4 py-2 border border-transparent text-xs font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200"
+                          >
+                            🚀 Join Now - It's Free!
+                          </a>
+                          <span className="text-xs text-green-600 font-medium">
+                            Know a great provider? Share this with them! 👥
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   )}
                   
@@ -920,88 +1225,93 @@ const ProvidersPage: React.FC = () => {
                     </div>
                   )}
                   
-                  <div
-                    className={`provider-cards-grid ${pageTransition ? `page-${pageTransition}` : ""
-                      }`}
-                  >
-                    {paginatedProviders.map((provider) => (
+                  {/* Show providers only when we have them and no errors */}
+                  {allProviders.length > 0 && !showError && (
+                    <>
                       <div
-                        key={provider.id}
-                        className={`provider-card-wrapper ${pageTransition ? `animate-${pageTransition}` : ""
+                        className={`provider-cards-grid ${pageTransition ? `page-${pageTransition}` : ""
                           }`}
                       >
-                        <ProviderCard
-                          provider={provider}
-                          onViewDetails={handleProviderCardClick}
-                          renderViewOnMapButton={renderViewOnMapButton}
-                          onToggleFavorite={toggleFavorite}
-                          isFavorited={(favoriteProviders ?? []).some(
-                            (fav) => fav.id === provider.id
-                          )}
-                          favoritedDate={favoriteDates[provider.id]}
-                          selectedState={selectedStateId === 'none' ? '' : selectedStateId || ''}
-                          hasReviews={providersWithReviews.has(provider.id)}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                  {combinedProviders.length > 0 && (
-                    <div className="pagination-section">
-                      <p className="pagination-info">
-                        Page {currentPage} of {totalPages}
-                      </p>
-                      <div className="pagination-controls">
-                        {currentPage > 1 && (
-                          <button
-                            className="pagination-button"
-                            onClick={handlePreviousPage}
+                        {paginatedProviders.map((provider) => (
+                          <div
+                            key={provider.id}
+                            className={`provider-card-wrapper ${pageTransition ? `animate-${pageTransition}` : ""
+                              }`}
                           >
-                            &lt; Previous
-                          </button>
-                        )}
-                        
-                        {/* Page Numbers */}
-                        <div className="page-numbers">
-                          {Array.from({ length: totalPages }, (_, index) => {
-                            const pageNumber = index + 1;
-                            const isCurrentPage = pageNumber === currentPage;
+                            <ProviderCard
+                              provider={provider}
+                              onViewDetails={handleProviderCardClick}
+                              renderViewOnMapButton={renderViewOnMapButton}
+                              onToggleFavorite={toggleFavorite}
+                              isFavorited={(favoriteProviders ?? []).some(
+                                (fav) => fav.id === provider.id
+                              )}
+                              favoritedDate={favoriteDates[provider.id]}
+                              selectedState={selectedStateId === 'none' ? '' : selectedStateId || ''}
+                              hasReviews={providersWithReviews.has(provider.id)}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                      {combinedProviders.length > 0 && (
+                        <div className="pagination-section">
+                          <p className="pagination-info">
+                            Page {currentPage} of {totalPages}
+                          </p>
+                          <div className="pagination-controls">
+                            {currentPage > 1 && (
+                              <button
+                                className="pagination-button"
+                                onClick={handlePreviousPage}
+                              >
+                                &lt; Previous
+                              </button>
+                            )}
                             
-                            // Show first page, last page, current page, and pages around current page
-                            if (
-                              pageNumber === 1 ||
-                              pageNumber === totalPages ||
-                              (pageNumber >= currentPage - 2 && pageNumber <= currentPage + 2)
-                            ) {
-                              return (
-                                <button
-                                  key={pageNumber}
-                                  className={`page-number-button ${isCurrentPage ? 'current-page' : ''}`}
-                                  onClick={() => handlePageClick(pageNumber)}
-                                  disabled={isCurrentPage}
-                                >
-                                  {pageNumber}
-                                </button>
-                              );
-                            } else if (
-                              pageNumber === currentPage - 3 ||
-                              pageNumber === currentPage + 3
-                            ) {
-                              return <span key={pageNumber} className="page-ellipsis">...</span>;
-                            }
-                            return null;
-                          })}
+                            {/* Page Numbers */}
+                            <div className="page-numbers">
+                              {Array.from({ length: totalPages }, (_, index) => {
+                                const pageNumber = index + 1;
+                                const isCurrentPage = pageNumber === currentPage;
+                                
+                                // Show first page, last page, current page, and pages around current page
+                                if (
+                                  pageNumber === 1 ||
+                                  pageNumber === totalPages ||
+                                  (pageNumber >= currentPage - 2 && pageNumber <= currentPage + 2)
+                                ) {
+                                  return (
+                                    <button
+                                      key={pageNumber}
+                                      className={`page-number-button ${isCurrentPage ? 'current-page' : ''}`}
+                                      onClick={() => handlePageClick(pageNumber)}
+                                      disabled={isCurrentPage}
+                                    >
+                                      {pageNumber}
+                                    </button>
+                                  );
+                                } else if (
+                                  pageNumber === currentPage - 3 ||
+                                  pageNumber === currentPage + 3
+                                ) {
+                                  return <span key={pageNumber} className="page-ellipsis">...</span>;
+                                }
+                                return null;
+                              })}
+                            </div>
+                            
+                            {currentPage < totalPages && (
+                              <button
+                                className="pagination-button"
+                                onClick={handleNextPage}
+                              >
+                                Next &gt;
+                              </button>
+                            )}
+                          </div>
                         </div>
-                        
-                        {currentPage < totalPages && (
-                          <button
-                            className="pagination-button"
-                            onClick={handleNextPage}
-                          >
-                            Next &gt;
-                          </button>
-                        )}
-                      </div>
-                    </div>
+                      )}
+                    </>
                   )}
                 </div>
               )}
