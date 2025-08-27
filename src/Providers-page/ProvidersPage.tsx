@@ -49,6 +49,7 @@ const ProvidersPage: React.FC = () => {
   const [selectedProviderType, setSelectedProviderType] = useState<string>("");
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedStateId, setSelectedStateId] = useState<string>("");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedHasReviews, setSelectedHasReviews] = useState<string>("");
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [providersWithReviews, setProvidersWithReviews] = useState<Set<number>>(new Set());
@@ -61,6 +62,7 @@ const ProvidersPage: React.FC = () => {
   const [run, setRun] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
   const [isSearchRefined, setIsSearchRefined] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [showResultMessage, setShowResultMessage] = useState(false);
   const [showSearchNotification, setShowSearchNotification] = useState(false);
   const [apiStatus, setApiStatus] = useState<'loading' | 'success' | 'error' | 'offline'>('loading');
