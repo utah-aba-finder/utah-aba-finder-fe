@@ -194,19 +194,36 @@
   }
 }
 
+/* Error Message Styling */
 .error-message-container {
-  text-align: center;
-  padding: 1.5rem 2rem;
-  margin: 1rem;
-  color: #4A6FA5;
-  font-weight: 500;
-  border-radius: 1rem;
-  background-color: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  padding: 2rem 1rem;
 }
 
+.error-message-container .max-w-2xl {
+  max-width: 42rem;
+}
+
+.error-message-container .max-w-lg {
+  max-width: 32rem;
+}
+
+.error-message-container button {
+  transition: all 0.2s ease-in-out;
+}
+
+.error-message-container button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.error-message-container button:active {
+  transform: translateY(0);
+}
+
+/* Loading and Status Indicators */
 .loading-gear {
-  animation: spin 1s linear infinite;
+  animation: spin 2s linear infinite;
 }
 
 @keyframes spin {
@@ -215,6 +232,113 @@
   }
   to {
     transform: rotate(360deg);
+  }
+}
+
+/* Status Message Styling */
+.status-message {
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.status-message.success {
+  background-color: #f0f9ff;
+  border: 1px solid #bae6fd;
+  color: #0369a1;
+}
+
+.status-message.info {
+  background-color: #f0f9ff;
+  border: 1px solid #bae6fd;
+  color: #0369a1;
+}
+
+/* Retry Button Styling */
+.retry-button {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.75rem 1.5rem;
+  border: 1px solid transparent;
+  border-radius: 0.375rem;
+  font-size: 1rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+}
+
+.retry-button.primary {
+  background-color: #2563eb;
+  color: white;
+}
+
+.retry-button.primary:hover {
+  background-color: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.retry-button.primary:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* Help Section Styling */
+.help-section {
+  background-color: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-top: 2rem;
+}
+
+.help-section h4 {
+  color: #1e40af;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.help-section ul {
+  color: #1e40af;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.help-section li {
+  margin-bottom: 0.25rem;
+}
+
+/* Last Attempt Info */
+.last-attempt-info {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  margin-top: 1rem;
+  text-align: center;
+}
+
+/* Responsive Design for Error Messages */
+@media (max-width: 640px) {
+  .error-message-container .max-w-2xl {
+    max-width: 100%;
+    padding: 0 0.5rem;
+  }
+  
+  .error-message-container .max-w-lg {
+    max-width: 100%;
+  }
+  
+  .error-message-container button {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .error-message-container .flex-col {
+    flex-direction: column;
+  }
+  
+  .error-message-container .gap-3 {
+    gap: 0.75rem;
   }
 }
 

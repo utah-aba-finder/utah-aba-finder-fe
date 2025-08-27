@@ -585,34 +585,64 @@ export const fetchPublicProviders = async (): Promise<Providers> => {
   try {
     console.log('🔄 Fetching public providers using main providers endpoint...');
     
-    // Use the main providers endpoint since states endpoint is returning empty data
-    const response = await fetch(
-      'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers', // Main providers endpoint (working)
-      {
-        headers: {
-          'Cache-Control': 'no-cache',
-          'Pragma': 'no-cache'
+    // Add a timeout to the fetch request
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+    
+    try {
+      // Use the main providers endpoint since states endpoint is returning empty data
+      const response = await fetch(
+        'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers', // Main providers endpoint (working)
+        {
+          headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+          },
+          signal: controller.signal
         }
+      );
+      
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-    );
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      
+      const data = await response.json();
+      console.log('✅ Public providers fetched successfully from main providers endpoint');
+      console.log('📊 All provider types found:', data?.data?.length || 0);
+      console.log('🎯 This should show ABA Therapy, Autism Evaluation, Speech Therapy, Occupational Therapy, etc.');
+      
+      return data;
+    } catch (fetchError) {
+      clearTimeout(timeoutId);
+      
+      // If it's an abort error, it means timeout
+      if (fetchError instanceof Error && fetchError.name === 'AbortError') {
+        throw new Error('Request timed out - server is not responding');
+      }
+      
+      // If it's a network error, throw it directly
+      if (fetchError instanceof TypeError && fetchError.message.includes('fetch')) {
+        throw new Error('Network error - unable to connect to server');
+      }
+      
+      // Re-throw other errors
+      throw fetchError;
     }
-    
-    const data = await response.json();
-    console.log('✅ Public providers fetched successfully from main providers endpoint');
-    console.log('📊 All provider types found:', data?.data?.length || 0);
-    console.log('🎯 This should show ABA Therapy, Autism Evaluation, Speech Therapy, Occupational Therapy, etc.');
-    
-    return data;
   } catch (error) {
     console.log('🔄 Public providers failed, trying admin fallback...');
     try {
       return await fetchProviders();
     } catch (adminError) {
       console.log('🔄 Admin fallback failed, trying state-by-state method...');
-      return await fetchAllProvidersByState();
+      try {
+        return await fetchAllProvidersByState();
+      } catch (stateError) {
+        // If all fallbacks fail, throw a comprehensive error
+        console.error('❌ All provider fetch methods failed:', { error, adminError, stateError });
+        throw new Error('All provider data sources are currently unavailable. Please try again later.');
+      }
     }
   }
 };

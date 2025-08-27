@@ -280,28 +280,40 @@ const CreateLocation: React.FC<CreateLocationProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm text-gray-600 mb-2">In-Home Waitlist</label>
-              <p className="text-sm text-gray-500 mb-2">If you don't provide this service please select "No"</p>
+              <p className="text-sm text-gray-500 mb-2">Select the current waitlist status for in-home services</p>
               <select
                 className="w-full rounded-md border border-gray-300 py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={newLocation.in_home_waitlist === true ? "true" : newLocation.in_home_waitlist === false ? "false" : ""}
-                onChange={(e) => setNewLocation({ ...newLocation, in_home_waitlist: e.target.value === "true" })}
+                value={newLocation.in_home_waitlist || ""}
+                onChange={(e) => setNewLocation({ ...newLocation, in_home_waitlist: e.target.value })}
               >
-                <option value="">Select...</option>
-                <option value="true">Yes</option>
-                <option value="false">No</option>
+                <option value="">Select waitlist status...</option>
+                <option value="No waitlist">No waitlist</option>
+                <option value="1-2 weeks">1-2 weeks</option>
+                <option value="2-4 weeks">2-4 weeks</option>
+                <option value="1-3 months">1-3 months</option>
+                <option value="3-6 months">3-6 months</option>
+                <option value="6+ months">6+ months</option>
+                <option value="Not accepting new clients">Not accepting new clients</option>
+                <option value="Contact for availability">Contact for availability</option>
               </select>
             </div>
             <div>
               <label className="block text-sm text-gray-600 mb-2">In-Clinic Waitlist</label>
-              <p className="text-sm text-gray-500 mb-2">If you don't provide this service please select "No"</p>
+              <p className="text-sm text-gray-500 mb-2">Select the current waitlist status for in-clinic services</p>
               <select
                 className="w-full rounded-md border border-gray-300 py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={newLocation.in_clinic_waitlist === true ? "true" : newLocation.in_clinic_waitlist === false ? "false" : ""}
-                onChange={(e) => setNewLocation({ ...newLocation, in_clinic_waitlist: e.target.value === "true" })}
+                value={newLocation.in_clinic_waitlist || ""}
+                onChange={(e) => setNewLocation({ ...newLocation, in_clinic_waitlist: e.target.value })}
               >
-                <option value="">Select...</option>
-                <option value="true">Yes</option>
-                <option value="false">No</option>
+                <option value="">Select waitlist status...</option>
+                <option value="No waitlist">No waitlist</option>
+                <option value="1-2 weeks">1-2 weeks</option>
+                <option value="2-4 weeks">2-4 weeks</option>
+                <option value="1-3 months">1-3 months</option>
+                <option value="3-6 months">3-6 months</option>
+                <option value="6+ months">6+ months</option>
+                <option value="Not accepting new clients">Not accepting new clients</option>
+                <option value="Contact for availability">Contact for availability</option>
               </select>
             </div>
           </div>

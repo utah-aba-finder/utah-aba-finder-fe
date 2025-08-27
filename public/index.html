@@ -79,11 +79,58 @@
   
   <!-- TEMPORARY: Service Worker Cleanup (remove after one deploy) -->
   <script>
+    // Aggressive service worker cleanup
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => r.unregister()));
+      // Unregister all service workers
+      navigator.serviceWorker.getRegistrations().then(registrations => {
+        registrations.forEach(registration => {
+          registration.unregister();
+          console.log('Service worker unregistered:', registration);
+        });
+      });
+      
+      // Also try to unregister by scope
+      navigator.serviceWorker.getRegistration().then(registration => {
+        if (registration) {
+          registration.unregister();
+          console.log('Main service worker unregistered');
+        }
+      });
     }
+    
+    // Clear all caches
     if (window.caches) {
-      caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k))));
+      caches.keys().then(keys => {
+        keys.forEach(key => {
+          caches.delete(key);
+          console.log('Cache deleted:', key);
+        });
+      });
+    }
+    
+    // Preserve authentication data - only clear non-auth storage
+    try {
+      // Save current auth data
+      const authToken = sessionStorage.getItem('authToken');
+      const currentUser = sessionStorage.getItem('currentUser');
+      
+      // Clear all storage
+      localStorage.clear();
+      sessionStorage.clear();
+      
+      // Restore auth data
+      if (authToken) {
+        sessionStorage.setItem('authToken', authToken);
+        console.log('Auth token preserved');
+      }
+      if (currentUser) {
+        sessionStorage.setItem('currentUser', currentUser);
+        console.log('Current user preserved');
+      }
+      
+      console.log('Storage cleared (auth preserved)');
+    } catch (e) {
+      console.log('Storage clear failed:', e);
     }
   </script>
   
