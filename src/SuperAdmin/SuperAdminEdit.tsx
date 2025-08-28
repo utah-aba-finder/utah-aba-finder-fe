@@ -1535,47 +1535,51 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
 
                         {/* States Selection */}
                         <div className="mt-4">
-                          <label className="block text-sm text-gray-600 mb-2">States</label>
-                          <div className="flex flex-wrap gap-2 mb-2">
-                            {providerState.map((state) => (
-                              <div 
-                                key={state} 
-                                className={`px-2 py-1 rounded-md flex items-center cursor-pointer ${
-                                  activeStateForCounties === state 
-                                    ? 'bg-blue-600 text-white' 
-                                    : 'bg-blue-100 text-blue-800 hover:bg-blue-200'
-                                }`}
-                                onClick={() => setActiveStateForCounties(state)}
-                              >
-                                <span>{state}</span>
-                                <X 
-                                  className="ml-2 w-4 h-4 cursor-pointer" 
-                                  onClick={(e) => {
-                                    e.stopPropagation(); // Prevent state selection when clicking X
-                                    
-                                    // Remove all counties associated with this specific state
-                                    setSelectedCounties(prev => prev.filter(county => {
-                                      const countyData = availableCounties.find(c => c.id === county.county_id);
-                                      return countyData?.attributes.state !== state;
-                                    }));
-                                    
-                                    // Remove the state from providerState
-                                    setProviderState(prev => prev.filter(s => s !== state));
-                                    
-                                    if (activeStateForCounties === state) {
-                                      setActiveStateForCounties(providerState[0] || '');
-                                    }
-                                  }}
-                                />
-                              </div>
-                            ))}
-                          </div>
+                          <label className="block text-sm text-gray-600 mb-2">
+                            States Served
+                          </label>
+                          
+                          {/* Display currently selected states */}
+                          {providerState.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mb-3">
+                              {providerState.map((stateName) => (
+                                <div key={stateName} className="bg-green-100 text-green-800 px-3 py-1 rounded-md flex items-center">
+                                  <span>{stateName}</span>
+                                  <X 
+                                    className="ml-2 w-4 h-4 cursor-pointer hover:text-red-600" 
+                                    onClick={() => {
+                                      // Remove the state
+                                      setProviderState(prev => prev.filter(s => s !== stateName));
+                                      
+                                      // Remove associated counties
+                                      setSelectedCounties(prev => prev.filter(c => c.state !== stateName));
+                                      
+                                      // Update active state if this was the active one
+                                      if (activeStateForCounties === stateName) {
+                                        const remainingStates = providerState.filter(s => s !== stateName);
+                                        setActiveStateForCounties(remainingStates[0] || '');
+                                      }
+                                      
+                                      toast.success(`Removed ${stateName} and associated counties`);
+                                    }}
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          
+                          {/* State selection dropdown */}
                           <select
                             onChange={(e) => {
-                              if (!providerState.includes(e.target.value)) {
-                                const newState = e.target.value;
+                              const newState = e.target.value;
+                              if (newState && !providerState.includes(newState)) {
+                                // Add the new state
                                 setProviderState(prev => [...prev, newState]);
-                                setActiveStateForCounties(newState);
+                                
+                                // Set as active state for counties if no active state
+                                if (!activeStateForCounties) {
+                                  setActiveStateForCounties(newState);
+                                }
                                 
                                 // Load counties for the new state
                                 const stateData = availableStates.find(s => s.attributes.name === newState);
@@ -1591,109 +1595,151 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                               }
                             }}
                             className="block w-full px-3 py-2 rounded-lg border border-gray-300"
+                            value="" // Reset to empty after selection
                           >
                             <option value="">Add a state...</option>
-                            {availableStates.map((state) => (
-                              <option key={state.id} value={state.attributes.name}>
-                                {state.attributes.name}
-                              </option>
-                            ))}
+                            {availableStates
+                              .filter(state => !providerState.includes(state.attributes.name))
+                              .map((state) => (
+                                <option key={state.id} value={state.attributes.name}>
+                                  {state.attributes.name}
+                                </option>
+                              ))
+                            }
                           </select>
                         </div>
 
                         {/* Counties Selection */}
                         <div className="mt-4">
                           <label className="block text-sm text-gray-600 mb-2">
-                            Counties Served {activeStateForCounties && `for ${activeStateForCounties}`}
+                            Counties Served
                           </label>
-                          <div className="flex flex-wrap gap-2 mb-2">
-                            {selectedCounties
-                              .filter(county => {
-                                const countyData = availableCounties.find(c => c.id === county.county_id);
-                                return countyData?.attributes.state === activeStateForCounties;
-                              })
-                              .map((county) => (
-                                <div key={county.county_id} className="bg-blue-100 text-blue-800 px-2 py-1 rounded-md flex items-center">
-                                  <span>{county.county_name}</span>
-                                  <X 
-                                    className="ml-2 w-4 h-4 cursor-pointer" 
-                                    onClick={() => {
-                                      setSelectedCounties(prev => prev.filter(c => c.county_id !== county.county_id));
-                                    }}
-                                  />
-                                </div>
-                            ))}
-                          </div>
-                          {providerState.length > 0 ? (
-                            <select
-                              onChange={(e) => {
-                                const [id, name] = e.target.value.split('|');
-                                if (id && name && !selectedCounties.some(c => c.county_id === parseInt(id))) {
-                                  setSelectedCounties(prev => [...prev, { 
-                                    county_id: parseInt(id), 
-                                    county_name: name 
-                                  }]);
-                                }
-                              }}
-                              className="block w-full px-3 py-2 rounded-lg border border-gray-300"
-                            >
-                              <option value="">Add a {activeStateForCounties} county...</option>
-                              {availableCounties
-                                .filter(county => 
-                                  county.attributes.state === activeStateForCounties &&
-                                  !selectedCounties.some(c => c.county_id === county.id)
-                                )
-                                .map((county) => (
-                                  <option key={county.id} value={`${county.id}|${county.attributes.name}`}>
-                                    {county.attributes.name}
+                          
+                          {/* State selector for counties */}
+                          {providerState.length > 0 && (
+                            <div className="mb-3">
+                              <label className="block text-xs text-gray-500 mb-1">
+                                Select state to manage counties:
+                              </label>
+                              <select
+                                value={activeStateForCounties}
+                                onChange={(e) => setActiveStateForCounties(e.target.value)}
+                                className="block w-full px-3 py-2 rounded-lg border border-gray-300 text-sm"
+                              >
+                                {providerState.map((stateName) => (
+                                  <option key={stateName} value={stateName}>
+                                    {stateName}
                                   </option>
-                                ))
-                              }
-                            </select>
-                          ) : (
-                            <p className="text-sm text-gray-500">Please select a state first</p>
+                                ))}
+                              </select>
+                            </div>
                           )}
                           
-                          {/* Add All Counties Button - Only show when a state is selected and has counties */}
-                          {activeStateForCounties && providerState.length > 0 && availableCounties.filter(county => 
-                            county.attributes.state === activeStateForCounties &&
-                            !selectedCounties.some(c => c.county_id === county.id)
-                          ).length > 0 && (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const countiesToAdd = availableCounties
+                          {/* Counties for selected state */}
+                          {activeStateForCounties && (
+                            <>
+                              <label className="block text-sm text-gray-600 mb-2">
+                                Counties for {activeStateForCounties}
+                              </label>
+                              <div className="flex flex-wrap gap-2 mb-2">
+                                {selectedCounties
+                                  .filter(county => {
+                                    const countyData = availableCounties.find(c => c.id === county.county_id);
+                                    return countyData?.attributes.state === activeStateForCounties;
+                                  })
+                                  .map((county) => (
+                                    <div key={county.county_id} className="bg-blue-100 text-blue-800 px-2 py-1 rounded-md flex items-center">
+                                      <span>{county.county_name}</span>
+                                      <X 
+                                        className="ml-2 w-4 h-4 cursor-pointer" 
+                                        onClick={() => {
+                                          setSelectedCounties(prev => prev.filter(c => c.county_id !== county.county_id));
+                                        }}
+                                      />
+                                    </div>
+                                ))}
+                              </div>
+                              
+                              {/* Add county dropdown */}
+                              <select
+                                onChange={(e) => {
+                                  const [id, name] = e.target.value.split('|');
+                                  if (id && name && !selectedCounties.some(c => c.county_id === parseInt(id))) {
+                                    setSelectedCounties(prev => [...prev, { 
+                                      county_id: parseInt(id), 
+                                      county_name: name,
+                                      state: activeStateForCounties // Add state association
+                                    }]);
+                                  }
+                                }}
+                                className="block w-full px-3 py-2 rounded-lg border border-gray-300"
+                                value="" // Reset to empty after selection
+                              >
+                                <option value="">Add a {activeStateForCounties} county...</option>
+                                {availableCounties
                                   .filter(county => 
                                     county.attributes.state === activeStateForCounties &&
                                     !selectedCounties.some(c => c.county_id === county.id)
                                   )
-                                  .map(county => ({
-                                    county_id: county.id,
-                                    county_name: county.attributes.name
-                                  }));
-                                
-                                setSelectedCounties(prev => [...prev, ...countiesToAdd]);
-                                
-                                toast.success(`Added ${countiesToAdd.length} counties for ${activeStateForCounties}`, {
-                                  position: "top-right",
-                                  autoClose: 3000,
-                                });
-                              }}
-                              className="mt-3 w-full inline-flex items-center justify-center px-3 py-2 border border-green-300 rounded-lg shadow-sm text-sm font-medium text-green-700 bg-green-50 hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-                            >
-                              <MapPin className="w-4 h-4 mr-2" />
-                              Add All {activeStateForCounties} Counties ({availableCounties.filter(county => 
+                                  .map((county) => (
+                                    <option key={county.id} value={`${county.id}|${county.attributes.name}`}>
+                                      {county.attributes.name}
+                                    </option>
+                                  ))
+                                }
+                              </select>
+                              
+                              {/* Add All Counties Button */}
+                              {availableCounties.filter(county => 
                                 county.attributes.state === activeStateForCounties &&
                                 !selectedCounties.some(c => c.county_id === county.id)
-                              ).length})
-                            </button>
+                              ).length > 0 && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const countiesToAdd = availableCounties
+                                      .filter(county => 
+                                        county.attributes.state === activeStateForCounties &&
+                                        !selectedCounties.some(c => c.county_id === county.id)
+                                      )
+                                      .map(county => ({
+                                        county_id: county.id,
+                                        county_name: county.attributes.name,
+                                        state: activeStateForCounties // Add state association
+                                      }));
+                                    
+                                    setSelectedCounties(prev => [...prev, ...countiesToAdd]);
+                                    
+                                    toast.success(`Added ${countiesToAdd.length} counties for ${activeStateForCounties}`, {
+                                      position: "top-right",
+                                      autoClose: 3000,
+                                    });
+                                  }}
+                                  className="mt-3 w-full inline-flex items-center justify-center px-3 py-2 border border-green-300 rounded-lg shadow-sm text-sm font-medium text-green-700 bg-green-50 hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                                >
+                                  <MapPin className="w-4 h-4 mr-2" />
+                                  Add All {activeStateForCounties} Counties ({availableCounties.filter(county => 
+                                    county.attributes.state === activeStateForCounties &&
+                                    !selectedCounties.some(c => c.county_id === county.id)
+                                  ).length})
+                                </button>
+                              )}
+                            </>
+                          )}
+                          
+                          {!activeStateForCounties && providerState.length > 0 && (
+                            <p className="text-sm text-gray-500">Please select a state above to manage counties</p>
+                          )}
+                          
+                          {providerState.length === 0 && (
+                            <p className="text-sm text-gray-500">Please add states first</p>
                           )}
                           
                           {/* Debug info */}
                           <div className="mt-2 text-xs text-gray-500">
                             Debug: activeState={activeStateForCounties}, 
                             providerState={JSON.stringify(providerState)}, 
-                            availableCounties for {activeStateForCounties}={availableCounties.filter(c => c.attributes.state === activeStateForCounties).length}
+                            availableCounties for {activeStateForCounties}={activeStateForCounties ? availableCounties.filter(c => c.attributes.state === activeStateForCounties).length : 0}
                           </div>
                         </div>
                       </div>
