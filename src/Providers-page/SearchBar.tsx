@@ -86,8 +86,22 @@ const SearchBar: React.FC<SearchBarProps> = ({
       try {
         const statesData = await fetchStates();
         setProviderStates(statesData || []);
-      } catch {
-        setProviderStates([]);
+      } catch (error) {
+        console.warn('⚠️ Could not fetch states, using fallback options');
+        // Fallback state options if API fails
+        const fallbackStates = [
+          { id: 1, attributes: { name: 'Utah', abbreviation: 'UT' } },
+          { id: 6, attributes: { name: 'California', abbreviation: 'CA' } },
+          { id: 44, attributes: { name: 'Texas', abbreviation: 'TX' } },
+          { id: 33, attributes: { name: 'New York', abbreviation: 'NY' } },
+          { id: 10, attributes: { name: 'Florida', abbreviation: 'FL' } },
+          { id: 36, attributes: { name: 'Ohio', abbreviation: 'OH' } },
+          { id: 14, attributes: { name: 'Illinois', abbreviation: 'IL' } },
+          { id: 34, attributes: { name: 'North Carolina', abbreviation: 'NC' } },
+          { id: 39, attributes: { name: 'Pennsylvania', abbreviation: 'PA' } },
+          { id: 23, attributes: { name: 'Michigan', abbreviation: 'MI' } }
+        ];
+        setProviderStates(fallbackStates);
       }
     };
     getStates();
@@ -269,9 +283,8 @@ const SearchBar: React.FC<SearchBarProps> = ({
                 }
               }}
               aria-label="Select State"
-              required
             >
-              <option value="none">Choose a state</option>
+              <option value="none">All States (Optional)</option>
               {safeProviderStates.length > 0
                 ? safeProviderStates.map((providerState) => (
                     <option 
@@ -477,7 +490,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
           <button
             className="provider-search-button"
             onClick={handleSearch}
-            disabled={selectedStateId === 'none' || selectedProviderType === 'none'}
+            disabled={selectedProviderType === 'none'}
           >
             <Search size={18} />Search
           </button>

@@ -192,12 +192,84 @@ export const fetchProvidersByStateIdAndProviderType = async (stateId: string, pr
   try {
     console.log('🔍 API Call:', { stateId, providerType });
     
-    // Since the states endpoint is returning empty data, use the main providers endpoint
-    // and filter client-side for now
-    const url = 'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers';
+    // Build query parameters for the new backend filtering
+    const params = new URLSearchParams();
     
-    console.log('🔍 URL:', url);
-    console.log('🔍 Note: Using main providers endpoint due to states endpoint issue');
+    if (providerType && providerType !== 'none' && providerType.trim() !== '') {
+      params.append('provider_type', providerType);
+      console.log('🔍 Added provider_type filter:', providerType);
+    }
+    
+    if (stateId && stateId !== 'none') {
+      // Convert stateId to state name for the API
+      const stateMap: { [key: string]: string } = {
+        '1': 'Utah',
+        '2': 'Alabama',
+        '3': 'Alaska',
+        '4': 'Arizona',
+        '5': 'Arkansas',
+        '6': 'California',
+        '7': 'Colorado',
+        '8': 'Connecticut',
+        '9': 'Delaware',
+        '10': 'Florida',
+        '11': 'Georgia',
+        '12': 'Hawaii',
+        '13': 'Idaho',
+        '14': 'Illinois',
+        '15': 'Indiana',
+        '16': 'Iowa',
+        '17': 'Kansas',
+        '18': 'Kentucky',
+        '19': 'Louisiana',
+        '20': 'Maine',
+        '21': 'Maryland',
+        '22': 'Massachusetts',
+        '23': 'Michigan',
+        '24': 'Minnesota',
+        '25': 'Mississippi',
+        '26': 'Missouri',
+        '27': 'Montana',
+        '28': 'Nebraska',
+        '29': 'Nevada',
+        '30': 'New Hampshire',
+        '31': 'New Jersey',
+        '32': 'New Mexico',
+        '33': 'New York',
+        '34': 'North Carolina',
+        '35': 'North Dakota',
+        '36': 'Ohio',
+        '37': 'Oklahoma',
+        '38': 'Oregon',
+        '39': 'Pennsylvania',
+        '40': 'Rhode Island',
+        '41': 'South Carolina',
+        '42': 'South Dakota',
+        '43': 'Tennessee',
+        '44': 'Texas',
+        '45': 'Vermont',
+        '46': 'Virginia',
+        '47': 'Washington',
+        '48': 'West Virginia',
+        '49': 'Wisconsin',
+        '50': 'Wyoming'
+      };
+      
+      const targetState = stateMap[stateId];
+      if (targetState) {
+        params.append('state', targetState);
+        console.log('🔍 Added state filter:', targetState);
+      } else {
+        console.warn('⚠️ Unknown state ID:', stateId);
+      }
+    }
+    
+    // Build the URL with query parameters
+    const baseUrl = 'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers';
+    const url = params.toString() ? `${baseUrl}?${params.toString()}` : baseUrl;
+    
+    console.log('🔍 URL with query params:', url);
+    console.log('🔍 Using new backend filtering system');
     
     const response = await fetch(url, {
       method: 'GET',
@@ -216,30 +288,13 @@ export const fetchProvidersByStateIdAndProviderType = async (stateId: string, pr
     }
     
     const data = await response.json();
-    console.log('🔍 Data received:', data);
+    console.log('🔍 Data received from backend filtering:', data);
     
-    // Filter by state and provider type client-side since states endpoint is broken
+    // The backend should now return pre-filtered results
+    // No need for client-side filtering
     if (data && data.data && Array.isArray(data.data)) {
-      let filteredData = data.data;
-      
-      // Filter by state (Utah = ID 1)
-      if (stateId && stateId !== 'none') {
-        filteredData = filteredData.filter((provider: any) => 
-          provider.states && provider.states.includes('Utah')
-        );
-        console.log('🔍 Filtered by Utah state:', filteredData.length, 'providers');
-      }
-      
-      // Filter by provider type
-      if (providerType && providerType !== 'none' && providerType.trim() !== '') {
-        filteredData = filteredData.filter((provider: any) =>
-          provider.attributes.provider_type && 
-          provider.attributes.provider_type.some((type: any) => type.name === providerType)
-        );
-        console.log('🔍 Filtered by provider type', providerType + ':', filteredData.length, 'providers');
-      }
-      
-      return { data: filteredData };
+      console.log('🔍 Backend returned', data.data.length, 'filtered providers');
+      return { data: data.data };
     }
     
     return data;

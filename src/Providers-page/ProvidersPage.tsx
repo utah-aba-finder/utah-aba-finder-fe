@@ -459,31 +459,20 @@ const ProvidersPage: React.FC = () => {
       // Apply comprehensive filtering
       let filteredResults = mappedProviders;
       
-      // State filter - ensure providers actually serve the selected state
-      if (stateId && stateId !== 'none' && stateId.trim() !== '') {
-        filteredResults = filteredResults.filter((provider: ProviderAttributes) => {
-          // Check if provider has states array and serves the selected state
-          if (provider.states && Array.isArray(provider.states)) {
-            return provider.states.some(state => 
-              state.toLowerCase() === stateId.toLowerCase()
-            );
-          }
-          // Fallback: check locations for state
-          if (provider.locations && Array.isArray(provider.locations)) {
-            return provider.locations.some(location => 
-              location.state && location.state.toLowerCase() === stateId.toLowerCase()
-            );
-          }
-          return false; // If no state info, exclude the provider
-        });
-      }
+      // Note: State and provider type filtering are now handled by the backend
+      // The API returns pre-filtered results, so we only need to apply additional filters
+      console.log('🔍 Frontend filtering starting with', filteredResults.length, 'providers from backend');
       
-      // Name filter
-      if (query && query.trim()) {
+      // Name filter - only apply if a specific name is entered
+      if (query && query.trim() && query.trim().length > 2) {
         const searchTerm = query.toLowerCase().trim();
+        const beforeNameFilter = filteredResults.length;
         filteredResults = filteredResults.filter((provider: ProviderAttributes) => 
           provider.name && provider.name.toLowerCase().includes(searchTerm)
         );
+        console.log('🔍 Name filter applied for "' + searchTerm + '":', beforeNameFilter, '->', filteredResults.length, 'providers');
+      } else if (query && query.trim()) {
+        console.log('🔍 Name filter skipped - query too short:', query.trim().length, 'characters');
       }
 
       // County filter
@@ -515,7 +504,10 @@ const ProvidersPage: React.FC = () => {
       if (service && service.trim()) {
         switch (service) {
           case "in_home_only":
-            filteredResults = filteredResults.filter((provider: ProviderAttributes) => provider.in_home_only === true);
+            filteredResults = filteredResults.filter((provider: ProviderAttributes) => 
+              provider.in_home_only === true || 
+              (provider.at_home_services && provider.at_home_services.toLowerCase().includes('yes'))
+            );
             break;
           case "telehealth":
             filteredResults = filteredResults.filter((provider: ProviderAttributes) => 
@@ -524,12 +516,19 @@ const ProvidersPage: React.FC = () => {
             break;
           case "at_home":
             filteredResults = filteredResults.filter((provider: ProviderAttributes) => 
-              provider.at_home_services && provider.at_home_services.toLowerCase().includes('yes')
+              provider.in_home_only === true ||
+              (provider.at_home_services && provider.at_home_services.toLowerCase().includes('yes'))
             );
             break;
           case "in_clinic":
             filteredResults = filteredResults.filter((provider: ProviderAttributes) => 
               provider.in_clinic_services && provider.in_clinic_services.toLowerCase().includes('yes')
+            );
+            break;
+          case "multiple":
+            filteredResults = filteredResults.filter((provider: ProviderAttributes) => 
+              (provider.at_home_services && provider.at_home_services.toLowerCase().includes('yes')) &&
+              (provider.in_clinic_services && provider.in_clinic_services.toLowerCase().includes('yes'))
             );
             break;
         }
@@ -540,7 +539,8 @@ const ProvidersPage: React.FC = () => {
         switch (waitlist) {
           case "in_home_available":
             filteredResults = filteredResults.filter((provider: ProviderAttributes) => 
-              provider.at_home_services && provider.at_home_services.toLowerCase().includes('yes')
+              provider.in_home_only === true ||
+              (provider.at_home_services && provider.at_home_services.toLowerCase().includes('yes'))
             );
             break;
           case "in_clinic_available":
@@ -550,8 +550,8 @@ const ProvidersPage: React.FC = () => {
             break;
           case "both_available":
             filteredResults = filteredResults.filter((provider: ProviderAttributes) => 
-              provider.at_home_services && provider.at_home_services.toLowerCase().includes('yes') &&
-              provider.in_clinic_services && provider.in_clinic_services.toLowerCase().includes('yes')
+              (provider.in_home_only === true || (provider.at_home_services && provider.at_home_services.toLowerCase().includes('yes'))) &&
+              (provider.in_clinic_services && provider.in_clinic_services.toLowerCase().includes('yes'))
             );
             break;
           case "both_waitlist":
@@ -589,14 +589,16 @@ const ProvidersPage: React.FC = () => {
       console.log('🔍 Search filtering results:', {
         originalCount: mappedProviders.length,
         afterStateFilter: stateId && stateId !== 'none' ? filteredResults.length : 'N/A',
-        afterNameFilter: query && query.trim() ? 'Applied' : 'N/A',
+        afterNameFilter: query && query.trim() && query.trim().length > 2 ? filteredResults.length : 'N/A',
         afterCountyFilter: county_name && county_name.trim() ? 'Applied' : 'N/A',
         afterInsuranceFilter: insurance && insurance.trim() ? 'Applied' : 'N/A',
         afterProviderTypeFilter: providerType && providerType !== 'none' ? 'Applied' : 'N/A',
         finalCount: filteredResults.length,
         selectedState: stateId,
         selectedProviderType: providerType,
-        selectedInsurance: insurance
+        selectedInsurance: insurance,
+        query: query,
+        queryLength: query ? query.trim().length : 0
       });
 
       // Reviews filter
