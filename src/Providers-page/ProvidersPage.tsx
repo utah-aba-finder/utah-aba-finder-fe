@@ -936,27 +936,6 @@ const ProvidersPage: React.FC = () => {
     return providers;
   };
 
-  const renderViewOnMapButton = (provider: ProviderAttributes) => {
-    const isAddressAvailable =
-      provider.locations.length > 0 && provider.locations[0]?.address_1;
-
-    return (
-      <button
-        className={`view-on-map-button ${!isAddressAvailable ? "disabled" : ""
-          }`}
-        onClick={() => {
-          const location = provider.locations[0];
-          const fullAddress = `${location.address_1 || ""} ${location.address_2 || ""
-            }, ${location.city || ""}, ${location.state || ""} ${location.zip || ""
-            }`.trim();
-          handleViewOnMapClick(fullAddress);
-        }}
-        disabled={!isAddressAvailable}
-      >
-        View on Map
-      </button>
-    );
-  };
 
   useEffect(() => {
     const getInsuranceOptions = async () => {
@@ -1245,7 +1224,6 @@ const ProvidersPage: React.FC = () => {
                             <ProviderCard
                               provider={provider}
                               onViewDetails={handleProviderCardClick}
-                              renderViewOnMapButton={renderViewOnMapButton}
                               onToggleFavorite={toggleFavorite}
                               isFavorited={(favoriteProviders ?? []).some(
                                 (fav) => fav.id === provider.id

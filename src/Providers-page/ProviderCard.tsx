@@ -8,7 +8,6 @@ import ProviderLogo from '../Utility/ProviderLogo';
 interface ProviderCardProps {
   provider: ProviderAttributes;
   onViewDetails: (provider: ProviderAttributes) => void;
-  renderViewOnMapButton: (provider: ProviderAttributes) => React.ReactNode;
   onToggleFavorite: (providerId: number, date?: string) => void;
   isFavorited: boolean;
   favoritedDate?: string;
@@ -19,7 +18,6 @@ interface ProviderCardProps {
 const ProviderCard: React.FC<ProviderCardProps> = ({
   provider,
   onViewDetails,
-  renderViewOnMapButton,
   onToggleFavorite,
   isFavorited,
   favoritedDate,

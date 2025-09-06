@@ -3,7 +3,7 @@
 
 export const API_CONFIG = {
   // API Keys - these should be set as environment variables
-  ADMIN_API_KEY: process.env.REACT_APP_ADMIN_API_KEY || 'be6205db57ce01863f69372308c41e3a',
+  ADMIN_API_KEY: process.env.REACT_APP_ADMIN_API_KEY || '',
   GOOGLE_PLACES_API_KEY: process.env.REACT_APP_GOOGLE_PLACES_API_KEY || '',
   
   // API URLs - Always use the Heroku API for now

@@ -373,6 +373,19 @@ const ProviderModal: React.FC<ProviderModalProps> = ({
               ? `${primaryLocation.address_1}, ${primaryLocation.city}, ${primaryLocation.state} ${primaryLocation.zip}`
               : provider.states?.[0] || '')}
             />
+            {/* Open in Google Maps link */}
+            {mapAddress && (
+              <div className="mt-2 text-center">
+                <a
+                  href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(mapAddress)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-blue-600 hover:text-blue-800 underline"
+                >
+                  Open in Google Maps
+                </a>
+              </div>
+            )}
           </div>
           <div className="modal-grid-text">
             <section className="modal-logo">

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { API_CONFIG } from '../Utility/config';
 
 interface GoogleMapProps {
@@ -6,71 +6,57 @@ interface GoogleMapProps {
 }
 
 const GoogleMap: React.FC<GoogleMapProps> = ({ address }) => {
-  const usaCoordinates = { lat: 37.0902, lng: -95.7129 };
-  const isAddressValid = Boolean(address && address.trim());
-  const encodedAddress = isAddressValid
-    ? encodeURIComponent(address!)
-    : `${usaCoordinates.lat},${usaCoordinates.lng}`;
+  const usa = { lat: 37.0902, lng: -95.7129 };
+  const apiKey = API_CONFIG.GOOGLE_PLACES_API_KEY;
 
-  const [borderRadius, setBorderRadius] = useState('8px 0px 0px 8px');
   const [isMobile, setIsMobile] = useState(false);
-
   useEffect(() => {
-    const updateBorderRadius = () => {
-      const mobile = window.innerWidth <= 768;
-      setIsMobile(mobile);
-      
-      if (window.innerWidth > 1024) {
-        setBorderRadius('8px 0px 0px 8px');
-      } else {
-        setBorderRadius('8px 8px 0px 0px');
-      }
-    };
-
-    updateBorderRadius();
-    window.addEventListener('resize', updateBorderRadius);
-
-    return () => {
-      window.removeEventListener('resize', updateBorderRadius);
-    };
+    const onResize = () => setIsMobile(window.innerWidth <= 768);
+    onResize();
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
   }, []);
 
-  // Check if we have a valid API key
-  const apiKey = API_CONFIG.GOOGLE_PLACES_API_KEY;
+  const cleanedAddress = (address || '').trim();
+  const isAddressValid = cleanedAddress.length > 0;
+
+  // If it looks like just a state code/name/zip, help Maps a bit
+  const q = isAddressValid
+    ? encodeURIComponent(`${cleanedAddress}, USA`)
+    : '';
+
+  const mapUrl = useMemo(() => {
+    if (!apiKey) return '';
+    if (isAddressValid) {
+      return `https://www.google.com/maps/embed/v1/place?key=${apiKey}&q=${q}`;
+    }
+    return `https://www.google.com/maps/embed/v1/view?key=${apiKey}&center=${usa.lat},${usa.lng}&zoom=4`;
+  }, [apiKey, isAddressValid, q]);
+
   if (!apiKey) {
+    // Show a clean, non-emoji fallback to avoid encoding issues
     return (
-      <div className="flex items-center justify-center h-full bg-gray-100 text-gray-500">
+      <div className="flex items-center justify-center h-full bg-gray-100 text-gray-600">
         <div className="text-center">
-          <div className="text-2xl mb-2">🗺️</div>
-          <div className="text-sm">Map not available</div>
+          <div className="text-base font-medium mb-1">Map not available</div>
           <div className="text-xs">Google Maps API key not configured</div>
         </div>
       </div>
     );
   }
 
-  const mapUrl = `https://www.google.com/maps/embed/v1/${isAddressValid ? 'place' : 'view'
-    }?key=${apiKey}${isAddressValid
-      ? `&q=${encodedAddress}`
-      : `&center=${usaCoordinates.lat},${usaCoordinates.lng}&zoom=4`
-    }`;
-
   return (
     <iframe
-      title="mapFeature"
+      title="Provider location map"
       width="100%"
       height="100%"
-      style={{ 
-        border: 0, 
-        borderRadius: borderRadius,
-        // Better mobile support
-        minHeight: isMobile ? '200px' : '100%'
-      }}
+      className="rounded-lg lg:rounded-l-lg lg:rounded-r-none"
+      style={{ border: 0, minHeight: isMobile ? '200px' : '100%' }}
       loading="lazy"
       allowFullScreen
       referrerPolicy="no-referrer-when-downgrade"
       src={mapUrl}
-    ></iframe>
+    />
   );
 };
 
