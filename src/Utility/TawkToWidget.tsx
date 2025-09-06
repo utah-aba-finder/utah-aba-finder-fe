@@ -28,6 +28,8 @@ const TawkToWidget: React.FC<TawkToWidgetProps> = ({
   useEffect(() => {
     if (isInitialized.current) return;
 
+    console.log('TawkToWidget: Initializing with widgetId:', widgetId);
+
     try {
       // Initialize Tawk_API
       window.Tawk_API = window.Tawk_API || {};
@@ -98,12 +100,16 @@ const TawkToWidget: React.FC<TawkToWidgetProps> = ({
       // Create and inject the script
       const script = document.createElement('script');
       script.async = true;
-      script.src = `https://embed.tawk.to/${widgetId}`;
+      script.src = `https://embed.tawk.to/687fcfc6820a301924466471/${widgetId}`;
       script.charset = 'UTF-8';
       script.setAttribute('crossorigin', '*');
       
       script.onerror = function() {
-
+        console.error('Failed to load Tawk.to script');
+      };
+      
+      script.onload = function() {
+        console.log('Tawk.to script loaded successfully');
       };
 
       scriptRef.current = script;
