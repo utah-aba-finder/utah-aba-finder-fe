@@ -37,13 +37,6 @@ const GoogleMap: React.FC<GoogleMapProps> = ({ address }) => {
 
   // Check if we have a valid API key
   const apiKey = API_CONFIG.GOOGLE_PLACES_API_KEY;
-  console.log('🗺️ GoogleMap Debug:', { 
-    apiKey: apiKey ? `${apiKey.substring(0, 10)}...` : 'undefined',
-    address: address,
-    isAddressValid,
-    encodedAddress
-  });
-  
   if (!apiKey) {
     return (
       <div className="flex items-center justify-center h-full bg-gray-100 text-gray-500">
@@ -61,8 +54,6 @@ const GoogleMap: React.FC<GoogleMapProps> = ({ address }) => {
       ? `&q=${encodedAddress}`
       : `&center=${usaCoordinates.lat},${usaCoordinates.lng}&zoom=4`
     }`;
-    
-  console.log('🗺️ GoogleMap URL:', mapUrl);
 
   return (
     <iframe
