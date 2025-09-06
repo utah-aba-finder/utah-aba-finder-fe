@@ -39,6 +39,7 @@ import ForgotPassword from "../ForgotPassword/ForgotPassword";
 import ProviderDashboard from "../Utility/ProviderDashboard";
 import ProviderSignup from "../ProviderSignup/ProviderSignup";
 import ProviderWalkthrough from "../ProviderSignup/ProviderWalkthrough";
+import TawkToWidget from "../Utility/TawkToWidget";
 
 // Simple test component to check if React loads
 const TestComponent = () => {
@@ -287,6 +288,11 @@ function App() {
           </Routes>
         </div>
         <Footer />
+        <TawkToWidget 
+          widgetId="1j0pk77o9"
+          visitorName={undefined}
+          visitorEmail={undefined}
+        />
       </AuthProvider>
     </div>
   );
