@@ -64,7 +64,7 @@ export const fetchAllProvidersByState = async (): Promise<Providers> => {
 export const fetchProviders = async (): Promise<Providers> => {
   try {
     const response = await axios.get<Providers>(API_URL_PROVIDERS, {
-      timeout: 10000, // 10 second timeout
+      timeout: 20000, // 20 second timeout
       headers: {
         'Authorization': getAdminAuthHeader(),
         'Cache-Control': 'no-cache',
@@ -642,7 +642,7 @@ export const fetchPublicProviders = async (): Promise<Providers> => {
     
     // Add a timeout to the fetch request
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+    const timeoutId = setTimeout(() => controller.abort(), 25000); // 25 second timeout
     
     try {
       // Use the main providers endpoint since states endpoint is returning empty data

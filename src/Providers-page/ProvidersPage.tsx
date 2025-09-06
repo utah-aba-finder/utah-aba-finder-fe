@@ -213,7 +213,7 @@ const ProvidersPage: React.FC = () => {
         setIsLoading(false);
         setApiStatus('error');
         setShowError("Request timed out. The server may be experiencing issues.");
-      }, 15000); // 15 second timeout
+      }, 30000); // 30 second timeout
       
       try {
         console.log('🔄 Starting to fetch providers...');
@@ -228,7 +228,7 @@ const ProvidersPage: React.FC = () => {
           setApiStatus('error');
           setShowError("API request is taking too long. The server may be experiencing issues.");
           setIsLoading(false);
-        }, 10000); // 10 second timeout for fetch
+        }, 20000); // 20 second timeout for fetch
         
         let providers;
         try {
@@ -1140,7 +1140,7 @@ const ProvidersPage: React.FC = () => {
                   
                   {/* Only show the "all providers" message when we actually have providers and no search is active */}
                   {!isSearchRefined && allProviders.length > 0 && (
-                    <div className="text-center mb-6 p-4 bg-gradient-to-r from-blue-50 to-green-50 border border-blue-200 rounded-lg">
+                    <div className="text-center m-6 p-4 bg-gradient-to-r from-blue-50 to-green-50 border border-blue-200 rounded-lg">
                       <div className="flex items-center justify-center mb-3">
                         <Wifi className="w-5 h-5 text-blue-600 mr-2" />
                         <span className="text-blue-800 font-semibold text-lg">Welcome to Our Provider Network! 🎉</span>
@@ -1151,7 +1151,7 @@ const ProvidersPage: React.FC = () => {
                       </p>
                       
                       {/* Enhanced Provider Registration Call-to-Action */}
-                      <div className="bg-white border border-green-200 rounded-lg p-4 mt-3">
+                      <div className="bg-white border border-green-200 rounded-lg p-6 mt-5">
                         <div className="flex items-center justify-center mb-3">
                           <span className="text-green-600 font-semibold text-sm">🌟 Join Our Growing Network - It's FREE!</span>
                         </div>
