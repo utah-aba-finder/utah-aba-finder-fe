@@ -33,10 +33,28 @@ const GoogleMapsDebug: React.FC = () => {
     }
 
     try {
-      // Test basic embed URL
+      // Test basic embed URL - use a simple test first
       const testUrl = `https://www.google.com/maps/embed/v1/view?key=${apiKey}&center=40.7128,-74.0060&zoom=10`;
       
-      const response = await fetch(testUrl);
+      // Use a more reliable fetch with proper headers
+      const response = await fetch(testUrl, {
+        method: 'GET',
+        mode: 'cors',
+        headers: {
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        }
+      });
+      
+      if (!response.ok) {
+        setTestResults({
+          error: `HTTP ${response.status}: ${response.statusText}`,
+          type: 'http_error',
+          status: response.status,
+          statusText: response.statusText
+        });
+        return;
+      }
+      
       const html = await response.text();
       
       setTestResults({
@@ -44,12 +62,14 @@ const GoogleMapsDebug: React.FC = () => {
         statusText: response.statusText,
         hasError: html.includes('This content is blocked'),
         responseLength: html.length,
-        errorInResponse: html.includes('error') || html.includes('blocked')
+        errorInResponse: html.includes('error') || html.includes('blocked'),
+        success: !html.includes('This content is blocked') && !html.includes('error')
       });
     } catch (error) {
       setTestResults({ 
         error: error instanceof Error ? error.message : 'Unknown error',
-        type: 'network'
+        type: 'network_error',
+        details: 'This might be a CORS issue or network problem'
       });
     }
   };
@@ -136,7 +156,7 @@ const GoogleMapsDebug: React.FC = () => {
             cursor: 'pointer'
           }}
         >
-          Test Maps Embed API
+          Test Maps Embed API (Fetch)
         </button>
         
         <button 
@@ -152,6 +172,44 @@ const GoogleMapsDebug: React.FC = () => {
         >
           Test Direct Iframe (New Tab)
         </button>
+        
+        <button 
+          onClick={() => setTestResults({ type: 'iframe_test', message: 'Check the iframe below - if it shows a map, the API is working!' })}
+          style={{
+            padding: '8px 16px',
+            backgroundColor: '#6f42c1',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }}
+        >
+          Test Inline Iframe
+        </button>
+      </div>
+      
+      {/* Inline iframe test */}
+      <div style={{ marginTop: '20px' }}>
+        <h4>Inline Iframe Test:</h4>
+        <div style={{ 
+          width: '100%', 
+          height: '300px', 
+          border: '2px solid #ddd',
+          borderRadius: '8px',
+          overflow: 'hidden'
+        }}>
+          <iframe
+            src={`https://www.google.com/maps/embed/v1/view?key=${API_CONFIG.GOOGLE_PLACES_API_KEY}&center=40.7128,-74.0060&zoom=10`}
+            width="100%"
+            height="100%"
+            style={{ border: 0 }}
+            title="Test Google Maps Embed"
+          />
+        </div>
+        <p style={{ fontSize: '14px', color: '#666', marginTop: '10px' }}>
+          If you see a map above, your Google Maps API is working! If you see "This content is blocked", 
+          there are still API key restrictions or CSP issues.
+        </p>
       </div>
 
       <div style={{ marginTop: '20px', fontSize: '14px', color: '#666' }}>
