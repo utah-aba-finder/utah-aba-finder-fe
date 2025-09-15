@@ -34,6 +34,7 @@ import Careers from "../Footer/Careers";
 import { handleMobileIssues } from "../Utility/cacheUtils";
 import GoogleDebugTest from "../Providers-page/GoogleDebugTest";
 import SimpleMapsDebug from "../Providers-page/SimpleMapsDebug";
+import SimpleMapTest from "../Providers-page/SimpleMapTest";
 import MobileDebugTest from "../Providers-page/MobileDebugTest";
 import PasswordReset from "../PasswordReset/PasswordReset";
 import ForgotPassword from "../ForgotPassword/ForgotPassword";
@@ -228,6 +229,7 @@ function App() {
             <Route path="/careers" element={<Careers />} />
             <Route path="/google-debug" element={<GoogleDebugTest />} />
             <Route path="/maps-debug" element={<SimpleMapsDebug />} />
+            <Route path="/map-test" element={<SimpleMapTest />} />
             <Route path="/mobile-debug" element={<MobileDebugTest />} />
             <Route path="/reset-password" element={<PasswordReset />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
