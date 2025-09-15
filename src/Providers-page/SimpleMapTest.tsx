@@ -1,7 +1,7 @@
 import React from 'react';
 
 const SimpleMapTest: React.FC = () => {
-  const apiKey = 'EXPOSED_KEY_REMOVED';
+  const apiKey = 'AIzaSyDUZ_fYFL1tepHkjXSA2DxzU13V69iZ3Ec';
   
   return (
     <div style={{ padding: '20px', backgroundColor: '#f0f0f0' }}>
