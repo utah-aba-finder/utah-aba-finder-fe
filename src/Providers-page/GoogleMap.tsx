@@ -31,7 +31,7 @@ const GoogleMap: React.FC<GoogleMapProps> = ({ address }) => {
       return `https://www.google.com/maps/embed/v1/place?key=${apiKey}&q=${q}`;
     }
     return `https://www.google.com/maps/embed/v1/view?key=${apiKey}&center=${usa.lat},${usa.lng}&zoom=4`;
-  }, [apiKey, isAddressValid, q]);
+  }, [apiKey, isAddressValid, q, usa.lat, usa.lng]);
 
   if (!apiKey) {
     // Show a clean, non-emoji fallback to avoid encoding issues
