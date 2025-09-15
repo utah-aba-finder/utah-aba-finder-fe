@@ -126,7 +126,6 @@ const FavoriteProviders: React.FC = () => {
                                         onToggleFavorite={() => handleToggleFavorite(provider.id)}
                                         isFavorited={true}
                                         favoritedDate={favoriteDates[provider.id]}
-                                        renderViewOnMapButton={() => null}
                                         selectedState=""
                                     />
                                 ))}
