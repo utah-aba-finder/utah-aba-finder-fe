@@ -33,7 +33,7 @@ import ServiceDisclaimer from "../Footer/servicedisclaimer";
 import Careers from "../Footer/Careers";
 import { handleMobileIssues } from "../Utility/cacheUtils";
 import GoogleDebugTest from "../Providers-page/GoogleDebugTest";
-import GoogleMapsDebug from "../Providers-page/GoogleMapsDebug";
+import SimpleMapsDebug from "../Providers-page/SimpleMapsDebug";
 import MobileDebugTest from "../Providers-page/MobileDebugTest";
 import PasswordReset from "../PasswordReset/PasswordReset";
 import ForgotPassword from "../ForgotPassword/ForgotPassword";
@@ -227,7 +227,7 @@ function App() {
             <Route path="/servicedisclaimer" element={<ServiceDisclaimer />} />
             <Route path="/careers" element={<Careers />} />
             <Route path="/google-debug" element={<GoogleDebugTest />} />
-            <Route path="/maps-debug" element={<GoogleMapsDebug />} />
+            <Route path="/maps-debug" element={<SimpleMapsDebug />} />
             <Route path="/mobile-debug" element={<MobileDebugTest />} />
             <Route path="/reset-password" element={<PasswordReset />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
