@@ -450,7 +450,7 @@ const ProviderSignup: React.FC = () => {
   useEffect(() => {
     if (!isClaimMode && isRecaptchaReady) {
       console.log('🔄 Claim mode changed, re-initializing reCAPTCHA...');
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         // Initialize reCAPTCHA widget directly to avoid dependency issues
         if (typeof window.grecaptcha !== 'undefined' && window.grecaptcha.ready) {
           console.log('✅ grecaptcha is available, proceeding with initialization');
@@ -487,25 +487,33 @@ const ProviderSignup: React.FC = () => {
           console.log('❌ grecaptcha not available yet');
         }
       }, 100);
+      
+      return () => clearTimeout(timer);
     }
   }, [isClaimMode, isRecaptchaReady]); // Clean dependencies only
 
   const fetchProviderCategories = async () => {
     try {
+      console.log('🔄 Fetching provider categories...');
       const response = await fetch(
         'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/provider_categories'
       );
       
+      console.log('📡 Categories API response status:', response.status);
+      
       if (response.ok) {
         const data = await response.json();
+        console.log('✅ Categories loaded:', data.data?.length || 0, 'categories');
         setCategories(data.data || []);
       } else {
-        console.error('Failed to fetch categories:', response.status);
-        toast.error('Failed to load provider categories');
+        console.error('❌ Failed to fetch categories:', response.status, response.statusText);
+        const errorText = await response.text();
+        console.error('❌ Error details:', errorText);
+        toast.error(`Failed to load provider categories: ${response.status}`);
       }
     } catch (error) {
-      console.error('Error fetching categories:', error);
-      toast.error('Failed to load provider categories');
+      console.error('❌ Error fetching categories:', error);
+      toast.error('Network error loading provider categories');
     } finally {
       setIsLoadingCategories(false);
     }
