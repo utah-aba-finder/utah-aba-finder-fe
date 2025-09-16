@@ -284,21 +284,22 @@ const ProviderSignup: React.FC = () => {
     };
   }, [showSuccess, handleSuccessClose]);
   
-  // Autosave on changes
+  // Autosave on changes - use refs to avoid infinite loops
   useEffect(() => {
     if (hasUnsavedChanges) {
       if (autosaveTimeoutRef.current) {
         clearTimeout(autosaveTimeoutRef.current);
       }
       autosaveTimeoutRef.current = setTimeout(() => {
-        const draft = {
+        // Create draft using current state values
+        const currentDraft = {
           formData,
           commonFields,
           selectedCategories,
           step,
           timestamp: Date.now()
         };
-        localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(draft));
+        localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(currentDraft));
         setHasUnsavedChanges(false);
       }, AUTOSAVE_INTERVAL);
     }
@@ -308,7 +309,7 @@ const ProviderSignup: React.FC = () => {
         clearTimeout(autosaveTimeoutRef.current);
       }
     };
-  }, [hasUnsavedChanges, formData, commonFields, selectedCategories, step]);
+  }, [hasUnsavedChanges]); // Only depend on hasUnsavedChanges to prevent infinite loops
   
   // Mark changes for autosave
   const markChanged = useCallback(() => {
