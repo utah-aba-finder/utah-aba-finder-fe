@@ -198,18 +198,7 @@ const ProviderSignup: React.FC = () => {
     }
   }, []); // Empty dependency array - only run once on mount
   
-  // Autosave functionality
-  const saveDraft = useCallback(() => {
-    const draft = {
-      formData,
-      commonFields,
-      selectedCategories,
-      step,
-      timestamp: Date.now()
-    };
-    localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(draft));
-    setHasUnsavedChanges(false);
-  }, [formData, commonFields, selectedCategories, step]);
+  // Autosave functionality (moved inline to useEffect to avoid dependency issues)
   
   // Comprehensive form reset function
   const resetForm = useCallback(() => {
