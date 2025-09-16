@@ -135,6 +135,27 @@ const ProviderSignup: React.FC = () => {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [hasDraft, setHasDraft] = useState(false);
   const autosaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const formDataRef = useRef(formData);
+  const commonFieldsRef = useRef(commonFields);
+  const selectedCategoriesRef = useRef(selectedCategories);
+  const stepRef = useRef(step);
+  
+  // Keep refs updated
+  useEffect(() => {
+    formDataRef.current = formData;
+  }, [formData]);
+  
+  useEffect(() => {
+    commonFieldsRef.current = commonFields;
+  }, [commonFields]);
+  
+  useEffect(() => {
+    selectedCategoriesRef.current = selectedCategories;
+  }, [selectedCategories]);
+  
+  useEffect(() => {
+    stepRef.current = step;
+  }, [step]);
   
   // Success state
   const [showSuccess, setShowSuccess] = useState(false);
@@ -291,12 +312,12 @@ const ProviderSignup: React.FC = () => {
         clearTimeout(autosaveTimeoutRef.current);
       }
       autosaveTimeoutRef.current = setTimeout(() => {
-        // Create draft using current state values
+        // Create draft using current ref values to avoid dependency issues
         const currentDraft = {
-          formData,
-          commonFields,
-          selectedCategories,
-          step,
+          formData: formDataRef.current,
+          commonFields: commonFieldsRef.current,
+          selectedCategories: selectedCategoriesRef.current,
+          step: stepRef.current,
           timestamp: Date.now()
         };
         localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(currentDraft));
