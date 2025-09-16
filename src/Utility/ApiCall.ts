@@ -151,12 +151,7 @@ export const fetchCountiesByState = async (stateId: number): Promise<CountyData[
 
 export const fetchInsurance = async (): Promise<InsuranceData[]> => {
   const response = await fetch(
-    "https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/insurances",
-    {
-      headers: {
-        'Authorization': getAdminAuthHeader(),
-      },
-    }
+    "https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/insurances"
   );
   const data = await response.json();
   return data.data;
