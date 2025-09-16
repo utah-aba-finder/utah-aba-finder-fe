@@ -285,7 +285,7 @@ const ProvidersPage: React.FC = () => {
           spanish_speakers: p.attributes.spanish_speakers,
           at_home_services: p.attributes.at_home_services,
           in_clinic_services: p.attributes.in_clinic_services,
-          logo: p.attributes.logo,
+          logo: p.attributes.logo_url || p.attributes.logo, // Support both logo_url and logo fields
           // Missing required properties
           states: p.states || [],
           provider_type: p.attributes.provider_type || [],
@@ -378,7 +378,7 @@ const ProvidersPage: React.FC = () => {
         spanish_speakers: p.attributes.spanish_speakers,
         at_home_services: p.attributes.at_home_services,
         in_clinic_services: p.attributes.in_clinic_services,
-        logo: p.attributes.logo,
+        logo: p.attributes.logo_url || p.attributes.logo, // Support both logo_url and logo fields
         states: p.states || [],
         provider_type: p.attributes.provider_type || [],
         updated_last: p.attributes.updated_last,

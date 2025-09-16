@@ -663,6 +663,17 @@ export const fetchPublicProviders = async (): Promise<Providers> => {
       console.log('📊 All provider types found:', data?.data?.length || 0);
       console.log('🎯 This should show ABA Therapy, Autism Evaluation, Speech Therapy, Occupational Therapy, etc.');
       
+      // Debug logo data
+      const providersWithLogos = data?.data?.filter(p => p.attributes.logo_url || p.attributes.logo) || [];
+      console.log('🖼️ Providers with logos:', providersWithLogos.length);
+      if (providersWithLogos.length > 0) {
+        console.log('🖼️ Sample provider with logo:', {
+          name: providersWithLogos[0].attributes.name,
+          logo_url: providersWithLogos[0].attributes.logo_url,
+          logo: providersWithLogos[0].attributes.logo
+        });
+      }
+      
       return data;
     } catch (fetchError) {
       clearTimeout(timeoutId);

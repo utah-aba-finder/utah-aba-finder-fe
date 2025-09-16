@@ -5,6 +5,7 @@ interface ProviderLogoProps {
   provider: {
     name?: string | null;
     logo?: string | null;
+    logo_url?: string | null; // Added support for logo_url field
   };
   className?: string;
   alt?: string;
@@ -26,8 +27,20 @@ const ProviderLogo: React.FC<ProviderLogoProps> = ({
     large: 'w-32 h-32'
   };
   
+  // Get logo URL - check both logo_url and logo fields
+  const logoUrl = provider.logo_url || provider.logo;
+  
+  // Log the logo URL for debugging
+  console.log('🔍 ProviderLogo:', {
+    providerName: provider.name,
+    logo_url: provider.logo_url,
+    logo: provider.logo,
+    finalUrl: logoUrl,
+    hasLogo: !!logoUrl
+  });
+  
   // If no logo or image failed to load, show placeholder
-  if (!provider.logo || imageError) {
+  if (!logoUrl || imageError) {
     return (
       <div className={`${className} ${sizeClasses[size]} bg-gray-100 rounded border border-gray-200 flex items-center justify-center`}>
         <img 
@@ -39,16 +52,16 @@ const ProviderLogo: React.FC<ProviderLogoProps> = ({
     );
   }
   
-  // Log the logo URL for debugging
-  
-  
   return (
     <img 
-      src={provider.logo}
+      src={logoUrl}
       alt={alt || `${provider.name} logo`}
       onError={() => {
+        console.error('❌ Logo image failed to load:', logoUrl);
         setImageError(true);
-  
+      }}
+      onLoad={() => {
+        console.log('✅ Logo image loaded successfully:', logoUrl);
       }}
       className={`${className} ${sizeClasses[size]} object-contain`}
     />
