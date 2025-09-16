@@ -301,7 +301,17 @@ const ProviderSignup: React.FC = () => {
       if (autosaveTimeoutRef.current) {
         clearTimeout(autosaveTimeoutRef.current);
       }
-      autosaveTimeoutRef.current = setTimeout(saveDraft, AUTOSAVE_INTERVAL);
+      autosaveTimeoutRef.current = setTimeout(() => {
+        const draft = {
+          formData,
+          commonFields,
+          selectedCategories,
+          step,
+          timestamp: Date.now()
+        };
+        localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(draft));
+        setHasUnsavedChanges(false);
+      }, AUTOSAVE_INTERVAL);
     }
     
     return () => {
@@ -309,7 +319,7 @@ const ProviderSignup: React.FC = () => {
         clearTimeout(autosaveTimeoutRef.current);
       }
     };
-  }, [hasUnsavedChanges, saveDraft]);
+  }, [hasUnsavedChanges, formData, commonFields, selectedCategories, step]);
   
   // Mark changes for autosave
   const markChanged = useCallback(() => {
