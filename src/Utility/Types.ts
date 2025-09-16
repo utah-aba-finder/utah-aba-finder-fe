@@ -70,6 +70,7 @@ export interface ProviderAttributes {
     at_home_services: string | null;
     in_clinic_services: string | null;
     logo: string | null;
+    logo_url?: string | null;
     updated_last: string | null;
     status: string | null;
     // New fields from API update
