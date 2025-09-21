@@ -667,11 +667,32 @@ export const fetchPublicProviders = async (): Promise<Providers> => {
       const providersWithLogos = data?.data?.filter((p: any) => p.attributes.logo_url || p.attributes.logo) || [];
       console.log('🖼️ Providers with logos:', providersWithLogos.length);
       if (providersWithLogos.length > 0) {
+        const sampleProvider = providersWithLogos[0];
         console.log('🖼️ Sample provider with logo:', {
-          name: providersWithLogos[0].attributes.name,
-          logo_url: providersWithLogos[0].attributes.logo_url,
-          logo: providersWithLogos[0].attributes.logo
+          name: sampleProvider.attributes.name,
+          logo_url: sampleProvider.attributes.logo_url,
+          logo: sampleProvider.attributes.logo,
+          urlType: sampleProvider.attributes.logo_url ? 
+            (sampleProvider.attributes.logo_url.includes('rails/active_storage') ? 'Rails Active Storage' : 'Direct S3') : 
+            'None'
         });
+        
+        // Test if the URL is accessible
+        if (sampleProvider.attributes.logo_url) {
+          console.log('🔗 Testing logo URL accessibility...');
+          fetch(sampleProvider.attributes.logo_url, { method: 'HEAD' })
+            .then(response => {
+              console.log('🔗 Logo URL test result:', {
+                status: response.status,
+                statusText: response.statusText,
+                url: sampleProvider.attributes.logo_url,
+                accessible: response.ok
+              });
+            })
+            .catch(error => {
+              console.error('🔗 Logo URL test failed:', error);
+            });
+        }
       }
       
       return data;

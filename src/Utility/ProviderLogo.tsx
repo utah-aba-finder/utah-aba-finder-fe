@@ -36,7 +36,8 @@ const ProviderLogo: React.FC<ProviderLogoProps> = ({
     logo_url: provider.logo_url,
     logo: provider.logo,
     finalUrl: logoUrl,
-    hasLogo: !!logoUrl
+    hasLogo: !!logoUrl,
+    urlType: logoUrl ? (logoUrl.includes('rails/active_storage') ? 'Rails Active Storage' : 'Direct S3') : 'None'
   });
   
   // If no logo or image failed to load, show placeholder
@@ -56,12 +57,14 @@ const ProviderLogo: React.FC<ProviderLogoProps> = ({
     <img 
       src={logoUrl}
       alt={alt || `${provider.name} logo`}
-      onError={() => {
+      onError={(e) => {
         console.error('❌ Logo image failed to load:', logoUrl);
+        console.error('❌ Error details:', e);
         setImageError(true);
       }}
       onLoad={() => {
         console.log('✅ Logo image loaded successfully:', logoUrl);
+        console.log('✅ URL type:', logoUrl.includes('rails/active_storage') ? 'Rails Active Storage' : 'Direct S3');
       }}
       className={`${className} ${sizeClasses[size]} object-contain`}
     />
