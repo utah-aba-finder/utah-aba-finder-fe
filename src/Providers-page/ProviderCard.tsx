@@ -25,7 +25,13 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
   hasReviews
 }) => {
   // Debug: Check logo data
-
+  console.log('🔍 ProviderCard RENDER:', {
+    providerName: provider.name,
+    providerId: provider.id,
+    logo: provider.logo,
+    logo_url: provider.logo_url,
+    hasLogo: !!(provider.logo || provider.logo_url)
+  });
 
   const handleToggleFavorite = (e: React.MouseEvent) => {
     e.stopPropagation();

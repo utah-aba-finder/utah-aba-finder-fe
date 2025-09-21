@@ -31,13 +31,14 @@ const ProviderLogo: React.FC<ProviderLogoProps> = ({
   const logoUrl = provider.logo_url || provider.logo;
   
   // Log the logo URL for debugging
-  console.log('🔍 ProviderLogo:', {
+  console.log('🔍 ProviderLogo RENDER:', {
     providerName: provider.name,
     logo_url: provider.logo_url,
     logo: provider.logo,
     finalUrl: logoUrl,
     hasLogo: !!logoUrl,
-    urlType: logoUrl ? (logoUrl.includes('rails/active_storage') ? 'Rails Active Storage' : 'Direct S3') : 'None'
+    urlType: logoUrl ? (logoUrl.includes('rails/active_storage') ? 'Rails Active Storage' : 'Direct S3') : 'None',
+    willShowDefault: !logoUrl || imageError
   });
   
   // If no logo or image failed to load, show placeholder
