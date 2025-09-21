@@ -61,6 +61,8 @@ const ProviderLogo: React.FC<ProviderLogoProps> = ({
       onError={(e) => {
         console.error('❌ Logo image failed to load:', logoUrl);
         console.error('❌ Error details:', e);
+        console.error('❌ Error target:', e.target);
+        console.error('❌ Error type:', e.type);
         setImageError(true);
       }}
       onLoad={() => {
