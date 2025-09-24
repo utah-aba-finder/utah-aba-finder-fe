@@ -501,6 +501,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
         min_age: editedProvider?.min_age,
         max_age: editedProvider?.max_age,
         waitlist: editedProvider?.waitlist,
+        status: editedProvider?.status,
         telehealth_services: editedProvider?.telehealth_services,
         spanish_speakers: editedProvider?.spanish_speakers,
         at_home_services: editedProvider?.at_home_services,
