@@ -417,13 +417,15 @@ const ProviderSignup: React.FC = () => {
 
   // Fetch provider categories on component mount
   useEffect(() => {
+    let timeoutId: NodeJS.Timeout | null = null;
+    
     fetchProviderCategories();
     addRecaptchaScript().then(() => {
       // reCAPTCHA script is now loaded, proceed with other effects
       setIsRecaptchaReady(true);
       
       // Initialize reCAPTCHA widget
-      setTimeout(() => {
+      timeoutId = setTimeout(() => {
         // Initialize reCAPTCHA widget directly to avoid dependency issues
         if (typeof window.grecaptcha !== 'undefined' && window.grecaptcha.ready) {
           console.log('✅ grecaptcha is available, proceeding with initialization');
@@ -466,6 +468,13 @@ const ProviderSignup: React.FC = () => {
         setStates(stateNames);
       });
     });
+    
+    // Cleanup function to clear timeout
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
   }, []); // No dependencies needed
 
   // Re-initialize reCAPTCHA when claim mode changes
