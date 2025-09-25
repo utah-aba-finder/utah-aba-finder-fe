@@ -5,7 +5,7 @@ import {
   Building2, Heart, Brain, Scissors, Activity, Target, 
   Smile, ClipboardCheck, Baby, Dumbbell, Shield, Ear, Mail
 } from 'lucide-react';
-import { fetchStates } from '../Utility/ApiCall';
+// import { fetchStates } from '../Utility/ApiCall'; // Temporarily disabled
 import InsuranceInput from './InsuranceInput';
 import ClaimAccount from './ClaimAccount';
 import './InsuranceInput.css';
@@ -22,27 +22,27 @@ declare global {
   }
 }
 
-// Add reCAPTCHA script to head (supports both v2 and v3)
-const addRecaptchaScript = () => {
-  return new Promise<void>((resolve) => {
-    if (document.querySelector('script[src*="recaptcha"]')) {
-      resolve();
-      return;
-    }
+// TEMPORARILY DISABLED - Add reCAPTCHA script to head (supports both v2 and v3)
+// const addRecaptchaScript = () => {
+//   return new Promise<void>((resolve) => {
+//     if (document.querySelector('script[src*="recaptcha"]')) {
+//       resolve();
+//       return;
+//     }
     
-    const script = document.createElement('script');
-    script.src = 'https://www.google.com/recaptcha/api.js?render=explicit';
-    script.onload = () => {
-      console.log('reCAPTCHA script loaded successfully');
-      resolve();
-    };
-    script.onerror = () => {
-      console.error('Failed to load reCAPTCHA script');
-      resolve();
-    };
-    document.head.appendChild(script);
-  });
-};
+//     const script = document.createElement('script');
+//     script.src = 'https://www.google.com/recaptcha/api.js?render=explicit';
+//     script.onload = () => {
+//       console.log('reCAPTCHA script loaded successfully');
+//       resolve();
+//     };
+//     script.onerror = () => {
+//       console.error('Failed to load reCAPTCHA script');
+//       resolve();
+//     };
+//     document.head.appendChild(script);
+//   });
+// };
 
 // Enhanced interfaces with slugs
 interface CategoryField {
@@ -124,9 +124,9 @@ const ProviderSignup: React.FC = () => {
   
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isRecaptchaReady, setIsRecaptchaReady] = useState(false);
+  // const [isRecaptchaReady, setIsRecaptchaReady] = useState(false); // Temporarily disabled
   const [recaptchaToken, setRecaptchaToken] = useState<string>('');
-  const [states, setStates] = useState<string[]>([]);
+  // const [states, setStates] = useState<string[]>([]); // Temporarily disabled
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
   const [isCheckingDuplicate, setIsCheckingDuplicate] = useState(false);
   const [duplicateCheckComplete, setDuplicateCheckComplete] = useState(false);
@@ -529,32 +529,32 @@ const ProviderSignup: React.FC = () => {
   //   }
   // }, [isClaimMode, isRecaptchaReady]); // Clean dependencies only
 
-  const fetchProviderCategories = async () => {
-    try {
-      console.log('🔄 Fetching provider categories...');
-      const response = await fetch(
-        'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/provider_categories'
-      );
+  // TEMPORARILY DISABLED - const fetchProviderCategories = async () => {
+  //   try {
+  //     console.log('🔄 Fetching provider categories...');
+  //     const response = await fetch(
+  //       'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/provider_categories'
+  //     );
       
-      console.log('📡 Categories API response status:', response.status);
+  //     console.log('📡 Categories API response status:', response.status);
       
-      if (response.ok) {
-        const data = await response.json();
-        console.log('✅ Categories loaded:', data.data?.length || 0, 'categories');
-        setCategories(data.data || []);
-      } else {
-        console.error('❌ Failed to fetch categories:', response.status, response.statusText);
-        const errorText = await response.text();
-        console.error('❌ Error details:', errorText);
-        toast.error(`Failed to load provider categories: ${response.status}`);
-      }
-    } catch (error) {
-      console.error('❌ Error fetching categories:', error);
-      toast.error('Network error loading provider categories');
-    } finally {
-      setIsLoadingCategories(false);
-    }
-  };
+  //     if (response.ok) {
+  //       const data = await response.json();
+  //       console.log('✅ Categories loaded:', data.data?.length || 0, 'categories');
+  //       setCategories(data.data || []);
+  //     } else {
+  //       console.error('❌ Failed to fetch categories:', response.status, response.statusText);
+  //       const errorText = await response.text();
+  //       console.error('❌ Error details:', errorText);
+  //       toast.error(`Failed to load provider categories: ${response.status}`);
+  //     }
+  //   } catch (error) {
+  //     console.error('❌ Error fetching categories:', error);
+  //     toast.error('Network error loading provider categories');
+  //   } finally {
+  //     setIsLoadingCategories(false);
+  //   }
+  // };
 
   const checkForDuplicateProvider = async (): Promise<boolean> => {
     try {
