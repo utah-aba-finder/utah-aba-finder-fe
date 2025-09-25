@@ -419,115 +419,115 @@ const ProviderSignup: React.FC = () => {
     markChanged();
   }, [markChanged]);
 
-  // Fetch provider categories on component mount
-  useEffect(() => {
-    console.log('🔄 Main useEffect triggered - component mounting or re-rendering');
-    let timeoutId: NodeJS.Timeout | null = null;
+  // TEMPORARILY DISABLED - Fetch provider categories on component mount
+  // useEffect(() => {
+  //   console.log('🔄 Main useEffect triggered - component mounting or re-rendering');
+  //   let timeoutId: NodeJS.Timeout | null = null;
     
-    fetchProviderCategories();
-    addRecaptchaScript().then(() => {
-      console.log('✅ reCAPTCHA script loaded, setting isRecaptchaReady to true');
-      // reCAPTCHA script is now loaded, proceed with other effects
-      setIsRecaptchaReady(true);
+  //   fetchProviderCategories();
+  //   addRecaptchaScript().then(() => {
+  //     console.log('✅ reCAPTCHA script loaded, setting isRecaptchaReady to true');
+  //     // reCAPTCHA script is now loaded, proceed with other effects
+  //     setIsRecaptchaReady(true);
       
-      // Initialize reCAPTCHA widget
-      timeoutId = setTimeout(() => {
-        // Initialize reCAPTCHA widget directly to avoid dependency issues
-        if (typeof window.grecaptcha !== 'undefined' && window.grecaptcha.ready) {
-          console.log('✅ grecaptcha is available, proceeding with initialization');
-          window.grecaptcha.ready(() => {
-            console.log('✅ grecaptcha.ready callback executed');
-            const container = document.getElementById('recaptcha-container');
-            if (container) {
-              console.log('✅ Found recaptcha-container, rendering widget');
-              try {
-                window.grecaptcha.render('recaptcha-container', {
-                  sitekey: '6LfTMGErAAAAAARfviGKHaQSMBEiUqHOZeBEmRIu',
-                  callback: (token: string) => {
-                    console.log('✅ reCAPTCHA success, token:', token);
-                    setRecaptchaToken(token);
-                  },
-                  'expired-callback': () => {
-                    console.log('⚠️ reCAPTCHA expired');
-                    setRecaptchaToken('');
-                  },
-                  'error-callback': () => {
-                    console.log('❌ reCAPTCHA error');
-                    setRecaptchaToken('');
-                  }
-                });
-                console.log('✅ reCAPTCHA widget rendered successfully');
-              } catch (error) {
-                console.error('❌ Error rendering reCAPTCHA:', error);
-              }
-            } else {
-              console.log('❌ recaptcha-container not found in DOM');
-            }
-          });
-        } else {
-          console.log('❌ grecaptcha not available yet');
-        }
-      }, 100);
+  //     // Initialize reCAPTCHA widget
+  //     timeoutId = setTimeout(() => {
+  //       // Initialize reCAPTCHA widget directly to avoid dependency issues
+  //       if (typeof window.grecaptcha !== 'undefined' && window.grecaptcha.ready) {
+  //         console.log('✅ grecaptcha is available, proceeding with initialization');
+  //         window.grecaptcha.ready(() => {
+  //           console.log('✅ grecaptcha.ready callback executed');
+  //           const container = document.getElementById('recaptcha-container');
+  //           if (container) {
+  //             console.log('✅ Found recaptcha-container, rendering widget');
+  //             try {
+  //               window.grecaptcha.render('recaptcha-container', {
+  //                 sitekey: '6LfTMGErAAAAAARfviGKHaQSMBEiUqHOZeBEmRIu',
+  //                 callback: (token: string) => {
+  //                   console.log('✅ reCAPTCHA success, token:', token);
+  //                   setRecaptchaToken(token);
+  //                 },
+  //                 'expired-callback': () => {
+  //                   console.log('⚠️ reCAPTCHA expired');
+  //                   setRecaptchaToken('');
+  //                 },
+  //                 'error-callback': () => {
+  //                   console.log('❌ reCAPTCHA error');
+  //                   setRecaptchaToken('');
+  //                 }
+  //               });
+  //               console.log('✅ reCAPTCHA widget rendered successfully');
+  //             } catch (error) {
+  //               console.error('❌ Error rendering reCAPTCHA:', error);
+  //             }
+  //           } else {
+  //             console.log('❌ recaptcha-container not found in DOM');
+  //           }
+  //         });
+  //       } else {
+  //         console.log('❌ grecaptcha not available yet');
+  //       }
+  //     }, 100);
       
-      fetchStates().then(data => {
-        const stateNames = data.map(state => state.attributes.name);
-        setStates(stateNames);
-      });
-    });
+  //     fetchStates().then(data => {
+  //       const stateNames = data.map(state => state.attributes.name);
+  //       setStates(stateNames);
+  //     });
+  //   });
     
-    // Cleanup function to clear timeout
-    return () => {
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
-    };
-  }, []); // No dependencies needed
+  //   // Cleanup function to clear timeout
+  //   return () => {
+  //     if (timeoutId) {
+  //       clearTimeout(timeoutId);
+  //     }
+  //   };
+  // }, []); // No dependencies needed
 
-  // Re-initialize reCAPTCHA when claim mode changes
-  useEffect(() => {
-    if (!isClaimMode && isRecaptchaReady) {
-      console.log('🔄 Claim mode changed, re-initializing reCAPTCHA...');
-      const timer = setTimeout(() => {
-        // Initialize reCAPTCHA widget directly to avoid dependency issues
-        if (typeof window.grecaptcha !== 'undefined' && window.grecaptcha.ready) {
-          console.log('✅ grecaptcha is available, proceeding with initialization');
-          window.grecaptcha.ready(() => {
-            console.log('✅ grecaptcha.ready callback executed');
-            const container = document.getElementById('recaptcha-container');
-            if (container) {
-              console.log('✅ Found recaptcha-container, rendering widget');
-              try {
-                window.grecaptcha.render('recaptcha-container', {
-                  sitekey: '6LfTMGErAAAAAARfviGKHaQSMBEiUqHOZeBEmRIu',
-                  callback: (token: string) => {
-                    console.log('✅ reCAPTCHA success, token:', token);
-                    setRecaptchaToken(token);
-                  },
-                  'expired-callback': () => {
-                    console.log('⚠️ reCAPTCHA expired');
-                    setRecaptchaToken('');
-                  },
-                  'error-callback': () => {
-                    console.log('❌ reCAPTCHA error');
-                    setRecaptchaToken('');
-                  }
-                });
-                console.log('✅ reCAPTCHA widget rendered successfully');
-              } catch (error) {
-                console.error('❌ Error rendering reCAPTCHA:', error);
-              }
-            } else {
-              console.log('❌ recaptcha-container not found in DOM');
-            }
-          });
-        } else {
-          console.log('❌ grecaptcha not available yet');
-        }
-      }, 100);
+  // TEMPORARILY DISABLED - Re-initialize reCAPTCHA when claim mode changes
+  // useEffect(() => {
+  //   if (!isClaimMode && isRecaptchaReady) {
+  //     console.log('🔄 Claim mode changed, re-initializing reCAPTCHA...');
+  //     const timer = setTimeout(() => {
+  //       // Initialize reCAPTCHA widget directly to avoid dependency issues
+  //       if (typeof window.grecaptcha !== 'undefined' && window.grecaptcha.ready) {
+  //         console.log('✅ grecaptcha is available, proceeding with initialization');
+  //         window.grecaptcha.ready(() => {
+  //           console.log('✅ grecaptcha.ready callback executed');
+  //           const container = document.getElementById('recaptcha-container');
+  //           if (container) {
+  //             console.log('✅ Found recaptcha-container, rendering widget');
+  //             try {
+  //               window.grecaptcha.render('recaptcha-container', {
+  //                 sitekey: '6LfTMGErAAAAAARfviGKHaQSMBEiUqHOZeBEmRIu',
+  //                 callback: (token: string) => {
+  //                   console.log('✅ reCAPTCHA success, token:', token);
+  //                   setRecaptchaToken(token);
+  //                 },
+  //                 'expired-callback': () => {
+  //                   console.log('⚠️ reCAPTCHA expired');
+  //                   setRecaptchaToken('');
+  //                 },
+  //                 'error-callback': () => {
+  //                   console.log('❌ reCAPTCHA error');
+  //                   setRecaptchaToken('');
+  //                 }
+  //               });
+  //               console.log('✅ reCAPTCHA widget rendered successfully');
+  //             } catch (error) {
+  //               console.error('❌ Error rendering reCAPTCHA:', error);
+  //             }
+  //           } else {
+  //             console.log('❌ recaptcha-container not found in DOM');
+  //           }
+  //         });
+  //       } else {
+  //         console.log('❌ grecaptcha not available yet');
+  //       }
+  //     }, 100);
       
-      return () => clearTimeout(timer);
-    }
-  }, [isClaimMode, isRecaptchaReady]); // Clean dependencies only
+  //     return () => clearTimeout(timer);
+  //   }
+  // }, [isClaimMode, isRecaptchaReady]); // Clean dependencies only
 
   const fetchProviderCategories = async () => {
     try {
