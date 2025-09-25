@@ -307,6 +307,9 @@ const ProviderSignup: React.FC = () => {
   
   // Autosave on changes - use refs to avoid infinite loops
   useEffect(() => {
+    // Temporarily disable autosave to test if it's causing the refresh issue
+    console.log('🔄 Autosave useEffect triggered, hasUnsavedChanges:', hasUnsavedChanges);
+    
     if (hasUnsavedChanges) {
       if (autosaveTimeoutRef.current) {
         clearTimeout(autosaveTimeoutRef.current);
@@ -320,6 +323,7 @@ const ProviderSignup: React.FC = () => {
           step: stepRef.current,
           timestamp: Date.now()
         };
+        console.log('💾 Autosaving draft:', currentDraft);
         localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(currentDraft));
         setHasUnsavedChanges(false);
       }, AUTOSAVE_INTERVAL);
@@ -417,10 +421,12 @@ const ProviderSignup: React.FC = () => {
 
   // Fetch provider categories on component mount
   useEffect(() => {
+    console.log('🔄 Main useEffect triggered - component mounting or re-rendering');
     let timeoutId: NodeJS.Timeout | null = null;
     
     fetchProviderCategories();
     addRecaptchaScript().then(() => {
+      console.log('✅ reCAPTCHA script loaded, setting isRecaptchaReady to true');
       // reCAPTCHA script is now loaded, proceed with other effects
       setIsRecaptchaReady(true);
       
