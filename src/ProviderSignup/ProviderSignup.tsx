@@ -90,7 +90,7 @@ const AUTOSAVE_KEY = 'provider_registration_draft';
 const AUTOSAVE_INTERVAL = 3000; // 3 seconds
 
 const ProviderSignup: React.FC = () => {
-  // const [categories, setCategories] = useState<ProviderCategory[]>([]); // Temporarily disabled
+  const [categories, setCategories] = useState<ProviderCategory[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<ProviderCategory[]>([]);
   const [formData, setFormData] = useState<ProviderRegistration>({
     email: '',
@@ -127,7 +127,7 @@ const ProviderSignup: React.FC = () => {
   // const [isRecaptchaReady, setIsRecaptchaReady] = useState(false); // Temporarily disabled
   const [recaptchaToken, setRecaptchaToken] = useState<string>('');
   // const [states, setStates] = useState<string[]>([]); // Temporarily disabled
-  // const [isLoadingCategories, setIsLoadingCategories] = useState(true); // Temporarily disabled
+  const [isLoadingCategories, setIsLoadingCategories] = useState(true);
   const [isCheckingDuplicate, setIsCheckingDuplicate] = useState(false);
   const [duplicateCheckComplete, setDuplicateCheckComplete] = useState(false);
   
@@ -419,69 +419,11 @@ const ProviderSignup: React.FC = () => {
     markChanged();
   }, [markChanged]);
 
-  // TEMPORARILY DISABLED - Fetch provider categories on component mount
-  // useEffect(() => {
-  //   console.log('🔄 Main useEffect triggered - component mounting or re-rendering');
-  //   let timeoutId: NodeJS.Timeout | null = null;
-    
-  //   fetchProviderCategories();
-  //   addRecaptchaScript().then(() => {
-  //     console.log('✅ reCAPTCHA script loaded, setting isRecaptchaReady to true');
-  //     // reCAPTCHA script is now loaded, proceed with other effects
-  //     setIsRecaptchaReady(true);
-      
-  //     // Initialize reCAPTCHA widget
-  //     timeoutId = setTimeout(() => {
-  //       // Initialize reCAPTCHA widget directly to avoid dependency issues
-  //       if (typeof window.grecaptcha !== 'undefined' && window.grecaptcha.ready) {
-  //         console.log('✅ grecaptcha is available, proceeding with initialization');
-  //         window.grecaptcha.ready(() => {
-  //           console.log('✅ grecaptcha.ready callback executed');
-  //           const container = document.getElementById('recaptcha-container');
-  //           if (container) {
-  //             console.log('✅ Found recaptcha-container, rendering widget');
-  //             try {
-  //               window.grecaptcha.render('recaptcha-container', {
-  //                 sitekey: '6LfTMGErAAAAAARfviGKHaQSMBEiUqHOZeBEmRIu',
-  //                 callback: (token: string) => {
-  //                   console.log('✅ reCAPTCHA success, token:', token);
-  //                   setRecaptchaToken(token);
-  //                 },
-  //                 'expired-callback': () => {
-  //                   console.log('⚠️ reCAPTCHA expired');
-  //                   setRecaptchaToken('');
-  //                 },
-  //                 'error-callback': () => {
-  //                   console.log('❌ reCAPTCHA error');
-  //                   setRecaptchaToken('');
-  //                 }
-  //               });
-  //               console.log('✅ reCAPTCHA widget rendered successfully');
-  //             } catch (error) {
-  //               console.error('❌ Error rendering reCAPTCHA:', error);
-  //             }
-  //           } else {
-  //             console.log('❌ recaptcha-container not found in DOM');
-  //           }
-  //         });
-  //       } else {
-  //         console.log('❌ grecaptcha not available yet');
-  //       }
-  //     }, 100);
-      
-  //     fetchStates().then(data => {
-  //       const stateNames = data.map(state => state.attributes.name);
-  //       setStates(stateNames);
-  //     });
-  //   });
-    
-  //   // Cleanup function to clear timeout
-  //   return () => {
-  //     if (timeoutId) {
-  //       clearTimeout(timeoutId);
-  //     }
-  //   };
-  // }, []); // No dependencies needed
+  // Test: Load categories only (no reCAPTCHA)
+  useEffect(() => {
+    console.log('🔄 Categories useEffect triggered - component mounting');
+    fetchProviderCategories();
+  }, []); // Empty dependency array - only run once on mount
 
   // TEMPORARILY DISABLED - Re-initialize reCAPTCHA when claim mode changes
   // useEffect(() => {
@@ -529,32 +471,32 @@ const ProviderSignup: React.FC = () => {
   //   }
   // }, [isClaimMode, isRecaptchaReady]); // Clean dependencies only
 
-  // TEMPORARILY DISABLED - const fetchProviderCategories = async () => {
-  //   try {
-  //     console.log('🔄 Fetching provider categories...');
-  //     const response = await fetch(
-  //       'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/provider_categories'
-  //     );
+  const fetchProviderCategories = async () => {
+    try {
+      console.log('🔄 Fetching provider categories...');
+      const response = await fetch(
+        'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/provider_categories'
+      );
       
-  //     console.log('📡 Categories API response status:', response.status);
+      console.log('📡 Categories API response status:', response.status);
       
-  //     if (response.ok) {
-  //       const data = await response.json();
-  //       console.log('✅ Categories loaded:', data.data?.length || 0, 'categories');
-  //       setCategories(data.data || []);
-  //     } else {
-  //       console.error('❌ Failed to fetch categories:', response.status, response.statusText);
-  //       const errorText = await response.text();
-  //       console.error('❌ Error details:', errorText);
-  //       toast.error(`Failed to load provider categories: ${response.status}`);
-  //     }
-  //   } catch (error) {
-  //     console.error('❌ Error fetching categories:', error);
-  //     toast.error('Network error loading provider categories');
-  //   } finally {
-  //     setIsLoadingCategories(false);
-  //   }
-  // };
+      if (response.ok) {
+        const data = await response.json();
+        console.log('✅ Categories loaded:', data.data?.length || 0, 'categories');
+        setCategories(data.data || []);
+      } else {
+        console.error('❌ Failed to fetch categories:', response.status, response.statusText);
+        const errorText = await response.text();
+        console.error('❌ Error details:', errorText);
+        toast.error(`Failed to load provider categories: ${response.status}`);
+      }
+    } catch (error) {
+      console.error('❌ Error fetching categories:', error);
+      toast.error('Network error loading provider categories');
+    } finally {
+      setIsLoadingCategories(false);
+    }
+  };
 
   const checkForDuplicateProvider = async (): Promise<boolean> => {
     try {
@@ -1357,8 +1299,7 @@ const ProviderSignup: React.FC = () => {
               <div className="bg-white rounded-lg shadow-lg p-8">
                 <h2 className="text-2xl font-semibold mb-6">Choose Your Service Categories</h2>
                 
-                {/* TEMPORARILY DISABLED - Categories loading */}
-                {/* {isLoadingCategories ? (
+                {isLoadingCategories ? (
                   <div className="text-center py-12">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
                     <p className="text-gray-500">Loading provider categories...</p>
@@ -1373,45 +1314,40 @@ const ProviderSignup: React.FC = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                       {categories
                         .sort((a, b) => a.attributes.name.localeCompare(b.attributes.name))
-                        .map(category => ( */}
-                <div className="text-center py-12">
-                  <p className="text-gray-500">Provider categories temporarily disabled for debugging.</p>
-                  <p className="text-gray-400 text-sm mt-2">This page is being debugged to fix refresh issues.</p>
-                </div>
-                {/* TEMPORARILY DISABLED - Categories JSX code */}
-                {/* <div
-                  key={category.id}
-                  className={`category-card cursor-pointer border-2 rounded-lg p-6 transition-all duration-200 ${
-                    selectedCategories.some(sc => sc.id === category.id)
-                      ? 'border-blue-500 bg-blue-50 shadow-lg' 
-                      : 'border-gray-200 hover:border-blue-300 hover:shadow-md'
-                  }`}
-                  onClick={() => {
-                    console.log('Selected category:', category);
-                    setSelectedCategories(prev => {
-                      const isSelected = prev.some(sc => sc.id === category.id);
-                      if (isSelected) {
-                        return prev.filter(sc => sc.id !== category.id);
-                      } else {
-                        return [...prev, category];
-                      }
-                    });
-                  }}
-                >
-                  <div className="text-center">
-                    <div className="flex justify-center mb-4">
-                      {getCategoryIcon(category.attributes.slug)}
-                    </div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">{category.attributes.name}</h3>
-                    <p className="text-sm text-gray-600">{category.attributes.description}</p>
-                    {category.attributes.category_fields && (
-                      <p className="text-xs text-gray-400 mt-2">
-                        {category.attributes.category_fields.length} fields
-                      </p>
-                    )}
-                  </div>
-                </div>
-                      ))}
+                        .map(category => (
+                          <div
+                            key={category.id}
+                            className={`category-card cursor-pointer border-2 rounded-lg p-6 transition-all duration-200 ${
+                              selectedCategories.some(sc => sc.id === category.id)
+                                ? 'border-blue-500 bg-blue-50 shadow-lg' 
+                                : 'border-gray-200 hover:border-blue-300 hover:shadow-md'
+                            }`}
+                            onClick={() => {
+                              console.log('Selected category:', category);
+                              setSelectedCategories(prev => {
+                                const isSelected = prev.some(sc => sc.id === category.id);
+                                if (isSelected) {
+                                  return prev.filter(sc => sc.id !== category.id);
+                                } else {
+                                  return [...prev, category];
+                                }
+                              });
+                            }}
+                          >
+                            <div className="text-center">
+                              <div className="flex justify-center mb-4">
+                                {getCategoryIcon(category.attributes.slug)}
+                              </div>
+                              <h3 className="text-lg font-semibold text-gray-900 mb-2">{category.attributes.name}</h3>
+                              <p className="text-sm text-gray-600">{category.attributes.description}</p>
+                              {category.attributes.category_fields && (
+                                <p className="text-xs text-gray-400 mt-2">
+                                  {category.attributes.category_fields.length} fields
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        ))}
                     </div>
                     <div className="text-center mt-8">
                       <button
@@ -1423,7 +1359,7 @@ const ProviderSignup: React.FC = () => {
                       </button>
                     </div>
                   </>
-                )} */}
+                )}
               </div>
             )}
 
