@@ -5,7 +5,7 @@ import {
   Building2, Heart, Brain, Scissors, Activity, Target, 
   Smile, ClipboardCheck, Baby, Dumbbell, Shield, Ear, Mail
 } from 'lucide-react';
-// import { fetchStates } from '../Utility/ApiCall'; // Temporarily disabled
+import { fetchStates } from '../Utility/ApiCall';
 import InsuranceInput from './InsuranceInput';
 import ClaimAccount from './ClaimAccount';
 import './InsuranceInput.css';
@@ -126,7 +126,7 @@ const ProviderSignup: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   // const [isRecaptchaReady, setIsRecaptchaReady] = useState(false); // Temporarily disabled
   const [recaptchaToken, setRecaptchaToken] = useState<string>('');
-  // const [states, setStates] = useState<string[]>([]); // Temporarily disabled
+  const [states, setStates] = useState<string[]>([]);
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
   const [isCheckingDuplicate, setIsCheckingDuplicate] = useState(false);
   const [duplicateCheckComplete, setDuplicateCheckComplete] = useState(false);
@@ -419,10 +419,18 @@ const ProviderSignup: React.FC = () => {
     markChanged();
   }, [markChanged]);
 
-  // Test: Load categories only (no reCAPTCHA)
+  // Load categories and states on component mount
   useEffect(() => {
-    console.log('🔄 Categories useEffect triggered - component mounting');
+    console.log('🔄 Main useEffect triggered - component mounting');
     fetchProviderCategories();
+    
+    // Load states separately to avoid complexity
+    fetchStates().then(data => {
+      const stateNames = data.map(state => state.attributes.name);
+      setStates(stateNames);
+    }).catch(error => {
+      console.error('❌ Error fetching states:', error);
+    });
   }, []); // Empty dependency array - only run once on mount
 
   // TEMPORARILY DISABLED - Re-initialize reCAPTCHA when claim mode changes
@@ -1516,8 +1524,7 @@ const ProviderSignup: React.FC = () => {
                     <div className="form-group md:col-span-2">
                       <label className="block text-sm font-medium text-gray-700 mb-2">Service Areas</label>
                       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                        {/* TEMPORARILY DISABLED - Service areas selection */}
-                        {/* {states.map((state) => {
+                        {states.map((state) => {
                           const currentValues = commonFields.service_areas || [];
                           const isChecked = currentValues.includes(state);
                           return (
@@ -1537,8 +1544,7 @@ const ProviderSignup: React.FC = () => {
                               <span className="ml-2 text-sm text-gray-700">{state}</span>
                             </label>
                           );
-                        })} */}
-                        <p className="text-gray-500 text-sm">Service areas selection temporarily disabled for debugging</p>
+                        })}
                       </div>
                       <p className="mt-1 text-sm text-gray-500">Select all states where you provide services</p>
                     </div>
@@ -1585,11 +1591,9 @@ const ProviderSignup: React.FC = () => {
                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                           >
                             <option value="">Select State</option>
-                            {/* TEMPORARILY DISABLED - States dropdown */}
-                            {/* {states.map((state) => (
+                            {states.map((state) => (
                               <option key={state} value={state}>{state}</option>
-                            ))} */}
-                            <option value="Utah">Utah</option>
+                            ))}
                           </select>
                         </div>
                         <div className="form-group">
