@@ -21,11 +21,21 @@ const InsuranceModal: React.FC<InsuranceModalProps> = ({
     const [localSelectedInsurances, setLocalSelectedInsurances] = useState<Insurance[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [insurance, setInsurance] = useState<InsuranceData[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         const loadInsurance = async () => {
-            const insurances = await fetchInsurance();
-            setInsurance(insurances);
+            try {
+                setIsLoading(true);
+                console.log('🔄 Loading insurances...');
+                const insurances = await fetchInsurance();
+                console.log('✅ Insurances loaded:', insurances);
+                setInsurance(insurances);
+            } catch (error) {
+                console.error('❌ Error loading insurances:', error);
+            } finally {
+                setIsLoading(false);
+            }
         }
         loadInsurance();
     }, []);
@@ -77,16 +87,27 @@ const InsuranceModal: React.FC<InsuranceModalProps> = ({
                     className="w-80 p-2 mb-4 border rounded mx-auto block"
                 />
                 <div className="modal-insurance-container">
-                    {filteredInsurances.sort((a, b) => a.name.localeCompare(b.name)).map(option => (
-                        <div key={option.id} className='modal-insurance'>
-                            <input
-                                type="checkbox"
-                                checked={isInsuranceSelected(option.id)}
-                                onChange={() => handleSelect(option)}
-                            />
-                            {option.name}
+                    {isLoading ? (
+                        <div className="text-center py-8">
+                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                            <p className="text-gray-500">Loading insurance options...</p>
                         </div>
-                    ))}
+                    ) : filteredInsurances.length === 0 ? (
+                        <div className="text-center py-8">
+                            <p className="text-gray-500">No insurance options found.</p>
+                        </div>
+                    ) : (
+                        filteredInsurances.sort((a, b) => a.name.localeCompare(b.name)).map(option => (
+                            <div key={option.id} className='modal-insurance'>
+                                <input
+                                    type="checkbox"
+                                    checked={isInsuranceSelected(option.id)}
+                                    onChange={() => handleSelect(option)}
+                                />
+                                {option.name}
+                            </div>
+                        ))
+                    )}
                 </div>
                 <div className='insuranceModalButtons'>
                     <button onClick={onClose} className='insurance'>Close</button>
