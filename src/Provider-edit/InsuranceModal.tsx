@@ -57,7 +57,7 @@ const InsuranceModal: React.FC<InsuranceModalProps> = ({
 
     if (!isOpen) return null;
 
-    const filteredInsurances = insurance.filter(ins => 
+    const filteredInsurances = (insurance || []).filter(ins => 
         ins.attributes.name.toLowerCase().includes(searchTerm.toLowerCase())
     ).map(ins => ({
         id: ins.id,
