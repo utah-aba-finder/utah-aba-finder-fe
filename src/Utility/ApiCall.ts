@@ -150,8 +150,16 @@ export const fetchCountiesByState = async (stateId: number): Promise<CountyData[
 };
 
 export const fetchInsurance = async (): Promise<InsuranceData[]> => {
+  // Try with authentication first (for logged-in users)
+  const authHeader = getAdminAuthHeader();
+  
   const response = await fetch(
-    "https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/insurances"
+    "https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/insurances",
+    {
+      headers: authHeader ? {
+        'Authorization': authHeader,
+      } : {},
+    }
   );
   
   if (!response.ok) {
