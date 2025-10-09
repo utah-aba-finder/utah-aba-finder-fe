@@ -153,8 +153,17 @@ export const fetchInsurance = async (): Promise<InsuranceData[]> => {
   const response = await fetch(
     "https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/insurances"
   );
+  
+  if (!response.ok) {
+    console.error('❌ Insurance API error:', response.status, response.statusText);
+    throw new Error(`Failed to fetch insurances: ${response.status}`);
+  }
+  
   const data = await response.json();
-  return data.data;
+  console.log('📦 Raw insurance API response:', data);
+  
+  // Return data.data if it exists, otherwise return empty array
+  return data.data || [];
 };
 
 // Test function to check API health
