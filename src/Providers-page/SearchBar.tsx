@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import 'react-toastify/dist/ReactToastify.css';
 import './SearchBar.css';
-import { CountyData, Providers, ProviderAttributes, InsuranceData, PracticeType } from '../Utility/Types';
-import { fetchCountiesByState, fetchStates, fetchPracticeTypes } from '../Utility/ApiCall';
+import { CountyData, Providers, ProviderAttributes, InsuranceData } from '../Utility/Types';
+import { fetchCountiesByState, fetchStates, fetchPracticeTypes, PracticeType } from '../Utility/ApiCall';
 import { ChevronDown, ChevronUp, Search, RotateCcw } from 'lucide-react';
 
 interface SearchBarProps {
