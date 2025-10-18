@@ -270,7 +270,6 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
       // Debug: Log the data being sent
       const requestData = {
         data: {
-          type: "provider",
           attributes: {
             name: formData.name,
             username: formData.email, // Use email as username
@@ -282,17 +281,8 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
             })),
             category: formData.provider_type.length > 0 ? formData.provider_type[0].toLowerCase().replace(/\s+/g, '_') : 'aba_therapy', // Use underscore format
             locations: formData.locations.map((location) => ({
-              name: location.name,
-              address_1: location.address_1,
-              address_2: location.address_2,
-              city: location.city,
-              state: location.state,
-              zip: location.zip,
-              phone: location.phone,
-              services: location.services.map(service => ({
-                id: service.id,
-                name: service.name
-              }))
+              ...location,
+              id: location.id || null,
             })),
             website: formData.website,
             cost: formData.cost,
@@ -310,7 +300,9 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
             // New fields from API update
             in_home_only: formData.in_home_only,
             service_delivery: formData.service_delivery,
-            states: [formData.state], // Move states to attributes level
+            states: formData.state ? [formData.state] : ["Florida"], // Ensure we have a valid state
+            phone: formData.locations.length > 0 ? formData.locations[0].phone : null, // Add phone from first location
+            user_id: null, // Required field
           },
         },
       };
