@@ -25,7 +25,7 @@ import {
   CountyData,
   Service,
 } from "../Utility/Types";
-import { fetchStates, fetchCountiesByState } from "../Utility/ApiCall";
+import { fetchStates, fetchCountiesByState, fetchPracticeTypes, PracticeType } from "../Utility/ApiCall";
 import { validateLogoFile, uploadProviderLogo } from "../Utility/ApiCall";
 import { getSuperAdminAuthHeader } from "../Utility/config";
 
@@ -40,39 +40,10 @@ interface ProviderType {
   name: string;
 }
 
-const getProviderTypeId = (typeName: string): number => {
-  const typeMap: { [key: string]: number } = {
-    "ABA Therapy": 115,
-    "Autism Evaluation": 201,
-    "Speech Therapy": 202,
-    "Occupational Therapy": 203,
-    "Physical Therapy": 204,
-    "Dentists": 301,
-    "Orthodontists": 302,
-    "Coaching/Mentoring": 401,
-    "Therapists": 402,
-    "Advocates": 403,
-    "Barbers/Hair": 404,
-    "Pediatricians": 405,
-  };
-  return typeMap[typeName] ?? 0; // Return 0 (invalid) for unknown types
+const getProviderTypeId = (typeName: string, practiceTypes: PracticeType[]): number => {
+  const practiceType = practiceTypes.find(type => type.name === typeName);
+  return practiceType?.id ?? 0; // Return 0 (invalid) for unknown types
 };
-
-// Complete list of supported provider types
-const PROVIDER_TYPES = [
-  "ABA Therapy",
-  "Autism Evaluation",
-  "Speech Therapy",
-  "Occupational Therapy",
-  "Physical Therapy",
-  "Dentists",
-  "Orthodontists",
-  "Coaching/Mentoring",
-  "Therapists",
-  "Advocates",
-  "Barbers/Hair",
-  "Pediatricians",
-];
 
 export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
   provider,
@@ -103,6 +74,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
   );
   const [activeStateForCounties, setActiveStateForCounties] = useState<string>(providerState[0] || '');
   const [selectedLogoFile, setSelectedLogoFile] = useState<File | null>(null);
+  const [practiceTypes, setPracticeTypes] = useState<PracticeType[]>([]);
 
   useEffect(() => {
     if (provider && !editedProvider) { // Only run on initial load
@@ -163,6 +135,19 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
 
     loadInitialData();
   }, [provider.states]);
+
+  useEffect(() => {
+    const loadPracticeTypes = async () => {
+      try {
+        const response = await fetchPracticeTypes();
+        setPracticeTypes(response.data);
+      } catch (error) {
+        console.error("Failed to load practice types:", error);
+        toast.error("Failed to load practice types");
+      }
+    };
+    loadPracticeTypes();
+  }, []);
 
   useEffect(() => {
     const loadCountiesForState = async () => {
@@ -870,7 +855,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                             const type = e.target.value;
                             if (!type) return;
                             if (!selectedProviderTypes.some(t => t.name === type)) {
-                              const id = getProviderTypeId(type);
+                              const id = getProviderTypeId(type, practiceTypes);
                               if (id === 0) {
                                 toast.error(`Unknown provider type: ${type}`);
                                 return;
@@ -881,10 +866,10 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                           className="block w-[95%] px-3 py-2 rounded-lg border border-gray-300"
                         >
                           <option value="">Add a provider type...</option>
-                          {PROVIDER_TYPES
-                            .filter(type => !selectedProviderTypes.some(t => t.name === type))
+                          {practiceTypes
+                            .filter(type => !selectedProviderTypes.some(t => t.name === type.name))
                             .map(type => (
-                              <option key={type} value={type}>{type}</option>
+                              <option key={type.id} value={type.name}>{type.name}</option>
                             ))
                           }
                         </select>
@@ -1274,12 +1259,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                           }}
                         >
                           <option value="">Add a service...</option>
-                          {[
-                            { id: 1, name: "ABA Therapy" },
-                            { id: 2, name: "Autism Evaluation" },
-                            { id: 3, name: "Speech Therapy" },
-                            { id: 4, name: "Occupational Therapy" }
-                          ]
+                          {practiceTypes
                             .filter(service => !location.services?.some(s => s.id === service.id))
                             .map(service => (
                               <option key={service.id} value={`${service.id}|${service.name}`}>

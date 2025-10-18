@@ -13,7 +13,7 @@ import {
   CountyData,
   Service,
 } from "../../Utility/Types";
-import { fetchStates, fetchCountiesByState } from "../../Utility/ApiCall";
+import { fetchStates, fetchCountiesByState, fetchPracticeTypes, PracticeType } from "../../Utility/ApiCall";
 import { Building2, MapPin, Phone, X } from 'lucide-react';
 import { getAdminAuthHeader } from "../../Utility/config";
 
@@ -51,6 +51,7 @@ const CreateLocation: React.FC<CreateLocationProps> = ({
   const [isSaving, setIsSaving] = useState(false);
   const [availableStates, setAvailableStates] = useState<StateData[]>([]);
   const [availableCounties, setAvailableCounties] = useState<CountyData[]>([]);
+  const [practiceTypes, setPracticeTypes] = useState<PracticeType[]>([]);
 
   useEffect(() => {
     const loadStatesAndCounties = async () => {
@@ -73,6 +74,19 @@ const CreateLocation: React.FC<CreateLocationProps> = ({
     };
     loadStatesAndCounties();
   }, [provider.states]);
+
+  useEffect(() => {
+    const loadPracticeTypes = async () => {
+      try {
+        const response = await fetchPracticeTypes();
+        setPracticeTypes(response.data);
+      } catch (error) {
+        console.error("Failed to load practice types:", error);
+        toast.error("Failed to load practice types");
+      }
+    };
+    loadPracticeTypes();
+  }, []);
 
   const handleServiceChange = (service: Service) => {
     const serviceExists = newLocation.services.some(s => s.id === service.id);
@@ -261,12 +275,7 @@ const CreateLocation: React.FC<CreateLocationProps> = ({
                 }}
               >
                 <option value="">Add a service...</option>
-                {[
-                  { id: 1, name: "ABA Therapy" },
-                  { id: 2, name: "Autism Evaluation" },
-                  { id: 3, name: "Speech Therapy" },
-                  { id: 4, name: "Occupational Therapy" }
-                ]
+                {practiceTypes
                   .filter(service => !newLocation.services.some(s => s.id === service.id))
                   .map(service => (
                     <option key={service.id} value={`${service.id}|${service.name}`}>

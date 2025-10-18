@@ -26,6 +26,7 @@ import CreateUser from "./CreateUser";
 import UserProviderLinking from "./UserProviderLinking";
 import ProviderRegistrations from "./ProviderRegistrations";
 import { ProviderData, ProviderAttributes } from "../Utility/Types";
+import { fetchPracticeTypes, PracticeType } from "../Utility/ApiCall";
 // import { fetchProviders } from "../Utility/ApiCall";
 
 const SuperAdmin = () => {
@@ -45,6 +46,7 @@ const SuperAdmin = () => {
   const [locationCountFilter, setLocationCountFilter] = useState<string>("all");
   const [logoFilter, setLogoFilter] = useState<string>("all");
   const [isLoadingProviders, setIsLoadingProviders] = useState(false);
+  const [practiceTypes, setPracticeTypes] = useState<PracticeType[]>([]);
 
   // Hardcoded list of all US states
   const US_STATES = useMemo(() => [
@@ -131,6 +133,19 @@ const SuperAdmin = () => {
     } finally {
       setIsLoadingProviders(false);
     }
+  }, []);
+
+  useEffect(() => {
+    const loadPracticeTypes = async () => {
+      try {
+        const response = await fetchPracticeTypes();
+        setPracticeTypes(response.data);
+      } catch (error) {
+        console.error("Failed to load practice types:", error);
+        toast.error("Failed to load practice types");
+      }
+    };
+    loadPracticeTypes();
   }, []);
 
   useEffect(() => {
@@ -605,19 +620,18 @@ const SuperAdmin = () => {
                             <select
                               value={providerTypeFilter}
                               onChange={(e) =>
-                                setProviderTypeFilter(
-                                  e.target.value as "all" | "ABA Therapy" | "Autism Evaluation" | "Speech Therapy" | "Occupational Therapy"
-                                )
+                                setProviderTypeFilter(e.target.value)
                               }
                               className="w-full pl-2.5 pr-8 py-1.5 rounded-lg border border-gray-300 bg-white 
                              focus:outline-none focus:ring-2 focus:ring-blue-500 
                              appearance-none cursor-pointer text-gray-700 text-sm"
                             >
                               <option value="all">All Providers</option>
-                              <option value="ABA Therapy">ABA Therapy</option>
-                              <option value="Autism Evaluation">Autism Evaluation</option>
-                              <option value="Speech Therapy">Speech Therapy</option>
-                              <option value="Occupational Therapy">Occupational Therapy</option>
+                              {practiceTypes.map(type => (
+                                <option key={type.id} value={type.name}>
+                                  {type.name}
+                                </option>
+                              ))}
                             </select>
                             <ChevronDown className="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 transform -translate-y-1/2 pointer-events-none" />
                           </div>
@@ -730,13 +744,7 @@ const SuperAdmin = () => {
                     <p className="text-gray-600">
                       {providerTypeFilter === "all"
                         ? `Total Providers: ${filteredProviders.length}`
-                        : providerTypeFilter === "ABA Therapy"
-                        ? `ABA Therapy Providers: ${filteredProviders.length}`
-                        : providerTypeFilter === "Autism Evaluation"
-                        ? `Autism Evaluation Providers: ${filteredProviders.length}`
-                        : providerTypeFilter === "Speech Therapy"
-                        ? `Speech Therapy Providers: ${filteredProviders.length}`
-                        : `Occupational Therapy Providers: ${filteredProviders.length}`}
+                        : `${providerTypeFilter} Providers: ${filteredProviders.length}`}
                       {searchTerm && ` (Filtered)`}
                       {(() => {
                         const withLogos = allProviders.filter(p => p.attributes?.logo).length;

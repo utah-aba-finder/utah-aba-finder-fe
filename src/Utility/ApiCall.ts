@@ -2,6 +2,104 @@ import axios from 'axios';
 import { Providers, StateData, CountyData, InsuranceData } from './Types';
 import { getAdminAuthHeader, API_CONFIG } from './config';
 
+// Practice Types API
+export interface PracticeType {
+  id: number;
+  name: string;
+  description?: string;
+}
+
+export interface PracticeTypeResponse {
+  id: number;
+  type: string;
+  attributes: {
+    name: string;
+    created_at: string;
+    updated_at: string;
+  };
+}
+
+export interface PracticeTypesResponse {
+  data: PracticeType[];
+}
+
+export const fetchPracticeTypes = async (): Promise<PracticeTypesResponse> => {
+  try {
+    console.log('🔄 Fetching practice types from API...');
+    
+    const response = await fetch(
+      'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/practice_types',
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        },
+        cache: 'no-store'
+      }
+    );
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    console.log('✅ Practice types fetched successfully:', data);
+    
+    // Transform the response data to match our interface
+    const transformedData = {
+      data: data.data.map((item: PracticeTypeResponse) => ({
+        id: item.id,
+        name: item.attributes.name
+      }))
+    };
+    
+    // If we don't have all 12 types, use fallback
+    if (transformedData.data.length < 12) {
+      console.log('⚠️ API returned only', transformedData.data.length, 'practice types, using fallback for complete list');
+      const fallbackTypes: PracticeType[] = [
+        { id: 115, name: "ABA Therapy" },
+        { id: 116, name: "Autism Evaluation" },
+        { id: 117, name: "Speech Therapy" },
+        { id: 118, name: "Occupational Therapy" },
+        { id: 119, name: "Physical Therapy" },
+        { id: 120, name: "Dentists" },
+        { id: 121, name: "Orthodontists" },
+        { id: 122, name: "Coaching/Mentoring" },
+        { id: 123, name: "Therapists" },
+        { id: 124, name: "Advocates" },
+        { id: 125, name: "Barbers/Hair" },
+        { id: 126, name: "Pediatricians" }
+      ];
+      return { data: fallbackTypes };
+    }
+    
+    return transformedData;
+  } catch (error) {
+    console.error('❌ Failed to fetch practice types:', error);
+    
+    // Fallback to hardcoded types if API fails or doesn't have all types
+    const fallbackTypes: PracticeType[] = [
+      { id: 115, name: "ABA Therapy" },
+      { id: 116, name: "Autism Evaluation" },
+      { id: 117, name: "Speech Therapy" },
+      { id: 118, name: "Occupational Therapy" },
+      { id: 119, name: "Physical Therapy" },
+      { id: 120, name: "Dentists" },
+      { id: 121, name: "Orthodontists" },
+      { id: 122, name: "Coaching/Mentoring" },
+      { id: 123, name: "Therapists" },
+      { id: 124, name: "Advocates" },
+      { id: 125, name: "Barbers/Hair" },
+      { id: 126, name: "Pediatricians" }
+    ];
+    
+    console.log('🔄 Using fallback practice types');
+    return { data: fallbackTypes };
+  }
+};
+
 export const API_URL = "https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin";
 
 const API_URL_PROVIDERS = 'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers';
