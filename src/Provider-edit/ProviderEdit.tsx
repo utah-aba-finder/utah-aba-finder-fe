@@ -909,59 +909,70 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
           <header className="sticky top-0 z-30 px-2">
             <div className="bg-white shadow-lg rounded-lg mx-2 mt-4 mb-2">
               <div className="p-3">
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center space-x-3">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    {/* Menu Button */}
                     <button
-                      className="md:hidden p-2 hover:bg-gray-100 hover:cursor-pointer rounded-lg border border-gray-200 bg-white shadow-sm"
+                      className="flex-shrink-0 md:hidden p-1.5 hover:bg-gray-100 rounded-lg"
                       onClick={() => setIsOpen(true)}
                       aria-label="Open menu"
                     >
-                      <Menu className="w-5 h-5 text-gray-700" />
+                      <Menu className="w-5 h-5" />
                     </button>
-                    <div className="flex items-center space-x-2">
-                      <h1 className="text-lg font-semibold">
-                        {selectedTab === "dashboard" && "Provider Dashboard"}
-                        {selectedTab === "edit" && "Edit Provider Details"}
-                        {selectedTab === "details" && "Provider Logo"}
-                        {selectedTab === "coverage" && "Coverage & Counties"}
-                        {selectedTab === "locations" && "Location Management"}
-                        {selectedTab === "provider-types" && "Provider Services"}
-                        {selectedTab === "common-fields" && "Contact & Services"}
-                        {selectedTab === "billing" && "Billing Management"}
-                      </h1>
-                      {isSaving && (
-                        <div className="flex items-center space-x-2 text-blue-600">
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                          <span className="text-sm font-medium">Saving...</span>
+                    
+                    {/* Title - Responsive */}
+                    <div className="text-lg font-semibold truncate min-w-0 flex-1">
+                      {selectedTab === "dashboard" && "Provider Dashboard"}
+                      {selectedTab === "edit" && "Edit Provider Details"}
+                      {selectedTab === "details" && "Provider Logo"}
+                      {selectedTab === "coverage" && "Coverage & Counties"}
+                      {selectedTab === "locations" && "Location Management"}
+                      {selectedTab === "provider-types" && "Provider Services"}
+                      {selectedTab === "common-fields" && "Contact & Services"}
+                      {selectedTab === "billing" && "Billing Management"}
+                    </div>
+                    
+                    {/* Saving indicator */}
+                    {isSaving && (
+                      <div className="flex items-center space-x-2 text-blue-600 flex-shrink-0">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                        <span className="text-sm font-medium hidden sm:inline">Saving...</span>
+                      </div>
+                    )}
+                  </div>
+                  {/* Provider Info and Actions - Mobile Optimized */}
+                  <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
+                    {/* Provider Logo - Hidden on small screens */}
+                    <div className="hidden sm:block">
+                      {currentProvider?.attributes?.logo ? (
+                        <div className="flex-shrink-0">
+                          <img
+                            src={currentProvider.attributes.logo}
+                            alt={`${currentProvider.attributes.name} logo`}
+                            className="w-12 h-12 object-contain rounded border border-gray-200 shadow-sm"
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-12 h-12 bg-gray-100 rounded border border-gray-200 flex items-center justify-center flex-shrink-0">
+                          <span className="text-gray-400 text-lg">📷</span>
                         </div>
                       )}
                     </div>
-                  </div>
-                  <div className="flex items-center space-x-4">
-                    {currentProvider?.attributes?.logo ? (
-                      <div className="flex-shrink-0">
-                        <img
-                          src={currentProvider.attributes.logo}
-                          alt={`${currentProvider.attributes.name} logo`}
-                          className="w-12 h-12 object-contain rounded border border-gray-200 shadow-sm"
-                        />
-                      </div>
-                    ) : (
-                      <div className="w-12 h-12 bg-gray-100 rounded border border-gray-200 flex items-center justify-center flex-shrink-0">
-                        <span className="text-gray-400 text-lg">📷</span>
-                      </div>
-                    )}
-                    <div className="text-right">
-                      <div className="text-sm font-medium text-gray-700">
+                    
+                    {/* Provider Info - Responsive */}
+                    <div className="text-right min-w-0 hidden sm:block">
+                      <div className="text-sm font-medium text-gray-700 truncate max-w-[120px] lg:max-w-none">
                         {currentProvider?.attributes?.name || 'Unknown Provider'}
                       </div>
                       <div className="text-xs text-gray-500">
                         {selectedTab === 'dashboard' ? 'Dashboard View' : 'Edit Mode'}
                       </div>
                     </div>
+                    
+                    {/* Logout Button - Mobile Optimized */}
                     <button
                       onClick={handleLogout}
-                      className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 px-3 py-2 rounded-lg transition-colors duration-200"
+                      className="flex items-center space-x-1 sm:space-x-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 p-2 sm:px-3 sm:py-2 rounded-lg transition-colors duration-200"
                       title="Sign Out"
                     >
                       <LogOut className="w-4 h-4" />
