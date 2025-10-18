@@ -315,6 +315,9 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
         ],
       };
 
+      // Debug: Log the request data being sent
+      console.log('🔍 SuperAdminCreate: Request data being sent:', JSON.stringify(requestData, null, 2));
+
       const response = await fetch(
         `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/providers`,
         {
@@ -341,11 +344,13 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
           } else if (errorData.errors && Array.isArray(errorData.errors)) {
             // Handle validation errors
             const validationErrors = errorData.errors.map((err: any) => {
-              const field = err.source?.pointer || 'field';
+              const field = err.source?.pointer || err.source?.parameter || 'field';
               const detail = err.detail || err.message || 'validation error';
-              return `${field}: ${detail}`;
-            }).join(', ');
-            errorMessage = `Validation errors: ${validationErrors}`;
+              // Clean up field names for better readability
+              const cleanField = field.replace('/data/attributes/', '').replace('/data/', '');
+              return `${cleanField}: ${detail}`;
+            }).join('\n');
+            errorMessage = `Validation errors:\n${validationErrors}`;
           }
         } catch (parseError) {
           // If we can't parse the error response, use a generic message with status
