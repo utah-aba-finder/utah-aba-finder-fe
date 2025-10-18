@@ -269,50 +269,50 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
 
       // Debug: Log the data being sent
       const requestData = {
-        data: [
-          {
-            type: "provider",
-            states: [formData.state],
-            attributes: {
-              name: formData.name,
-              provider_type: formData.provider_type.map((type) => ({
-                id: getProviderTypeId(type),
-                name: type,
-              })),
-              locations: formData.locations.map((location) => ({
-                id: location.id,
-                name: location.name,
-                address_1: location.address_1,
-                address_2: location.address_2,
-                city: location.city,
-                state: location.state,
-                zip: location.zip,
-                phone: location.phone,
-                services: location.services.map(service => ({
-                  id: service.id,
-                  name: service.name
-                }))
-              })),
-              website: formData.website,
-              email: formData.email,
-              cost: formData.cost,
-              insurance: selectedInsurances,
-              counties_served: selectedCounties,
-              min_age: parseInt(formData.min_age),
-              max_age: parseInt(formData.max_age),
-              waitlist: formData.waitlist,
-              telehealth_services: formData.telehealth_services || "Contact us",
-              spanish_speakers: formData.spanish_speakers || "Contact us",
-              at_home_services: formData.at_home_services || "Contact us",
-              in_clinic_services: formData.in_clinic_services || "Contact us",
-              logo: formData.logo,
-              status: formData.status,
-              // New fields from API update
-              in_home_only: formData.in_home_only,
-              service_delivery: formData.service_delivery,
-            },
+        data: {
+          type: "provider",
+          attributes: {
+            name: formData.name,
+            username: formData.email, // Use email as username
+            email: formData.email,
+            password: formData.password || "TempPassword123!", // Default password if not provided
+            provider_type: formData.provider_type.map((type) => ({
+              id: getProviderTypeId(type),
+              name: type,
+            })),
+            category: formData.provider_type.length > 0 ? formData.provider_type[0].toLowerCase().replace(/\s+/g, '_') : 'aba_therapy', // Use underscore format
+            locations: formData.locations.map((location) => ({
+              name: location.name,
+              address_1: location.address_1,
+              address_2: location.address_2,
+              city: location.city,
+              state: location.state,
+              zip: location.zip,
+              phone: location.phone,
+              services: location.services.map(service => ({
+                id: service.id,
+                name: service.name
+              }))
+            })),
+            website: formData.website,
+            cost: formData.cost,
+            insurance: selectedInsurances,
+            counties_served: selectedCounties,
+            min_age: parseInt(formData.min_age),
+            max_age: parseInt(formData.max_age),
+            waitlist: formData.waitlist,
+            telehealth_services: formData.telehealth_services || "Contact us",
+            spanish_speakers: formData.spanish_speakers || "Contact us",
+            at_home_services: formData.at_home_services || "Contact us",
+            in_clinic_services: formData.in_clinic_services || "Contact us",
+            logo: formData.logo || null, // Use null instead of empty string
+            status: formData.status || "approved",
+            // New fields from API update
+            in_home_only: formData.in_home_only,
+            service_delivery: formData.service_delivery,
+            states: [formData.state], // Move states to attributes level
           },
-        ],
+        },
       };
 
       // Debug: Log the request data being sent
