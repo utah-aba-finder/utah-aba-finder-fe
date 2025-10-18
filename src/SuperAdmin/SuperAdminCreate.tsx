@@ -336,6 +336,9 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
         try {
           const errorData = await response.json();
           
+          // Debug: Log the full error response
+          console.log('🔍 SuperAdminCreate: Full error response:', JSON.stringify(errorData, null, 2));
+          
           // Handle different error response formats
           if (errorData.message) {
             errorMessage = errorData.message;
@@ -344,15 +347,19 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
           } else if (errorData.errors && Array.isArray(errorData.errors)) {
             // Handle validation errors
             const validationErrors = errorData.errors.map((err: any) => {
-              const field = err.source?.pointer || err.source?.parameter || 'field';
-              const detail = err.detail || err.message || 'validation error';
+              const field = err.source?.pointer || err.source?.parameter || err.field || 'field';
+              const detail = err.detail || err.message || err.error || 'validation error';
               // Clean up field names for better readability
-              const cleanField = field.replace('/data/attributes/', '').replace('/data/', '');
+              const cleanField = field.replace('/data/attributes/', '').replace('/data/', '').replace('/attributes/', '');
               return `${cleanField}: ${detail}`;
             }).join('\n');
             errorMessage = `Validation errors:\n${validationErrors}`;
+          } else {
+            // If we have error data but no recognized format, show the raw data
+            errorMessage = `Server error: ${JSON.stringify(errorData)}`;
           }
         } catch (parseError) {
+          console.error('❌ SuperAdminCreate: Error parsing response:', parseError);
           // If we can't parse the error response, use a generic message with status
           errorMessage = `Server error (${response.status}): ${response.statusText}`;
         }
