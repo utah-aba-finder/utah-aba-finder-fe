@@ -316,21 +316,43 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
       };
 
       const response = await fetch(
-        `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers`,
+        `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/providers`,
         {
           method: "POST",
-                  headers: {
-          "Content-Type": "application/json",
-                      'Authorization': getAdminAuthHeader(),
-        },
+          headers: {
+            "Content-Type": "application/json",
+            'Authorization': getAdminAuthHeader(),
+          },
           body: JSON.stringify(requestData),
         }
       );
 
       if (!response.ok) {
-        const errorData = await response.json();
+        let errorMessage = "Failed to create provider";
+        
+        try {
+          const errorData = await response.json();
+          
+          // Handle different error response formats
+          if (errorData.message) {
+            errorMessage = errorData.message;
+          } else if (errorData.error) {
+            errorMessage = errorData.error;
+          } else if (errorData.errors && Array.isArray(errorData.errors)) {
+            // Handle validation errors
+            const validationErrors = errorData.errors.map((err: any) => {
+              const field = err.source?.pointer || 'field';
+              const detail = err.detail || err.message || 'validation error';
+              return `${field}: ${detail}`;
+            }).join(', ');
+            errorMessage = `Validation errors: ${validationErrors}`;
+          }
+        } catch (parseError) {
+          // If we can't parse the error response, use a generic message with status
+          errorMessage = `Server error (${response.status}): ${response.statusText}`;
+        }
 
-        throw new Error(errorData.message || "Failed to create provider");
+        throw new Error(errorMessage);
       }
 
       const responseData = await response.json();
@@ -411,8 +433,28 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
         handleCloseForm();
       }, 3000);
     } catch (error) {
+      console.error('❌ SuperAdminCreate: Error creating provider:', error);
       
-      setError("There was an error creating the provider. Please try again.");
+      // Extract meaningful error message
+      let errorMessage = "There was an error creating the provider. Please try again.";
+      
+      if (error instanceof Error) {
+        if (error.message.includes('Failed to create provider')) {
+          errorMessage = error.message;
+        } else if (error.message.includes('HTTP')) {
+          errorMessage = `Server error: ${error.message}`;
+        } else if (error.message.includes('fetch')) {
+          errorMessage = "Network error: Unable to connect to server. Please check your connection.";
+        } else {
+          errorMessage = `Error: ${error.message}`;
+        }
+      }
+      
+      // Show toast error for immediate visibility
+      toast.error(errorMessage);
+      
+      // Also set the error state for the form
+      setError(errorMessage);
     } finally {
       setIsSaving(false);
     }
@@ -432,9 +474,35 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
         </p>
       </div>
 
+      {/* Sticky Error Banner - More Visible */}
       {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600">
-          {error}
+        <div className="sticky top-0 z-50 mb-6 p-4 bg-red-100 border-l-4 border-red-500 rounded-lg text-red-700 shadow-lg">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-red-800">
+                  Provider Creation Failed
+                </h3>
+                <p className="mt-1 text-sm text-red-700">
+                  {error}
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => setError("")}
+              className="flex-shrink-0 ml-3 text-red-400 hover:text-red-600"
+            >
+              <span className="sr-only">Dismiss</span>
+              <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+              </svg>
+            </button>
+          </div>
         </div>
       )}
 
