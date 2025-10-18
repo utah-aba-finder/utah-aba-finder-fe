@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { toast } from "react-toastify";
 import {  X, Eye, EyeOff } from "lucide-react";
 import { CountiesServed, StateData, CountyData, Service } from "../Utility/Types";
-import { fetchStates, fetchCountiesByState } from "../Utility/ApiCall";
+import { fetchStates, fetchCountiesByState, fetchPracticeTypes, PracticeType } from "../Utility/ApiCall";
 import "react-toastify/dist/ReactToastify.css";
 import emailjs from 'emailjs-com';
 import Confetti from 'react-confetti';
@@ -88,13 +88,7 @@ const SignupModal: React.FC<SignupModalProps> = ({
   const [recaptchaValue, setRecaptchaValue] = useState<string | null>(null);
   const recaptchaRef = useRef<ReCAPTCHA>(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-
-  const servicesList = [
-    { id: 1, name: "ABA Therapy" },
-    { id: 2, name: "Autism Evaluation" },
-    { id: 3, name: "Speech Therapy" },
-    { id: 4, name: "Occupational Therapy" }
-  ] as const;
+  const [practiceTypes, setPracticeTypes] = useState<PracticeType[]>([]);
 
   useEffect(() => {
     const loadStates = async () => {
@@ -107,6 +101,19 @@ const SignupModal: React.FC<SignupModalProps> = ({
       }
     };
     loadStates();
+  }, []);
+
+  useEffect(() => {
+    const loadPracticeTypes = async () => {
+      try {
+        const response = await fetchPracticeTypes();
+        setPracticeTypes(response.data);
+      } catch (error) {
+        console.error("Failed to load practice types:", error);
+        toast.error("Failed to load practice types");
+      }
+    };
+    loadPracticeTypes();
   }, []);
 
   useEffect(() => {
@@ -635,7 +642,7 @@ In-Home Services Only: ${providerData.in_home_only ? "Yes" : "No"}
                     }}
                   >
                     <option value="">Add a provider type...</option>
-                    {servicesList
+                    {practiceTypes
                       .filter(service => !formData.provider_type?.some(s => s.id === service.id))
                       .map(service => (
                         <option key={service.id} value={`${service.id}|${service.name}`}>
@@ -1125,7 +1132,7 @@ In-Home Services Only: ${providerData.in_home_only ? "Yes" : "No"}
                         }}
                       >
                         <option value="">Add a service...</option>
-                        {servicesList
+                        {practiceTypes
                           .filter(service => !location.services?.some(s => s.id === service.id))
                           .map(service => (
                             <option key={service.id} value={`${service.id}|${service.name}`}>

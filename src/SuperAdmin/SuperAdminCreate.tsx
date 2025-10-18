@@ -4,7 +4,7 @@ import { Building2, MapPin, DollarSign, Stethoscope, Plus, X } from "lucide-reac
 import CountiesModal from "../Provider-edit/CountiesModal";
 import { CountiesServed, Insurance, StateData, CountyData, Service } from "../Utility/Types";
 import InsuranceModal from "../Provider-edit/InsuranceModal";
-import { fetchStates, fetchCountiesByState, fetchProviders, validateLogoFile, uploadProviderLogo } from "../Utility/ApiCall";
+import { fetchStates, fetchCountiesByState, fetchProviders, validateLogoFile, uploadProviderLogo, fetchPracticeTypes, PracticeType } from "../Utility/ApiCall";
 import { getAdminAuthHeader, getSuperAdminAuthHeader } from "../Utility/config";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -74,6 +74,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
   const [providerState, setProviderState] = useState<string[]>([]);
   const [selectedProviderTypes, setSelectedProviderTypes] = useState<string[]>([]);
   const [selectedLogoFile, setSelectedLogoFile] = useState<File | null>(null);
+  const [practiceTypes, setPracticeTypes] = useState<PracticeType[]>([]);
 
   useEffect(() => {
     const loadStates = async () => {
@@ -85,6 +86,18 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
       }
     };
     loadStates();
+  }, []);
+
+  useEffect(() => {
+    const loadPracticeTypes = async () => {
+      try {
+        const response = await fetchPracticeTypes();
+        setPracticeTypes(response.data);
+      } catch (error) {
+        toast.error("Failed to load practice types");
+      }
+    };
+    loadPracticeTypes();
   }, []);
 
   useEffect(() => {
@@ -223,13 +236,8 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
   };
 
   const getProviderTypeId = (typeName: string): number => {
-    const typeMap: { [key: string]: number } = {
-      "ABA Therapy": 1,
-      "Autism Evaluation": 2,
-      "Speech Therapy": 3,
-      "Occupational Therapy": 4,
-    };
-    return typeMap[typeName] || 1;
+    const practiceType = practiceTypes.find(type => type.name === typeName);
+    return practiceType?.id || 1;
   };
 
   const checkForDuplicateProvider = async (providerName: string): Promise<boolean> => {
@@ -629,16 +637,11 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
                 }}
               >
                 <option value="">Add provider type...</option>
-                {[
-                  "ABA Therapy",
-                  "Autism Evaluation", 
-                  "Speech Therapy",
-                  "Occupational Therapy"
-                ]
-                  .filter(type => !selectedProviderTypes.includes(type))
+                {practiceTypes
+                  .filter(type => !selectedProviderTypes.includes(type.name))
                   .map(type => (
-                    <option key={type} value={type}>
-                      {type}
+                    <option key={type.id} value={type.name}>
+                      {type.name}
                     </option>
                   ))
                 }
@@ -921,12 +924,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
                   }}
                 >
                   <option value="">Add a service...</option>
-                  {[
-                    { id: 1, name: "ABA Therapy" },
-                    { id: 2, name: "Autism Evaluation" },
-                    { id: 3, name: "Speech Therapy" },
-                    { id: 4, name: "Occupational Therapy" }
-                  ]
+                  {practiceTypes
                     .filter(service => !location.services?.some(s => s.id === service.id))
                     .map(service => (
                       <option key={service.id} value={`${service.id}|${service.name}`}>

@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import "react-toastify/dist/ReactToastify.css";
 import { ProviderData, ProviderAttributes } from "../Utility/Types";
-import { fetchStates, fetchCountiesByState, uploadProviderLogo, removeProviderLogo } from "../Utility/ApiCall";
+import { fetchStates, fetchCountiesByState, uploadProviderLogo, removeProviderLogo, fetchPracticeTypes, PracticeType } from "../Utility/ApiCall";
 import InsuranceModal from "./InsuranceModal";
 import CountiesModal from "./CountiesModal";
 
@@ -49,6 +49,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
   const [selectedCounties, setSelectedCounties] = useState<any[]>([]);
   const [selectedProviderTypes, setSelectedProviderTypes] = useState<any[]>([]);
   const [selectedInsurances, setSelectedInsurances] = useState<any[]>([]);
+  const [practiceTypes, setPracticeTypes] = useState<PracticeType[]>([]);
   const [selectedLogoFile, setSelectedLogoFile] = useState<File | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [availableStates, setAvailableStates] = useState<any[]>([]);
@@ -588,22 +589,22 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
     }
   }, [providerState, activeStateForCounties]);
 
-  const getProviderTypeId = (typeName: string): number => {
-    const typeMap: { [key: string]: number } = {
-      "ABA Therapy": 115,
-      "Autism Evaluation": 201,
-      "Speech Therapy": 202,
-      "Occupational Therapy": 203,
-      "Physical Therapy": 204,
-      "Dentists": 301,
-      "Orthodontists": 302,
-      "Coaching/Mentoring": 401,
-      "Therapists": 402,
-      "Advocates": 403,
-      "Barbers/Hair": 404,
-      "Pediatricians": 405,
+  useEffect(() => {
+    const loadPracticeTypes = async () => {
+      try {
+        const response = await fetchPracticeTypes();
+        setPracticeTypes(response.data);
+      } catch (error) {
+        console.error("Failed to load practice types:", error);
+        toast.error("Failed to load practice types");
+      }
     };
-    return typeMap[typeName] ?? 0; // Return 0 (invalid) for unknown types
+    loadPracticeTypes();
+  }, []);
+
+  const getProviderTypeId = (typeName: string): number => {
+    const practiceType = practiceTypes.find(type => type.name === typeName);
+    return practiceType?.id ?? 0; // Return 0 (invalid) for unknown types
   };
 
   const handleLogoUpload = async () => {
@@ -1415,11 +1416,11 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                       }}
                     >
                       <option value="">Add provider type...</option>
-                      {["ABA Therapy", "Autism Evaluation", "Speech Therapy", "Occupational Therapy"]
-                        .filter(type => !selectedProviderTypes.some(t => t.name === type))
+                      {practiceTypes
+                        .filter(type => !selectedProviderTypes.some(t => t.name === type.name))
                         .map(type => (
-                          <option key={type} value={type}>
-                            {type}
+                          <option key={type.id} value={type.name}>
+                            {type.name}
                           </option>
                         ))}
                     </select>
