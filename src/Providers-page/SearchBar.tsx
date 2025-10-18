@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import 'react-toastify/dist/ReactToastify.css';
 import './SearchBar.css';
-import { CountyData, Providers, ProviderAttributes, InsuranceData } from '../Utility/Types';
-import { fetchCountiesByState, fetchStates } from '../Utility/ApiCall';
+import { CountyData, Providers, ProviderAttributes, InsuranceData, PracticeType } from '../Utility/Types';
+import { fetchCountiesByState, fetchStates, fetchPracticeTypes } from '../Utility/ApiCall';
 import { ChevronDown, ChevronUp, Search, RotateCcw } from 'lucide-react';
 
 interface SearchBarProps {
@@ -67,6 +67,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
   const [selectedState, setSelectedState] = useState<string>('none');
   const [counties, setCounties] = useState<CountyData[]>([]);
   const [advancedOptions, setAdvancedOptions] = useState(false);
+  const [practiceTypes, setPracticeTypes] = useState<PracticeType[]>([]);
 
   // Ensure props are always arrays to prevent runtime errors
   const safeProviders = Array.isArray(providers) ? providers : [];
@@ -104,6 +105,18 @@ const SearchBar: React.FC<SearchBarProps> = ({
       }
     };
     getStates();
+  }, []);
+
+  useEffect(() => {
+    const loadPracticeTypes = async () => {
+      try {
+        const response = await fetchPracticeTypes();
+        setPracticeTypes(response.data);
+      } catch (error) {
+        console.error("Failed to load practice types:", error);
+      }
+    };
+    loadPracticeTypes();
   }, []);
 
 
@@ -215,10 +228,11 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
   const providerTypeOptions = [
     { label: 'Select Type', value: 'none', id: 0 },
-    { label: 'ABA Therapy', value: 'ABA Therapy', id: 1 },
-    { label: 'Autism Evaluation', value: 'Autism Evaluation', id: 2 },
-    { label: 'Occupational Therapy', value: 'Occupational Therapy', id: 3 },
-    { label: 'Speech Therapy', value: 'Speech Therapy', id: 4 },
+    ...practiceTypes.map((type) => ({
+      label: type.name,
+      value: type.name,
+      id: type.id,
+    })),
   ];
 
   return (
