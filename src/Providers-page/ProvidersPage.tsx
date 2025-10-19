@@ -576,13 +576,19 @@ const ProvidersPage: React.FC = () => {
         });
       }
 
-      // Provider Type filter (frontend backup to API filtering)
-      if (providerType && providerType !== 'none' && providerType.trim() !== '') {
-        filteredResults = filteredResults.filter((provider: ProviderAttributes) => 
-          provider.provider_type && provider.provider_type.some(type => 
-            type.name === providerType
-          )
-        );
+      // Provider Type filter is now handled by the backend API
+      // No need for frontend filtering since backend returns pre-filtered results
+
+      // Enhanced debugging for provider types
+      if (providerType && providerType !== 'none') {
+        console.log('🔍 Provider Type Debug:', {
+          selectedProviderType: providerType,
+          totalProviders: filteredResults.length,
+          providerTypes: filteredResults.map(p => ({
+            name: p.name,
+            provider_types: p.provider_type?.map(t => t.name) || []
+          }))
+        });
       }
 
       // Log filtering results for debugging
@@ -592,7 +598,7 @@ const ProvidersPage: React.FC = () => {
         afterNameFilter: query && query.trim() && query.trim().length > 2 ? filteredResults.length : 'N/A',
         afterCountyFilter: county_name && county_name.trim() ? 'Applied' : 'N/A',
         afterInsuranceFilter: insurance && insurance.trim() ? 'Applied' : 'N/A',
-        afterProviderTypeFilter: providerType && providerType !== 'none' ? 'Applied' : 'N/A',
+        afterProviderTypeFilter: providerType && providerType !== 'none' ? 'Backend handled' : 'N/A',
         finalCount: filteredResults.length,
         selectedState: stateId,
         selectedProviderType: providerType,
