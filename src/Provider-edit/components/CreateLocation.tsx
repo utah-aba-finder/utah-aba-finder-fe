@@ -297,6 +297,7 @@ const CreateLocation: React.FC<CreateLocationProps> = ({
               >
                 <option value="">Select waitlist status...</option>
                 <option value="No waitlist">No waitlist</option>
+                <option value="Service not available">Service not available</option>
                 <option value="1-2 weeks">1-2 weeks</option>
                 <option value="2-4 weeks">2-4 weeks</option>
                 <option value="1-3 months">1-3 months</option>
@@ -316,6 +317,7 @@ const CreateLocation: React.FC<CreateLocationProps> = ({
               >
                 <option value="">Select waitlist status...</option>
                 <option value="No waitlist">No waitlist</option>
+                <option value="Service not available">Service not available</option>
                 <option value="1-2 weeks">1-2 weeks</option>
                 <option value="2-4 weeks">2-4 weeks</option>
                 <option value="1-3 months">1-3 months</option>
