@@ -240,7 +240,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
       <div className="provider-map-searchbar">
         <div className="filter-container">
-          <div className={`filter-item provider-state-dropdown ${selectedStateId === 'none' ? 'focus' : ''}`}>
+          <div className="filter-item provider-state-dropdown">
             <select
               className="provider-state-select"
               value={selectedStateId}
@@ -256,7 +256,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
               }}
               aria-label="Select State"
             >
-              <option value="none">All States (Required)</option>
+              <option value="none">All States</option>
               {safeProviderStates.length > 0 
                 ? safeProviderStates.map((providerState) => (
                     <option 
