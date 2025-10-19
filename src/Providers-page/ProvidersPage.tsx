@@ -415,11 +415,16 @@ const ProvidersPage: React.FC = () => {
     try {
       const { stateId, providerType, query, county_name, insurance, spanish, service, waitlist, age, hasReviews } = searchParams;
       console.log('🔍 Calling API with stateId:', stateId, 'providerType:', providerType);
+      console.log('🔍 Full search params:', searchParams);
       
       let results;
       try {
         results = await fetchProvidersByStateIdAndProviderType(stateId, providerType);
         console.log('🔍 API results received:', results);
+        console.log('🔍 API results data length:', results?.data?.length || 0);
+        if (results?.data?.length > 0) {
+          console.log('🔍 First provider sample:', results.data[0]);
+        }
       } catch (apiError) {
         console.error('❌ API call failed:', apiError);
         setShowError("Unable to search providers at this time. Please check your connection and try again.");
@@ -455,6 +460,22 @@ const ProvidersPage: React.FC = () => {
         in_home_only: p.attributes.in_home_only || false,
         service_delivery: p.attributes.service_delivery || { in_home: false, in_clinic: false, telehealth: false }
       }));
+
+      // Debug: Check if we have any providers with the selected criteria
+      if (stateId && stateId !== 'none' && providerType && providerType !== 'none') {
+        const stateMap: { [key: string]: string } = {
+          '43': 'Florida',
+          '76': 'Tennessee',
+          // Add more as needed
+        };
+        const targetState = stateMap[stateId];
+        console.log('🔍 Debug: Looking for providers in', targetState, 'with type', providerType);
+        console.log('🔍 Debug: Available providers with states:', mappedProviders.map((p: ProviderAttributes) => ({
+          name: p.name,
+          states: p.states,
+          provider_types: p.provider_type?.map((t: any) => t.name) || []
+        })));
+      }
 
       // Apply comprehensive filtering
       let filteredResults = mappedProviders;
@@ -583,6 +604,18 @@ const ProvidersPage: React.FC = () => {
             type.name === providerType
           )
         );
+      }
+
+      // Enhanced debugging for provider types
+      if (providerType && providerType !== 'none') {
+        console.log('🔍 Provider Type Debug:', {
+          selectedProviderType: providerType,
+          totalProviders: filteredResults.length,
+          providerTypes: filteredResults.map((p: ProviderAttributes) => ({
+            name: p.name,
+            provider_types: p.provider_type?.map((t: { name: string }) => t.name) || []
+          }))
+        });
       }
 
       // Log filtering results for debugging

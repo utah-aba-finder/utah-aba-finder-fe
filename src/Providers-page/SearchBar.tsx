@@ -86,6 +86,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
       try {
         const statesData = await fetchStates();
         setProviderStates(statesData || []);
+        console.log('🔍 Loaded states:', statesData);
       } catch (error) {
         console.warn('⚠️ Could not fetch states, using fallback options');
         // Fallback state options if API fails
@@ -240,15 +241,17 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
       <div className="provider-map-searchbar">
         <div className="filter-container">
-          <div className={`filter-item provider-state-dropdown ${selectedStateId === 'none' ? 'focus' : ''}`}>
+          <div className="filter-item provider-state-dropdown">
             <select
               className="provider-state-select"
               value={selectedStateId}
               onChange={(e) => {
                 const stateId = e.target.value;
+                console.log('🔍 State selected:', stateId);
                 setSelectedStateId(stateId);
                 if (stateId !== 'none') {
                   const state = providerStates.find(s => s.id.toString() === stateId);
+                  console.log('🔍 Found state:', state);
                   setSelectedState(state?.attributes.abbreviation || 'none');
                 } else {
                   setSelectedState('none');
@@ -256,7 +259,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
               }}
               aria-label="Select State"
             >
-              <option value="none">All States (Required)</option>
+              <option value="none">All States</option>
               {safeProviderStates.length > 0 
                 ? safeProviderStates.map((providerState) => (
                     <option 
