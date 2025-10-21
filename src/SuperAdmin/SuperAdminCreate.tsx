@@ -254,11 +254,68 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
     }
   };
 
+  const validateLocations = () => {
+    // Check if provider offers in-clinic services and needs locations
+    const needsLocations = formData.service_delivery.in_clinic || (!formData.service_delivery.in_home && !formData.service_delivery.telehealth);
+    
+    if (!needsLocations) {
+      // Provider doesn't need physical locations (telehealth or in-home only)
+      return true;
+    }
+
+    // Provider needs physical locations - validate them
+    const locationsWithServices = formData.locations.filter(loc => loc.services && loc.services.length > 0);
+    
+    if (locationsWithServices.length === 0) {
+      toast.error("❌ At least one location with services is required for in-clinic providers");
+      return false;
+    }
+
+    for (let i = 0; i < locationsWithServices.length; i++) {
+      const location = locationsWithServices[i];
+      const locationNum = i + 1;
+      const missingFields = [];
+
+      // Check required fields for locations with services
+      if (!location.name?.trim()) missingFields.push("Location Name");
+      if (!location.address_1?.trim()) missingFields.push("Street Address");
+      if (!location.city?.trim()) missingFields.push("City");
+      if (!location.state?.trim()) missingFields.push("State");
+      if (!location.zip?.trim()) missingFields.push("ZIP Code");
+      if (!location.phone?.trim()) missingFields.push("Phone Number");
+
+      if (missingFields.length > 0) {
+        toast.error(`❌ Location ${locationNum} is missing required fields: ${missingFields.join(", ")}`);
+        return false;
+      }
+
+      // Validate phone number format
+      if (location.phone && !/^[\d\s\-()]+$/.test(location.phone)) {
+        toast.error(`❌ Location ${locationNum}: Please enter a valid phone number`);
+        return false;
+      }
+
+      // Validate ZIP code format
+      if (location.zip && !/^\d{5}(-\d{4})?$/.test(location.zip)) {
+        toast.error(`❌ Location ${locationNum}: Please enter a valid ZIP code (12345 or 12345-6789)`);
+        return false;
+      }
+    }
+
+    return true;
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSaving(true);
 
     try {
+      // Validate locations first
+      if (!validateLocations()) {
+        setIsSaving(false);
+        return;
+      }
+
       // Check for duplicate provider
       const isDuplicate = await checkForDuplicateProvider(formData.name);
       if (isDuplicate) {
@@ -840,6 +897,16 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
               Add Location
             </button>
           </div>
+          <div className={`mb-6 p-3 rounded-lg text-sm ${
+            formData.service_delivery.in_clinic || (!formData.service_delivery.in_home && !formData.service_delivery.telehealth)
+              ? 'bg-blue-50 border border-blue-200 text-blue-800'
+              : 'bg-green-50 border border-green-200 text-green-800'
+          }`}>
+            {formData.service_delivery.in_clinic || (!formData.service_delivery.in_home && !formData.service_delivery.telehealth)
+              ? "📍 Physical locations are required for in-clinic providers. Fields marked with * are required for locations that offer services."
+              : "✅ No physical locations required for telehealth/in-home only providers."
+            }
+          </div>
 
           {formData.locations.map((location, index) => (
             <div
@@ -850,34 +917,59 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
                 Location {index + 1} of {formData.locations.length}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <input
-                  type="text"
-                  placeholder="Location Name"
-                  value={location.name}
-                  onChange={(e) =>
-                    handleLocationChange(index, "name", e.target.value)
-                  }
-                  className="w-[95%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 hover:cursor-text focus:ring-blue-400 focus:border-transparent text-sm"
-                />
-                <input
-                  type="text"
-                  placeholder="Phone"
-                  value={location.phone}
-                  onChange={(e) =>
-                    handleLocationChange(index, "phone", e.target.value)
-                  }
-                  className="w-[95%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 hover:cursor-text focus:ring-blue-500 focus:border-transparent text-sm"
-                />
-                <div className="md:col-span-2">
+                <div className="relative">
                   <input
                     type="text"
-                    placeholder="Street Address"
+                    placeholder="Location Name *"
+                    value={location.name}
+                    onChange={(e) =>
+                      handleLocationChange(index, "name", e.target.value)
+                    }
+                    className={`w-[95%] px-3 py-2 rounded-lg border focus:outline-none focus:ring-2 hover:cursor-text focus:border-transparent text-sm ${
+                      location.services.length > 0 && !location.name?.trim() 
+                        ? 'border-red-300 focus:ring-red-400' 
+                        : 'border-gray-300 focus:ring-blue-400'
+                    }`}
+                  />
+                  {location.services.length > 0 && !location.name?.trim() && (
+                    <span className="absolute right-2 top-2 text-red-500 text-xs">Required</span>
+                  )}
+                </div>
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Phone *"
+                    value={location.phone}
+                    onChange={(e) =>
+                      handleLocationChange(index, "phone", e.target.value)
+                    }
+                    className={`w-[95%] px-3 py-2 rounded-lg border focus:outline-none focus:ring-2 hover:cursor-text focus:border-transparent text-sm ${
+                      location.services.length > 0 && !location.phone?.trim() 
+                        ? 'border-red-300 focus:ring-red-400' 
+                        : 'border-gray-300 focus:ring-blue-500'
+                    }`}
+                  />
+                  {location.services.length > 0 && !location.phone?.trim() && (
+                    <span className="absolute right-2 top-2 text-red-500 text-xs">Required</span>
+                  )}
+                </div>
+                <div className="md:col-span-2 relative">
+                  <input
+                    type="text"
+                    placeholder="Street Address *"
                     value={location.address_1}
                     onChange={(e) =>
                       handleLocationChange(index, "address_1", e.target.value)
                     }
-                    className="w-[95%] px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 hover:cursor-text focus:ring-blue-400 focus:border-transparent text-sm"
+                    className={`w-[95%] px-3 py-2 rounded-lg border focus:outline-none focus:ring-2 hover:cursor-text focus:border-transparent text-sm ${
+                      location.services.length > 0 && !location.address_1?.trim() 
+                        ? 'border-red-300 focus:ring-red-400' 
+                        : 'border-gray-300 focus:ring-blue-400'
+                    }`}
                   />
+                  {location.services.length > 0 && !location.address_1?.trim() && (
+                    <span className="absolute right-2 top-2 text-red-500 text-xs">Required</span>
+                  )}
                 </div>
                 <div className="md:col-span-2">
                     <input 
@@ -1181,35 +1273,79 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
               <div className="border-t pt-4">
                 <h4 className="text-sm font-medium text-gray-700 mb-3">Service Delivery Options</h4>
                 
-                {/* In-Home Only Toggle */}
+                {/* Service Delivery Type Selection */}
                 <div className="mb-4">
-                  <label className="flex items-center space-x-3 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={formData.in_home_only}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          in_home_only: e.target.checked,
-                          // If in-home only is checked, set service delivery accordingly
-                          service_delivery: e.target.checked 
-                            ? { in_home: true, in_clinic: false, telehealth: false }
-                            : formData.service_delivery
-                        })
-                      }
-                      className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-                    />
-                    <span className="text-sm font-medium text-gray-700">
-                      In-Home Services Only (No physical locations required)
-                    </span>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Service Delivery Type
                   </label>
-                  <p className="text-xs text-gray-500 mt-1 ml-7">
-                    Check this if your provider offers only in-home services without physical clinic locations
+                  <div className="space-y-2">
+                    {/* In-Home Only */}
+                    <label className="flex items-center space-x-3 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="service_delivery_type"
+                        checked={formData.service_delivery.in_home && !formData.service_delivery.in_clinic && !formData.service_delivery.telehealth}
+                        onChange={() =>
+                          setFormData({
+                            ...formData,
+                            in_home_only: true,
+                            service_delivery: { in_home: true, in_clinic: false, telehealth: false }
+                          })
+                        }
+                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 focus:ring-2"
+                      />
+                      <span className="text-sm font-medium text-gray-700">
+                        In-Home Services Only (No physical locations required)
+                      </span>
+                    </label>
+
+                    {/* Telehealth Only */}
+                    <label className="flex items-center space-x-3 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="service_delivery_type"
+                        checked={!formData.service_delivery.in_home && !formData.service_delivery.in_clinic && formData.service_delivery.telehealth}
+                        onChange={() =>
+                          setFormData({
+                            ...formData,
+                            in_home_only: false,
+                            service_delivery: { in_home: false, in_clinic: false, telehealth: true }
+                          })
+                        }
+                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 focus:ring-2"
+                      />
+                      <span className="text-sm font-medium text-gray-700">
+                        Telehealth Services Only (No physical locations required)
+                      </span>
+                    </label>
+
+                    {/* Multiple Service Types */}
+                    <label className="flex items-center space-x-3 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="service_delivery_type"
+                        checked={formData.service_delivery.in_clinic || (formData.service_delivery.in_home && formData.service_delivery.telehealth)}
+                        onChange={() =>
+                          setFormData({
+                            ...formData,
+                            in_home_only: false,
+                            service_delivery: { in_home: false, in_clinic: true, telehealth: false }
+                          })
+                        }
+                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 focus:ring-2"
+                      />
+                      <span className="text-sm font-medium text-gray-700">
+                        In-Clinic Services (Physical locations required)
+                      </span>
+                    </label>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">
+                    Select the primary service delivery method. Telehealth and In-Home only providers don't need physical locations.
                   </p>
                 </div>
 
-                {/* Service Delivery Checkboxes - Only show if not in-home only */}
-                {!formData.in_home_only && (
+                {/* Service Delivery Checkboxes - Only show if in-clinic services */}
+                {(formData.service_delivery.in_clinic || (!formData.service_delivery.in_home && !formData.service_delivery.telehealth)) && (
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="flex items-center space-x-3">
                       <input
