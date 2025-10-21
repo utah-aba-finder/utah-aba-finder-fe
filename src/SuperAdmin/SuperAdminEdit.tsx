@@ -417,7 +417,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
 
   const validateLocations = () => {
     // Check if provider offers in-clinic services and needs locations
-    const needsLocations = editedProvider?.service_delivery?.in_clinic || (!editedProvider?.service_delivery?.in_home && !editedProvider?.service_delivery?.telehealth);
+    const needsLocations = editedProvider?.service_delivery?.in_clinic;
     
     if (!needsLocations) {
       // Provider doesn't need physical locations (telehealth or in-home only)
@@ -1409,141 +1409,82 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                               Service Delivery Options
                             </label>
                             
-                            {/* Service Delivery Type Selection */}
+                            {/* Service Delivery Options */}
                             <div className="mb-6">
                               <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Service Delivery Type
+                                Service Delivery Options
                               </label>
                               <div className="space-y-2">
-                                {/* In-Home Only */}
+                                {/* In-Home Services */}
                                 <label className="flex items-center space-x-3 cursor-pointer">
-                                  <input
-                                    type="radio"
-                                    name="service_delivery_type"
-                                    checked={editedProvider.service_delivery?.in_home && !editedProvider.service_delivery?.in_clinic && !editedProvider.service_delivery?.telehealth}
-                                    onChange={() =>
-                                      setEditedProvider({
-                                        ...editedProvider,
-                                        in_home_only: true,
-                                        service_delivery: { in_home: true, in_clinic: false, telehealth: false }
-                                      })
-                                    }
-                                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 focus:ring-2"
-                                  />
-                                  <span className="text-sm font-medium text-gray-700">
-                                    In-Home Services Only (No physical locations required)
-                                  </span>
-                                </label>
-
-                                {/* Telehealth Only */}
-                                <label className="flex items-center space-x-3 cursor-pointer">
-                                  <input
-                                    type="radio"
-                                    name="service_delivery_type"
-                                    checked={!editedProvider.service_delivery?.in_home && !editedProvider.service_delivery?.in_clinic && editedProvider.service_delivery?.telehealth}
-                                    onChange={() =>
-                                      setEditedProvider({
-                                        ...editedProvider,
-                                        in_home_only: false,
-                                        service_delivery: { in_home: false, in_clinic: false, telehealth: true }
-                                      })
-                                    }
-                                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 focus:ring-2"
-                                  />
-                                  <span className="text-sm font-medium text-gray-700">
-                                    Telehealth Services Only (No physical locations required)
-                                  </span>
-                                </label>
-
-                                {/* Multiple Service Types */}
-                                <label className="flex items-center space-x-3 cursor-pointer">
-                                  <input
-                                    type="radio"
-                                    name="service_delivery_type"
-                                    checked={editedProvider.service_delivery?.in_clinic || (editedProvider.service_delivery?.in_home && editedProvider.service_delivery?.telehealth)}
-                                    onChange={() =>
-                                      setEditedProvider({
-                                        ...editedProvider,
-                                        in_home_only: false,
-                                        service_delivery: { in_home: false, in_clinic: true, telehealth: false }
-                                      })
-                                    }
-                                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 focus:ring-2"
-                                  />
-                                  <span className="text-sm font-medium text-gray-700">
-                                    In-Clinic Services (Physical locations required)
-                                  </span>
-                                </label>
-                              </div>
-                              <p className="text-xs text-gray-500 mt-2">
-                                Select the primary service delivery method. Telehealth and In-Home only providers don't need physical locations.
-                              </p>
-                            </div>
-
-                            {/* Service Delivery Checkboxes - Only show if in-clinic services */}
-                            {(editedProvider.service_delivery?.in_clinic || (!editedProvider.service_delivery?.in_home && !editedProvider.service_delivery?.telehealth)) && (
-                              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                                <div className="flex items-center space-x-3">
                                   <input
                                     type="checkbox"
                                     checked={editedProvider.service_delivery?.in_home || false}
                                     onChange={(e) =>
                                       setEditedProvider({
                                         ...editedProvider,
-                                        service_delivery: {
+                                        service_delivery: { 
                                           ...editedProvider.service_delivery,
-                                          in_home: e.target.checked
-                                        }
+                                          in_home: e.target.checked 
+                                        },
+                                        in_home_only: e.target.checked && !editedProvider.service_delivery?.in_clinic && !editedProvider.service_delivery?.telehealth
                                       })
                                     }
                                     className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
                                   />
-                                  <label className="text-sm font-medium text-gray-700">
+                                  <span className="text-sm font-medium text-gray-700">
                                     In-Home Services
-                                  </label>
-                                </div>
-                                
-                                <div className="flex items-center space-x-3">
+                                  </span>
+                                </label>
+
+                                {/* In-Clinic Services */}
+                                <label className="flex items-center space-x-3 cursor-pointer">
                                   <input
                                     type="checkbox"
                                     checked={editedProvider.service_delivery?.in_clinic || false}
                                     onChange={(e) =>
                                       setEditedProvider({
                                         ...editedProvider,
-                                        service_delivery: {
+                                        service_delivery: { 
                                           ...editedProvider.service_delivery,
-                                          in_clinic: e.target.checked
-                                        }
+                                          in_clinic: e.target.checked 
+                                        },
+                                        in_home_only: !e.target.checked && editedProvider.service_delivery?.in_home && !editedProvider.service_delivery?.telehealth
                                       })
                                     }
                                     className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
                                   />
-                                  <label className="text-sm font-medium text-gray-700">
+                                  <span className="text-sm font-medium text-gray-700">
                                     In-Clinic Services
-                                  </label>
-                                </div>
-                                
-                                <div className="flex items-center space-x-3">
+                                  </span>
+                                </label>
+
+                                {/* Telehealth Services */}
+                                <label className="flex items-center space-x-3 cursor-pointer">
                                   <input
                                     type="checkbox"
                                     checked={editedProvider.service_delivery?.telehealth || false}
                                     onChange={(e) =>
                                       setEditedProvider({
                                         ...editedProvider,
-                                        service_delivery: {
+                                        service_delivery: { 
                                           ...editedProvider.service_delivery,
-                                          telehealth: e.target.checked
+                                          telehealth: e.target.checked 
                                         }
                                       })
                                     }
                                     className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
                                   />
-                                  <label className="text-sm font-medium text-gray-700">
+                                  <span className="text-sm font-medium text-gray-700">
                                     Telehealth Services
-                                  </label>
-                                </div>
+                                  </span>
+                                </label>
                               </div>
-                            )}
+                              <p className="text-xs text-gray-500 mt-2">
+                                Select all service delivery methods this provider offers. Physical locations are only required for in-clinic services.
+                              </p>
+                            </div>
+
 
                             {/* Removed duplicate service dropdowns - keeping only the checkboxes above */}
                           </div>

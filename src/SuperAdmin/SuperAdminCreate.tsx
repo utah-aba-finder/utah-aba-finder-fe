@@ -256,7 +256,7 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
 
   const validateLocations = () => {
     // Check if provider offers in-clinic services and needs locations
-    const needsLocations = formData.service_delivery.in_clinic || (!formData.service_delivery.in_home && !formData.service_delivery.telehealth);
+    const needsLocations = formData.service_delivery.in_clinic;
     
     if (!needsLocations) {
       // Provider doesn't need physical locations (telehealth or in-home only)
@@ -898,12 +898,12 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
             </button>
           </div>
           <div className={`mb-6 p-3 rounded-lg text-sm ${
-            formData.service_delivery.in_clinic || (!formData.service_delivery.in_home && !formData.service_delivery.telehealth)
+            formData.service_delivery.in_clinic
               ? 'bg-blue-50 border border-blue-200 text-blue-800'
               : 'bg-green-50 border border-green-200 text-green-800'
           }`}>
-            {formData.service_delivery.in_clinic || (!formData.service_delivery.in_home && !formData.service_delivery.telehealth)
-              ? "📍 Physical locations are required for in-clinic providers. Fields marked with * are required for locations that offer services."
+            {formData.service_delivery.in_clinic
+              ? "📍 Physical locations are required for in-clinic services. Fields marked with * are required for locations that offer services."
               : "✅ No physical locations required for telehealth/in-home only providers."
             }
           </div>
@@ -1273,141 +1273,82 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
               <div className="border-t pt-4">
                 <h4 className="text-sm font-medium text-gray-700 mb-3">Service Delivery Options</h4>
                 
-                {/* Service Delivery Type Selection */}
+                {/* Service Delivery Options */}
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Service Delivery Type
+                    Service Delivery Options
                   </label>
                   <div className="space-y-2">
-                    {/* In-Home Only */}
+                    {/* In-Home Services */}
                     <label className="flex items-center space-x-3 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="service_delivery_type"
-                        checked={formData.service_delivery.in_home && !formData.service_delivery.in_clinic && !formData.service_delivery.telehealth}
-                        onChange={() =>
-                          setFormData({
-                            ...formData,
-                            in_home_only: true,
-                            service_delivery: { in_home: true, in_clinic: false, telehealth: false }
-                          })
-                        }
-                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 focus:ring-2"
-                      />
-                      <span className="text-sm font-medium text-gray-700">
-                        In-Home Services Only (No physical locations required)
-                      </span>
-                    </label>
-
-                    {/* Telehealth Only */}
-                    <label className="flex items-center space-x-3 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="service_delivery_type"
-                        checked={!formData.service_delivery.in_home && !formData.service_delivery.in_clinic && formData.service_delivery.telehealth}
-                        onChange={() =>
-                          setFormData({
-                            ...formData,
-                            in_home_only: false,
-                            service_delivery: { in_home: false, in_clinic: false, telehealth: true }
-                          })
-                        }
-                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 focus:ring-2"
-                      />
-                      <span className="text-sm font-medium text-gray-700">
-                        Telehealth Services Only (No physical locations required)
-                      </span>
-                    </label>
-
-                    {/* Multiple Service Types */}
-                    <label className="flex items-center space-x-3 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="service_delivery_type"
-                        checked={formData.service_delivery.in_clinic || (formData.service_delivery.in_home && formData.service_delivery.telehealth)}
-                        onChange={() =>
-                          setFormData({
-                            ...formData,
-                            in_home_only: false,
-                            service_delivery: { in_home: false, in_clinic: true, telehealth: false }
-                          })
-                        }
-                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 focus:ring-2"
-                      />
-                      <span className="text-sm font-medium text-gray-700">
-                        In-Clinic Services (Physical locations required)
-                      </span>
-                    </label>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-2">
-                    Select the primary service delivery method. Telehealth and In-Home only providers don't need physical locations.
-                  </p>
-                </div>
-
-                {/* Service Delivery Checkboxes - Only show if in-clinic services */}
-                {(formData.service_delivery.in_clinic || (!formData.service_delivery.in_home && !formData.service_delivery.telehealth)) && (
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="flex items-center space-x-3">
                       <input
                         type="checkbox"
                         checked={formData.service_delivery.in_home}
                         onChange={(e) =>
                           setFormData({
                             ...formData,
-                            service_delivery: {
-                              ...formData.service_delivery,
-                              in_home: e.target.checked
-                            }
+                            service_delivery: { 
+                              ...formData.service_delivery, 
+                              in_home: e.target.checked 
+                            },
+                            in_home_only: e.target.checked && !formData.service_delivery.in_clinic && !formData.service_delivery.telehealth
                           })
                         }
                         className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
                       />
-                      <label className="text-sm font-medium text-gray-700">
+                      <span className="text-sm font-medium text-gray-700">
                         In-Home Services
-                      </label>
-                    </div>
-                    
-                    <div className="flex items-center space-x-3">
+                      </span>
+                    </label>
+
+                    {/* In-Clinic Services */}
+                    <label className="flex items-center space-x-3 cursor-pointer">
                       <input
                         type="checkbox"
                         checked={formData.service_delivery.in_clinic}
                         onChange={(e) =>
                           setFormData({
                             ...formData,
-                            service_delivery: {
-                              ...formData.service_delivery,
-                              in_clinic: e.target.checked
-                            }
+                            service_delivery: { 
+                              ...formData.service_delivery, 
+                              in_clinic: e.target.checked 
+                            },
+                            in_home_only: !e.target.checked && formData.service_delivery.in_home && !formData.service_delivery.telehealth
                           })
                         }
                         className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
                       />
-                      <label className="text-sm font-medium text-gray-700">
+                      <span className="text-sm font-medium text-gray-700">
                         In-Clinic Services
-                      </label>
-                    </div>
-                    
-                    <div className="flex items-center space-x-3">
+                      </span>
+                    </label>
+
+                    {/* Telehealth Services */}
+                    <label className="flex items-center space-x-3 cursor-pointer">
                       <input
                         type="checkbox"
                         checked={formData.service_delivery.telehealth}
                         onChange={(e) =>
                           setFormData({
                             ...formData,
-                            service_delivery: {
-                              ...formData.service_delivery,
-                              telehealth: e.target.checked
+                            service_delivery: { 
+                              ...formData.service_delivery, 
+                              telehealth: e.target.checked 
                             }
                           })
                         }
                         className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
                       />
-                      <label className="text-sm font-medium text-gray-700">
+                      <span className="text-sm font-medium text-gray-700">
                         Telehealth Services
-                      </label>
-                    </div>
+                      </span>
+                    </label>
                   </div>
-                )}
+                  <p className="text-xs text-gray-500 mt-2">
+                    Select all service delivery methods this provider offers. Physical locations are only required for in-clinic services.
+                  </p>
+                </div>
+
               </div>
             </div>
           </div>
