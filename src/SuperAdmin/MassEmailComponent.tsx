@@ -48,6 +48,29 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
     loadTemplates();
   }, []);
 
+  // Add global error handler to prevent component unmounting
+  useEffect(() => {
+    const handleError = (event: ErrorEvent) => {
+      console.log('🚨 Global error caught in MassEmailComponent:', event.error);
+      event.preventDefault(); // Prevent default error handling
+      return false;
+    };
+
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      console.log('🚨 Unhandled promise rejection in MassEmailComponent:', event.reason);
+      event.preventDefault(); // Prevent default error handling
+      return false;
+    };
+
+    window.addEventListener('error', handleError);
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
+
+    return () => {
+      window.removeEventListener('error', handleError);
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+    };
+  }, []);
+
   const loadStats = async () => {
     try {
       setLoading(true);
@@ -189,7 +212,32 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
       }
     } catch (error) {
       console.error('❌ Error loading template:', templateName, error);
-      toast.error(`Error loading template: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      
+      // Handle 404 errors gracefully without unmounting the component
+      if (error instanceof Error && error.message.includes('404')) {
+        console.log('⚠️ Template not found (404), showing placeholder content');
+        const placeholderContent = `<!-- ${templateName} template placeholder -->
+<html>
+<body>
+  <h2>${templates[templateName]?.name || templateName}</h2>
+  <p>This template is not available on the backend yet.</p>
+  <p>Template name: ${templateName}</p>
+  <p>Template type: ${templateType}</p>
+  
+  <p>Available template details:</p>
+  <ul>
+    <li>Name: ${templates[templateName]?.name || 'Unknown'}</li>
+    <li>Subject: ${templates[templateName]?.subject || 'No subject'}</li>
+    <li>Description: ${templates[templateName]?.description || 'No description'}</li>
+  </ul>
+</body>
+</html>`;
+        setTemplateContent(placeholderContent);
+        setSelectedTemplate(templateName);
+        toast.warning(`Template "${templateName}" not found on backend. Showing placeholder content.`);
+      } else {
+        toast.error(`Error loading template: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
     } finally {
       setTemplateLoading(false);
     }
@@ -226,7 +274,22 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
       }
     } catch (error) {
       console.error('Error previewing template:', error);
-      toast.error(`Error previewing template: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      
+      // Handle 404 errors gracefully without unmounting the component
+      if (error instanceof Error && error.message.includes('404')) {
+        console.log('⚠️ Preview not available (404), showing mock preview');
+        const mockPreview: TemplatePreviewResponse = {
+          subject: `${templates[selectedTemplate]?.name || selectedTemplate} Preview`,
+          to: 'user@example.com',
+          html_content: templateContent && templateContent.includes('<html>') ? templateContent : `<html><body><pre>${templateContent || 'No content available'}</pre></body></html>`,
+          text_content: templateContent && templateContent.includes('<html>') ? 'HTML content - text preview not available' : (templateContent || 'No content available'),
+          success: true
+        };
+        setTemplatePreview(mockPreview);
+        toast.warning('Preview service not available. Showing content directly.');
+      } else {
+        toast.error(`Error previewing template: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
     }
   };
 
