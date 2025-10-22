@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { Providers, StateData, CountyData, InsuranceData } from './Types';
-import { getAdminAuthHeader, API_CONFIG } from './config';
+import { getAdminAuthHeader, getSuperAdminAuthHeader, API_CONFIG } from './config';
 
 // Practice Types API
 export interface PracticeType {
@@ -154,13 +154,14 @@ export interface EmailPreview {
 // Mass Email API Functions
 export const fetchMassEmailStats = async (): Promise<MassEmailStats> => {
   try {
+    console.log('🔑 Using SuperAdmin auth header for mass email stats');
     const response = await fetch(
       'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/mass_emails',
       {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': getAdminAuthHeader(),
+          'Authorization': getSuperAdminAuthHeader(),
         },
       }
     );
@@ -186,7 +187,7 @@ export const sendPasswordReminders = async (): Promise<MassEmailResponse> => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': getAdminAuthHeader(),
+          'Authorization': getSuperAdminAuthHeader(),
         },
       }
     );
@@ -211,7 +212,7 @@ export const sendSystemUpdates = async (): Promise<MassEmailResponse> => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': getAdminAuthHeader(),
+          'Authorization': getSuperAdminAuthHeader(),
         },
       }
     );
@@ -230,22 +231,28 @@ export const sendSystemUpdates = async (): Promise<MassEmailResponse> => {
 
 export const previewEmail = async (emailType: 'password_reminder' | 'system_update'): Promise<EmailPreview> => {
   try {
+    console.log('🔄 Fetching email preview for type:', emailType);
     const response = await fetch(
       `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/mass_emails/preview_email?type=${emailType}`,
       {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': getAdminAuthHeader(),
+          'Authorization': getSuperAdminAuthHeader(),
         },
       }
     );
 
+    console.log('📡 Preview response status:', response.status);
+    
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errorText = await response.text();
+      console.error('❌ Preview API Error Response:', errorText);
+      throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
+    console.log('✅ Email preview response:', data);
     return data;
   } catch (error) {
     console.error('❌ Failed to preview email:', error);

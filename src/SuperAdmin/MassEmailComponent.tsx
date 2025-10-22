@@ -31,6 +31,13 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
   const loadStats = async () => {
     try {
       setLoading(true);
+      
+      // Debug: Check what's in sessionStorage
+      const currentUser = sessionStorage.getItem('currentUser');
+      const authToken = sessionStorage.getItem('authToken');
+      console.log('🔍 SessionStorage currentUser:', currentUser);
+      console.log('🔍 SessionStorage authToken:', authToken);
+      
       const data = await fetchMassEmailStats();
       setStats(data);
     } catch (error) {
@@ -105,12 +112,14 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
 
   const handlePreviewEmail = async (type: 'password_reminder' | 'system_update') => {
     try {
+      console.log('🔄 Loading email preview for:', type);
       setPreviewType(type);
       const previewData = await previewEmail(type);
+      console.log('✅ Email preview loaded:', previewData);
       setPreview(previewData);
       setShowPreview(true);
     } catch (error) {
-      console.error('Failed to preview email:', error);
+      console.error('❌ Failed to preview email:', error);
       toast.error('Failed to load email preview');
     }
   };
