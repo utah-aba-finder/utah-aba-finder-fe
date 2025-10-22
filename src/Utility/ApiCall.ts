@@ -309,23 +309,28 @@ export const fetchEmailTemplates = async (): Promise<EmailTemplateResponse> => {
 
 export const loadEmailTemplate = async (templateName: string, templateType: 'html' | 'text'): Promise<TemplateContentResponse> => {
   try {
-    const response = await fetch(
-      `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/email_templates/${templateName}?type=${templateType}`,
-      {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': getSuperAdminAuthHeader(),
-        },
-      }
-    );
+    const url = `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/email_templates/${templateName}?type=${templateType}`;
+    console.log('🔄 Loading template from URL:', url);
+    console.log('🔑 Using auth header:', getSuperAdminAuthHeader());
+    
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': getSuperAdminAuthHeader(),
+      },
+    });
+    
+    console.log('📡 Response status:', response.status);
     
     if (!response.ok) {
       const errorText = await response.text();
+      console.error('❌ API Error Response:', errorText);
       throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
+    console.log('✅ Template data received:', data);
     return data;
   } catch (error) {
     console.error('❌ Failed to load email template:', error);

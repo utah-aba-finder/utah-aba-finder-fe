@@ -159,10 +159,18 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
   // Template Editor Functions
   const loadTemplates = async () => {
     try {
+      console.log('🔄 Loading email templates...');
       const data = await fetchEmailTemplates();
+      console.log('✅ Templates loaded:', data);
       setTemplates(data.templates);
+      
+      // Log available template keys for debugging
+      if (data.templates) {
+        console.log('📋 Available template keys:', Object.keys(data.templates));
+        console.log('📋 Template details:', data.templates);
+      }
     } catch (error) {
-      console.error('Failed to load templates:', error);
+      console.error('❌ Failed to load templates:', error);
       toast.error('Failed to load email templates');
     }
   };
@@ -170,7 +178,9 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
   const loadTemplateContent = async (templateName: string) => {
     setTemplateLoading(true);
     try {
+      console.log('🔄 Loading template:', templateName, 'with type:', templateType);
       const data = await loadEmailTemplate(templateName, templateType);
+      console.log('✅ Template loaded successfully:', data);
       if (data.content) {
         setTemplateContent(data.content);
         setSelectedTemplate(templateName);
@@ -178,7 +188,7 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
         toast.error('Template not found');
       }
     } catch (error) {
-      console.error('Error loading template:', error);
+      console.error('❌ Error loading template:', templateName, error);
       toast.error(`Error loading template: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setTemplateLoading(false);
@@ -499,7 +509,10 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
                         ? 'border-blue-500 bg-blue-50'
                         : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
                     }`}
-                    onClick={() => loadTemplateContent(key)}
+                    onClick={() => {
+                      console.log('🖱️ Clicking on template:', key);
+                      loadTemplateContent(key);
+                    }}
                   >
                     <h4 className="font-medium text-gray-900 mb-2">{template.name}</h4>
                     <p className="text-sm text-gray-600 mb-2">{template.description}</p>
@@ -525,12 +538,12 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
                   <div className="flex items-center space-x-3">
                     <select 
                       value={templateType} 
-                      onChange={async (e) => {
+                      onChange={(e) => {
                         const newType = e.target.value as 'html' | 'text';
                         setTemplateType(newType);
                         if (selectedTemplate) {
                           // Reload template content with new type
-                          await loadTemplateContent(selectedTemplate);
+                          loadTemplateContent(selectedTemplate);
                         }
                       }}
                       className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
