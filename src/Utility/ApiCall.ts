@@ -306,9 +306,12 @@ export const fetchEmailTemplates = async (): Promise<EmailTemplateResponse> => {
   }
 };
 
-export const loadEmailTemplate = async (templateName: string, templateType: 'html' | 'text'): Promise<TemplateContentResponse> => {
+export const loadEmailTemplate = async (
+  templateName: string,
+  templateType: 'html' | 'text'
+): Promise<TemplateContentResponse> => {
+  const url = `/api/v1/admin/email_templates/${templateName}?type=${templateType}`;
   try {
-    const url = `/api/v1/admin/email_templates/${templateName}?type=${templateType}`;
     console.log('🔄 Loading template from URL:', url);
     console.log('🔑 Using auth header:', getSuperAdminAuthHeader());
     
@@ -319,21 +322,47 @@ export const loadEmailTemplate = async (templateName: string, templateType: 'htm
         'Authorization': getSuperAdminAuthHeader(),
       },
     });
-    
+
     console.log('📡 Response status:', response.status);
-    
+
+    // If not OK, try to read text safely; DO NOT THROW
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('❌ API Error Response:', errorText);
-      throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
+      let errorText = '';
+      try {
+        errorText = await response.text();
+      } catch {
+        errorText = `HTTP ${response.status}`;
+      }
+      console.error('❌ API error loading template:', response.status, errorText);
+      return { success: false, content: '', error: errorText || response.statusText };
     }
 
-    const data = await response.json();
+    // OK path: try JSON first; if it's raw text, handle gracefully
+    let data: any;
+    try {
+      data = await response.json();
+    } catch {
+      // Backend might return raw content for some templates
+      const text = await response.text();
+      return { success: true, content: text };
+    }
+
     console.log('✅ Template data received:', data);
-    return data;
-  } catch (error) {
-    console.error('❌ Failed to load email template:', error);
-    throw error;
+
+    // Normalize to TemplateContentResponse
+    if (typeof data?.content === 'string') {
+      return { success: true, content: data.content };
+    }
+
+    // If backend returns {html: "..."} or something else:
+    const content = data?.html ?? data?.text ?? '';
+    const ok = typeof content === 'string' && content.length > 0;
+    return { success: ok, content, error: ok ? undefined : 'Template content missing' };
+
+  } catch (err: any) {
+    console.error('❌ Network/parse error loading template:', err);
+    // DON'T throw — return a soft error
+    return { success: false, content: '', error: err?.message ?? 'Unknown error' };
   }
 };
 
@@ -381,15 +410,32 @@ export const previewEmailTemplate = async (templateName: string, templateType: '
     );
     
     if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
+      let errorText = '';
+      try {
+        errorText = await response.text();
+      } catch {
+        errorText = `HTTP ${response.status}`;
+      }
+      console.error('❌ API error previewing template:', response.status, errorText);
+      return { 
+        success: false, 
+        subject: '', 
+        to: '', 
+        error: errorText || response.statusText 
+      };
     }
 
     const data = await response.json();
     return data;
-  } catch (error) {
+  } catch (error: any) {
     console.error('❌ Failed to preview email template:', error);
-    throw error;
+    // DON'T throw — return a soft error
+    return { 
+      success: false, 
+      subject: '', 
+      to: '', 
+      error: error?.message ?? 'Unknown error' 
+    };
   }
 };
 

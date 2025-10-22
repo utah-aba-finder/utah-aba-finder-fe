@@ -210,20 +210,15 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
 
   const loadTemplateContent = async (templateName: string) => {
     setTemplateLoading(true);
-    try {
-      console.log('🔄 Loading template:', templateName, 'with type:', templateType);
-      const data = await loadEmailTemplate(templateName, templateType);
-      console.log('✅ Template loaded successfully:', data);
-      if (data.content) {
-        setTemplateContent(data.content);
-        setSelectedTemplate(templateName);
-      } else {
-        toast.error('Template not found');
-      }
-    } catch (error) {
-      console.error('❌ Error loading template:', templateName, error);
-      
-      // Handle ALL errors gracefully without unmounting the component
+    console.log('🔄 Loading template:', templateName, 'with type:', templateType);
+    
+    const data = await loadEmailTemplate(templateName, templateType);
+    console.log('✅ Template response received:', data);
+    
+    setTemplateLoading(false);
+    
+    if (!data.success) {
+      // Handle error gracefully without unmounting the component
       console.log('⚠️ Template loading failed, showing placeholder content');
       const placeholderContent = `<!-- ${templateName} template placeholder -->
 <html>
@@ -232,7 +227,7 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
   <p>This template is not available on the backend yet.</p>
   <p>Template name: ${templateName}</p>
   <p>Template type: ${templateType}</p>
-  <p>Error: ${error instanceof Error ? error.message : 'Unknown error'}</p>
+  <p>Error: ${data.error || 'Unknown error'}</p>
   
   <p>Available template details:</p>
   <ul>
@@ -244,9 +239,17 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
 </html>`;
       setTemplateContent(placeholderContent);
       setSelectedTemplate(templateName);
-      toast.warning(`Template "${templateName}" not available. Showing placeholder content.`);
-    } finally {
-      setTemplateLoading(false);
+      toast.warning(`Template "${templateName}" not available: ${data.error || 'Unknown error'}`);
+      return;
+    }
+    
+    // Success path
+    if (data.content) {
+      setTemplateContent(data.content);
+      setSelectedTemplate(templateName);
+      toast.success(`Template "${templateName}" loaded successfully`);
+    } else {
+      toast.warning('Template loaded but content is empty');
     }
   };
 
@@ -272,17 +275,13 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
   const previewTemplate = async () => {
     if (!selectedTemplate) return;
     
-    try {
-      const data = await previewEmailTemplate(selectedTemplate, templateType);
-      if (data.success) {
-        setTemplatePreview(data);
-      } else {
-        toast.error(`Preview error: ${data.error || 'Unknown error'}`);
-      }
-    } catch (error) {
-      console.error('Error previewing template:', error);
-      
-      // Handle ALL errors gracefully without unmounting the component
+    const data = await previewEmailTemplate(selectedTemplate, templateType);
+    
+    if (data.success) {
+      setTemplatePreview(data);
+      toast.success('Template preview loaded successfully');
+    } else {
+      // Handle error gracefully without unmounting the component
       console.log('⚠️ Preview not available, showing mock preview');
       const mockPreview: TemplatePreviewResponse = {
         subject: `${templates[selectedTemplate]?.name || selectedTemplate} Preview`,
@@ -292,7 +291,7 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
         success: true
       };
       setTemplatePreview(mockPreview);
-      toast.warning('Preview service not available. Showing content directly.');
+      toast.warning(`Preview service not available: ${data.error || 'Unknown error'}. Showing content directly.`);
     }
   };
 
@@ -676,25 +675,52 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
               {/* Template Preview */}
               {templatePreview && (
                 <div className="border-t border-gray-200 p-6 bg-gray-50">
-                  <h4 className="text-lg font-medium text-gray-900 mb-4">Preview</h4>
-                  <div className="bg-white p-4 rounded-lg border">
-                    <div className="mb-4">
-                      <p className="text-sm text-gray-600 mb-1"><strong>Subject:</strong></p>
-                      <p className="text-sm text-gray-900">{templatePreview.subject}</p>
-                    </div>
-                    <div className="mb-4">
-                      <p className="text-sm text-gray-600 mb-1"><strong>To:</strong></p>
-                      <p className="text-sm text-gray-900">{templatePreview.to}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600 mb-2"><strong>Content:</strong></p>
-                      <div className="max-h-64 overflow-y-auto p-4 bg-gray-50 rounded border">
-                        {templateType === 'html' ? (
-                          <div dangerouslySetInnerHTML={{ __html: templatePreview.html_content || '' }} />
-                        ) : (
-                          <pre className="text-sm whitespace-pre-wrap">{templatePreview.text_content || ''}</pre>
-                        )}
+                  <h4 className="text-lg font-medium text-gray-900 mb-4">Email Preview</h4>
+                  <div className="bg-white rounded-lg border overflow-hidden">
+                    {/* Email Header */}
+                    <div className="bg-gray-100 px-4 py-3 border-b border-gray-200">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                          <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                            <span className="text-white text-sm font-medium">U</span>
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-gray-900">Utah ABA Finder</p>
+                            <p className="text-xs text-gray-500">no-reply@utahabafinder.com</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-xs text-gray-500">To: {templatePreview.to}</p>
+                          <p className="text-xs text-gray-500">Subject: {templatePreview.subject}</p>
+                        </div>
                       </div>
+                    </div>
+                    
+                    {/* Email Content */}
+                    <div className="p-6">
+                      {templateType === 'html' ? (
+                        <div 
+                          className="prose prose-sm max-w-none"
+                          style={{
+                            fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                            lineHeight: '1.6',
+                            color: '#333'
+                          }}
+                          dangerouslySetInnerHTML={{ __html: templatePreview.html_content || '' }} 
+                        />
+                      ) : (
+                        <div 
+                          className="whitespace-pre-wrap"
+                          style={{
+                            fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                            lineHeight: '1.6',
+                            color: '#333',
+                            fontSize: '14px'
+                          }}
+                        >
+                          {templatePreview.text_content || ''}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
