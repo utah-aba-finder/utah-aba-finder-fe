@@ -5,11 +5,19 @@ import {
   sendPasswordReminders, 
   sendSystemUpdates, 
   previewEmail,
+  fetchEmailTemplates,
+  loadEmailTemplate,
+  saveEmailTemplate,
+  previewEmailTemplate,
   MassEmailStats,
   MassEmailResponse,
-  EmailPreview
+  EmailPreview,
+  EmailTemplate,
+  EmailTemplateResponse,
+  TemplateContentResponse,
+  TemplatePreviewResponse
 } from '../Utility/ApiCall';
-import { Mail, Users, AlertCircle, CheckCircle, Eye, Send, RefreshCw } from 'lucide-react';
+import { Mail, Users, AlertCircle, CheckCircle, Eye, Send, RefreshCw, Edit3, Save } from 'lucide-react';
 
 interface MassEmailComponentProps {
   onClose?: () => void;
@@ -23,21 +31,26 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
   const [previewType, setPreviewType] = useState<'password_reminder' | 'system_update' | null>(null);
   const [showPreview, setShowPreview] = useState(false);
   const [lastAction, setLastAction] = useState<string | null>(null);
+  
+  // Template Editor State
+  const [templates, setTemplates] = useState<{ [key: string]: EmailTemplate }>({});
+  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
+  const [templateContent, setTemplateContent] = useState('');
+  const [templateType, setTemplateType] = useState<'html' | 'text'>('html');
+  const [templateLoading, setTemplateLoading] = useState(false);
+  const [templateSaving, setTemplateSaving] = useState(false);
+  const [templatePreview, setTemplatePreview] = useState<TemplatePreviewResponse | null>(null);
+  const [showTemplateEditor, setShowTemplateEditor] = useState(false);
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'templates'>('dashboard');
 
   useEffect(() => {
     loadStats();
+    loadTemplates();
   }, []);
 
   const loadStats = async () => {
     try {
       setLoading(true);
-      
-      // Debug: Check what's in sessionStorage
-      const currentUser = sessionStorage.getItem('currentUser');
-      const authToken = sessionStorage.getItem('authToken');
-      console.log('🔍 SessionStorage currentUser:', currentUser);
-      console.log('🔍 SessionStorage authToken:', authToken);
-      
       const data = await fetchMassEmailStats();
       setStats(data);
     } catch (error) {
@@ -114,13 +127,102 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
     try {
       console.log('🔄 Loading email preview for:', type);
       setPreviewType(type);
-      const previewData = await previewEmail(type);
-      console.log('✅ Email preview loaded:', previewData);
-      setPreview(previewData);
+      
+      try {
+        const previewData = await previewEmail(type);
+        console.log('✅ Email preview loaded:', previewData);
+        setPreview(previewData);
+      } catch (error) {
+        // If preview API doesn't exist, show a placeholder preview
+        console.log('⚠️ Preview API not available, showing placeholder');
+        const placeholderPreview = {
+          subject: type === 'password_reminder' 
+            ? 'Password Update Required - Utah ABA Finder'
+            : 'System Update - Utah ABA Finder',
+          content: type === 'password_reminder'
+            ? 'This is a placeholder for the password reminder email. The actual email will be sent to providers who need to update their passwords.'
+            : 'This is a placeholder for the system update email. The actual email will contain system updates and announcements.',
+          recipients_count: type === 'password_reminder' 
+            ? stats?.statistics.users_needing_password_updates || 0
+            : stats?.statistics.total_users_with_providers || 0
+        };
+        setPreview(placeholderPreview);
+      }
+      
       setShowPreview(true);
     } catch (error) {
       console.error('❌ Failed to preview email:', error);
       toast.error('Failed to load email preview');
+    }
+  };
+
+  // Template Editor Functions
+  const loadTemplates = async () => {
+    try {
+      console.log('🔄 Loading email templates...');
+      const data = await fetchEmailTemplates();
+      console.log('✅ Templates loaded:', data);
+      setTemplates(data.templates);
+    } catch (error) {
+      console.error('❌ Failed to load templates:', error);
+      // Don't show error toast for templates since they might not be implemented yet
+    }
+  };
+
+  const loadTemplateContent = async (templateName: string) => {
+    setTemplateLoading(true);
+    try {
+      console.log('🔄 Loading template:', templateName, 'with type:', templateType);
+      const data = await loadEmailTemplate(templateName, templateType);
+      console.log('✅ Template loaded:', data);
+      if (data.content) {
+        setTemplateContent(data.content);
+        setSelectedTemplate(templateName);
+      } else {
+        toast.error('Template not found');
+      }
+    } catch (error) {
+      console.error('❌ Error loading template:', error);
+      toast.error(`Error loading template: ${error.message}`);
+    } finally {
+      setTemplateLoading(false);
+    }
+  };
+
+  const saveTemplate = async () => {
+    if (!selectedTemplate) return;
+    
+    setTemplateSaving(true);
+    try {
+      const data = await saveEmailTemplate(selectedTemplate, templateContent, templateType);
+      if (data.success) {
+        toast.success('Template saved successfully!');
+      } else {
+        toast.error(`Error: ${data.error}`);
+      }
+    } catch (error) {
+      console.error('Error saving template:', error);
+      toast.error('Error saving template');
+    } finally {
+      setTemplateSaving(false);
+    }
+  };
+
+  const previewTemplate = async () => {
+    if (!selectedTemplate) return;
+    
+    try {
+      console.log('🔄 Previewing template:', selectedTemplate, 'with type:', templateType);
+      const data = await previewEmailTemplate(selectedTemplate, templateType);
+      console.log('✅ Template preview loaded:', data);
+      if (data.success) {
+        setTemplatePreview(data);
+      } else {
+        toast.error(`Preview error: ${data.error || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('❌ Error previewing template:', error);
+      toast.error(`Error previewing template: ${error.message}`);
     }
   };
 
@@ -177,7 +279,38 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
         )}
       </div>
 
-      {/* Statistics Cards */}
+      {/* Tab Navigation */}
+      <div className="border-b border-gray-200">
+        <nav className="-mb-px flex space-x-8">
+          <button
+            onClick={() => setActiveTab('dashboard')}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              activeTab === 'dashboard'
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            <Mail className="w-4 h-4 inline mr-2" />
+            Email Dashboard
+          </button>
+          <button
+            onClick={() => setActiveTab('templates')}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              activeTab === 'templates'
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            <Edit3 className="w-4 h-4 inline mr-2" />
+            Email Templates
+          </button>
+        </nav>
+      </div>
+
+      {/* Dashboard Tab */}
+      {activeTab === 'dashboard' && (
+        <>
+          {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center">
@@ -351,6 +484,129 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
               </button>
             </div>
           </div>
+        </div>
+      )}
+        </>
+      )}
+
+      {/* Templates Tab */}
+      {activeTab === 'templates' && (
+        <div className="space-y-6">
+          {/* Template Selector */}
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Select Template</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {Object.keys(templates).length > 0 ? (
+                Object.entries(templates).map(([key, template]) => (
+                  <div 
+                    key={key}
+                    className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                      selectedTemplate === key
+                        ? 'border-blue-500 bg-blue-50'
+                        : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
+                    }`}
+                    onClick={() => loadTemplateContent(key)}
+                  >
+                    <h4 className="font-medium text-gray-900 mb-2">{template.name}</h4>
+                    <p className="text-sm text-gray-600 mb-2">{template.description}</p>
+                    <small className="text-xs text-gray-500">Subject: {template.subject}</small>
+                  </div>
+                ))
+              ) : (
+                <div className="col-span-full p-8 text-center text-gray-500">
+                  <p>No templates available. The template API might not be implemented yet.</p>
+                  <p className="text-sm mt-2">Check the browser console for debugging information.</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Template Editor */}
+          {selectedTemplate && (
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+              <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-medium text-gray-900">
+                    Edit Template: {templates[selectedTemplate]?.name}
+                  </h3>
+                  <div className="flex items-center space-x-3">
+                    <select 
+                      value={templateType} 
+                      onChange={async (e) => {
+                        const newType = e.target.value as 'html' | 'text';
+                        setTemplateType(newType);
+                        if (selectedTemplate) {
+                          // Reload template content with new type
+                          await loadTemplateContent(selectedTemplate);
+                        }
+                      }}
+                      className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="html">HTML</option>
+                      <option value="text">Text</option>
+                    </select>
+                    <button 
+                      onClick={previewTemplate}
+                      className="flex items-center space-x-2 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                      disabled={templateLoading}
+                    >
+                      <Eye className="w-4 h-4" />
+                      <span>Preview</span>
+                    </button>
+                    <button 
+                      onClick={saveTemplate}
+                      className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                      disabled={templateSaving || templateLoading}
+                    >
+                      {templateSaving ? (
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Save className="w-4 h-4" />
+                      )}
+                      <span>{templateSaving ? 'Saving...' : 'Save Template'}</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-6">
+                <textarea
+                  value={templateContent}
+                  onChange={(e) => setTemplateContent(e.target.value)}
+                  placeholder="Enter your email template content here..."
+                  className="w-full h-96 p-4 border border-gray-300 rounded-lg font-mono text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                  disabled={templateLoading}
+                />
+              </div>
+
+              {/* Template Preview */}
+              {templatePreview && (
+                <div className="border-t border-gray-200 p-6 bg-gray-50">
+                  <h4 className="text-lg font-medium text-gray-900 mb-4">Preview</h4>
+                  <div className="bg-white p-4 rounded-lg border">
+                    <div className="mb-4">
+                      <p className="text-sm text-gray-600 mb-1"><strong>Subject:</strong></p>
+                      <p className="text-sm text-gray-900">{templatePreview.subject}</p>
+                    </div>
+                    <div className="mb-4">
+                      <p className="text-sm text-gray-600 mb-1"><strong>To:</strong></p>
+                      <p className="text-sm text-gray-900">{templatePreview.to}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600 mb-2"><strong>Content:</strong></p>
+                      <div className="max-h-64 overflow-y-auto p-4 bg-gray-50 rounded border">
+                        {templateType === 'html' ? (
+                          <div dangerouslySetInnerHTML={{ __html: templatePreview.html_content || '' }} />
+                        ) : (
+                          <pre className="text-sm whitespace-pre-wrap">{templatePreview.text_content || ''}</pre>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
     </div>
