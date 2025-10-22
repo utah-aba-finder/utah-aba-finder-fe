@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { Providers, StateData, CountyData, InsuranceData } from './Types';
-import { getAdminAuthHeader, API_CONFIG } from './config';
+import { getAdminAuthHeader, getSuperAdminAuthHeader, API_CONFIG } from './config';
 
 // Practice Types API
 export interface PracticeType {
@@ -117,6 +117,277 @@ export const fetchPracticeTypes = async (): Promise<PracticeTypesResponse> => {
 };
 
 export const API_URL = "https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin";
+
+// Mass Email API Types
+export interface MassEmailStats {
+  statistics: {
+    total_users_with_providers: number;
+    users_needing_password_updates: number;
+    recently_updated_users: number;
+    providers_needing_updates: number;
+  };
+  providers_needing_updates: ProviderForEmail[];
+}
+
+export interface ProviderForEmail {
+  id: number;
+  name: string;
+  email: string;
+  user_email: string;
+  created_at: string;
+  user_created_at: string;
+}
+
+export interface MassEmailResponse {
+  success: boolean;
+  message: string;
+  emails_sent?: number;
+  errors?: string[];
+}
+
+export interface EmailPreview {
+  subject: string;
+  content: string;
+  recipients_count: number;
+}
+
+// Email Template API Types
+export interface EmailTemplate {
+  name: string;
+  description: string;
+  subject: string;
+}
+
+export interface EmailTemplateResponse {
+  templates: { [key: string]: EmailTemplate };
+}
+
+export interface TemplateContentResponse {
+  content: string;
+  success: boolean;
+  error?: string;
+}
+
+export interface TemplatePreviewResponse {
+  subject: string;
+  to: string;
+  html_content?: string;
+  text_content?: string;
+  success: boolean;
+  error?: string;
+}
+
+// Mass Email API Functions
+export const fetchMassEmailStats = async (): Promise<MassEmailStats> => {
+  try {
+    const response = await fetch(
+      'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/mass_emails',
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': getSuperAdminAuthHeader(),
+        },
+      }
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('❌ Failed to fetch mass email stats:', error);
+    throw error;
+  }
+};
+
+export const sendPasswordReminders = async (): Promise<MassEmailResponse> => {
+  try {
+    const response = await fetch(
+      'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/mass_emails/send_password_reminders',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': getSuperAdminAuthHeader(),
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('❌ Failed to send password reminders:', error);
+    throw error;
+  }
+};
+
+export const sendSystemUpdates = async (): Promise<MassEmailResponse> => {
+  try {
+    const response = await fetch(
+      'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/mass_emails/send_system_updates',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': getSuperAdminAuthHeader(),
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('❌ Failed to send system updates:', error);
+    throw error;
+  }
+};
+
+export const previewEmail = async (emailType: 'password_reminder' | 'system_update'): Promise<EmailPreview> => {
+  try {
+    const response = await fetch(
+      `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/mass_emails/preview_email?type=${emailType}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': getSuperAdminAuthHeader(),
+        },
+      }
+    );
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('❌ Failed to preview email:', error);
+    throw error;
+  }
+};
+
+// Email Template API Functions
+export const fetchEmailTemplates = async (): Promise<EmailTemplateResponse> => {
+  try {
+    const response = await fetch(
+      'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/email_templates',
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': getSuperAdminAuthHeader(),
+        },
+      }
+    );
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('❌ Failed to fetch email templates:', error);
+    throw error;
+  }
+};
+
+export const loadEmailTemplate = async (templateName: string, templateType: 'html' | 'text'): Promise<TemplateContentResponse> => {
+  try {
+    const response = await fetch(
+      `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/email_templates/${templateName}?type=${templateType}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': getSuperAdminAuthHeader(),
+        },
+      }
+    );
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('❌ Failed to load email template:', error);
+    throw error;
+  }
+};
+
+export const saveEmailTemplate = async (templateName: string, content: string, templateType: 'html' | 'text'): Promise<TemplateContentResponse> => {
+  try {
+    const response = await fetch(
+      `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/email_templates/${templateName}`,
+      {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': getSuperAdminAuthHeader(),
+        },
+        body: JSON.stringify({
+          content: content,
+          type: templateType
+        }),
+      }
+    );
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('❌ Failed to save email template:', error);
+    throw error;
+  }
+};
+
+export const previewEmailTemplate = async (templateName: string, templateType: 'html' | 'text'): Promise<TemplatePreviewResponse> => {
+  try {
+    const response = await fetch(
+      `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/email_templates/${templateName}/preview?type=${templateType}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': getSuperAdminAuthHeader(),
+        },
+      }
+    );
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('❌ Failed to preview email template:', error);
+    throw error;
+  }
+};
 
 const API_URL_PROVIDERS = 'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers';
 
