@@ -44,8 +44,26 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'templates'>('dashboard');
 
   useEffect(() => {
+    console.log('🔄 MassEmailComponent mounted, loading data...');
     loadStats();
     loadTemplates();
+  }, []);
+
+  // Add error boundary effect
+  useEffect(() => {
+    const handleError = (error: ErrorEvent) => {
+      console.error('❌ MassEmailComponent error:', error);
+    };
+
+    window.addEventListener('error', handleError);
+    return () => window.removeEventListener('error', handleError);
+  }, []);
+
+  // Add cleanup effect to track unmounting
+  useEffect(() => {
+    return () => {
+      console.log('🔄 MassEmailComponent unmounting...');
+    };
   }, []);
 
   const loadStats = async () => {
@@ -163,9 +181,35 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
       const data = await fetchEmailTemplates();
       console.log('✅ Templates loaded:', data);
       setTemplates(data.templates);
+      
+      // Log available template keys for debugging
+      if (data.templates) {
+        console.log('📋 Available template keys:', Object.keys(data.templates));
+      }
     } catch (error) {
       console.error('❌ Failed to load templates:', error);
-      // Don't show error toast for templates since they might not be implemented yet
+      
+      // Fallback: Create some default templates for testing
+      console.log('🔄 Creating fallback templates for testing...');
+      const fallbackTemplates = {
+        'password_reminder': {
+          name: 'Password Update Reminder',
+          description: 'Email sent to users who need to update their passwords',
+          subject: 'Password Update Required - Utah ABA Finder'
+        },
+        'system_update': {
+          name: 'System Update Notification', 
+          description: 'General system updates and announcements',
+          subject: 'System Update - Utah ABA Finder'
+        },
+        'welcome': {
+          name: 'Admin Created Provider Welcome',
+          description: 'Welcome email for providers created by admin',
+          subject: 'Welcome to Utah ABA Finder'
+        }
+      };
+      setTemplates(fallbackTemplates);
+      console.log('✅ Fallback templates created:', fallbackTemplates);
     }
   };
 
@@ -183,7 +227,31 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
       }
     } catch (error) {
       console.error('❌ Error loading template:', error);
-      toast.error(`Error loading template: ${error.message}`);
+      
+      // Handle 404 errors specifically
+      if (error instanceof Error && error.message.includes('404')) {
+        console.log('⚠️ Template not found on backend, creating placeholder content...');
+        const placeholderContent = `<!-- ${templateName} template placeholder -->
+<html>
+<body>
+  <h2>${templates[templateName]?.name || templateName}</h2>
+  <p>This is a placeholder for the ${templateName} template.</p>
+  <p>The template content needs to be created on the backend.</p>
+  
+  <p>Template details:</p>
+  <ul>
+    <li>Name: ${templates[templateName]?.name || 'Unknown'}</li>
+    <li>Subject: ${templates[templateName]?.subject || 'No subject'}</li>
+    <li>Description: ${templates[templateName]?.description || 'No description'}</li>
+  </ul>
+</body>
+</html>`;
+        setTemplateContent(placeholderContent);
+        setSelectedTemplate(templateName);
+        toast.warning('Template not found on backend. Showing placeholder content for editing.');
+      } else {
+        toast.error(`Error loading template: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
     } finally {
       setTemplateLoading(false);
     }
@@ -222,7 +290,7 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
       }
     } catch (error) {
       console.error('❌ Error previewing template:', error);
-      toast.error(`Error previewing template: ${error.message}`);
+      toast.error(`Error previewing template: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
 
@@ -494,7 +562,14 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
         <div className="space-y-6">
           {/* Template Selector */}
           <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Select Template</h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-medium text-gray-900">Select Template</h3>
+              <div className="text-sm text-gray-500">
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-yellow-100 text-yellow-800">
+                  ⚠️ Some templates may show 404 errors if not created on backend yet
+                </span>
+              </div>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {Object.keys(templates).length > 0 ? (
                 Object.entries(templates).map(([key, template]) => (
