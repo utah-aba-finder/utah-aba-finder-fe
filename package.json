@@ -2,6 +2,7 @@
   "name": "utah-aba-finder",
   "version": "0.1.0",
   "private": true,
+  "proxy": "https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com",
   "dependencies": {
     "@chakra-ui/react": "^2.8.2",
     "@emailjs/browser": "^4.4.1",

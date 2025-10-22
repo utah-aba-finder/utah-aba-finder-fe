@@ -116,7 +116,7 @@ export const fetchPracticeTypes = async (): Promise<PracticeTypesResponse> => {
   }
 };
 
-export const API_URL = "https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin";
+export const API_URL = "/api/v1/admin";
 
 // Mass Email API Types
 export interface MassEmailStats {
@@ -180,8 +180,7 @@ export interface TemplatePreviewResponse {
 // Mass Email API Functions
 export const fetchMassEmailStats = async (): Promise<MassEmailStats> => {
   try {
-    const response = await fetch(
-      'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/mass_emails',
+    const response = await fetch('/api/v1/admin/mass_emails',
       {
         method: 'GET',
         headers: {
@@ -207,7 +206,7 @@ export const fetchMassEmailStats = async (): Promise<MassEmailStats> => {
 export const sendPasswordReminders = async (): Promise<MassEmailResponse> => {
   try {
     const response = await fetch(
-      'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/mass_emails/send_password_reminders',
+      '/api/v1/admin/mass_emails/send_password_reminders',
       {
         method: 'POST',
         headers: {
@@ -232,7 +231,7 @@ export const sendPasswordReminders = async (): Promise<MassEmailResponse> => {
 export const sendSystemUpdates = async (): Promise<MassEmailResponse> => {
   try {
     const response = await fetch(
-      'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/mass_emails/send_system_updates',
+      '/api/v1/admin/mass_emails/send_system_updates',
       {
         method: 'POST',
         headers: {
@@ -257,7 +256,7 @@ export const sendSystemUpdates = async (): Promise<MassEmailResponse> => {
 export const previewEmail = async (emailType: 'password_reminder' | 'system_update'): Promise<EmailPreview> => {
   try {
     const response = await fetch(
-      `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/mass_emails/preview_email?type=${emailType}`,
+      `/api/v1/admin/mass_emails/preview_email?type=${emailType}`,
       {
         method: 'GET',
         headers: {
@@ -284,7 +283,7 @@ export const previewEmail = async (emailType: 'password_reminder' | 'system_upda
 export const fetchEmailTemplates = async (): Promise<EmailTemplateResponse> => {
   try {
     const response = await fetch(
-      'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/email_templates',
+      '/api/v1/admin/email_templates',
       {
         method: 'GET',
         headers: {
@@ -309,7 +308,7 @@ export const fetchEmailTemplates = async (): Promise<EmailTemplateResponse> => {
 
 export const loadEmailTemplate = async (templateName: string, templateType: 'html' | 'text'): Promise<TemplateContentResponse> => {
   try {
-    const url = `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/email_templates/${templateName}?type=${templateType}`;
+    const url = `/api/v1/admin/email_templates/${templateName}?type=${templateType}`;
     console.log('🔄 Loading template from URL:', url);
     console.log('🔑 Using auth header:', getSuperAdminAuthHeader());
     
@@ -341,7 +340,7 @@ export const loadEmailTemplate = async (templateName: string, templateType: 'htm
 export const saveEmailTemplate = async (templateName: string, content: string, templateType: 'html' | 'text'): Promise<TemplateContentResponse> => {
   try {
     const response = await fetch(
-      `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/email_templates/${templateName}`,
+      `/api/v1/admin/email_templates/${templateName}`,
       {
         method: 'PUT',
         headers: {
@@ -371,7 +370,7 @@ export const saveEmailTemplate = async (templateName: string, content: string, t
 export const previewEmailTemplate = async (templateName: string, templateType: 'html' | 'text'): Promise<TemplatePreviewResponse> => {
   try {
     const response = await fetch(
-      `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/email_templates/${templateName}/preview?type=${templateType}`,
+      `/api/v1/admin/email_templates/${templateName}/preview?type=${templateType}`,
       {
         method: 'GET',
         headers: {
@@ -785,7 +784,7 @@ export const uploadProviderLogo = async (providerId: number, logoFile: File, aut
 
     // Determine the correct endpoint based on user type
     const endpoint = isSuperAdmin 
-      ? `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/providers/${providerId}`
+      ? `/api/v1/admin/providers/${providerId}`
       : `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/provider_self`;
 
     // Set authentication header - authToken already contains "Bearer {user_id}"
