@@ -54,13 +54,29 @@ export const fetchPracticeTypes = async (): Promise<PracticeTypesResponse> => {
         name: item.attributes.name
       }))
     };
+
+    // Remove duplicates and standardize names
+    const uniqueTypes = transformedData.data.filter((type: PracticeType, index: number, self: PracticeType[]) => 
+      index === self.findIndex((t: PracticeType) => t.name === type.name)
+    );
+
+    // Standardize "Autism Evaluation" to "Autism Evaluations" (plural)
+    const standardizedTypes = uniqueTypes.map((type: PracticeType) => ({
+      ...type,
+      name: type.name === "Autism Evaluation" ? "Autism Evaluations" : type.name
+    }));
+
+    // Remove any remaining duplicates after standardization
+    const finalTypes = standardizedTypes.filter((type: PracticeType, index: number, self: PracticeType[]) => 
+      index === self.findIndex((t: PracticeType) => t.name === type.name)
+    );
     
-    // If we don't have all 12 types, use fallback
-    if (transformedData.data.length < 12) {
-      console.log('⚠️ API returned only', transformedData.data.length, 'practice types, using fallback for complete list');
+    // If we don't have enough types, use fallback
+    if (finalTypes.length < 12) {
+      console.log('⚠️ API returned only', finalTypes.length, 'practice types, using fallback for complete list');
       const fallbackTypes: PracticeType[] = [
         { id: 115, name: "ABA Therapy" },
-        { id: 116, name: "Autism Evaluation" },
+        { id: 116, name: "Autism Evaluations" },
         { id: 117, name: "Speech Therapy" },
         { id: 118, name: "Occupational Therapy" },
         { id: 119, name: "Physical Therapy" },
@@ -75,14 +91,14 @@ export const fetchPracticeTypes = async (): Promise<PracticeTypesResponse> => {
       return { data: fallbackTypes };
     }
     
-    return transformedData;
+    return { data: finalTypes };
   } catch (error) {
     console.error('❌ Failed to fetch practice types:', error);
     
     // Fallback to hardcoded types if API fails or doesn't have all types
     const fallbackTypes: PracticeType[] = [
       { id: 115, name: "ABA Therapy" },
-      { id: 116, name: "Autism Evaluation" },
+      { id: 116, name: "Autism Evaluations" },
       { id: 117, name: "Speech Therapy" },
       { id: 118, name: "Occupational Therapy" },
       { id: 119, name: "Physical Therapy" },
@@ -777,7 +793,7 @@ export const fetchPublicProviders = async (): Promise<Providers> => {
       const data = await response.json();
       console.log('✅ Public providers fetched successfully from main providers endpoint');
       console.log('📊 All provider types found:', data?.data?.length || 0);
-      console.log('🎯 This should show ABA Therapy, Autism Evaluation, Speech Therapy, Occupational Therapy, etc.');
+      console.log('🎯 This should show ABA Therapy, Autism Evaluations, Speech Therapy, Occupational Therapy, etc.');
       
       // Debug logo data
       const providersWithLogos = data?.data?.filter((p: any) => p.attributes.logo_url || p.attributes.logo) || [];

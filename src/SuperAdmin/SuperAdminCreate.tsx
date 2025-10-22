@@ -257,9 +257,19 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
   const validateLocations = () => {
     // Check if provider offers in-clinic services and needs locations
     const needsLocations = formData.service_delivery.in_clinic;
+    const isTelehealthOnly = formData.service_delivery.telehealth && !formData.service_delivery.in_clinic && !formData.service_delivery.in_home;
     
     if (!needsLocations) {
-      // Provider doesn't need physical locations (telehealth or in-home only)
+      // For telehealth-only providers, they still need at least one location with a phone number
+      if (isTelehealthOnly) {
+        const locationsWithPhone = formData.locations.filter(loc => loc.phone && loc.phone.trim());
+        if (locationsWithPhone.length === 0) {
+          toast.error("❌ Telehealth providers need at least one location with a phone number");
+          return false;
+        }
+        return true;
+      }
+      // For in-home only providers, no location validation needed
       return true;
     }
 
@@ -900,11 +910,15 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
           <div className={`mb-6 p-3 rounded-lg text-sm ${
             formData.service_delivery.in_clinic
               ? 'bg-blue-50 border border-blue-200 text-blue-800'
+              : formData.service_delivery.telehealth && !formData.service_delivery.in_clinic && !formData.service_delivery.in_home
+              ? 'bg-yellow-50 border border-yellow-200 text-yellow-800'
               : 'bg-green-50 border border-green-200 text-green-800'
           }`}>
             {formData.service_delivery.in_clinic
               ? "📍 Physical locations are required for in-clinic services. Fields marked with * are required for locations that offer services."
-              : "✅ No physical locations required for telehealth/in-home only providers."
+              : formData.service_delivery.telehealth && !formData.service_delivery.in_clinic && !formData.service_delivery.in_home
+              ? "📞 Telehealth providers need at least one location with a phone number. Physical address is optional."
+              : "✅ No physical locations required for in-home only providers."
             }
           </div>
 
@@ -920,18 +934,18 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
                 <div className="relative">
                   <input
                     type="text"
-                    placeholder="Location Name *"
+                    placeholder={formData.service_delivery.in_clinic ? "Location Name *" : "Location Name"}
                     value={location.name}
                     onChange={(e) =>
                       handleLocationChange(index, "name", e.target.value)
                     }
                     className={`w-[95%] px-3 py-2 rounded-lg border focus:outline-none focus:ring-2 hover:cursor-text focus:border-transparent text-sm ${
-                      location.services.length > 0 && !location.name?.trim() 
+                      formData.service_delivery.in_clinic && location.services.length > 0 && !location.name?.trim() 
                         ? 'border-red-300 focus:ring-red-400' 
                         : 'border-gray-300 focus:ring-blue-400'
                     }`}
                   />
-                  {location.services.length > 0 && !location.name?.trim() && (
+                  {formData.service_delivery.in_clinic && location.services.length > 0 && !location.name?.trim() && (
                     <span className="absolute right-2 top-2 text-red-500 text-xs">Required</span>
                   )}
                 </div>
@@ -956,18 +970,18 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
                 <div className="md:col-span-2 relative">
                   <input
                     type="text"
-                    placeholder="Street Address *"
+                    placeholder={formData.service_delivery.in_clinic ? "Street Address *" : "Street Address"}
                     value={location.address_1}
                     onChange={(e) =>
                       handleLocationChange(index, "address_1", e.target.value)
                     }
                     className={`w-[95%] px-3 py-2 rounded-lg border focus:outline-none focus:ring-2 hover:cursor-text focus:border-transparent text-sm ${
-                      location.services.length > 0 && !location.address_1?.trim() 
+                      formData.service_delivery.in_clinic && location.services.length > 0 && !location.address_1?.trim() 
                         ? 'border-red-300 focus:ring-red-400' 
                         : 'border-gray-300 focus:ring-blue-400'
                     }`}
                   />
-                  {location.services.length > 0 && !location.address_1?.trim() && (
+                  {formData.service_delivery.in_clinic && location.services.length > 0 && !location.address_1?.trim() && (
                     <span className="absolute right-2 top-2 text-red-500 text-xs">Required</span>
                   )}
                 </div>
