@@ -120,17 +120,22 @@ export const API_URL = "https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/a
 
 // Mass Email API Types
 export interface MassEmailStats {
-  total_providers: number;
-  providers_needing_password_update: number;
-  recently_created_providers: number;
+  statistics: {
+    total_users_with_providers: number;
+    users_needing_password_updates: number;
+    recently_updated_users: number;
+    providers_needing_updates: number;
+  };
+  providers_needing_updates: ProviderForEmail[];
 }
 
 export interface ProviderForEmail {
   id: number;
   name: string;
   email: string;
-  needs_password_update: boolean;
+  user_email: string;
   created_at: string;
+  user_created_at: string;
 }
 
 export interface MassEmailResponse {
@@ -161,7 +166,8 @@ export const fetchMassEmailStats = async (): Promise<MassEmailStats> => {
     );
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errorText = await response.text();
+      throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();

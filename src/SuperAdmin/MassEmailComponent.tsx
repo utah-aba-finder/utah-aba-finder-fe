@@ -34,7 +34,7 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
       const data = await fetchMassEmailStats();
       setStats(data);
     } catch (error) {
-      console.error('Failed to load mass email stats:', error);
+      console.error('❌ Failed to load mass email stats:', error);
       toast.error('Failed to load email statistics');
     } finally {
       setLoading(false);
@@ -42,13 +42,13 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
   };
 
   const handleSendPasswordReminders = async () => {
-    if (!stats || stats.providers_needing_password_update === 0) {
+    if (!stats || stats.statistics.users_needing_password_updates === 0) {
       toast.warning('No providers need password reminders');
       return;
     }
 
     const confirmed = window.confirm(
-      `Are you sure you want to send password reminders to ${stats.providers_needing_password_update} providers?`
+      `Are you sure you want to send password reminders to ${stats.statistics.users_needing_password_updates} providers?`
     );
 
     if (!confirmed) return;
@@ -73,13 +73,13 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
   };
 
   const handleSendSystemUpdates = async () => {
-    if (!stats || stats.total_providers === 0) {
+    if (!stats || stats.statistics.total_users_with_providers === 0) {
       toast.warning('No providers available for system updates');
       return;
     }
 
     const confirmed = window.confirm(
-      `Are you sure you want to send system updates to all ${stats.total_providers} providers?`
+      `Are you sure you want to send system updates to all ${stats.statistics.total_users_with_providers} providers?`
     );
 
     if (!confirmed) return;
@@ -177,7 +177,9 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Total Providers</p>
-              <p className="text-2xl font-semibold text-gray-900">{stats.total_providers}</p>
+              <p className="text-2xl font-semibold text-gray-900">
+                {stats.statistics.total_users_with_providers ?? 'N/A'}
+              </p>
             </div>
           </div>
         </div>
@@ -189,7 +191,9 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Need Password Update</p>
-              <p className="text-2xl font-semibold text-gray-900">{stats.providers_needing_password_update}</p>
+              <p className="text-2xl font-semibold text-gray-900">
+                {stats.statistics.users_needing_password_updates ?? 'N/A'}
+              </p>
             </div>
           </div>
         </div>
@@ -200,12 +204,15 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
               <CheckCircle className="w-5 h-5 text-blue-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Recently Created</p>
-              <p className="text-2xl font-semibold text-gray-900">{stats.recently_created_providers}</p>
+              <p className="text-sm font-medium text-gray-600">Recently Updated</p>
+              <p className="text-2xl font-semibold text-gray-900">
+                {stats.statistics.recently_updated_users ?? 'N/A'}
+              </p>
             </div>
           </div>
         </div>
       </div>
+
 
       {/* Action Buttons */}
       <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
@@ -215,7 +222,7 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
           <div className="border border-gray-200 rounded-lg p-4">
             <div className="flex items-center justify-between mb-3">
               <h4 className="font-medium text-gray-900">Password Reminders</h4>
-              <span className="text-sm text-gray-500">{stats.providers_needing_password_update} recipients</span>
+              <span className="text-sm text-gray-500">{stats.statistics.users_needing_password_updates} recipients</span>
             </div>
             <p className="text-sm text-gray-600 mb-4">
               Send password reset reminders to providers who haven't updated their passwords recently.
@@ -230,7 +237,7 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
               </button>
               <button
                 onClick={handleSendPasswordReminders}
-                disabled={sending || stats.providers_needing_password_update === 0}
+                disabled={sending || stats.statistics.users_needing_password_updates === 0}
                 className="flex items-center space-x-2 px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {sending ? (
@@ -247,7 +254,7 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
           <div className="border border-gray-200 rounded-lg p-4">
             <div className="flex items-center justify-between mb-3">
               <h4 className="font-medium text-gray-900">System Updates</h4>
-              <span className="text-sm text-gray-500">{stats.total_providers} recipients</span>
+              <span className="text-sm text-gray-500">{stats.statistics.total_users_with_providers} recipients</span>
             </div>
             <p className="text-sm text-gray-600 mb-4">
               Send system updates and announcements to all providers in the system.
@@ -262,7 +269,7 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
               </button>
               <button
                 onClick={handleSendSystemUpdates}
-                disabled={sending || stats.total_providers === 0}
+                disabled={sending || stats.statistics.total_users_with_providers === 0}
                 className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {sending ? (
