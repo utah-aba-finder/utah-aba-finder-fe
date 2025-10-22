@@ -118,6 +118,135 @@ export const fetchPracticeTypes = async (): Promise<PracticeTypesResponse> => {
 
 export const API_URL = "https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin";
 
+// Mass Email API Types
+export interface MassEmailStats {
+  total_providers: number;
+  providers_needing_password_update: number;
+  recently_created_providers: number;
+}
+
+export interface ProviderForEmail {
+  id: number;
+  name: string;
+  email: string;
+  needs_password_update: boolean;
+  created_at: string;
+}
+
+export interface MassEmailResponse {
+  success: boolean;
+  message: string;
+  emails_sent?: number;
+  errors?: string[];
+}
+
+export interface EmailPreview {
+  subject: string;
+  content: string;
+  recipients_count: number;
+}
+
+// Mass Email API Functions
+export const fetchMassEmailStats = async (): Promise<MassEmailStats> => {
+  try {
+    const response = await fetch(
+      'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/mass_emails',
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': getAdminAuthHeader(),
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('❌ Failed to fetch mass email stats:', error);
+    throw error;
+  }
+};
+
+export const sendPasswordReminders = async (): Promise<MassEmailResponse> => {
+  try {
+    const response = await fetch(
+      'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/mass_emails/send_password_reminders',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': getAdminAuthHeader(),
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('❌ Failed to send password reminders:', error);
+    throw error;
+  }
+};
+
+export const sendSystemUpdates = async (): Promise<MassEmailResponse> => {
+  try {
+    const response = await fetch(
+      'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/mass_emails/send_system_updates',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': getAdminAuthHeader(),
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('❌ Failed to send system updates:', error);
+    throw error;
+  }
+};
+
+export const previewEmail = async (emailType: 'password_reminder' | 'system_update'): Promise<EmailPreview> => {
+  try {
+    const response = await fetch(
+      `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/mass_emails/preview_email?type=${emailType}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': getAdminAuthHeader(),
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('❌ Failed to preview email:', error);
+    throw error;
+  }
+};
+
 const API_URL_PROVIDERS = 'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers';
 
 // Fallback function to fetch all providers by state (since main endpoints are broken)
