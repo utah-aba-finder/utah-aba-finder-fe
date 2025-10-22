@@ -24,11 +24,15 @@ interface MassEmailComponentProps {
 }
 
 const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
+  // Add error boundary state
+  const [hasError, setHasError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  
   const [stats, setStats] = useState<MassEmailStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [preview, setPreview] = useState<EmailPreview | null>(null);
-  const [previewType, setPreviewType] = useState<'password_reminder' | 'system_update' | null>(null);
+  const [previewType, setPreviewType] = useState<'password_update_reminder' | 'system_update' | null>(null);
   const [showPreview, setShowPreview] = useState(false);
   const [lastAction, setLastAction] = useState<string | null>(null);
   
@@ -52,12 +56,16 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
   useEffect(() => {
     const handleError = (event: ErrorEvent) => {
       console.log('🚨 Global error caught in MassEmailComponent:', event.error);
+      setHasError(true);
+      setErrorMessage(event.error?.message || 'Unknown error occurred');
       event.preventDefault(); // Prevent default error handling
       return false;
     };
 
     const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
       console.log('🚨 Unhandled promise rejection in MassEmailComponent:', event.reason);
+      setHasError(true);
+      setErrorMessage(event.reason?.message || 'Promise rejection occurred');
       event.preventDefault(); // Prevent default error handling
       return false;
     };
@@ -146,26 +154,28 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
     }
   };
 
-  const handlePreviewEmail = async (type: 'password_reminder' | 'system_update') => {
+  const handlePreviewEmail = async (type: 'password_update_reminder' | 'system_update') => {
     try {
       console.log('🔄 Loading email preview for:', type);
       setPreviewType(type);
       
       try {
-        const previewData = await previewEmail(type);
+        // Map frontend template names to backend parameter names
+        const backendType = type === 'password_update_reminder' ? 'password_update_reminder' : type;
+        const previewData = await previewEmail(backendType);
         console.log('✅ Email preview loaded:', previewData);
         setPreview(previewData);
       } catch (error) {
         // If preview API doesn't exist, show a placeholder preview
         console.log('⚠️ Preview API not available, showing placeholder');
         const placeholderPreview = {
-          subject: type === 'password_reminder' 
+          subject: type === 'password_update_reminder' 
             ? 'Password Update Required - Utah ABA Finder'
             : 'System Update - Utah ABA Finder',
-          content: type === 'password_reminder'
+          content: type === 'password_update_reminder'
             ? 'This is a placeholder for the password reminder email. The actual email will be sent to providers who need to update their passwords.'
             : 'This is a placeholder for the system update email. The actual email will contain system updates and announcements.',
-          recipients_count: type === 'password_reminder' 
+          recipients_count: type === 'password_update_reminder' 
             ? stats?.statistics.users_needing_password_updates || 0
             : stats?.statistics.total_users_with_providers || 0
         };
@@ -213,16 +223,16 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
     } catch (error) {
       console.error('❌ Error loading template:', templateName, error);
       
-      // Handle 404 errors gracefully without unmounting the component
-      if (error instanceof Error && error.message.includes('404')) {
-        console.log('⚠️ Template not found (404), showing placeholder content');
-        const placeholderContent = `<!-- ${templateName} template placeholder -->
+      // Handle ALL errors gracefully without unmounting the component
+      console.log('⚠️ Template loading failed, showing placeholder content');
+      const placeholderContent = `<!-- ${templateName} template placeholder -->
 <html>
 <body>
   <h2>${templates[templateName]?.name || templateName}</h2>
   <p>This template is not available on the backend yet.</p>
   <p>Template name: ${templateName}</p>
   <p>Template type: ${templateType}</p>
+  <p>Error: ${error instanceof Error ? error.message : 'Unknown error'}</p>
   
   <p>Available template details:</p>
   <ul>
@@ -232,12 +242,9 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
   </ul>
 </body>
 </html>`;
-        setTemplateContent(placeholderContent);
-        setSelectedTemplate(templateName);
-        toast.warning(`Template "${templateName}" not found on backend. Showing placeholder content.`);
-      } else {
-        toast.error(`Error loading template: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      }
+      setTemplateContent(placeholderContent);
+      setSelectedTemplate(templateName);
+      toast.warning(`Template "${templateName}" not available. Showing placeholder content.`);
     } finally {
       setTemplateLoading(false);
     }
@@ -275,23 +282,41 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
     } catch (error) {
       console.error('Error previewing template:', error);
       
-      // Handle 404 errors gracefully without unmounting the component
-      if (error instanceof Error && error.message.includes('404')) {
-        console.log('⚠️ Preview not available (404), showing mock preview');
-        const mockPreview: TemplatePreviewResponse = {
-          subject: `${templates[selectedTemplate]?.name || selectedTemplate} Preview`,
-          to: 'user@example.com',
-          html_content: templateContent && templateContent.includes('<html>') ? templateContent : `<html><body><pre>${templateContent || 'No content available'}</pre></body></html>`,
-          text_content: templateContent && templateContent.includes('<html>') ? 'HTML content - text preview not available' : (templateContent || 'No content available'),
-          success: true
-        };
-        setTemplatePreview(mockPreview);
-        toast.warning('Preview service not available. Showing content directly.');
-      } else {
-        toast.error(`Error previewing template: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      }
+      // Handle ALL errors gracefully without unmounting the component
+      console.log('⚠️ Preview not available, showing mock preview');
+      const mockPreview: TemplatePreviewResponse = {
+        subject: `${templates[selectedTemplate]?.name || selectedTemplate} Preview`,
+        to: 'user@example.com',
+        html_content: templateContent && templateContent.includes('<html>') ? templateContent : `<html><body><pre>${templateContent || 'No content available'}</pre></body></html>`,
+        text_content: templateContent && templateContent.includes('<html>') ? 'HTML content - text preview not available' : (templateContent || 'No content available'),
+        success: true
+      };
+      setTemplatePreview(mockPreview);
+      toast.warning('Preview service not available. Showing content directly.');
     }
   };
+
+  // Error boundary - show error message instead of crashing
+  if (hasError) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="text-center">
+          <div className="text-red-600 text-lg font-medium mb-2">Error in Mass Email Component</div>
+          <div className="text-gray-600 mb-4">{errorMessage}</div>
+          <button 
+            onClick={() => {
+              setHasError(false);
+              setErrorMessage(null);
+              window.location.reload();
+            }}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            Reload Component
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
@@ -438,7 +463,7 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
             </p>
             <div className="flex space-x-2">
               <button
-                onClick={() => handlePreviewEmail('password_reminder')}
+                onClick={() => handlePreviewEmail('password_update_reminder')}
                 className="flex items-center space-x-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
               >
                 <Eye className="w-4 h-4" />

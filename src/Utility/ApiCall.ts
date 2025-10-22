@@ -253,7 +253,7 @@ export const sendSystemUpdates = async (): Promise<MassEmailResponse> => {
   }
 };
 
-export const previewEmail = async (emailType: 'password_reminder' | 'system_update'): Promise<EmailPreview> => {
+export const previewEmail = async (emailType: 'password_update_reminder' | 'system_update'): Promise<EmailPreview> => {
   try {
     const response = await fetch(
       `/api/v1/admin/mass_emails/preview_email?type=${emailType}`,
