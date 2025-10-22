@@ -418,9 +418,19 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
   const validateLocations = () => {
     // Check if provider offers in-clinic services and needs locations
     const needsLocations = editedProvider?.service_delivery?.in_clinic;
+    const isTelehealthOnly = editedProvider?.service_delivery?.telehealth && !editedProvider?.service_delivery?.in_clinic && !editedProvider?.service_delivery?.in_home;
     
     if (!needsLocations) {
-      // Provider doesn't need physical locations (telehealth or in-home only)
+      // For telehealth-only providers, they still need at least one location with a phone number
+      if (isTelehealthOnly) {
+        const locationsWithPhone = locations.filter(loc => loc.phone && loc.phone.trim());
+        if (locationsWithPhone.length === 0) {
+          toast.error("❌ Telehealth providers need at least one location with a phone number");
+          return false;
+        }
+        return true;
+      }
+      // For in-home only providers, no location validation needed
       return true;
     }
 
