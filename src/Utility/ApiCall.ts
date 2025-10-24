@@ -28,7 +28,7 @@ export const fetchPracticeTypes = async (): Promise<PracticeTypesResponse> => {
     console.log('🔄 Fetching practice types from API...');
     
     const response = await fetch(
-      'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/practice_types',
+      `${BASE_API_URL}/practice_types`,
       {
         method: 'GET',
         headers: {
@@ -119,6 +119,10 @@ export const fetchPracticeTypes = async (): Promise<PracticeTypesResponse> => {
 export const API_URL = process.env.NODE_ENV === 'production' 
   ? "https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin"
   : "/api/v1/admin";
+
+export const BASE_API_URL = process.env.NODE_ENV === 'production'
+  ? "https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1"
+  : "/api/v1";
 
 // Mass Email API Types
 export interface MassEmailStats {
@@ -832,8 +836,8 @@ export const uploadProviderLogo = async (providerId: number, logoFile: File, aut
 
     // Determine the correct endpoint based on user type
     const endpoint = isSuperAdmin 
-      ? `/api/v1/admin/providers/${providerId}`
-      : `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/provider_self`;
+      ? `${API_URL}/providers/${providerId}`
+      : `${BASE_API_URL}/provider_self`;
 
     // Set authentication header - authToken already contains "Bearer {user_id}"
     const authHeader = authToken; // Don't add extra "Bearer " prefix
@@ -924,7 +928,7 @@ export const uploadProviderLogo = async (providerId: number, logoFile: File, aut
 export const removeProviderLogo = async (providerId: number, userId: string): Promise<{ success: boolean; error?: string }> => {
   try {
     const response = await fetch(
-              `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${providerId}/remove_logo`,
+              `${BASE_API_URL}/providers/${providerId}/remove_logo`,
       {
         method: 'DELETE',
         headers: {
