@@ -36,6 +36,7 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
   const [templates, setTemplates] = useState<{ [key: string]: EmailTemplate }>({});
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [templateContent, setTemplateContent] = useState('');
+  const [originalTemplateContent, setOriginalTemplateContent] = useState('');
   const [templateType, setTemplateType] = useState<'html' | 'text'>('html');
   const [templateLoading, setTemplateLoading] = useState(false);
   const [templateSaving, setTemplateSaving] = useState(false);
@@ -202,7 +203,22 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
     }
   };
 
+  // Check if there are unsaved changes
+  const hasUnsavedChanges = () => {
+    return selectedTemplate && templateContent !== originalTemplateContent;
+  };
+
   const loadTemplateContent = async (templateName: string) => {
+    // Check for unsaved changes before loading a new template
+    if (hasUnsavedChanges()) {
+      const confirmed = window.confirm(
+        'You have unsaved changes. Are you sure you want to switch templates? Your changes will be lost.'
+      );
+      if (!confirmed) {
+        return;
+      }
+    }
+
     setTemplateLoading(true);
     console.log('🔄 Loading template:', templateName, 'with type:', templateType);
     
@@ -240,9 +256,12 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
     // Success path
     if (data.content) {
       setTemplateContent(data.content);
+      setOriginalTemplateContent(data.content); // Track original content
       setSelectedTemplate(templateName);
       toast.success(`Template "${templateName}" loaded successfully`);
     } else {
+      setTemplateContent('');
+      setOriginalTemplateContent('');
       toast.warning('Template loaded but content is empty');
     }
   };
@@ -252,9 +271,23 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
     
     setTemplateSaving(true);
     try {
+      console.log('💾 Saving template:', selectedTemplate, 'with content length:', templateContent.length);
       const data = await saveEmailTemplate(selectedTemplate, templateContent, templateType);
+      console.log('💾 Save response:', data);
+      
       if (data.success) {
         toast.success('Template saved successfully!');
+        // Update the original content to match the saved content
+        setOriginalTemplateContent(templateContent);
+        // Update the templates list to reflect the saved content
+        setTemplates(prev => ({
+          ...prev,
+          [selectedTemplate]: {
+            ...prev[selectedTemplate],
+            // Mark as recently saved
+            lastSaved: new Date().toISOString()
+          }
+        }));
       } else {
         toast.error(`Error: ${data.error}`);
       }
@@ -621,6 +654,17 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
                       value={templateType} 
                       onChange={(e) => {
                         const newType = e.target.value as 'html' | 'text';
+                        
+                        // Check for unsaved changes before switching type
+                        if (hasUnsavedChanges()) {
+                          const confirmed = window.confirm(
+                            'You have unsaved changes. Are you sure you want to switch template type? Your changes will be lost.'
+                          );
+                          if (!confirmed) {
+                            return;
+                          }
+                        }
+                        
                         setTemplateType(newType);
                         if (selectedTemplate) {
                           // Reload template content with new type
@@ -642,7 +686,11 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
                     </button>
                     <button 
                       onClick={saveTemplate}
-                      className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                      className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
+                        hasUnsavedChanges() 
+                          ? 'bg-orange-600 text-white hover:bg-orange-700' 
+                          : 'bg-blue-600 text-white hover:bg-blue-700'
+                      }`}
                       disabled={templateSaving || templateLoading}
                     >
                       {templateSaving ? (
@@ -650,7 +698,10 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
                       ) : (
                         <Save className="w-4 h-4" />
                       )}
-                      <span>{templateSaving ? 'Saving...' : 'Save Template'}</span>
+                      <span>
+                        {templateSaving ? 'Saving...' : 
+                         hasUnsavedChanges() ? 'Save Changes' : 'Save Template'}
+                      </span>
                     </button>
                   </div>
                 </div>
