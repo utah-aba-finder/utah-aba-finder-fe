@@ -10,11 +10,8 @@ import {
   saveEmailTemplate,
   previewEmailTemplate,
   MassEmailStats,
-  MassEmailResponse,
   EmailPreview,
   EmailTemplate,
-  EmailTemplateResponse,
-  TemplateContentResponse,
   TemplatePreviewResponse
 } from '../Utility/ApiCall';
 import { Mail, Users, AlertCircle, CheckCircle, Eye, Send, RefreshCw, Edit3, Save } from 'lucide-react';
@@ -32,7 +29,6 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [preview, setPreview] = useState<EmailPreview | null>(null);
-  const [previewType, setPreviewType] = useState<'password_update_reminder' | 'system_update' | null>(null);
   const [showPreview, setShowPreview] = useState(false);
   const [lastAction, setLastAction] = useState<string | null>(null);
   
@@ -44,7 +40,6 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
   const [templateLoading, setTemplateLoading] = useState(false);
   const [templateSaving, setTemplateSaving] = useState(false);
   const [templatePreview, setTemplatePreview] = useState<TemplatePreviewResponse | null>(null);
-  const [showTemplateEditor, setShowTemplateEditor] = useState(false);
   const [activeTab, setActiveTab] = useState<'dashboard' | 'templates'>('dashboard');
 
   useEffect(() => {
@@ -157,7 +152,6 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
   const handlePreviewEmail = async (type: 'password_update_reminder' | 'system_update') => {
     try {
       console.log('🔄 Loading email preview for:', type);
-      setPreviewType(type);
       
       try {
         // Map frontend template names to backend parameter names
