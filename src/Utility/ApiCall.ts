@@ -129,19 +129,23 @@ export interface MassEmailStats {
   statistics: {
     total_users_with_providers: number;
     users_needing_password_updates: number;
-    recently_updated_users: number;
+    recently_reset_password_count: number;
     providers_needing_updates: number;
+    recently_updated_providers_count: number;
   };
   providers_needing_updates: ProviderForEmail[];
+  recently_updated_providers: ProviderForEmail[];
 }
 
 export interface ProviderForEmail {
   id: number;
   name: string;
   email: string;
-  user_email: string;
+  user_email: string | null;
   created_at: string;
-  user_created_at: string;
+  updated_at: string;
+  user_created_at: string | null;
+  reset_password_sent_at: string | null;
 }
 
 export interface MassEmailResponse {

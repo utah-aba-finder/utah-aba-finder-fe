@@ -703,6 +703,69 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token, loggedInProvider]); // Removed fetchUserProviders to prevent infinite loop
 
+  // Restore provider data when currentUser exists but provider data is missing
+  useEffect(() => {
+    if (!authReady || authLoading) return;
+    if (!currentUser || !token) return;
+    if (currentUser.role !== 'provider_admin') return;
+    
+    // Check if we have provider data
+    const hasProviderData = loggedInProvider || activeProvider;
+    if (hasProviderData) return;
+    
+    // Try to restore provider data
+    const providerId = currentUser.active_provider_id || currentUser.primary_provider_id;
+    if (!providerId) return;
+    
+    console.log('🔄 AuthProvider: currentUser exists but provider data missing, attempting to restore provider:', providerId);
+    
+    let cancelled = false;
+    (async () => {
+      try {
+        // Extract user id for Authorization
+        let userId: string | null = null;
+        if (/^\d+$/.test(token)) {
+          userId = token;
+        } else {
+          try {
+            const decoded = JSON.parse(atob(token));
+            if (decoded?.id) userId = String(decoded.id);
+          } catch {/* ignore */}
+        }
+        
+        if (!userId) userId = currentUser.id.toString();
+        
+        if (userId) {
+          // Fetch provider details
+          const base = 'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com';
+          const resp = await fetch(`${base}/api/v1/providers/${providerId}`, {
+            headers: { 
+              'Authorization': userId,
+              'Content-Type': 'application/json' 
+            },
+          });
+          
+          if (resp.ok && !cancelled) {
+            const detailData = await resp.json();
+            if (detailData) {
+              // Normalize provider data (normalizeProviderDetail expects response with data property)
+              const normalized = normalizeProviderDetail(detailData);
+              setLoggedInProvider(normalized);
+              setActiveProvider(normalized);
+              sessionStorage.setItem('loggedInProvider', JSON.stringify(normalized));
+              sessionStorage.setItem('activeProvider', JSON.stringify(normalized));
+              console.log('✅ AuthProvider: Successfully restored provider data');
+            }
+          }
+        }
+      } catch (error) {
+        console.error('❌ AuthProvider: Failed to restore provider data:', error);
+      }
+    })();
+    
+    return () => { cancelled = true; };
+  }, [authReady, authLoading, currentUser, token, loggedInProvider, activeProvider, setLoggedInProvider, setActiveProvider]);
+
   // Initialize session ONCE
   useEffect(() => {
     let cancelled = false;
@@ -713,6 +776,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         // If we already have a user in storage, we're good
         if (currentUser) {
           console.log('✅ AuthProvider: currentUser already exists, skipping fetch');
+          // Still set authReady and authLoading even if we skip the fetch
+          if (!cancelled) {
+            setAuthReady(true);
+            setAuthLoading(false);
+            console.log('✅ AuthProvider: Auth initialization complete (user from storage), authReady set to true, authLoading set to false');
+          }
           return;
         }
 
