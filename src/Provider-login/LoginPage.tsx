@@ -16,7 +16,7 @@ export const LoginPage: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [isRedirecting, setIsRedirecting] = useState(false);
     const [showInactivityMessage, setShowInactivityMessage] = useState(false);
-    const { initializeSession, setLoggedInProvider, setCurrentUser, currentUser } = useAuth();
+    const { initializeSession, setLoggedInProvider, setCurrentUser, currentUser, logout, authReady, authLoading } = useAuth();
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -38,27 +38,45 @@ export const LoginPage: React.FC = () => {
 
 
 
-    // Reactive navigation when auth state is ready
+    // Get loggedInProvider/activeProvider from auth context
+    const { loggedInProvider, activeProvider } = useAuth();
+
+    // Reactive navigation when auth state is ready AND we have provider data
     useEffect(() => {
+        // Wait for auth to initialize before redirecting
+        if (!authReady || authLoading) return;
+        
+        // Don't redirect if we don't have currentUser
         if (!currentUser) return;
         
-        console.log('🚀 Login: Auth state ready, navigating based on role:', currentUser.role);
-        setIsRedirecting(true);
+        console.log('🚀 Login: Auth state ready, checking navigation for role:', currentUser.role);
         
         if (currentUser.role === 'super_admin') {
             console.log('🚀 Login: Navigating super admin to /superAdmin');
+            setIsRedirecting(true);
             navigate('/superAdmin', { replace: true });
         } else if (currentUser.role === 'provider_admin') {
+            // For provider admins, we need provider data before redirecting
+            // Check if we have activeProvider or loggedInProvider
+            const hasProviderData = activeProvider || loggedInProvider;
             const providerId = currentUser.active_provider_id || currentUser.primary_provider_id;
-            if (providerId) {
+            
+            if (hasProviderData && providerId) {
                 console.log('🚀 Login: Navigating provider to /providerEdit/' + providerId);
+                setIsRedirecting(true);
                 navigate(`/providerEdit/${providerId}`, { replace: true });
+            } else if (providerId) {
+                // We have a provider ID but no provider data - try to restore it
+                console.log('⚠️ Login: Provider ID exists but provider data missing, attempting to restore...');
+                // Don't redirect yet - let the user stay on login page or try to restore
+                // The initialization logic should handle restoring provider data
             } else {
                 console.log('🚀 Login: No provider ID, navigating to /contact');
+                setIsRedirecting(true);
                 navigate('/contact', { replace: true });
             }
         }
-    }, [currentUser, navigate]);
+    }, [currentUser, authReady, authLoading, loggedInProvider, activeProvider, navigate]);
 
     const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -346,6 +364,31 @@ export const LoginPage: React.FC = () => {
                             Forgot Password?
                         </button>
                     </div>
+
+                    {/* Clear Session Button - Show if user is stuck in auth state */}
+                    {authReady && currentUser && !loggedInProvider && !activeProvider && currentUser.role === 'provider_admin' && (
+                        <div style={{ marginTop: '1rem', textAlign: 'center' }}>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    logout('manual');
+                                    setError('');
+                                    toast.info('Session cleared. Please log in again.');
+                                }}
+                                style={{
+                                    padding: '0.5rem 1rem',
+                                    backgroundColor: '#ef4444',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '0.25rem',
+                                    cursor: 'pointer',
+                                    fontSize: '0.875rem'
+                                }}
+                            >
+                                Clear Session and Re-login
+                            </button>
+                        </div>
+                    )}
                     
                     <div className="submit-container">
                         <button type='button' id='signup' className='signupButton' onClick={() => navigate('/provider-signup')}>Sign Up</button>

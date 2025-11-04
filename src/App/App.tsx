@@ -330,15 +330,70 @@ function ProviderEditWrapper({
   clearProviderData: () => void;
   onUpdate: (updatedProvider: ProviderAttributes) => void;
 }) {
-  const { loggedInProvider } = useAuth();
+  const { loggedInProvider, activeProvider, authReady, authLoading, currentUser, logout } = useAuth();
+  const { id } = useParams<{ id: string }>();
 
-  if (!loggedInProvider) {
-    return <div>Please log in to edit provider information.</div>;
+  // Wait for auth to initialize before checking login state
+  if (!authReady || authLoading) {
+    return (
+      <div style={{ minHeight: '60vh', display: 'grid', placeItems: 'center' }}>
+        <div>Loading…</div>
+      </div>
+    );
+  }
+
+  // Use activeProvider if available, otherwise fall back to loggedInProvider
+  let providerToUse = activeProvider || loggedInProvider;
+
+  // If we still don't have a provider but we have a user and an ID in the URL,
+  // we might need to fetch it (this handles cases where sessionStorage was cleared)
+  if (!providerToUse && currentUser && id) {
+    // The ProtectedRoute should have redirected us if we're not authenticated,
+    // so if we're here, we're authenticated but missing provider data
+    // This might happen if sessionStorage was cleared - we'll show a message
+    // but the ProviderEdit component might try to fetch it
+    console.warn('ProviderEditWrapper: No provider in state, but user is authenticated and URL has ID:', id);
+  }
+
+  if (!providerToUse) {
+    return (
+      <div style={{ minHeight: '60vh', display: 'grid', placeItems: 'center' }}>
+        <div style={{ textAlign: 'center', padding: '2rem' }}>
+          <p style={{ marginBottom: '1rem', fontSize: '1.125rem', color: '#374151' }}>
+            Please log in to edit provider information.
+          </p>
+          {/* Show clear session button if user is authenticated but missing provider data */}
+          {currentUser && currentUser.role === 'provider_admin' && (
+            <button
+              onClick={() => {
+                logout('manual');
+                clearProviderData();
+              }}
+              style={{
+                padding: '0.75rem 1.5rem',
+                backgroundColor: '#ef4444',
+                color: 'white',
+                border: 'none',
+                borderRadius: '0.375rem',
+                cursor: 'pointer',
+                fontSize: '0.875rem',
+                fontWeight: '500',
+                transition: 'background-color 0.2s'
+              }}
+              onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#dc2626'}
+              onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#ef4444'}
+            >
+              Clear Session and Re-login
+            </button>
+          )}
+        </div>
+      </div>
+    );
   }
 
   return (
     <ProviderEdit
-      loggedInProvider={loggedInProvider}
+      loggedInProvider={providerToUse}
       clearProviderData={clearProviderData}
       onUpdate={onUpdate}
     />

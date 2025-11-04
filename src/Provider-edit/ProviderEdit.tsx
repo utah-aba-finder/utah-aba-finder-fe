@@ -1004,7 +1004,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
         `}
       >
         {/* Dashboard Header */}
-        <div className="p-3">
+        <div className="p-3 border-b border-gray-200 flex-shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <div className="w-7 h-7 bg-[#4A6FA5] rounded-lg flex items-center justify-center">
@@ -1030,15 +1030,15 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                 <LogOut className="w-4 h-4" />
               </button>
               {/* Mobile Close Button */}
-            <button className="md:hidden" onClick={() => setIsOpen(false)}>
-              <X className="ml-2 w-4 h-4 cursor-pointer" />
-            </button>
+              <button className="md:hidden" onClick={() => setIsOpen(false)}>
+                <X className="ml-2 w-4 h-4 cursor-pointer" />
+              </button>
+            </div>
           </div>
-        </div>
         </div>
 
         {/* Navigation Menu */}
-        <nav className="flex-1 flex flex-col justify-center gap-4 py-2 px-4">
+        <nav className="flex-1 overflow-y-auto flex flex-col justify-start gap-2 py-4 px-4">
           <button
             onClick={() => setSelectedTab("dashboard")}
             className={`

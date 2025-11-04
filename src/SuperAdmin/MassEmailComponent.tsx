@@ -466,7 +466,7 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Recently Updated</p>
               <p className="text-2xl font-semibold text-gray-900">
-                {stats.statistics.recently_updated_users ?? 'N/A'}
+                {stats.statistics.recently_updated_providers_count ?? 'N/A'}
               </p>
             </div>
           </div>
