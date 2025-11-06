@@ -717,49 +717,57 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     const providerId = currentUser.active_provider_id || currentUser.primary_provider_id;
     if (!providerId) return;
     
-    console.log('🔄 AuthProvider: currentUser exists but provider data missing, attempting to restore provider:', providerId);
+        console.log('🔄 AuthProvider: currentUser exists but provider data missing, attempting to restore provider:', providerId);                                  
     
     let cancelled = false;
     (async () => {
       try {
-        // Extract user id for Authorization
-        let userId: string | null = null;
-        if (/^\d+$/.test(token)) {
-          userId = token;
-        } else {
-          try {
-            const decoded = JSON.parse(atob(token));
-            if (decoded?.id) userId = String(decoded.id);
-          } catch {/* ignore */}
+        // Use currentUser.id directly since we know currentUser exists
+        const userId = currentUser.id.toString();
+        
+        if (!userId) {
+          console.error('❌ AuthProvider: No user ID available for provider restoration');
+          return;
         }
         
-        if (!userId) userId = currentUser.id.toString();
+        // Fetch provider details
+        const base = 'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com';
+        const resp = await fetch(`${base}/api/v1/providers/${providerId}`, {
+          headers: { 
+            'Authorization': userId,
+            'Content-Type': 'application/json' 
+          },
+          credentials: 'include',
+        });
         
-        if (userId) {
-          // Fetch provider details
-          const base = 'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com';
-          const resp = await fetch(`${base}/api/v1/providers/${providerId}`, {
-            headers: { 
-              'Authorization': userId,
-              'Content-Type': 'application/json' 
-            },
+        if (!resp.ok) {
+          const errorText = await resp.text();
+          console.error('❌ AuthProvider: Failed to restore provider data:', {
+            status: resp.status,
+            statusText: resp.statusText,
+            errorText: errorText,
+            providerId: providerId,
+            userId: userId
           });
           
-          if (resp.ok && !cancelled) {
-            const detailData = await resp.json();
-            if (detailData) {
-              // Normalize provider data (normalizeProviderDetail expects response with data property)
-              const normalized = normalizeProviderDetail(detailData);
-              setLoggedInProvider(normalized);
-              setActiveProvider(normalized);
-              sessionStorage.setItem('loggedInProvider', JSON.stringify(normalized));
-              sessionStorage.setItem('activeProvider', JSON.stringify(normalized));
-              console.log('✅ AuthProvider: Successfully restored provider data');
-            }
+          // Don't throw - just log the error, user can still try to refresh manually
+          return;
+        }
+        
+        if (!cancelled) {
+          const detailData = await resp.json();
+          if (detailData) {
+            // Normalize provider data (normalizeProviderDetail expects response with data property)                                                          
+            const normalized = normalizeProviderDetail(detailData);
+            setLoggedInProvider(normalized);
+            setActiveProvider(normalized);
+            sessionStorage.setItem('loggedInProvider', JSON.stringify(normalized));                                                                           
+            sessionStorage.setItem('activeProvider', JSON.stringify(normalized));                                                                             
+            console.log('✅ AuthProvider: Successfully restored provider data');                                                                              
           }
         }
-      } catch (error) {
-        console.error('❌ AuthProvider: Failed to restore provider data:', error);
+      } catch (error: any) {
+        console.error('❌ AuthProvider: Exception during provider restoration:', error);                                                                              
       }
     })();
     

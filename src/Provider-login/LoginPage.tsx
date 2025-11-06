@@ -61,10 +61,21 @@ export const LoginPage: React.FC = () => {
             const hasProviderData = activeProvider || loggedInProvider;
             const providerId = currentUser.active_provider_id || currentUser.primary_provider_id;
             
+            // Check if user came from sponsor page with tier selection
+            const locationState = window.history.state?.usr || {};
+            const tier = locationState.tier;
+            
             if (hasProviderData && providerId) {
-                console.log('🚀 Login: Navigating provider to /providerEdit/' + providerId);
-                setIsRedirecting(true);
-                navigate(`/providerEdit/${providerId}`, { replace: true });
+                if (tier) {
+                    // Redirect to sponsorship tab with tier pre-selected
+                    console.log('🚀 Login: Navigating provider to sponsorship with tier:', tier);
+                    setIsRedirecting(true);
+                    navigate(`/providerEdit/${providerId}?tab=sponsorship&tier=${encodeURIComponent(tier)}`, { replace: true });
+                } else {
+                    console.log('🚀 Login: Navigating provider to /providerEdit/' + providerId);
+                    setIsRedirecting(true);
+                    navigate(`/providerEdit/${providerId}`, { replace: true });
+                }
             } else if (providerId) {
                 // We have a provider ID but no provider data - try to restore it
                 console.log('⚠️ Login: Provider ID exists but provider data missing, attempting to restore...');

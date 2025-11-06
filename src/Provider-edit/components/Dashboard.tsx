@@ -4,6 +4,7 @@ import moment from "moment";
 import { ProviderData, Location, ProviderType, CountiesServed, CountyData } from "../../Utility/Types";
 import { useAuth } from "../../Provider-login/AuthProvider";
 import ProviderSelector from "./ProviderSelector";
+import ProviderViewsWidget from "./ProviderViewsWidget";
 
 interface DashboardProps {
   provider: ProviderData;
@@ -243,6 +244,11 @@ const Dashboard: React.FC<DashboardProps> = ({ provider, onUpdate }) => {
             </p>
           </div>
         </div>
+      </div>
+
+      {/* Provider Views Widget - Available to all providers */}
+      <div className="mt-6">
+        <ProviderViewsWidget days={30} providerId={provider.id} />
       </div>
     </div>
   );

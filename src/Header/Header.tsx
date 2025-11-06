@@ -24,6 +24,11 @@ const navigationItems = [
     href: "/donate",
     isSpecial: true
   },
+  { 
+    name: "Become a Sponsor", 
+    href: "/sponsor",
+    isSpecial: true
+  },
   {
     name: "Resources",
     dropdown: [

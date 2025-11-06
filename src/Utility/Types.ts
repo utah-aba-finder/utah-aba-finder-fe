@@ -89,6 +89,12 @@ export interface ProviderAttributes {
         zip: string;
         phone: string;
     } | null;
+    // Sponsorship fields
+    // Backend uses integer enum: 0=free, 1=featured, 2=sponsor, 3=partner
+    // Frontend may receive as string or number
+    sponsorship_tier?: string | number | null;
+    is_sponsored?: boolean;
+    sponsored_until?: string | null;
 }
 
 export interface InsuranceData {

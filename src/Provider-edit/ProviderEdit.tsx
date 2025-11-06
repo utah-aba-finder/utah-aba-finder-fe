@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { toast } from "react-toastify";
 import { useAuth } from "../Provider-login/AuthProvider";
+import { useSearchParams } from "react-router-dom";
 import Dashboard from "./components/Dashboard";
 import EditLocation from "./components/EditLocation";
 import LocationManagement from "./components/LocationManagement";
@@ -14,12 +15,14 @@ import {
   MapPin,
   DollarSign,
   Tag,
+  Crown,
 } from "lucide-react";
 import "react-toastify/dist/ReactToastify.css";
 import { ProviderData, ProviderAttributes } from "../Utility/Types";
 import { fetchStates, fetchCountiesByState, uploadProviderLogo, removeProviderLogo, fetchPracticeTypes, PracticeType } from "../Utility/ApiCall";
 import InsuranceModal from "./InsuranceModal";
 import CountiesModal from "./CountiesModal";
+import { SponsorshipPage } from "../Sponsorship";
 
 interface ProviderEditProps {
   loggedInProvider: ProviderData;
@@ -34,12 +37,25 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
 }) => {
   
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedTab, setSelectedTab] = useState("dashboard");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [selectedTab, setSelectedTab] = useState(() => {
+    // Check URL params for tab and tier
+    const tab = searchParams.get('tab');
+    return tab || "dashboard";
+  });
   const [authModalOpen, setAuthModalOpen] = useState(true);
   const [sessionTimeLeft, setSessionTimeLeft] = useState<number | null>(null);
   
   // Get auth context for multi-provider support
   const { activeProvider, token, currentUser } = useAuth();
+
+  // Handle URL parameter changes
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab && tab !== selectedTab) {
+      setSelectedTab(tab);
+    }
+  }, [searchParams, selectedTab]);
   
   // Local state for the currently edited provider
   const [currentProvider, setCurrentProvider] = useState<ProviderData | null>(null);
@@ -835,19 +851,42 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       // Only call onUpdate if we have valid data
       if (responseData.data?.attributes) {
         onUpdate(responseData.data.attributes);
+        
+        // Update local state immediately with the saved data to reflect changes in UI
+        // This ensures states and insurances show up right away, especially on mobile
+        if (responseData.data?.attributes.states) {
+          setProviderState(responseData.data.attributes.states);
+        }
+        if (responseData.data?.attributes.insurance) {
+          setSelectedInsurances(responseData.data.attributes.insurance);
+        }
+        if (responseData.data?.attributes.counties_served) {
+          setSelectedCounties(responseData.data.attributes.counties_served);
+        }
+        if (responseData.data?.attributes.provider_type) {
+          setSelectedProviderTypes(responseData.data.attributes.provider_type);
+        }
+        
+        // Update currentProvider state to keep it in sync
+        if (currentProvider) {
+          setCurrentProvider(prev => prev ? {
+            ...prev,
+            states: responseData.data?.attributes?.states || prev.states,
+            attributes: {
+              ...prev.attributes,
+              ...responseData.data.attributes
+            }
+          } : null);
+        }
       }
       
-      // Try to refresh data, but don't fail if it doesn't work
-      // Only refresh if we're not in the middle of editing the same provider
+      // Always refresh data from server to ensure we have the latest state
+      // This is especially important for mobile where state might not update properly
       try {
-        // Only refresh if we're dealing with a different provider or if explicitly needed
-        if (responseData.data?.id !== currentProvider?.id) {
         await refreshProviderData();
-        } else {
-          // Don't refresh if we're editing the same provider
-        }
       } catch (refreshError) {
-        // Don't fail the save operation if refresh fails
+        // Don't fail the save operation if refresh fails, but log it
+        console.warn('⚠️ ProviderEdit: Failed to refresh provider data after save:', refreshError);
       }
       
       // Show success toast only after everything is complete
@@ -930,6 +969,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                       {selectedTab === "provider-types" && "Provider Services"}
                       {selectedTab === "common-fields" && "Contact & Services"}
                       {selectedTab === "billing" && "Billing Management"}
+                      {selectedTab === "sponsorship" && "Sponsorship"}
                     </div>
                     
                     {/* Saving indicator */}
@@ -1165,6 +1205,25 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
               >
                 <DollarSign className="w-4 h-4" />
                 <span className="text-sm">Insurance</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  setSelectedTab("sponsorship");
+                  setSearchParams({ tab: 'sponsorship' });
+                }}
+                className={`
+                  flex items-center justify-center gap-2 px-3 py-2 rounded-lg
+                  transition-colors duration-200
+                  ${
+                    selectedTab === "sponsorship"
+                      ? "bg-[#4A6FA5] text-white"
+                      : "text-gray-700 hover:bg-gray-100"
+                  }
+                `}
+              >
+                <Crown className="w-4 h-4" />
+                <span className="text-sm">Sponsorship</span>
               </button>
             </nav>
 
@@ -1782,6 +1841,17 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                         }
                       }}
                     />
+              )}
+              {selectedTab === "sponsorship" && currentProvider && (
+                <SponsorshipPage
+                  providerId={currentProvider.id}
+                  currentTier={(currentProvider.attributes as any)?.sponsorship_tier || null}
+                  onSuccess={() => {
+                    // Refresh provider data after successful sponsorship
+                    refreshProviderData();
+                    toast.success('Sponsorship updated successfully!');
+                  }}
+                />
               )}
               {selectedTab === "insurance" && (
                 <div className="space-y-6">
