@@ -14,6 +14,11 @@ const PasswordReset: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [passwordStrength, setPasswordStrength] = useState({
+    hasMinLength: false,
+    hasNumber: false,
+    hasSymbol: false,
+  });
 
   const resetToken = searchParams.get('reset_password_token');
 
@@ -55,13 +60,39 @@ const PasswordReset: React.FC = () => {
     validateToken();
   }, [resetToken, navigate, validateToken]);
 
+  // Check password strength in real-time
+  const symbolCharacters = "!@#$%^&*()_+-=[]{};':\"\\|,.<>/?";
+
+  const checkPasswordStrength = (pwd: string) => {
+    const containsSymbol = [...pwd].some((char) => symbolCharacters.includes(char));
+    setPasswordStrength({
+      hasMinLength: pwd.length >= 7,
+      hasNumber: /\d/.test(pwd),
+      hasSymbol: containsSymbol,
+    });
+  };
+
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
 
     if (!password) {
       newErrors.password = 'Password is required';
-    } else if (password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters long';
+    } else {
+      // Check all requirements
+      const requirements = [];
+      if (password.length < 7) {
+        requirements.push('at least 7 characters');
+      }
+      if (!/\d/.test(password)) {
+        requirements.push('one number');
+      }
+      if (![...password].some((char) => symbolCharacters.includes(char))) {
+        requirements.push('one symbol');
+      }
+      
+      if (requirements.length > 0) {
+        newErrors.password = `Password must contain ${requirements.join(', ')}`;
+      }
     }
 
     if (!passwordConfirmation) {
@@ -235,7 +266,14 @@ const PasswordReset: React.FC = () => {
                   type={showPassword ? 'text' : 'password'}
                   required
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    checkPasswordStrength(e.target.value);
+                    // Clear error when user starts typing
+                    if (errors.password) {
+                      setErrors({ ...errors, password: '' });
+                    }
+                  }}
                   className={`appearance-none relative block w-full px-3 py-2 border ${
                     errors.password ? 'border-red-300' : 'border-gray-300'
                   } placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm`}
@@ -257,6 +295,24 @@ const PasswordReset: React.FC = () => {
                     </svg>
                   )}
                 </button>
+              </div>
+              {/* Password Requirements */}
+              <div className="mt-2 space-y-1">
+                <p className="text-xs text-gray-600 font-medium">Password must contain:</p>
+                <ul className="text-xs space-y-1">
+                  <li className={`flex items-center ${passwordStrength.hasMinLength ? 'text-green-600' : 'text-gray-500'}`}>
+                    <span className="mr-2">{passwordStrength.hasMinLength ? '✓' : '○'}</span>
+                    At least 7 characters
+                  </li>
+                  <li className={`flex items-center ${passwordStrength.hasNumber ? 'text-green-600' : 'text-gray-500'}`}>
+                    <span className="mr-2">{passwordStrength.hasNumber ? '✓' : '○'}</span>
+                    One number (0-9)
+                  </li>
+                  <li className={`flex items-center ${passwordStrength.hasSymbol ? 'text-green-600' : 'text-gray-500'}`}>
+                    <span className="mr-2">{passwordStrength.hasSymbol ? '✓' : '○'}</span>
+                    One symbol (!@#$%^&*...)
+                  </li>
+                </ul>
               </div>
               {errors.password && (
                 <p className="mt-1 text-sm text-red-600">{errors.password}</p>

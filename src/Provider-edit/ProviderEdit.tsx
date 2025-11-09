@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { toast } from "react-toastify";
 import { useAuth } from "../Provider-login/AuthProvider";
+import { useSearchParams } from "react-router-dom";
 import Dashboard from "./components/Dashboard";
 import EditLocation from "./components/EditLocation";
 import LocationManagement from "./components/LocationManagement";
@@ -14,12 +15,14 @@ import {
   MapPin,
   DollarSign,
   Tag,
+  Crown,
 } from "lucide-react";
 import "react-toastify/dist/ReactToastify.css";
 import { ProviderData, ProviderAttributes } from "../Utility/Types";
-import { fetchStates, fetchCountiesByState, uploadProviderLogo, removeProviderLogo, fetchPracticeTypes, PracticeType } from "../Utility/ApiCall";
+import { fetchStates, fetchCountiesByState, uploadProviderLogo, removeProviderLogo, fetchPracticeTypes, PracticeType, fetchInsurance } from "../Utility/ApiCall";
 import InsuranceModal from "./InsuranceModal";
 import CountiesModal from "./CountiesModal";
+import { SponsorshipPage } from "../Sponsorship";
 
 interface ProviderEditProps {
   loggedInProvider: ProviderData;
@@ -34,12 +37,34 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
 }) => {
   
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedTab, setSelectedTab] = useState("dashboard");
-  const [authModalOpen, setAuthModalOpen] = useState(true);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [selectedTab, setSelectedTab] = useState(() => {
+    // Check URL params for tab and tier
+    const tab = searchParams.get('tab');
+    return tab || "dashboard";
+  });
+  const [authModalOpen, setAuthModalOpen] = useState(false); // Disabled - session management improved, no longer needed
   const [sessionTimeLeft, setSessionTimeLeft] = useState<number | null>(null);
   
   // Get auth context for multi-provider support
   const { activeProvider, token, currentUser } = useAuth();
+
+  // Handle URL parameter changes (only sync from URL, don't override manual clicks)
+  // This allows deep linking to specific tabs but respects user navigation
+  const validTabsRef = useRef(['dashboard', 'edit', 'details', 'coverage', 'locations', 'provider-types', 'common-fields', 'insurance', 'sponsorship']);
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    // Only sync from URL if:
+    // 1. URL has a tab param AND
+    // 2. It's a valid tab name AND
+    // 3. It's different from current tab (check current value from state setter function)
+    if (tab && validTabsRef.current.includes(tab)) {
+      setSelectedTab(prevTab => {
+        // Only update if different to prevent unnecessary re-renders
+        return tab !== prevTab ? tab : prevTab;
+      });
+    }
+  }, [searchParams, setSelectedTab]);
   
   // Local state for the currently edited provider
   const [currentProvider, setCurrentProvider] = useState<ProviderData | null>(null);
@@ -391,7 +416,42 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       const data = await response.json();
       const providerData = data.data?.[0] || {};
       
+      // Fetch insurance list to match insurance names to IDs
+      let allInsurances: any[] = [];
+      try {
+        allInsurances = await fetchInsurance();
+      } catch (err) {
+        console.warn('⚠️ Failed to fetch insurance list for normalization, will use fallback');
+      }
       
+      // Normalize insurance data - match names to IDs from full insurance list
+      const normalizeInsuranceData = (insuranceData: any[]): any[] => {
+        return (insuranceData || []).map((ins: any) => {
+          if (typeof ins === 'string') {
+            // Find matching insurance by name from full list
+            const matched = allInsurances.find(i => 
+              i.attributes?.name?.toLowerCase() === ins.toLowerCase()
+            );
+            if (matched) {
+              return {
+                id: matched.id,
+                name: matched.attributes.name,
+                accepted: true
+              };
+            }
+            // Fallback: create object with name
+            return { id: 0, name: ins, accepted: true };
+          }
+          // Already an object, ensure correct shape
+          return {
+            id: ins.id || 0,
+            name: ins.name || ins.attributes?.name || ins,
+            accepted: ins.accepted !== undefined ? ins.accepted : true
+          };
+        });
+      };
+      
+      const normalizedInsurance = normalizeInsuranceData(providerData.attributes?.insurance || []);
       
       // Ensure we have all required properties with defaults
       const updatedProvider: ProviderData = {
@@ -408,7 +468,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
           website: providerData.attributes?.website || providerData.website || '',
           logo: providerData.attributes?.logo || providerData.logo || null,
           provider_type: providerData.attributes?.provider_type || [],
-          insurance: providerData.attributes?.insurance || [],
+          insurance: normalizedInsurance,
           counties_served: providerData.attributes?.counties_served || [],
           locations: providerData.attributes?.locations || [],
           cost: providerData.attributes?.cost || null,
@@ -427,11 +487,14 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       };
       
       setCurrentProvider(updatedProvider);
-      setEditedProvider(updatedProvider.attributes);
+      setEditedProvider({
+        ...updatedProvider.attributes,
+        insurance: normalizedInsurance
+      });
       setProviderState(updatedProvider.states || []);
       setSelectedCounties(updatedProvider.attributes.counties_served || []);
       setSelectedProviderTypes(updatedProvider.attributes.provider_type || []);
-      setSelectedInsurances(updatedProvider.attributes.insurance || []);
+      setSelectedInsurances(normalizedInsurance);
       setSelectedLogoFile(null);
       
       toast.success('Provider data refreshed successfully');
@@ -439,7 +502,8 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       console.error('🔍 ProviderEdit: Error in refreshProviderData:', error);
       toast.error('Failed to refresh provider data');
     }
-  }, [currentProvider?.id, currentUser?.id, token]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentProvider?.id, currentUser?.id, token]); // selectedInsurances intentionally omitted to avoid loops
 
   // Initialize provider state and fetch counties for saved states
   useEffect(() => {
@@ -495,12 +559,13 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
   //   setSelectedLogoFile(null);
   // }, [loggedInProvider]);
 
-  useEffect(() => {
-    const hideAuthModal = localStorage.getItem("hideAuthModal");
-    if (hideAuthModal === "true") {
-      setAuthModalOpen(false);
-    }
-  }, []);
+  // AuthModal disabled - session management improved, no refresh warning needed
+  // useEffect(() => {
+  //   const hideAuthModal = localStorage.getItem("hideAuthModal");
+  //   if (hideAuthModal === "true") {
+  //     setAuthModalOpen(false);
+  //   }
+  // }, []);
 
   // Fetch managed providers on component mount
   // Temporarily disabled due to 404 error on accessible_providers endpoint
@@ -576,10 +641,11 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
   );
 
   const handleShownModal = (hideModal: boolean) => {
+    // AuthModal disabled - session management improved
     setAuthModalOpen(false);
-    if (hideModal) {
-      localStorage.setItem("hideAuthModal", "true");
-    }
+    // if (hideModal) {
+    //   localStorage.setItem("hideAuthModal", "true");
+    // }
   };
 
   // Add this effect to handle state changes
@@ -835,19 +901,70 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       // Only call onUpdate if we have valid data
       if (responseData.data?.attributes) {
         onUpdate(responseData.data.attributes);
+        
+        // Update local state immediately with the saved data to reflect changes in UI
+        // This ensures states and insurances show up right away, especially on mobile
+        if (responseData.data?.attributes.states) {
+          setProviderState(responseData.data.attributes.states);
+        }
+        if (responseData.data?.attributes.insurance) {
+          // Normalize insurance data - handle both string names and Insurance objects
+          const normalizedInsurance = responseData.data.attributes.insurance.map((ins: any) => {
+            if (typeof ins === 'string') {
+              // If it's just a string name, try to find the insurance ID from the current list
+              // or create a temporary object (will be fixed when refreshProviderData runs)
+              const existing = selectedInsurances.find(i => i.name === ins);
+              return existing || { id: 0, name: ins, accepted: true };
+            }
+            // If it's already an object, ensure it has the right shape
+            return {
+              id: ins.id || 0,
+              name: ins.name || ins,
+              accepted: ins.accepted !== undefined ? ins.accepted : true
+            };
+          });
+          setSelectedInsurances(normalizedInsurance);
+        }
+        if (responseData.data?.attributes.counties_served) {
+          setSelectedCounties(responseData.data.attributes.counties_served);
+        }
+        if (responseData.data?.attributes.provider_type) {
+          setSelectedProviderTypes(responseData.data.attributes.provider_type);
+        }
+        
+        // Update currentProvider state to keep it in sync
+        if (currentProvider) {
+          const normalizedInsurance = responseData.data?.attributes?.insurance?.map((ins: any) => {
+            if (typeof ins === 'string') {
+              const existing = selectedInsurances.find(i => i.name === ins);
+              return existing || { id: 0, name: ins, accepted: true };
+            }
+            return {
+              id: ins.id || 0,
+              name: ins.name || ins,
+              accepted: ins.accepted !== undefined ? ins.accepted : true
+            };
+          }) || currentProvider.attributes.insurance;
+          
+          setCurrentProvider(prev => prev ? {
+            ...prev,
+            states: responseData.data?.attributes?.states || prev.states,
+            attributes: {
+              ...prev.attributes,
+              ...responseData.data.attributes,
+              insurance: normalizedInsurance
+            }
+          } : null);
+        }
       }
       
-      // Try to refresh data, but don't fail if it doesn't work
-      // Only refresh if we're not in the middle of editing the same provider
+      // Always refresh data from server to ensure we have the latest state
+      // This is especially important for mobile where state might not update properly
       try {
-        // Only refresh if we're dealing with a different provider or if explicitly needed
-        if (responseData.data?.id !== currentProvider?.id) {
         await refreshProviderData();
-        } else {
-          // Don't refresh if we're editing the same provider
-        }
       } catch (refreshError) {
-        // Don't fail the save operation if refresh fails
+        // Don't fail the save operation if refresh fails, but log it
+        console.warn('⚠️ ProviderEdit: Failed to refresh provider data after save:', refreshError);
       }
       
       // Show success toast only after everything is complete
@@ -930,6 +1047,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                       {selectedTab === "provider-types" && "Provider Services"}
                       {selectedTab === "common-fields" && "Contact & Services"}
                       {selectedTab === "billing" && "Billing Management"}
+                      {selectedTab === "sponsorship" && "Sponsorship"}
                     </div>
                     
                     {/* Saving indicator */}
@@ -1040,7 +1158,10 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
         {/* Navigation Menu */}
         <nav className="flex-1 overflow-y-auto flex flex-col justify-start gap-2 py-4 px-4">
           <button
-            onClick={() => setSelectedTab("dashboard")}
+            onClick={() => {
+              setSelectedTab("dashboard");
+              setSearchParams({});
+            }}
             className={`
               flex items-center justify-center gap-2 px-3 py-2 rounded-lg
               transition-colors duration-200
@@ -1056,7 +1177,10 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
           </button>
 
           <button
-            onClick={() => setSelectedTab("edit")}
+            onClick={() => {
+              setSelectedTab("edit");
+              setSearchParams({});
+            }}
             className={`
               flex items-center justify-center gap-2 px-3 py-2 rounded-lg
               transition-colors duration-200
@@ -1072,39 +1196,48 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
           </button>
 
           <button
-                onClick={() => setSelectedTab("details")}
+            onClick={() => {
+              setSelectedTab("details");
+              setSearchParams({});
+            }}
             className={`
               flex items-center justify-center gap-2 px-3 py-2 rounded-lg
               transition-colors duration-200
               ${
-                    selectedTab === "details"
+                selectedTab === "details"
                   ? "bg-[#4A6FA5] text-white"
                   : "text-gray-700 hover:bg-gray-100"
               }
             `}
           >
-                <Building2 className="w-4 h-4" />
-                <span className="text-sm">Provider Logo</span>
+            <Building2 className="w-4 h-4" />
+            <span className="text-sm">Provider Logo</span>
           </button>
 
           <button
-                onClick={() => setSelectedTab("provider-types")}
+            onClick={() => {
+              setSelectedTab("provider-types");
+              setSearchParams({});
+            }}
             className={`
               flex items-center justify-center gap-2 px-3 py-2 rounded-lg
               transition-colors duration-200
               ${
-                    selectedTab === "provider-types"
+                selectedTab === "provider-types"
                   ? "bg-[#4A6FA5] text-white"
                   : "text-gray-700 hover:bg-gray-100"
               }
             `}
           >
-                <Tag className="w-4 h-4" />
+            <Tag className="w-4 h-4" />
             <span className="text-sm">Provider Services</span>
           </button>
 
           <button
-            onClick={() => setSelectedTab("common-fields")}
+            onClick={() => {
+              setSelectedTab("common-fields");
+              setSearchParams({});
+            }}
             className={`
               flex items-center justify-center gap-2 px-3 py-2 rounded-lg
               transition-colors duration-200
@@ -1120,7 +1253,10 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
           </button>
 
           <button
-            onClick={() => setSelectedTab("coverage")}
+            onClick={() => {
+              setSelectedTab("coverage");
+              setSearchParams({});
+            }}
             className={`
               flex items-center justify-center gap-2 px-3 py-2 rounded-lg
               transition-colors duration-200
@@ -1135,36 +1271,61 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
             <span className="text-sm">Coverage Area</span>
           </button>
 
-                  <button
-                    onClick={() => setSelectedTab("locations")}
-                    className={`
-                      flex items-center justify-center gap-2 px-3 py-2 rounded-lg
-                      transition-colors duration-200
-                      ${
-                        selectedTab === "locations"
-                          ? "bg-[#4A6FA5] text-white"
-                          : "text-gray-700 hover:bg-gray-100"
-                      }
-                    `}
-                  >
-                    <Building2 className="w-4 h-4" />
-                    <span className="text-sm">Locations</span>
-              </button>
+          <button
+            onClick={() => {
+              setSelectedTab("locations");
+              setSearchParams({});
+            }}
+            className={`
+              flex items-center justify-center gap-2 px-3 py-2 rounded-lg
+              transition-colors duration-200
+              ${
+                selectedTab === "locations"
+                  ? "bg-[#4A6FA5] text-white"
+                  : "text-gray-700 hover:bg-gray-100"
+              }
+            `}
+          >
+            <Building2 className="w-4 h-4" />
+            <span className="text-sm">Locations</span>
+          </button>
+
+          <button
+            onClick={() => {
+              setSelectedTab("insurance");
+              setSearchParams({});
+            }}
+            className={`
+              flex items-center justify-center gap-2 px-3 py-2 rounded-lg
+              transition-colors duration-200
+              ${
+                selectedTab === "insurance"
+                  ? "bg-[#4A6FA5] text-white"
+                  : "text-gray-700 hover:bg-gray-100"
+              }
+            `}
+          >
+            <DollarSign className="w-4 h-4" />
+            <span className="text-sm">Insurance</span>
+          </button>
 
               <button
-                onClick={() => setSelectedTab("insurance")}
+                onClick={() => {
+                  setSelectedTab("sponsorship");
+                  setSearchParams({ tab: 'sponsorship' });
+                }}
                 className={`
                   flex items-center justify-center gap-2 px-3 py-2 rounded-lg
                   transition-colors duration-200
                   ${
-                    selectedTab === "insurance"
+                    selectedTab === "sponsorship"
                       ? "bg-[#4A6FA5] text-white"
                       : "text-gray-700 hover:bg-gray-100"
                   }
                 `}
               >
-                <DollarSign className="w-4 h-4" />
-                <span className="text-sm">Insurance</span>
+                <Crown className="w-4 h-4" />
+                <span className="text-sm">Sponsorship</span>
               </button>
             </nav>
 
@@ -1783,31 +1944,50 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                       }}
                     />
               )}
+              {selectedTab === "sponsorship" && currentProvider && (
+                <SponsorshipPage
+                  providerId={currentProvider.id}
+                  currentTier={(currentProvider.attributes as any)?.sponsorship_tier || null}
+                  onSuccess={() => {
+                    // Refresh provider data after successful sponsorship
+                    refreshProviderData();
+                    toast.success('Sponsorship updated successfully!');
+                  }}
+                />
+              )}
               {selectedTab === "insurance" && (
                 <div className="space-y-6">
                   <div className="bg-white rounded-lg shadow p-6">
                     <h2 className="text-xl font-semibold mb-4">Insurance Coverage</h2>
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {selectedInsurances.map((insurance) => (
-                        <div key={insurance.id} className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm flex items-center">
-                          {insurance.name}
-                          <X 
-                                className="ml-2 h-4 w-4 cursor-pointer" 
-                            onClick={() => {
-                              const updatedInsurance = selectedInsurances.filter(i => i.id !== insurance.id) || [];
-                              setSelectedInsurances(updatedInsurance);
-                            }}
-                          />
-                        </div>
-                      ))}
-                    </div>
+                    {selectedInsurances && selectedInsurances.length > 0 ? (
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        {selectedInsurances.map((insurance, index) => (
+                          <div key={insurance.id || insurance.name || index} className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm flex items-center">
+                            {insurance.name || insurance}
+                            <X 
+                              className="ml-2 h-4 w-4 cursor-pointer" 
+                              onClick={() => {
+                                const updatedInsurance = selectedInsurances.filter(i => 
+                                  (i.id && insurance.id ? i.id !== insurance.id : i.name !== (insurance.name || insurance))
+                                );
+                                setSelectedInsurances(updatedInsurance);
+                              }}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="mb-4 p-4 bg-gray-50 rounded-lg text-center text-gray-500">
+                        No insurance coverage selected. Click "Edit Insurance Coverage" to add insurance.
+                      </div>
+                    )}
                     <button
                       type="button"
                       onClick={() => setIsInsuranceModalOpen(true)}
                       className="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
                     >
                       <DollarSign className="w-5 h-5 mr-2" />
-                      Edit Insurance Coverage
+                      {selectedInsurances && selectedInsurances.length > 0 ? "Edit Insurance Coverage" : "Add Insurance Coverage"}
                     </button>
                   </div>
 
@@ -1815,7 +1995,9 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                   <div className="mt-6 flex justify-end space-x-4">
                     <button
                       onClick={() => {
-                        setSelectedInsurances(loggedInProvider.attributes.insurance || []);
+                        // Use currentProvider insurance if available, otherwise use loggedInProvider
+                        const currentInsurance = currentProvider?.attributes?.insurance || loggedInProvider?.attributes?.insurance || [];
+                        setSelectedInsurances(currentInsurance);
                         toast.info("Insurance changes discarded");
                       }}
                       className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
@@ -1883,6 +2065,16 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
           onInsurancesChange={(insurances) => {
             setSelectedInsurances(insurances);
             setIsInsuranceModalOpen(false);
+            // Also update currentProvider immediately so it's in sync
+            if (currentProvider) {
+              setCurrentProvider(prev => prev ? {
+                ...prev,
+                attributes: {
+                  ...prev.attributes,
+                  insurance: insurances
+                }
+              } : null);
+            }
           }}
           providerInsurances={selectedInsurances}
         />

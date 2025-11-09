@@ -52,8 +52,39 @@ const InsuranceModal: React.FC<InsuranceModalProps> = ({
     }, []);
 
     useEffect(() => {
-        setLocalSelectedInsurances(selectedInsurances);
-    }, [selectedInsurances, isOpen]);
+        // When modal opens or selectedInsurances changes, update local state
+        // Match by both ID and name to handle cases where IDs might not match
+        if (isOpen && insurance.length > 0 && selectedInsurances.length > 0) {
+            // Match selected insurances with available insurance list by name
+            const matched = selectedInsurances.map(selected => {
+                // Try to find by ID first
+                const byId = insurance.find(i => i.id === selected.id);
+                if (byId) {
+                    return {
+                        id: byId.id,
+                        name: byId.attributes.name,
+                        accepted: selected.accepted !== undefined ? selected.accepted : true
+                    };
+                }
+                // Try to find by name
+                const byName = insurance.find(i => 
+                    i.attributes?.name?.toLowerCase() === (selected.name || '').toLowerCase()
+                );
+                if (byName) {
+                    return {
+                        id: byName.id,
+                        name: byName.attributes.name,
+                        accepted: selected.accepted !== undefined ? selected.accepted : true
+                    };
+                }
+                // Return as-is if no match found
+                return selected;
+            });
+            setLocalSelectedInsurances(matched);
+        } else {
+            setLocalSelectedInsurances(selectedInsurances);
+        }
+    }, [selectedInsurances, isOpen, insurance]);
 
     const handleSelect = useCallback((insurance: Omit<Insurance, 'accepted'>) => {
         setLocalSelectedInsurances(prev => {
@@ -67,8 +98,19 @@ const InsuranceModal: React.FC<InsuranceModalProps> = ({
     }, []);
     
     const isInsuranceSelected = useCallback(
-        (id: number) => localSelectedInsurances.some(i => i.id === id),
-        [localSelectedInsurances]
+        (id: number) => {
+            // Check by ID first
+            if (localSelectedInsurances.some(i => i.id === id)) return true;
+            // Also check by name in case IDs don't match
+            const insuranceItem = insurance.find(i => i.id === id);
+            if (insuranceItem) {
+                return localSelectedInsurances.some(i => 
+                    (i.name || '').toLowerCase() === (insuranceItem.attributes?.name || '').toLowerCase()
+                );
+            }
+            return false;
+        },
+        [localSelectedInsurances, insurance]
     );
 
     const handleSubmit = () => {

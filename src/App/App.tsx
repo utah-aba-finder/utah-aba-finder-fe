@@ -17,7 +17,7 @@ import ContactUs from "../ContactUs/ContactUs";
 import AboutUs from "../AboutUs/AboutUs";
 import ProviderEdit from "../Provider-edit/ProviderEdit";
 import { AuthProvider, useAuth } from "../Provider-login/AuthProvider";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import ProtectedRoute from "../Provider-login/ProtectedRoute";
 import {
   ProviderData,
@@ -42,6 +42,7 @@ import ProviderDashboard from "../Utility/ProviderDashboard";
 import ProviderSignup from "../ProviderSignup/ProviderSignup";
 import ProviderWalkthrough from "../ProviderSignup/ProviderWalkthrough";
 import TawkToWidget from "../Utility/TawkToWidget";
+import SponsorLanding from "../Sponsorship/SponsorLanding";
 
 // Simple test component to check if React loads
 const TestComponent = () => {
@@ -225,6 +226,7 @@ function App() {
             <Route path="/resources" element={<Resources />} />
             <Route path="/favoriteproviders" element={<FavoriteProviders />} />
             <Route path="/donate" element={<Donations />} />
+            <Route path="/sponsor" element={<SponsorLanding />} />
             <Route path="/servicedisclaimer" element={<ServiceDisclaimer />} />
             <Route path="/careers" element={<Careers />} />
             <Route path="/google-debug" element={<GoogleDebugTest />} />
@@ -330,8 +332,126 @@ function ProviderEditWrapper({
   clearProviderData: () => void;
   onUpdate: (updatedProvider: ProviderAttributes) => void;
 }) {
-  const { loggedInProvider, activeProvider, authReady, authLoading, currentUser, logout } = useAuth();
+      const { loggedInProvider, activeProvider, authReady, authLoading, currentUser, logout } = useAuth();                                                                                                                                        
   const { id } = useParams<{ id: string }>();
+  const [isRestoring, setIsRestoring] = useState(false);
+  const restorationStartedRef = useRef(false);
+  const restorationFailedRef = useRef(false);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Cleanup function to clear all timers
+  const clearRestorationTimers = () => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+  };
+
+  // If we still don't have a provider but we have a user and an ID in the URL,
+  // give the restoration logic a moment to complete (max 2 seconds)
+  // NOTE: This must be before any early returns to satisfy React Hooks rules
+  useEffect(() => {
+    if (!authReady || authLoading) {
+      clearRestorationTimers();
+      return;
+    }
+    
+    // Check sessionStorage directly to avoid stale closures
+    const hasProviderInState = activeProvider || loggedInProvider;
+    const hasProviderInStorage = 
+      JSON.parse(sessionStorage.getItem('activeProvider') || 'null') ||
+      JSON.parse(sessionStorage.getItem('loggedInProvider') || 'null');
+    const hasProvider = hasProviderInState || hasProviderInStorage;
+    
+    // If we have a provider, clear restoration state
+    if (hasProvider) {
+      if (isRestoring) {
+        setIsRestoring(false);
+      }
+      restorationStartedRef.current = false;
+      restorationFailedRef.current = false; // Reset failed flag if we have a provider
+      clearRestorationTimers();
+      return;
+    }
+    
+    // Only start restoration check if we don't have a provider AND haven't started restoring yet
+    // AND restoration hasn't already failed
+    if (!hasProvider && currentUser && id && !restorationStartedRef.current && !restorationFailedRef.current) {
+      restorationStartedRef.current = true;
+      setIsRestoring(true);
+      console.warn('ProviderEditWrapper: No provider in state, but user is authenticated and URL has ID:', id);
+      
+      // Clear any existing timers first
+      clearRestorationTimers();
+      
+      // Give restoration logic time to complete (check periodically)
+      // Check sessionStorage directly since state values might be stale in closure                                                                             
+      intervalRef.current = setInterval(() => {
+        // Check if provider was restored (read from sessionStorage to get latest values)                                                                       
+        const restoredFromStorage = 
+          JSON.parse(sessionStorage.getItem('activeProvider') || 'null') ||
+          JSON.parse(sessionStorage.getItem('loggedInProvider') || 'null');
+        
+        if (restoredFromStorage) {
+          console.log('✅ ProviderEditWrapper: Provider restored from storage, clearing loading state');                                                        
+          setIsRestoring(false);
+          restorationStartedRef.current = false;
+          restorationFailedRef.current = false; // Reset failed flag on success
+          clearRestorationTimers();
+        }
+      }, 200);
+
+      // Stop checking after 2 seconds - if provider isn't restored by then, give up                                                                            
+      timeoutRef.current = setTimeout(() => {
+        console.log('⚠️ ProviderEditWrapper: Restoration timeout - provider not restored after 2 seconds');                                                      
+        setIsRestoring(false);
+        restorationStartedRef.current = false;
+        restorationFailedRef.current = true; // Mark as failed so we don't try again
+        clearRestorationTimers();
+      }, 2000);
+    }
+
+    // Cleanup on unmount or when dependencies change
+    return () => {
+      // Don't clear timers here - let them run to completion
+      // Only clear on unmount
+    };
+  }, [authReady, authLoading, currentUser, id, activeProvider, loggedInProvider, isRestoring]);
+
+  // Failsafe: If restoration has been in progress for more than 3 seconds, force clear it
+  useEffect(() => {
+    if (!isRestoring) return;
+    
+    const failsafeTimeout = setTimeout(() => {
+      console.error('⚠️ ProviderEditWrapper: Failsafe triggered - forcing loading state to clear after 3 seconds');
+      setIsRestoring(false);
+      restorationStartedRef.current = false;
+      restorationFailedRef.current = true;
+      // Clear timers directly in failsafe
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+    }, 3000);
+    
+    return () => clearTimeout(failsafeTimeout);
+  }, [isRestoring]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      clearRestorationTimers();
+    };
+  }, []);
 
   // Wait for auth to initialize before checking login state
   if (!authReady || authLoading) {
@@ -342,28 +462,107 @@ function ProviderEditWrapper({
     );
   }
 
-  // Use activeProvider if available, otherwise fall back to loggedInProvider
-  let providerToUse = activeProvider || loggedInProvider;
-
-  // If we still don't have a provider but we have a user and an ID in the URL,
-  // we might need to fetch it (this handles cases where sessionStorage was cleared)
-  if (!providerToUse && currentUser && id) {
-    // The ProtectedRoute should have redirected us if we're not authenticated,
-    // so if we're here, we're authenticated but missing provider data
-    // This might happen if sessionStorage was cleared - we'll show a message
-    // but the ProviderEdit component might try to fetch it
-    console.warn('ProviderEditWrapper: No provider in state, but user is authenticated and URL has ID:', id);
+  // CRITICAL: If user is authenticated, prioritize sessionStorage to prevent "Please log in" screen
+  // when navigating between tabs
+  const isAuthenticated = currentUser !== null && currentUser !== undefined;
+  
+  // Check sessionStorage first if user is authenticated (more reliable during navigation)
+  let providerToUse: ProviderData | null = null;
+  if (isAuthenticated) {
+    // First try sessionStorage (most reliable during tab navigation)
+    const fromStorage = 
+      JSON.parse(sessionStorage.getItem('activeProvider') || 'null') ||
+      JSON.parse(sessionStorage.getItem('loggedInProvider') || 'null');
+    
+    if (fromStorage) {
+      providerToUse = fromStorage;
+    } else {
+      // Fall back to state
+      providerToUse = activeProvider || loggedInProvider || null;
+    }
+  } else {
+    // If not authenticated, use state only
+    providerToUse = activeProvider || loggedInProvider || null;
+  }
+  
+  // Show loading state while restoration might be in progress (but only if user is authenticated)
+  if (!providerToUse && isRestoring && isAuthenticated) {
+    return (
+      <div style={{ minHeight: '60vh', display: 'grid', placeItems: 'center' }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ marginBottom: '1rem' }}>Loading provider data...</div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+          <p style={{ marginTop: '1rem', fontSize: '0.875rem', color: '#6b7280' }}>
+            This should only take a moment
+          </p>
+        </div>
+      </div>
+    );
   }
 
-  if (!providerToUse) {
+  // Only show "Please log in" if user is NOT authenticated
+  // If user IS authenticated, we should have provider data from sessionStorage
+  // But if for some reason we don't, allow ProviderEdit to handle it gracefully
+  if (!isAuthenticated) {
     return (
       <div style={{ minHeight: '60vh', display: 'grid', placeItems: 'center' }}>
         <div style={{ textAlign: 'center', padding: '2rem' }}>
           <p style={{ marginBottom: '1rem', fontSize: '1.125rem', color: '#374151' }}>
             Please log in to edit provider information.
           </p>
-          {/* Show clear session button if user is authenticated but missing provider data */}
-          {currentUser && currentUser.role === 'provider_admin' && (
+        </div>
+      </div>
+    );
+  }
+
+  // If authenticated but still no provider data, create a minimal provider object
+  // This allows ProviderEdit to render and fetch the real data via refreshProviderData
+  // This should rarely happen if sessionStorage is working correctly
+  if (!providerToUse && isAuthenticated && id) {
+    console.warn('⚠️ ProviderEditWrapper: Authenticated but no provider data found, creating temporary provider object');
+    providerToUse = {
+      id: parseInt(id || '0'),
+      type: 'Provider',
+      states: [],
+      attributes: {
+        id: parseInt(id || '0'),
+        states: [],
+        password: '',
+        username: '',
+        name: '',
+        email: '',
+        website: null,
+        logo: null,
+        provider_type: [],
+        insurance: [],
+        counties_served: [],
+        locations: [],
+        cost: null,
+        min_age: null,
+        max_age: null,
+        waitlist: null,
+        telehealth_services: null,
+        spanish_speakers: null,
+        at_home_services: null,
+        in_clinic_services: null,
+        updated_last: null,
+        status: null,
+        in_home_only: false,
+        service_delivery: { in_home: false, in_clinic: false, telehealth: false }
+      }
+    };
+  }
+  
+  // Final safety check - if still no provider, don't render ProviderEdit
+  if (!providerToUse) {
+    console.error('❌ ProviderEditWrapper: Cannot render - no provider data available');
+    return (
+      <div style={{ minHeight: '60vh', display: 'grid', placeItems: 'center' }}>
+        <div style={{ textAlign: 'center', padding: '2rem' }}>
+          <p style={{ marginBottom: '1rem', fontSize: '1.125rem', color: '#374151' }}>
+            Unable to load provider data. Please try refreshing the page.
+          </p>
+          {currentUser && (
             <button
               onClick={() => {
                 logout('manual');
@@ -377,11 +576,8 @@ function ProviderEditWrapper({
                 borderRadius: '0.375rem',
                 cursor: 'pointer',
                 fontSize: '0.875rem',
-                fontWeight: '500',
-                transition: 'background-color 0.2s'
+                fontWeight: '500'
               }}
-              onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#dc2626'}
-              onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#ef4444'}
             >
               Clear Session and Re-login
             </button>

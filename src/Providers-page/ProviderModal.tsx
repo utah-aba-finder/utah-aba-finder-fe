@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import moment from 'moment';
 import GoogleReviewsSection from './GoogleReviewsSection';
 import ProviderLogo from '../Utility/ProviderLogo';
+import { getApiBaseUrl } from '../Utility/config';
 
 interface Location {
   name?: string | null;
@@ -109,7 +110,26 @@ const ProviderModal: React.FC<ProviderModalProps> = ({
 
   useEffect(() => {
     setTimeout(() => setIsVisible(true), 10);
-  }, []);
+    
+    // Track view when modal opens
+    const trackView = async () => {
+      try {
+        const baseUrl = getApiBaseUrl();
+        await fetch(`${baseUrl}/providers/${provider.id}/track_view`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+        });
+      } catch (error) {
+        // Silently fail - view tracking is not critical
+        console.debug('Failed to track view:', error);
+      }
+    };
+    
+    trackView();
+  }, [provider.id]);
 
   const handleClose = () => {
     setIsClosing(true);

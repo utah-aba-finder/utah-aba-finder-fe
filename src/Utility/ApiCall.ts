@@ -124,6 +124,68 @@ export const BASE_API_URL = process.env.NODE_ENV === 'production'
   ? "https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1"
   : "/api/v1";
 
+// Sponsorship API Types
+export interface PricingOption {
+  id: 'monthly' | 'annual';
+  price: number;
+  price_id: string;
+  label: string;
+  savings?: string;
+  description?: string;
+}
+
+export interface SponsorshipTier {
+  id: string;
+  name: string;
+  price: number; // Default monthly price
+  price_in_cents?: number; // For Stripe
+  price_display: string; // Formatted string like "$25/Monthly"
+  price_id?: string; // Legacy field for backward compatibility
+  pricing_options: PricingOption[];
+  features: string[];
+  description?: string;
+}
+
+export interface SponsorshipTiersResponse {
+  tiers: SponsorshipTier[];
+}
+
+export interface PaymentIntentResponse {
+  client_secret: string;
+  payment_intent_id: string;
+}
+
+export interface Sponsorship {
+  id: number;
+  provider_id: number;
+  tier: string;
+  status: 'active' | 'cancelled' | 'expired';
+  started_at: string;
+  expires_at: string | null;
+  stripe_subscription_id: string | null;
+  stripe_customer_id: string | null;
+}
+
+export interface SponsorshipResponse {
+  sponsorship: Sponsorship;
+}
+
+export interface SponsorshipsResponse {
+  sponsorships: Sponsorship[];
+  // New fields from backend
+  has_active_subscription?: boolean;
+  message?: string;
+  tiers_url?: string;
+}
+
+export interface SponsoredProvider {
+  id: number;
+  name: string;
+  logo: string | null;
+  website: string | null;
+  sponsorship_tier: string | number; // Backend uses integer enum: 0=free, 1=featured, 2=sponsor, 3=partner
+}
+
 // Mass Email API Types
 export interface MassEmailStats {
   statistics: {
@@ -1189,5 +1251,232 @@ export const fetchPublicProviders = async (): Promise<Providers> => {
         throw new Error('All provider data sources are currently unavailable. Please try again later.');
       }
     }
+  }
+};
+
+// Sponsorship API Functions
+export const fetchSponsorshipTiers = async (): Promise<SponsorshipTiersResponse> => {
+  try {
+    // Include authentication headers if available
+    const authToken = sessionStorage.getItem('authToken');
+    const currentUser = JSON.parse(sessionStorage.getItem('currentUser') || 'null');
+    const userId = currentUser?.id?.toString() || authToken;
+
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
+
+    // Add auth header if available (some endpoints may require auth)
+    if (userId) {
+      headers['Authorization'] = userId;
+    }
+
+    const response = await fetch(`${BASE_API_URL}/sponsorships/tiers`, {
+      method: 'GET',
+      headers,
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      // Create a user-friendly error that won't crash the app
+      const error = new Error(`Unable to load sponsorship tiers (${response.status})`);
+      // Store the original error details for debugging
+      (error as any).status = response.status;
+      (error as any).details = errorText;
+      throw error;
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error: any) {
+    // Log the error but don't let it crash the app
+    console.error('❌ Failed to fetch sponsorship tiers:', {
+      message: error?.message,
+      status: error?.status,
+      details: error?.details
+    });
+    // Re-throw with a user-friendly message
+    throw error;
+  }
+};
+
+export const createPaymentIntent = async (
+  providerId: number,
+  tierId: string
+): Promise<PaymentIntentResponse> => {
+  try {
+    const authToken = sessionStorage.getItem('authToken');
+    const currentUser = JSON.parse(sessionStorage.getItem('currentUser') || 'null');
+    const userId = currentUser?.id?.toString() || authToken;
+
+    const response = await fetch(`${BASE_API_URL}/payments/create_payment_intent`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': userId || '',
+      },
+      body: JSON.stringify({
+        provider_id: providerId,
+        tier_id: tierId,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('❌ Failed to create payment intent:', error);
+    throw error;
+  }
+};
+
+export const confirmSponsorship = async (
+  paymentIntentId: string,
+  providerId: number,
+  tierId: string
+): Promise<SponsorshipResponse> => {
+  try {
+    const authToken = sessionStorage.getItem('authToken');
+    const currentUser = JSON.parse(sessionStorage.getItem('currentUser') || 'null');
+    const userId = currentUser?.id?.toString() || authToken;
+
+    const response = await fetch(`${BASE_API_URL}/payments/confirm_sponsorship`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': userId || '',
+      },
+      body: JSON.stringify({
+        payment_intent_id: paymentIntentId,
+        provider_id: providerId,
+        tier_id: tierId,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('❌ Failed to confirm sponsorship:', error);
+    throw error;
+  }
+};
+
+export const fetchSponsoredProviders = async (): Promise<SponsoredProvider[]> => {
+  try {
+    const response = await fetch(`${BASE_API_URL}/sponsorships/sponsored_providers`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.providers || data.sponsored_providers || [];
+  } catch (error) {
+    console.error('❌ Failed to fetch sponsored providers:', error);
+    throw error;
+  }
+};
+
+export const fetchUserSponsorships = async (): Promise<SponsorshipsResponse> => {
+  try {
+    const authToken = sessionStorage.getItem('authToken');
+    const currentUser = JSON.parse(sessionStorage.getItem('currentUser') || 'null');
+    const userId = currentUser?.id?.toString() || authToken;
+
+    const response = await fetch(`${BASE_API_URL}/sponsorships`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': userId || '',
+      },
+      credentials: 'include', // Include cookies for authentication
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      // Create a user-friendly error that won't crash the app
+      const error = new Error(`Unable to load sponsorships (${response.status})`);
+      // Store the original error details for debugging
+      (error as any).status = response.status;
+      (error as any).details = errorText;
+      throw error;
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error: any) {
+    // Log the error but don't let it crash the app
+    console.error('❌ Failed to fetch user sponsorships:', {
+      message: error?.message,
+      status: error?.status,
+      details: error?.details
+    });
+    // Re-throw with a user-friendly message
+    throw error;
+  }
+};
+
+export const fetchSponsorship = async (sponsorshipId: number): Promise<SponsorshipResponse> => {
+  try {
+    const authToken = sessionStorage.getItem('authToken');
+    const currentUser = JSON.parse(sessionStorage.getItem('currentUser') || 'null');
+    const userId = currentUser?.id?.toString() || authToken;
+
+    const response = await fetch(`${BASE_API_URL}/sponsorships/${sponsorshipId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': userId || '',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('❌ Failed to fetch sponsorship:', error);
+    throw error;
+  }
+};
+
+export const cancelSponsorship = async (sponsorshipId: number): Promise<void> => {
+  try {
+    const authToken = sessionStorage.getItem('authToken');
+    const currentUser = JSON.parse(sessionStorage.getItem('currentUser') || 'null');
+    const userId = currentUser?.id?.toString() || authToken;
+
+    const response = await fetch(`${BASE_API_URL}/sponsorships/${sponsorshipId}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': userId || '',
+      },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
+    }
+  } catch (error) {
+    console.error('❌ Failed to cancel sponsorship:', error);
+    throw error;
   }
 };
