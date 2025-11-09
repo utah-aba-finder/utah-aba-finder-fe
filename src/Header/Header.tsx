@@ -22,12 +22,14 @@ const navigationItems = [
   { 
     name: "Help Us Grow", 
     href: "/donate",
-    isSpecial: true
+    isSpecial: true,
+    variant: "donate"
   },
   { 
     name: "Become a Sponsor", 
     href: "/sponsor",
-    isSpecial: true
+    isSpecial: true,
+    variant: "sponsor"
   },
   {
     name: "Resources",
@@ -134,10 +136,12 @@ const Header = () => {
                   ) : (
                     <Link
                       to={item.href}
-                      className={`text-lg font-bold no-underline transition-all duration-200 flex items-center ${
-                        item.isSpecial 
-                          ? 'bg-gradient-to-r from-green-500 to-green-600 text-white px-3 py-3 rounded-lg shadow-md hover:from-green-600 hover:to-green-700 hover:shadow-lg transform hover:scale-105' 
-                          : 'text-[#332d29] hover:text-[#4A6FA5] px-3 py-3 hover:bg-gray-50 rounded-md'
+                      className={`text-lg font-bold no-underline transition-all duration-200 flex items-center px-3 py-3 rounded-md ${
+                        item.variant === 'donate'
+                          ? 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-md hover:from-green-600 hover:to-green-700 hover:shadow-lg transform hover:scale-105'
+                          : item.variant === 'sponsor'
+                            ? 'bg-gradient-to-r from-sky-500 to-blue-600 text-white shadow-md hover:from-sky-600 hover:to-blue-700 hover:shadow-lg transform hover:scale-105'
+                            : 'text-[#332d29] hover:text-[#4A6FA5] hover:bg-gray-50'
                       }`}
                       style={{ 
                         textDecoration: 'none',
@@ -228,9 +232,11 @@ const Header = () => {
                  <Link
                    to={item.href}
                    className={`block py-4 px-6 text-xl font-bold no-underline ${
-                     item.isSpecial 
-                       ? 'bg-gradient-to-r from-green-500 to-green-600 text-white mx-4 rounded-lg shadow-md text-center' 
-                       : 'text-[#332d29] hover:text-[#4A6FA5]'
+                     item.variant === 'donate'
+                       ? 'bg-gradient-to-r from-green-500 to-green-600 text-white mx-4 rounded-lg shadow-md text-center'
+                       : item.variant === 'sponsor'
+                         ? 'bg-gradient-to-r from-sky-500 to-blue-600 text-white mx-4 rounded-lg shadow-md text-center'
+                         : 'text-[#332d29] hover:text-[#4A6FA5]'
                    }`}
                    onClick={() => setIsMobileMenuOpen(false)}
                  >

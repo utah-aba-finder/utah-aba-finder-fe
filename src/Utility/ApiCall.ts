@@ -125,11 +125,23 @@ export const BASE_API_URL = process.env.NODE_ENV === 'production'
   : "/api/v1";
 
 // Sponsorship API Types
+export interface PricingOption {
+  id: 'monthly' | 'annual';
+  price: number;
+  price_id: string;
+  label: string;
+  savings?: string;
+  description?: string;
+}
+
 export interface SponsorshipTier {
   id: string;
   name: string;
-  price: number;
-  price_id: string;
+  price: number; // Default monthly price
+  price_in_cents?: number; // For Stripe
+  price_display: string; // Formatted string like "$25/Monthly"
+  price_id?: string; // Legacy field for backward compatibility
+  pricing_options: PricingOption[];
   features: string[];
   description?: string;
 }
@@ -160,6 +172,10 @@ export interface SponsorshipResponse {
 
 export interface SponsorshipsResponse {
   sponsorships: Sponsorship[];
+  // New fields from backend
+  has_active_subscription?: boolean;
+  message?: string;
+  tiers_url?: string;
 }
 
 export interface SponsoredProvider {
@@ -1388,16 +1404,29 @@ export const fetchUserSponsorships = async (): Promise<SponsorshipsResponse> => 
         'Content-Type': 'application/json',
         'Authorization': userId || '',
       },
+      credentials: 'include', // Include cookies for authentication
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errorText = await response.text();
+      // Create a user-friendly error that won't crash the app
+      const error = new Error(`Unable to load sponsorships (${response.status})`);
+      // Store the original error details for debugging
+      (error as any).status = response.status;
+      (error as any).details = errorText;
+      throw error;
     }
 
     const data = await response.json();
     return data;
-  } catch (error) {
-    console.error('❌ Failed to fetch user sponsorships:', error);
+  } catch (error: any) {
+    // Log the error but don't let it crash the app
+    console.error('❌ Failed to fetch user sponsorships:', {
+      message: error?.message,
+      status: error?.status,
+      details: error?.details
+    });
+    // Re-throw with a user-friendly message
     throw error;
   }
 };

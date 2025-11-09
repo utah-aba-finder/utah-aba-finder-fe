@@ -12,6 +12,7 @@ const SponsorshipManagement: React.FC<SponsorshipManagementProps> = ({ providerI
   const [sponsorships, setSponsorships] = useState<Sponsorship[]>([]);
   const [loading, setLoading] = useState(true);
   const [cancellingId, setCancellingId] = useState<number | null>(null);
+  const [responseData, setResponseData] = useState<any>(null);
 
   useEffect(() => {
     loadSponsorships();
@@ -21,6 +22,10 @@ const SponsorshipManagement: React.FC<SponsorshipManagementProps> = ({ providerI
     try {
       setLoading(true);
       const response = await fetchUserSponsorships();
+      
+      // Store full response data for metadata (message, tiers_url, etc.)
+      setResponseData(response);
+      
       let filteredSponsorships = response.sponsorships || [];
 
       // Filter by providerId if provided
@@ -31,9 +36,21 @@ const SponsorshipManagement: React.FC<SponsorshipManagementProps> = ({ providerI
       }
 
       setSponsorships(filteredSponsorships);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to load sponsorships:', error);
-      toast.error('Failed to load sponsorships');
+      // Handle 401/403 errors gracefully without crashing
+      if (error?.status === 401 || error?.status === 403) {
+        console.warn('⚠️ Authentication error loading sponsorships - user may need to re-login');
+        // Don't show error toast for auth errors - just show empty state
+        setSponsorships([]);
+        setResponseData(null);
+      } else {
+        // For other errors, show a subtle message but don't crash
+        console.warn('⚠️ Error loading sponsorships:', error?.message);
+        setSponsorships([]);
+        setResponseData(null);
+      }
+      // Don't throw - prevent the error from propagating and causing crashes
     } finally {
       setLoading(false);
     }
@@ -99,11 +116,28 @@ const SponsorshipManagement: React.FC<SponsorshipManagementProps> = ({ providerI
   }
 
   if (sponsorships.length === 0) {
+    const message = responseData?.message;
+    const tiersUrl = responseData?.tiers_url;
+    
     return (
       <div className="text-center p-8 bg-gray-50 rounded-lg">
         <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
         <h3 className="text-lg font-medium text-gray-900 mb-2">No Active Sponsorships</h3>
-        <p className="text-gray-600">You don't have any active sponsorships at this time.</p>
+        {message ? (
+          <>
+            <p className="text-gray-600 mb-4">{message}</p>
+            {tiersUrl && (
+              <a
+                href={`/providerEdit/${providerId}?tab=sponsorship`}
+                className="inline-block px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                View Sponsorship Options
+              </a>
+            )}
+          </>
+        ) : (
+          <p className="text-gray-600">You don't have any active sponsorships at this time.</p>
+        )}
       </div>
     );
   }

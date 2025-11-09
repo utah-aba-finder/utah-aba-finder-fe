@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { TrendingUp, Eye } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { getApiBaseUrl } from "../../Utility/config";
+import { useParams } from "react-router-dom";
 
 interface ProviderViewsWidgetProps {
   days?: number;
@@ -9,17 +10,34 @@ interface ProviderViewsWidgetProps {
 }
 
 interface ViewStatsResponse {
-  by_day: Record<string, number>;
-  total: number;
-  days_requested: number;
-  start_date: string;
-  end_date: string;
+  // Stats data (when has_subscription is true)
+  by_day?: Record<string, number>;
+  total?: number;
+  days_requested?: number;
+  start_date?: string;
+  end_date?: string;
+  // Subscription status (when has_subscription is false)
+  has_subscription?: boolean;
+  requires_sponsorship?: boolean;
+  current_tier?: string;
+  subscription_status?: string;
+  sponsored_until?: string | null;
+  upgrade_message?: string;
+  tiers_url?: string;
+  message?: string;
+  // Analytics level (when has_subscription is true)
+  analytics_level?: string;
+  tier?: string;
 }
 
 export function ProviderViewsWidget({ days = 30, providerId }: ProviderViewsWidgetProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [stats, setStats] = useState<ViewStatsResponse | null>(null);
+  const { id: urlProviderId } = useParams<{ id: string }>();
+  
+  // Use providerId prop first, then fall back to URL param
+  const effectiveProviderId = providerId || (urlProviderId ? parseInt(urlProviderId) : undefined);
 
   useEffect(() => {
     let alive = true;
@@ -33,7 +51,7 @@ export function ProviderViewsWidget({ days = 30, providerId }: ProviderViewsWidg
     const baseUrl = getApiBaseUrl();
     // Endpoint: GET /api/v1/providers/view_stats?days=30
     // provider_id is optional - if not provided, uses the user's active provider
-    const url = `${baseUrl}/providers/view_stats?days=${days}${providerId ? `&provider_id=${providerId}` : ''}`;
+    const url = `${baseUrl}/providers/view_stats?days=${days}${effectiveProviderId ? `&provider_id=${effectiveProviderId}` : ''}`;
 
     fetch(url, { 
       credentials: "include",
@@ -49,9 +67,23 @@ export function ProviderViewsWidget({ days = 30, providerId }: ProviderViewsWidg
         }
         return r.json();
       })
-      .then((data) => {
+      .then((data: ViewStatsResponse) => {
         if (alive) {
-          setStats(data);
+          // Check if provider has a subscription - new backend format
+          if (data.has_subscription === false) {
+            // No subscription - show upgrade message
+            setError('NO_SUBSCRIPTION');
+            setStats(null);
+          } else if (data.has_subscription === true && data.by_day) {
+            // Has subscription and stats data available
+            setStats(data);
+            setError(null);
+          } else {
+            // Unexpected response format
+            console.warn('Unexpected view_stats response format:', data);
+            setStats(data);
+            setError(null);
+          }
         }
       })
       .catch((e) => {
@@ -68,7 +100,7 @@ export function ProviderViewsWidget({ days = 30, providerId }: ProviderViewsWidg
     return () => { 
       alive = false; 
     };
-  }, [days, providerId]);
+  }, [days, effectiveProviderId]);
 
   const chartData = useMemo(() => {
     if (!stats?.by_day) return [] as { date: string; views: number }[];
@@ -99,8 +131,27 @@ export function ProviderViewsWidget({ days = 30, providerId }: ProviderViewsWidg
           </div>
         )}
         {error && (
-          <div className="text-sm text-red-600 p-4 bg-red-50 rounded-lg">
-            {error}
+          <div className="text-sm p-4 rounded-lg bg-blue-50 border border-blue-200">
+            {error === 'NO_SUBSCRIPTION' ? (
+              <div className="text-blue-800">
+                <p className="font-medium mb-2">View statistics require an active sponsorship subscription.</p>
+                <p className="text-sm mb-3">Upgrade to a sponsored tier (Featured, Sponsor, or Community Partner) to access detailed listing view analytics, including daily trends and click statistics.</p>
+                <a 
+                  href={`/providerEdit/${effectiveProviderId}?tab=sponsorship`}
+                  className="text-sm text-blue-600 underline hover:text-blue-800"
+                >
+                  View sponsorship options →
+                </a>
+              </div>
+            ) : error === 'ACCESS_DENIED' ? (
+              // Legacy fallback for old 403 responses
+              <div className="text-blue-800">
+                <p className="font-medium mb-2">View statistics are available for Community Partner tier providers.</p>
+                <p className="text-sm">Upgrade to Community Partner ($99/month) to access detailed listing view analytics, including daily trends and click statistics.</p>
+              </div>
+            ) : (
+              <div className="text-red-600">{error}</div>
+            )}
           </div>
         )}
 

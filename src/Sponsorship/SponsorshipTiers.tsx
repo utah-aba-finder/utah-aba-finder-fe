@@ -36,6 +36,7 @@ const SponsorshipTiers: React.FC<SponsorshipTiersProps> = ({
   const [tiers, setTiers] = useState<SponsorshipTier[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedTier, setSelectedTier] = useState<SponsorshipTier | null>(null);
+  const [tierBillingPeriods, setTierBillingPeriods] = useState<Record<string, 'monthly' | 'annual'>>({});
 
   useEffect(() => {
     let cancelled = false;
@@ -46,7 +47,17 @@ const SponsorshipTiers: React.FC<SponsorshipTiersProps> = ({
         const response = await fetchSponsorshipTiers();
         
         if (!cancelled) {
-          setTiers(response.tiers || []);
+          const tiersData = response.tiers || [];
+          // Debug: Log pricing options structure (remove in production if needed)
+          if (process.env.NODE_ENV === 'development') {
+            console.log('📊 Loaded sponsorship tiers:', tiersData.map(t => ({
+              name: t.name,
+              price: t.price,
+              price_display: t.price_display,
+              pricing_options: t.pricing_options
+            })));
+          }
+          setTiers(tiersData);
         }
       } catch (error) {
         // Don't let errors crash the component
@@ -71,9 +82,27 @@ const SponsorshipTiers: React.FC<SponsorshipTiersProps> = ({
     };
   }, []);
 
-  const handleTierSelect = (tier: SponsorshipTier) => {
-    setSelectedTier(tier);
-    onSelectTier(tier);
+  const handleTierSelect = (tier: SponsorshipTier, billingPeriod: 'monthly' | 'annual' = 'monthly') => {
+    // Get the billing period for this tier (default to 'monthly' if not set)
+    const period = tierBillingPeriods[tier.id] || billingPeriod || 'monthly';
+    
+    // Create a modified tier object with the selected billing period
+    const selectedOption = tier.pricing_options?.find(opt => opt.id === period);
+    const tierWithBilling: SponsorshipTier = {
+      ...tier,
+      // Update price and price_id to match selected billing period
+      price: selectedOption?.price || tier.price,
+      price_id: selectedOption?.price_id || tier.price_id,
+    };
+    setSelectedTier(tierWithBilling);
+    onSelectTier(tierWithBilling);
+  };
+
+  const handleBillingPeriodChange = (tierId: string, period: 'monthly' | 'annual') => {
+    setTierBillingPeriods(prev => ({
+      ...prev,
+      [tierId]: period
+    }));
   };
 
   const getTierIcon = (tierName: string) => {
@@ -155,9 +184,101 @@ const SponsorshipTiers: React.FC<SponsorshipTiersProps> = ({
 
               <h3 className="text-xl font-bold text-center mb-2">{tier.name}</h3>
               
-              <div className="text-center mb-4">
-                <span className="text-3xl font-bold">${tier.price}</span>
-                <span className="text-gray-600">/month</span>
+              {/* Billing Period Toggle */}
+              {tier.pricing_options && tier.pricing_options.length > 1 && (() => {
+                // Deduplicate pricing_options by id to avoid duplicate buttons
+                const uniquePeriods = Array.from(new Set(tier.pricing_options.map(opt => opt.id)));
+                const currentPeriod = tierBillingPeriods[tier.id] || 'monthly';
+                
+                return (
+                  <div className="flex justify-center mb-4">
+                    <div className="inline-flex rounded-lg border border-gray-200 p-1 bg-gray-50">
+                      {uniquePeriods.map((periodId) => {
+                        const option = tier.pricing_options.find(opt => opt.id === periodId);
+                        if (!option) return null;
+                        
+                        return (
+                          <button
+                            key={periodId}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleBillingPeriodChange(tier.id, periodId as 'monthly' | 'annual');
+                            }}
+                            className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+                              currentPeriod === periodId
+                                ? 'bg-white text-blue-600 shadow-sm'
+                                : 'text-gray-600 hover:text-gray-900'
+                            }`}
+                          >
+                            {option.label || (periodId === 'monthly' ? 'Monthly' : 'Annual')}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Pricing Display */}
+              <div className="text-center mb-2">
+                {(() => {
+                  // Get current billing period for this tier
+                  const currentPeriod = tierBillingPeriods[tier.id] || 'monthly';
+                  
+                  // Try to find pricing option for current period
+                  let selectedOption = tier.pricing_options?.find(opt => opt.id === currentPeriod);
+                  
+                  // If not found, default to monthly
+                  if (!selectedOption && tier.pricing_options && tier.pricing_options.length > 0) {
+                    selectedOption = tier.pricing_options.find(opt => opt.id === 'monthly') || tier.pricing_options[0];
+                  }
+                  
+                  // If annual is selected, show annual pricing details
+                  if (selectedOption && currentPeriod === 'annual') {
+                    return (
+                      <>
+                        <div className="flex items-center justify-center gap-2">
+                          <span className="text-3xl font-bold">${selectedOption.price}</span>
+                          <span className="text-gray-600">/year</span>
+                        </div>
+                        {selectedOption.savings && (
+                          <div className="text-sm text-green-600 font-medium mt-1">
+                            {selectedOption.savings}
+                          </div>
+                        )}
+                        {selectedOption.description && (
+                          <div className="text-xs text-gray-500 mt-1">
+                            {selectedOption.description}
+                          </div>
+                        )}
+                        {selectedOption.price && (
+                          <div className="text-xs text-gray-500 mt-1">
+                            ${(selectedOption.price / 10).toFixed(0)}/month billed annually
+                          </div>
+                        )}
+                      </>
+                    );
+                  }
+                  
+                  // Default: Use price_display from tier (e.g., "$25/Monthly") for monthly
+                  if (tier.price_display) {
+                    return (
+                      <>
+                        <div className="flex items-center justify-center gap-2">
+                          <span className="text-3xl font-bold">{tier.price_display}</span>
+                        </div>
+                      </>
+                    );
+                  }
+                  
+                  // Fallback to legacy price field
+                  return (
+                    <>
+                      <span className="text-3xl font-bold">${tier.price}</span>
+                      <span className="text-gray-600">/month</span>
+                    </>
+                  );
+                })()}
               </div>
 
               {tier.description && (
@@ -185,7 +306,10 @@ const SponsorshipTiers: React.FC<SponsorshipTiersProps> = ({
                 disabled={!!isCurrent}
                 onClick={(e) => {
                   e.stopPropagation();
-                  if (!isCurrent) handleTierSelect(tier);
+                  if (!isCurrent) {
+                    const period = tierBillingPeriods[tier.id] || 'monthly';
+                    handleTierSelect(tier, period);
+                  }
                 }}
               >
                 {isCurrent ? 'Current Plan' : isSelected ? 'Selected' : 'Select Tier'}

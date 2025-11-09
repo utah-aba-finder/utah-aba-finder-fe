@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512" height="512" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="gradPrimary" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#9ca3af"/>
+      <stop offset="100%" stop-color="#6b7280"/>
+    </linearGradient>
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="rgba(0,0,0,0.2)"/>
+    </filter>
+  </defs>
+  <circle cx="128" cy="128" r="118" fill="#d1d5db"/>
+  <circle cx="128" cy="128" r="112" fill="url(#gradPrimary)"/>
+  <path d="M128 44c28 0 54-10 54-10s0 46-6 70c-6 23-24 39-48 52-24-13-42-29-48-52-6-24-6-70-6-70s26 10 54 10z" fill="#e5e7eb" opacity="0.25"/>
+  <g filter="url(#shadow)">
+    <path d="M128 84l11.3 23 25.4 3.7-18.4 17.9 4.3 25.1-22.6-11.9-22.6 11.9 4.3-25.1-18.4-17.9 25.4-3.7L128 84z" fill="#111827"/>
+  </g>
+  <g>
+    <path d="M44 140h168v26c0 4-3 7-7 7H51c-4 0-7-3-7-7v-26z" fill="#e5e7eb" />
+    <rect x="44" y="136" width="168" height="12" rx="6" fill="#111827" opacity="0.15"/>
+    <text x="128" y="158" text-anchor="middle" font-family="Inter, sans-serif" font-size="16" font-weight="700" fill="#111827">SPONSOR</text>
+  </g>
+  <text x="128" y="196" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" font-weight="600" fill="#111827" opacity="0.85">Autism Services Locator</text>
+</svg>

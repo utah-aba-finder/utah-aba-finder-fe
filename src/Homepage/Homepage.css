@@ -47,6 +47,7 @@
 }
 
 .discover-section-subtitle {
+    max-width: 90%;
     font-size: 1.5rem;
     color: whitesmoke;
     text-align: center;
@@ -154,7 +155,7 @@
 
     .discover-section-title {
         font-size: 1.2rem;
-        max-width: 100%;
+        max-width: 90%;
     }
 
     .discover-section-description {

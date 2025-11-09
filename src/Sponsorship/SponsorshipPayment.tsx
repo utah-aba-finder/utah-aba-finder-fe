@@ -106,9 +106,28 @@ const PaymentForm: React.FC<{
           <span className="text-lg font-bold text-blue-600">{tier.name}</span>
         </div>
         <div className="flex items-center justify-between">
-          <span className="text-gray-700 font-medium">Monthly Cost:</span>
-          <span className="text-2xl font-bold text-gray-900">${tier.price}/month</span>
+          <span className="text-gray-700 font-medium">
+            {(() => {
+              const selectedOption = tier.pricing_options?.find(opt => opt.price_id === tier.price_id);
+              return selectedOption?.id === 'annual' ? 'Annual' : 'Monthly';
+            })()} Cost:
+          </span>
+          <span className="text-2xl font-bold text-gray-900">
+            ${tier.price}
+            {(() => {
+              const selectedOption = tier.pricing_options?.find(opt => opt.price_id === tier.price_id);
+              return selectedOption?.id === 'annual' ? '/year' : '/month';
+            })()}
+          </span>
         </div>
+        {(() => {
+          const selectedOption = tier.pricing_options?.find(opt => opt.price_id === tier.price_id);
+          return selectedOption?.id === 'annual' && (
+            <div className="mt-2 text-sm text-green-600 font-medium">
+              {selectedOption.savings || '2 months free with annual billing'}
+            </div>
+          );
+        })()}
       </div>
 
       <div className="space-y-4">
@@ -151,7 +170,13 @@ const PaymentForm: React.FC<{
           ) : (
             <>
               <CheckCircle className="w-4 h-4" />
-              <span>Subscribe ${tier.price}/month</span>
+              <span>
+                Subscribe ${tier.price}
+                {(() => {
+                  const selectedOption = tier.pricing_options?.find(opt => opt.price_id === tier.price_id);
+                  return selectedOption?.id === 'annual' ? '/year' : '/month';
+                })()}
+              </span>
             </>
           )}
         </button>

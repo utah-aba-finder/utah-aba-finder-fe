@@ -5,7 +5,7 @@ import SponsorshipTiers from './SponsorshipTiers';
 import SponsorshipPayment from './SponsorshipPayment';
 import SponsorshipManagement from './SponsorshipManagement';
 import { SponsorshipTier, fetchSponsorshipTiers } from '../Utility/ApiCall';
-import { X } from 'lucide-react';
+import { X, Crown } from 'lucide-react';
 
 interface SponsorshipPageProps {
   providerId: number;
@@ -154,49 +154,55 @@ const SponsorshipPage: React.FC<SponsorshipPageProps> = ({
       )}
 
             {error && !loading && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-6">
-          <h3 className="text-yellow-800 font-semibold mb-2">⚠️ Unable to Load Sponsorship Options</h3>                                                               
-          <p className="text-yellow-700 text-sm mb-4">{error}</p>
-          <div className="flex gap-3">
-            <button
-              onClick={() => {
-                setError(null);
-                setLoading(true);
-                // Reload tiers
-                fetchSponsorshipTiers()
-                  .then((response) => {
-                    setTiers(response.tiers || []);
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
+          <div className="flex items-start space-x-3">
+            <div className="flex-shrink-0">
+              <Crown className="w-6 h-6 text-blue-600" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-blue-900 font-semibold mb-2">No Active Sponsorship</h3>                                                               
+              <p className="text-blue-800 text-sm mb-4">
+                You don't currently have an active sponsorship. Select and pay for a sponsorship package to increase your visibility and reach more families.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
                     setError(null);
-                  })
-                  .catch((err: any) => {
-                    const errorMessage = err?.message || 'Failed to load sponsorship tiers. Please try again.';                                                   
-                    setError(errorMessage);
-                    toast.error(errorMessage);
-                  })
-                  .finally(() => {
-                    setLoading(false);
-                  });
-              }}
-              className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors text-sm font-medium"                                       
-            >
-              Try Again
-            </button>
-            <button
-              onClick={() => {
-                setError(null);
-                // Allow user to view management even if tiers failed to load
-                if (step === 'tiers') {
-                  setStep('management');
-                }
-              }}
-              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm font-medium"                                       
-            >
-              View My Sponsorships Instead
-            </button>
+                    setLoading(true);
+                    // Reload tiers
+                    fetchSponsorshipTiers()
+                      .then((response) => {
+                        setTiers(response.tiers || []);
+                        setError(null);
+                      })
+                      .catch((err: any) => {
+                        const errorMessage = err?.message || 'Failed to load sponsorship tiers. Please try again.';                                                   
+                        setError(errorMessage);
+                        toast.error(errorMessage);
+                      })
+                      .finally(() => {
+                        setLoading(false);
+                      });
+                  }}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"                                       
+                >
+                  Browse Sponsorship Options
+                </button>
+                <button
+                  onClick={() => {
+                    setError(null);
+                    // Allow user to view management even if tiers failed to load
+                    if (step === 'tiers') {
+                      setStep('management');
+                    }
+                  }}
+                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm font-medium"                                       
+                >
+                  Check Sponsorship Status
+                </button>
+              </div>
+            </div>
           </div>
-          <p className="text-yellow-600 text-xs mt-3">
-            You can still navigate to other tabs or try again later.
-          </p>
         </div>
       )}
 

@@ -217,9 +217,22 @@ class Homepage extends Component<Props, State> {
                         serviceType: [
                             "Autism Evaluations",
                             "ABA Therapy",
+                            "Advocates",
+                            "Coaching & Mentoring",
                             "Speech Therapy",
-                            "Occupational Therapy"
-                        ]
+                            "Occupational Therapy",
+                            "Barbers & Hair",
+                            "Dentists",
+                            "Orthodontists",
+                            "Pediatricians",
+                            "Physical Therapists",
+                            "Therapists"
+                        ],
+                        provider: {
+                            "@type": "Organization",
+                            name: "Autism Services Locator",
+                            url: "https://autismserviceslocator.com"
+                        }
                     }}
                 />
                 <StructuredData 
@@ -284,8 +297,8 @@ class Homepage extends Component<Props, State> {
                     <img src={utah} alt="background-image" className="discover-section-backgroundImage" />
                     <div className="discover-section-container">
                         <h1 className="discover-section-title">Get The Care You Deserve</h1> <br />
-                        <h2 className="discover-section-subtitle">Autism Evaluations | ABA Therapy | Speech Therapy | Occupational Therapy</h2>
-                        <div className="discover-section-content">
+                            <h2 className="discover-section-subtitle">Autism Evaluations | ABA Therapy | Advocates | Coaching & Mentoring | Speech Therapy | Occupational Therapy | Barbers & Hair | Dentists | Orthodontists | Pediatricians | Physical Therapists | Therapists</h2>
+                            <div className="discover-section-content">
                             <p className="discover-section-description">
                                 We're here to make your search in finding the best providers for you and your family easier. Start your journey with a bit of ease.
                             </p>

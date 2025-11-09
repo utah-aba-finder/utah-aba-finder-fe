@@ -462,18 +462,31 @@ function ProviderEditWrapper({
     );
   }
 
-    // Use activeProvider if available, otherwise fall back to loggedInProvider
-  // Also check sessionStorage as a fallback
-  let providerToUse = activeProvider || loggedInProvider;
-  if (!providerToUse) {
+  // CRITICAL: If user is authenticated, prioritize sessionStorage to prevent "Please log in" screen
+  // when navigating between tabs
+  const isAuthenticated = currentUser !== null && currentUser !== undefined;
+  
+  // Check sessionStorage first if user is authenticated (more reliable during navigation)
+  let providerToUse: ProviderData | null = null;
+  if (isAuthenticated) {
+    // First try sessionStorage (most reliable during tab navigation)
     const fromStorage = 
       JSON.parse(sessionStorage.getItem('activeProvider') || 'null') ||
       JSON.parse(sessionStorage.getItem('loggedInProvider') || 'null');
-    providerToUse = fromStorage;
+    
+    if (fromStorage) {
+      providerToUse = fromStorage;
+    } else {
+      // Fall back to state
+      providerToUse = activeProvider || loggedInProvider || null;
+    }
+  } else {
+    // If not authenticated, use state only
+    providerToUse = activeProvider || loggedInProvider || null;
   }
-
-  // Show loading state while restoration might be in progress (but only for 2 seconds max)
-  if (!providerToUse && isRestoring) {
+  
+  // Show loading state while restoration might be in progress (but only if user is authenticated)
+  if (!providerToUse && isRestoring && isAuthenticated) {
     return (
       <div style={{ minHeight: '60vh', display: 'grid', placeItems: 'center' }}>
         <div style={{ textAlign: 'center' }}>
@@ -487,15 +500,69 @@ function ProviderEditWrapper({
     );
   }
 
-  if (!providerToUse) {
+  // Only show "Please log in" if user is NOT authenticated
+  // If user IS authenticated, we should have provider data from sessionStorage
+  // But if for some reason we don't, allow ProviderEdit to handle it gracefully
+  if (!isAuthenticated) {
     return (
       <div style={{ minHeight: '60vh', display: 'grid', placeItems: 'center' }}>
         <div style={{ textAlign: 'center', padding: '2rem' }}>
           <p style={{ marginBottom: '1rem', fontSize: '1.125rem', color: '#374151' }}>
             Please log in to edit provider information.
           </p>
-          {/* Show clear session button if user is authenticated but missing provider data */}
-          {currentUser && currentUser.role === 'provider_admin' && (
+        </div>
+      </div>
+    );
+  }
+
+  // If authenticated but still no provider data, create a minimal provider object
+  // This allows ProviderEdit to render and fetch the real data via refreshProviderData
+  // This should rarely happen if sessionStorage is working correctly
+  if (!providerToUse && isAuthenticated && id) {
+    console.warn('⚠️ ProviderEditWrapper: Authenticated but no provider data found, creating temporary provider object');
+    providerToUse = {
+      id: parseInt(id || '0'),
+      type: 'Provider',
+      states: [],
+      attributes: {
+        id: parseInt(id || '0'),
+        states: [],
+        password: '',
+        username: '',
+        name: '',
+        email: '',
+        website: null,
+        logo: null,
+        provider_type: [],
+        insurance: [],
+        counties_served: [],
+        locations: [],
+        cost: null,
+        min_age: null,
+        max_age: null,
+        waitlist: null,
+        telehealth_services: null,
+        spanish_speakers: null,
+        at_home_services: null,
+        in_clinic_services: null,
+        updated_last: null,
+        status: null,
+        in_home_only: false,
+        service_delivery: { in_home: false, in_clinic: false, telehealth: false }
+      }
+    };
+  }
+  
+  // Final safety check - if still no provider, don't render ProviderEdit
+  if (!providerToUse) {
+    console.error('❌ ProviderEditWrapper: Cannot render - no provider data available');
+    return (
+      <div style={{ minHeight: '60vh', display: 'grid', placeItems: 'center' }}>
+        <div style={{ textAlign: 'center', padding: '2rem' }}>
+          <p style={{ marginBottom: '1rem', fontSize: '1.125rem', color: '#374151' }}>
+            Unable to load provider data. Please try refreshing the page.
+          </p>
+          {currentUser && (
             <button
               onClick={() => {
                 logout('manual');
@@ -509,11 +576,8 @@ function ProviderEditWrapper({
                 borderRadius: '0.375rem',
                 cursor: 'pointer',
                 fontSize: '0.875rem',
-                fontWeight: '500',
-                transition: 'background-color 0.2s'
+                fontWeight: '500'
               }}
-              onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#dc2626'}
-              onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#ef4444'}
             >
               Clear Session and Re-login
             </button>

@@ -6,6 +6,39 @@ import { useAuth } from "../../Provider-login/AuthProvider";
 import ProviderSelector from "./ProviderSelector";
 import ProviderViewsWidget from "./ProviderViewsWidget";
 
+// Helper function to check if provider has Community Partner tier (tier 3) and active sponsorship
+const isCommunityPartner = (
+  tier: string | number | null | undefined,
+  isSponsored?: boolean,
+  sponsoredUntil?: string | null
+): boolean => {
+  // First check if tier is Community Partner (tier 3)
+  let hasPartnerTier = false;
+  if (tier !== null && tier !== undefined) {
+    // Check if it's the integer enum value (3 = partner)
+    if (typeof tier === 'number') {
+      hasPartnerTier = tier === 3;
+    } else {
+      // Check if it's a string that represents partner tier
+      const tierLower = tier.toString().toLowerCase();
+      hasPartnerTier = tierLower === 'partner' || tierLower === 'community partner' || tierLower === '3';
+    }
+  }
+  
+  if (!hasPartnerTier) return false;
+  
+  // Check if sponsorship is active (is_sponsored = true and not expired)
+  if (isSponsored === false) return false;
+  
+  if (sponsoredUntil) {
+    const expiryDate = new Date(sponsoredUntil);
+    const now = new Date();
+    if (expiryDate < now) return false; // Expired
+  }
+  
+  return true;
+};
+
 interface DashboardProps {
   provider: ProviderData;
   onUpdate?: (updatedData: ProviderData) => void;
@@ -246,10 +279,16 @@ const Dashboard: React.FC<DashboardProps> = ({ provider, onUpdate }) => {
         </div>
       </div>
 
-      {/* Provider Views Widget - Available to all providers */}
-      <div className="mt-6">
-        <ProviderViewsWidget days={30} providerId={provider.id} />
-      </div>
+      {/* Provider Views Widget - Only available to Community Partner tier with active sponsorship */}
+      {isCommunityPartner(
+        attributes.sponsorship_tier,
+        attributes.is_sponsored,
+        attributes.sponsored_until
+      ) && (
+        <div className="mt-6">
+          <ProviderViewsWidget days={30} providerId={provider.id} />
+        </div>
+      )}
     </div>
   );
 };
