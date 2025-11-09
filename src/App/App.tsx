@@ -421,7 +421,7 @@ function ProviderEditWrapper({
       // Don't clear timers here - let them run to completion
       // Only clear on unmount
     };
-  }, [authReady, authLoading, currentUser, id, activeProvider, loggedInProvider]);
+  }, [authReady, authLoading, currentUser, id, activeProvider, loggedInProvider, isRestoring]);
 
   // Failsafe: If restoration has been in progress for more than 3 seconds, force clear it
   useEffect(() => {

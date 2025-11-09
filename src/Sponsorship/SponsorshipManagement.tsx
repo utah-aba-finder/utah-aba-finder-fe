@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { toast } from 'react-toastify';
 import { fetchUserSponsorships, cancelSponsorship, Sponsorship } from '../Utility/ApiCall';
 import { Calendar, DollarSign, X, CheckCircle, AlertCircle, Crown, Star, Zap } from 'lucide-react';
@@ -14,11 +14,7 @@ const SponsorshipManagement: React.FC<SponsorshipManagementProps> = ({ providerI
   const [cancellingId, setCancellingId] = useState<number | null>(null);
   const [responseData, setResponseData] = useState<any>(null);
 
-  useEffect(() => {
-    loadSponsorships();
-  }, [providerId]);
-
-  const loadSponsorships = async () => {
+  const loadSponsorships = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetchUserSponsorships();
@@ -54,7 +50,11 @@ const SponsorshipManagement: React.FC<SponsorshipManagementProps> = ({ providerI
     } finally {
       setLoading(false);
     }
-  };
+  }, [providerId]);
+
+  useEffect(() => {
+    loadSponsorships();
+  }, [loadSponsorships]);
 
   const handleCancel = async (sponsorshipId: number) => {
     if (!window.confirm('Are you sure you want to cancel this sponsorship? This action cannot be undone.')) {

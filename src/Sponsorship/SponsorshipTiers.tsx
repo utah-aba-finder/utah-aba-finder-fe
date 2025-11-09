@@ -152,12 +152,20 @@ const SponsorshipTiers: React.FC<SponsorshipTiersProps> = ({
           const normalizedCurrent = normalizeTier(currentTier);
           const normalizedTierId = tier.id ? tier.id.toString().toLowerCase() : null;
           const normalizedTierName = tier.name ? tier.name.toLowerCase() : null;
-          const isCurrent = normalizedCurrent && normalizedTierName && (
-            normalizedCurrent === normalizedTierId ||
-            normalizedCurrent === normalizedTierName ||
-            normalizedTierName.includes(normalizedCurrent) ||
-            normalizedCurrent.includes(normalizedTierName)
-          ) || false;
+
+          const matchesId =
+            normalizedCurrent !== null && normalizedTierId !== null
+              ? normalizedCurrent === normalizedTierId
+              : false;
+
+          const matchesName =
+            normalizedCurrent !== null && normalizedTierName !== null
+              ? normalizedCurrent === normalizedTierName ||
+                normalizedTierName.includes(normalizedCurrent) ||
+                normalizedCurrent.includes(normalizedTierName)
+              : false;
+
+          const isCurrent = matchesId || matchesName;
           const colorClass = getTierColor(tier.name);
 
           return (

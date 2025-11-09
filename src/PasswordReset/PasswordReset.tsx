@@ -61,11 +61,14 @@ const PasswordReset: React.FC = () => {
   }, [resetToken, navigate, validateToken]);
 
   // Check password strength in real-time
+  const symbolCharacters = "!@#$%^&*()_+-=[]{};':\"\\|,.<>/?";
+
   const checkPasswordStrength = (pwd: string) => {
+    const containsSymbol = [...pwd].some((char) => symbolCharacters.includes(char));
     setPasswordStrength({
       hasMinLength: pwd.length >= 7,
       hasNumber: /\d/.test(pwd),
-      hasSymbol: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(pwd),
+      hasSymbol: containsSymbol,
     });
   };
 
@@ -83,7 +86,7 @@ const PasswordReset: React.FC = () => {
       if (!/\d/.test(password)) {
         requirements.push('one number');
       }
-      if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+      if (![...password].some((char) => symbolCharacters.includes(char))) {
         requirements.push('one symbol');
       }
       
