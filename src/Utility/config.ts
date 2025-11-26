@@ -5,6 +5,7 @@ export const API_CONFIG = {
   // API Keys - these should be set as environment variables
   ADMIN_API_KEY: process.env.REACT_APP_ADMIN_API_KEY || '',
   GOOGLE_PLACES_API_KEY: process.env.REACT_APP_GOOGLE_PLACES_API_KEY || '',
+  RECAPTCHA_SITE_KEY: process.env.REACT_APP_RECAPTCHA_SITE_KEY || '6LfTMGErAAAAAARfviGKHaQSMBEiUqHOZeBEmRIu',
   
   // API URLs - Always use the Heroku API for now
   BASE_API_URL: process.env.REACT_APP_BASE_API_URL || 'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com',
