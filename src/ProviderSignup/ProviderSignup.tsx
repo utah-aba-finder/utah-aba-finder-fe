@@ -6,8 +6,10 @@ import {
   Smile, ClipboardCheck, Baby, Dumbbell, Shield, Ear, Mail
 } from 'lucide-react';
 import { fetchStates } from '../Utility/ApiCall';
+import { API_CONFIG } from '../Utility/config';
 import InsuranceInput from './InsuranceInput';
 import ClaimAccount from './ClaimAccount';
+import ReCAPTCHA from "react-google-recaptcha";
 import './InsuranceInput.css';
 import './ProviderSignup.css';
 
@@ -124,8 +126,8 @@ const ProviderSignup: React.FC = () => {
   
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  // const [isRecaptchaReady, setIsRecaptchaReady] = useState(false); // Temporarily disabled
   const [recaptchaToken, setRecaptchaToken] = useState<string>('');
+  const recaptchaRef = useRef<ReCAPTCHA>(null);
   const [states, setStates] = useState<string[]>([]);
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
   const [isCheckingDuplicate, setIsCheckingDuplicate] = useState(false);
@@ -260,6 +262,11 @@ const ProviderSignup: React.FC = () => {
     setDuplicateCheckComplete(false);
     setRecaptchaToken('');
     setHasUnsavedChanges(false);
+    
+    // Reset reCAPTCHA widget
+    if (recaptchaRef.current) {
+      recaptchaRef.current.reset();
+    }
     
     // Clear localStorage draft
     localStorage.removeItem(AUTOSAVE_KEY);
@@ -1693,29 +1700,15 @@ const ProviderSignup: React.FC = () => {
                         <span className="font-semibold">Security Verification:</span> This form is protected by reCAPTCHA to ensure you're human.
                       </p>
                       <div className="mt-2">
-                        {/* Always show reCAPTCHA container for both dev and production */}
-                        <div id="recaptcha-container"></div>
-                        
-                        {/* Development fallback - simple checkbox as backup */}
-                        {process.env.NODE_ENV === 'development' && (
-                          <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
-                            <div className="flex items-center space-x-2">
-                              <input
-                                type="checkbox"
-                                id="dev-recaptcha"
-                                checked={recaptchaToken === 'dev-token'}
-                                onChange={(e) => setRecaptchaToken(e.target.checked ? 'dev-token' : '')}
-                                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                              />
-                              <label htmlFor="dev-recaptcha" className="text-sm text-blue-700">
-                                I'm not a robot (Development Fallback)
-                              </label>
-                            </div>
-                            <p className="mt-2 text-xs text-blue-600">
-                              🔧 Development Mode: reCAPTCHA widget should appear above. If it doesn't, use this checkbox as backup.
-                            </p>
+                        <div className="flex justify-center">
+                          <div className="scale-90 sm:scale-100">
+                            <ReCAPTCHA
+                              ref={recaptchaRef}
+                              sitekey={API_CONFIG.RECAPTCHA_SITE_KEY}
+                              onChange={(value: string | null) => setRecaptchaToken(value || '')}
+                            />
                           </div>
-                        )}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -1807,25 +1800,15 @@ const ProviderSignup: React.FC = () => {
                     </div>
                     <div className="ml-3">
                       <p className="text-sm text-blue-800">
-                        {/* TEMPORARILY DISABLED - reCAPTCHA status */}
-                        {/* {!isRecaptchaReady ? (
-                          <>
-                            <span className="font-semibold">Loading reCAPTCHA...</span> Please wait while we load the security verification system.
-                          </>
-                        ) : (
-                          <>
-                            <span className="font-semibold">reCAPTCHA Ready!</span> This site is protected by reCAPTCHA and the Google{' '}
-                            <a href="https://policies.google.com/privacy" className="underline hover:text-blue-900" target="_blank" rel="noopener noreferrer">
-                              Privacy Policy
-                            </a>{' '}
-                            and{' '}
-                            <a href="https://policies.google.com/terms" className="underline hover:text-blue-900" target="_blank" rel="noopener noreferrer">
-                              Terms of Service
-                            </a>{' '}
-                            apply.
-                          </>
-                        )} */}
-                        <span className="font-semibold">reCAPTCHA temporarily disabled for debugging</span>
+                        <span className="font-semibold">reCAPTCHA Ready!</span> This site is protected by reCAPTCHA and the Google{' '}
+                        <a href="https://policies.google.com/privacy" className="underline hover:text-blue-900" target="_blank" rel="noopener noreferrer">
+                          Privacy Policy
+                        </a>{' '}
+                        and{' '}
+                        <a href="https://policies.google.com/terms" className="underline hover:text-blue-900" target="_blank" rel="noopener noreferrer">
+                          Terms of Service
+                        </a>{' '}
+                        apply.
                       </p>
                     </div>
                   </div>
