@@ -3,6 +3,7 @@ import { toast } from "react-toastify";
 import {  X, Eye, EyeOff } from "lucide-react";
 import { CountiesServed, StateData, CountyData, Service } from "../Utility/Types";
 import { fetchStates, fetchCountiesByState, fetchPracticeTypes, PracticeType } from "../Utility/ApiCall";
+import { API_CONFIG } from "../Utility/config";
 import "react-toastify/dist/ReactToastify.css";
 import emailjs from 'emailjs-com';
 import Confetti from 'react-confetti';
@@ -1455,7 +1456,7 @@ In-Home Services Only: ${providerData.in_home_only ? "Yes" : "No"}
               <div className="scale-90 sm:scale-100">
                 <ReCAPTCHA
                   ref={recaptchaRef}
-                  sitekey="6LfTMGErAAAAAARfviGKHaQSMBEiUqHOZeBEmRIu"
+                  sitekey={API_CONFIG.RECAPTCHA_SITE_KEY}
                   onChange={(value: string | null) => setRecaptchaValue(value)}
                 />
               </div>
