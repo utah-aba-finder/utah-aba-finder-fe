@@ -3,7 +3,7 @@ import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
 import { 
   Building2, Heart, Brain, Scissors, Activity, Target, 
-  Smile, ClipboardCheck, Baby, Dumbbell, Shield, Ear, Mail
+  Smile, ClipboardCheck, Baby, Dumbbell, Shield, Ear, Mail, BookOpen
 } from 'lucide-react';
 import { fetchStates } from '../Utility/ApiCall';
 import { API_CONFIG } from '../Utility/config';
@@ -128,8 +128,10 @@ const ProviderSignup: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [recaptchaToken, setRecaptchaToken] = useState<string>('');
   const recaptchaRef = useRef<ReCAPTCHA>(null);
+  const [recaptchaError, setRecaptchaError] = useState<string | null>(null);
   const [states, setStates] = useState<string[]>([]);
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
+  const [categoriesLoadError, setCategoriesLoadError] = useState<string | null>(null);
   const [isCheckingDuplicate, setIsCheckingDuplicate] = useState(false);
   const [duplicateCheckComplete, setDuplicateCheckComplete] = useState(false);
   
@@ -141,6 +143,7 @@ const ProviderSignup: React.FC = () => {
   const commonFieldsRef = useRef(commonFields);
   const selectedCategoriesRef = useRef(selectedCategories);
   const stepRef = useRef(step);
+  const hasFetchedCategoriesRef = useRef(false);
   
   // Keep refs updated
   useEffect(() => {
@@ -426,19 +429,283 @@ const ProviderSignup: React.FC = () => {
     markChanged();
   }, [markChanged]);
 
-  // Load categories and states on component mount
-  useEffect(() => {
-    console.log('🔄 Main useEffect triggered - component mounting');
-    fetchProviderCategories();
+  // Define fetchProviderCategories BEFORE the useEffect that uses it
+  const fetchProviderCategories = useCallback(async () => {
+    // Prevent multiple simultaneous calls - check both ref and sessionStorage
+    const fetchKey = 'categories_fetch_in_progress';
+    if (hasFetchedCategoriesRef.current || sessionStorage.getItem(fetchKey) === 'true') {
+      console.log('⚠️ Categories fetch already in progress or completed, skipping...');
+      return;
+    }
     
-    // Load states separately to avoid complexity
+    hasFetchedCategoriesRef.current = true;
+    sessionStorage.setItem(fetchKey, 'true');
+    setIsLoadingCategories(true);
+    setCategoriesLoadError(null); // Clear any previous errors
+    
+    try {
+      const apiUrl = API_CONFIG.BASE_API_URL;
+      const categoriesUrl = `${apiUrl}/api/v1/provider_categories`;
+      
+      console.log('🔄 Fetching provider categories from:', categoriesUrl);
+      
+      // Add timeout to prevent hanging
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => {
+        controller.abort();
+        console.error('⏱️ Categories fetch timed out after 30 seconds');
+      }, 30000); // 30 second timeout
+      
+      const response = await fetch(categoriesUrl, {
+        signal: controller.signal,
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        // Removed credentials: 'include' - causes CORS error when backend uses wildcard origin
+      });
+      
+      clearTimeout(timeoutId);
+      console.log('📡 Categories API response status:', response.status);
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('✅ Categories loaded:', data.data?.length || 0, 'categories');
+        setCategories(data.data || []);
+        setCategoriesLoadError(null);
+        // Mark as successfully fetched in sessionStorage
+        sessionStorage.setItem('categories_fetched_success', 'true');
+      } else {
+        console.error('❌ Failed to fetch categories:', response.status, response.statusText);
+        let errorText = '';
+        try {
+          errorText = await response.text();
+          console.error('❌ Error details:', errorText);
+        } catch (e) {
+          console.error('❌ Could not read error response');
+        }
+        
+        let errorMsg = '';
+        if (response.status === 503) {
+          errorMsg = 'Service temporarily unavailable. The server may be starting up. Please wait a moment and try again.';
+        } else if (response.status >= 500) {
+          errorMsg = `Server error (${response.status}). Please try again in a few moments.`;
+        } else {
+          errorMsg = `Failed to load provider categories (${response.status}). Please try again.`;
+        }
+        
+        setCategoriesLoadError(errorMsg);
+        toast.error(errorMsg);
+        // Reset the ref and sessionStorage on error so user can retry
+        hasFetchedCategoriesRef.current = false;
+        sessionStorage.removeItem('categories_fetch_in_progress');
+        sessionStorage.removeItem('categories_fetched_success');
+      }
+    } catch (error: any) {
+      console.error('❌ Error fetching categories:', error);
+      console.error('❌ Error details:', {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      });
+      
+      let errorMsg = '';
+      if (error.name === 'AbortError') {
+        errorMsg = 'Request timed out. Please check your connection and try again.';
+        toast.error(errorMsg);
+      } else if (error.message?.includes('Failed to fetch') || error.message?.includes('NetworkError')) {
+        errorMsg = 'Network error: Unable to reach the server. Please check your internet connection and try again.';
+        toast.error(errorMsg);
+      } else {
+        errorMsg = `Network error: ${error.message || 'Unknown error'}. Please try again.`;
+        toast.error(errorMsg);
+      }
+        setCategoriesLoadError(errorMsg);
+        // Reset the ref and sessionStorage on error so user can retry
+        hasFetchedCategoriesRef.current = false;
+        sessionStorage.removeItem('categories_fetch_in_progress');
+        sessionStorage.removeItem('categories_fetched_success');
+    } finally {
+      setIsLoadingCategories(false);
+    }
+  }, []);
+
+  // Debug: Log mounts and unmounts to identify remount loop
+  useEffect(() => {
+    console.log('🟢 ProviderSignup MOUNTED');
+    return () => {
+      console.log('🔴 ProviderSignup UNMOUNTED');
+    };
+  }, []);
+
+  // Load states independently - always fetch states even if categories fetch is skipped
+  useEffect(() => {
+    // Only fetch states if we don't have them yet
+    if (states.length > 0) {
+      console.log('✅ States already loaded, skipping fetch');
+      return;
+    }
+    
+    let isMounted = true;
+    console.log('🔄 Fetching states...');
+    
     fetchStates().then(data => {
-      const stateNames = data.map(state => state.attributes.name);
-      setStates(stateNames);
+      if (isMounted) {
+        const stateNames = data.map(state => state.attributes.name);
+        console.log('✅ States loaded:', stateNames.length, 'states');
+        setStates(stateNames);
+      }
     }).catch(error => {
       console.error('❌ Error fetching states:', error);
+      // Set a fallback list of US states if API fails
+      if (isMounted) {
+        const fallbackStates = [
+          'Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado',
+          'Connecticut', 'Delaware', 'Florida', 'Georgia', 'Hawaii', 'Idaho',
+          'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Louisiana',
+          'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi',
+          'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey',
+          'New Mexico', 'New York', 'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma',
+          'Oregon', 'Pennsylvania', 'Rhode Island', 'South Carolina', 'South Dakota',
+          'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington',
+          'West Virginia', 'Wisconsin', 'Wyoming'
+        ];
+        console.warn('⚠️ Using fallback states list due to API error');
+        setStates(fallbackStates);
+      }
     });
-  }, []); // Empty dependency array - only run once on mount
+    
+    return () => {
+      isMounted = false;
+    };
+  }, [states.length]); // Only depend on states.length to prevent re-fetch if already loaded
+
+  // Load categories on component mount - ONLY ONCE
+  useEffect(() => {
+    // Prevent multiple calls - check ref, sessionStorage, and if categories are already loaded
+    const fetchKey = 'categories_fetch_in_progress';
+    const successKey = 'categories_fetched_success';
+    
+    if (hasFetchedCategoriesRef.current || sessionStorage.getItem(fetchKey) === 'true') {
+      console.log('⚠️ Categories fetch already in progress, skipping...');
+      // If fetch was successful before, ensure loading is false
+      if (sessionStorage.getItem(successKey) === 'true' && categories.length === 0) {
+        // Categories were fetched but component remounted - don't re-fetch, just stop loading
+        setIsLoadingCategories(false);
+      }
+      return;
+    }
+    
+    // If categories are already loaded, just ensure loading is false
+    if (categories.length > 0) {
+      console.log('✅ Categories already loaded, skipping fetch');
+      setIsLoadingCategories(false);
+      sessionStorage.setItem(successKey, 'true');
+      return;
+    }
+    
+    let isMounted = true;
+    console.log('🔄 Main useEffect triggered - component mounting');
+    
+    // Safety timeout - ensure loading stops after 35 seconds no matter what
+    const safetyTimeout = setTimeout(() => {
+      if (isMounted) {
+        console.warn('⚠️ Safety timeout: Forcing loading to stop');
+        setIsLoadingCategories(false);
+      }
+    }, 35000);
+    
+    const loadData = async () => {
+      try {
+        await fetchProviderCategories();
+      } catch (error) {
+        console.error('❌ Error in loadData:', error);
+        if (isMounted) {
+          setIsLoadingCategories(false);
+        }
+      }
+    };
+    
+    loadData();
+    
+    return () => {
+      isMounted = false;
+      clearTimeout(safetyTimeout);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty array - only run once on mount. We check categories.length inside to prevent re-fetch
+
+  // Ensure reCAPTCHA script is loaded
+  useEffect(() => {
+    let checkInterval: NodeJS.Timeout | null = null;
+    let timeoutId: NodeJS.Timeout | null = null;
+    let scriptCheckTimeout: NodeJS.Timeout | null = null;
+
+    // Check if script already exists
+    if (document.querySelector('script[src*="recaptcha"]')) {
+      console.log('✅ reCAPTCHA script tag already exists');
+      // Wait a bit for it to load, but only check once
+      scriptCheckTimeout = setTimeout(() => {
+        if (typeof window.grecaptcha !== 'undefined') {
+          console.log('✅ reCAPTCHA script loaded');
+          setRecaptchaError(null);
+        } else {
+          console.warn('⚠️ reCAPTCHA script tag exists but grecaptcha not available');
+        }
+      }, 1000);
+      
+      return () => {
+        if (scriptCheckTimeout) clearTimeout(scriptCheckTimeout);
+      };
+    }
+
+    // Manually load reCAPTCHA script if react-google-recaptcha hasn't loaded it
+    const script = document.createElement('script');
+    script.src = 'https://www.google.com/recaptcha/api.js?render=explicit';
+    script.async = true;
+    script.defer = true;
+    script.onload = () => {
+      console.log('✅ reCAPTCHA script loaded manually');
+      setRecaptchaError(null);
+      if (checkInterval) clearInterval(checkInterval);
+    };
+    script.onerror = () => {
+      console.error('❌ Failed to load reCAPTCHA script');
+      setRecaptchaError('reCAPTCHA script failed to load. Please check your network connection and refresh the page.');
+      if (checkInterval) clearInterval(checkInterval);
+    };
+    document.head.appendChild(script);
+
+    // Check if grecaptcha becomes available (only if not already available)
+    if (typeof window.grecaptcha === 'undefined') {
+      checkInterval = setInterval(() => {
+        if (typeof window.grecaptcha !== 'undefined') {
+          console.log('✅ grecaptcha is now available');
+          setRecaptchaError(null);
+          if (checkInterval) clearInterval(checkInterval);
+          checkInterval = null;
+        }
+      }, 500);
+
+      // Stop checking after 10 seconds
+      timeoutId = setTimeout(() => {
+        if (checkInterval) {
+          clearInterval(checkInterval);
+          checkInterval = null;
+        }
+        if (typeof window.grecaptcha === 'undefined') {
+          console.error('❌ reCAPTCHA script failed to load after 10 seconds');
+          setRecaptchaError('reCAPTCHA script failed to load. This may be due to network issues or domain restrictions.');
+        }
+      }, 10000);
+    }
+
+    return () => {
+      if (checkInterval) clearInterval(checkInterval);
+      if (timeoutId) clearTimeout(timeoutId);
+      if (scriptCheckTimeout) clearTimeout(scriptCheckTimeout);
+    };
+  }, []);
 
   // TEMPORARILY DISABLED - Re-initialize reCAPTCHA when claim mode changes
   // useEffect(() => {
@@ -485,33 +752,6 @@ const ProviderSignup: React.FC = () => {
   //     return () => clearTimeout(timer);
   //   }
   // }, [isClaimMode, isRecaptchaReady]); // Clean dependencies only
-
-  const fetchProviderCategories = async () => {
-    try {
-      console.log('🔄 Fetching provider categories...');
-      const response = await fetch(
-        'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/provider_categories'
-      );
-      
-      console.log('📡 Categories API response status:', response.status);
-      
-      if (response.ok) {
-        const data = await response.json();
-        console.log('✅ Categories loaded:', data.data?.length || 0, 'categories');
-        setCategories(data.data || []);
-      } else {
-        console.error('❌ Failed to fetch categories:', response.status, response.statusText);
-        const errorText = await response.text();
-        console.error('❌ Error details:', errorText);
-        toast.error(`Failed to load provider categories: ${response.status}`);
-      }
-    } catch (error) {
-      console.error('❌ Error fetching categories:', error);
-      toast.error('Network error loading provider categories');
-    } finally {
-      setIsLoadingCategories(false);
-    }
-  };
 
   const checkForDuplicateProvider = async (): Promise<boolean> => {
     try {
@@ -702,6 +942,7 @@ const ProviderSignup: React.FC = () => {
           'barbers-hair': 'barbers-hair',         // Keep hyphen
           'coaching-mentoring': 'coaching_mentoring', // Change to underscore
           'dentists': 'dentists',                 // No change
+          'educational-programs': 'educational_programs', // Change to underscore
           'occupational-therapy': 'occupational_therapy', // Change to underscore
           'orthodontists': 'orthodontists',       // No change
           'pediatricians': 'pediatricians',       // No change
@@ -1121,12 +1362,83 @@ const ProviderSignup: React.FC = () => {
           {field.field_type === 'text' && (
             <input
               type="text"
-              value={formData.submitted_data[categorySlug]?.[field.slug] || ''}
-              onChange={(e) => handleInputChange(`submitted_data.${field.slug}`, e.target.value, categorySlug)}
+              value={
+                Array.isArray(formData.submitted_data[categorySlug]?.[field.slug])
+                  ? (formData.submitted_data[categorySlug]?.[field.slug] as string[]).join(', ')
+                  : (formData.submitted_data[categorySlug]?.[field.slug] || '')
+              }
+              onChange={(e) => {
+                // Store the raw value directly - preserve all spaces
+                handleInputChange(`submitted_data.${field.slug}`, e.target.value, categorySlug);
+              }}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder={field.help_text || `Enter ${field.name.toLowerCase()}`}
               required={field.required}
             />
+          )}
+          
+          {/* Fallback: Render any unhandled fields as text inputs */}
+          {!(
+            // Age field handled
+            (field.slug === 'age_groups' || field.slug === 'age_groups_served' || 
+             field.name.toLowerCase().includes('age group') || field.name.toLowerCase().includes('age range') ||
+             field.name.toLowerCase().includes('age served') || field.name.toLowerCase().includes('ages served') ||
+             field.slug.toLowerCase().includes('age_group') || field.slug.toLowerCase().includes('age_range') ||
+             field.slug.toLowerCase().includes('age_served') || field.slug.toLowerCase().includes('ages_served')) ||
+            // Language field handled
+            (field.slug === 'languages' || field.name.toLowerCase().includes('language')) ||
+            // Select/multi_select with choices handled
+            ((field.field_type === 'select' || field.field_type === 'multi_select') && field.options && field.options.choices) ||
+            // Boolean handled
+            field.field_type === 'boolean' ||
+            // Text handled
+            field.field_type === 'text'
+          ) && (
+            <div>
+              {field.field_type === 'multi_select' ? (
+                <textarea
+                  value={Array.isArray(formData.submitted_data[categorySlug]?.[field.slug]) 
+                    ? (formData.submitted_data[categorySlug]?.[field.slug] as string[]).join(', ')
+                    : (formData.submitted_data[categorySlug]?.[field.slug] || '')}
+                  onChange={(e) => {
+                    // Store as string while typing to allow spaces and normal text input
+                    // Only convert to array when needed (on blur or submit)
+                    const value = e.target.value;
+                    handleInputChange(`submitted_data.${field.slug}`, value, categorySlug);
+                  }}
+                  onBlur={(e) => {
+                    // Convert to array on blur if comma-separated values exist
+                    const value = e.target.value;
+                    if (value.includes(',')) {
+                      const values = value.split(',').map(v => v.trim()).filter(v => v.length > 0);
+                      if (values.length > 0) {
+                        handleInputChange(`submitted_data.${field.slug}`, values, categorySlug);
+                      }
+                    }
+                  }}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder={field.help_text || `Enter ${field.name.toLowerCase()} (comma-separated for multiple values)`}
+                  required={field.required}
+                  rows={3}
+                />
+              ) : (
+                <input
+                  type="text"
+                  value={
+                    Array.isArray(formData.submitted_data[categorySlug]?.[field.slug])
+                      ? (formData.submitted_data[categorySlug]?.[field.slug] as string[]).join(', ')
+                      : (formData.submitted_data[categorySlug]?.[field.slug] || '')
+                  }
+                  onChange={(e) => {
+                    // Store the raw value directly - preserve all spaces
+                    handleInputChange(`submitted_data.${field.slug}`, e.target.value, categorySlug);
+                  }}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder={field.help_text || `Enter ${field.name.toLowerCase()}`}
+                  required={field.required}
+                />
+              )}
+            </div>
           )}
           
           {field.help_text && field.field_type !== 'boolean' && (
@@ -1144,6 +1456,7 @@ const ProviderSignup: React.FC = () => {
       'barbers-hair': <Scissors className="h-8 w-8 text-indigo-600" />,
       'coaching-mentoring': <Target className="h-8 w-8 text-cyan-600" />,
       'dentists': <Building2 className="h-8 w-8 text-green-600" />,
+      'educational-programs': <BookOpen className="h-8 w-8 text-amber-600" />,
       'occupational-therapy': <Activity className="h-8 w-8 text-yellow-600" />,
       'orthodontists': <Smile className="h-8 w-8 text-violet-600" />,
       'pediatricians': <Baby className="h-8 w-8 text-emerald-600" />,
@@ -1318,6 +1631,25 @@ const ProviderSignup: React.FC = () => {
                   <div className="text-center py-12">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
                     <p className="text-gray-500">Loading provider categories...</p>
+                  </div>
+                ) : categoriesLoadError ? (
+                  <div className="text-center py-12">
+                    <div className="mb-4">
+                      <svg className="h-12 w-12 text-red-500 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <p className="text-red-600 font-medium mb-2">Failed to load categories</p>
+                    <p className="text-gray-600 text-sm mb-4">{categoriesLoadError}</p>
+                    <button
+                      onClick={() => {
+                        hasFetchedCategoriesRef.current = false;
+                        fetchProviderCategories();
+                      }}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      Retry
+                    </button>
                   </div>
                 ) : categories.length === 0 ? (
                   <div className="text-center py-12">
@@ -1529,31 +1861,57 @@ const ProviderSignup: React.FC = () => {
                       />
                     </div>
                     <div className="form-group md:col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Service Areas</label>
-                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                        {states.map((state) => {
-                          const currentValues = commonFields.service_areas || [];
-                          const isChecked = currentValues.includes(state);
-                          return (
-                            <label key={state} className="flex items-center">
-                              <input
-                                type="checkbox"
-                                checked={isChecked}
-                                onChange={(e) => {
-                                  if (e.target.checked) {
-                                    handleCommonFieldChange('service_areas', [...commonFields.service_areas, state]);
-                                  } else {
-                                    handleCommonFieldChange('service_areas', commonFields.service_areas.filter(s => s !== state));
-                                  }
-                                }}
-                                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                              />
-                              <span className="ml-2 text-sm text-gray-700">{state}</span>
-                            </label>
-                          );
-                        })}
+                      <div className="flex items-center justify-between mb-2">
+                        <label className="block text-sm font-medium text-gray-700">Service Areas</label>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const allSelected = commonFields.service_areas.length === states.length;
+                            if (allSelected) {
+                              // Deselect all
+                              handleCommonFieldChange('service_areas', []);
+                            } else {
+                              // Select all
+                              handleCommonFieldChange('service_areas', [...states]);
+                            }
+                          }}
+                          className="text-sm text-blue-600 hover:text-blue-800 font-medium underline"
+                        >
+                          {commonFields.service_areas.length === states.length ? 'Deselect All' : 'Select All'}
+                        </button>
                       </div>
-                      <p className="mt-1 text-sm text-gray-500">Select all states where you provide services</p>
+                      {states.length === 0 ? (
+                        <div className="text-center py-4">
+                          <p className="text-gray-500 text-sm">Loading states...</p>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                            {states.map((state) => {
+                              const currentValues = commonFields.service_areas || [];
+                              const isChecked = currentValues.includes(state);
+                              return (
+                                <label key={state} className="flex items-center">
+                                  <input
+                                    type="checkbox"
+                                    checked={isChecked}
+                                    onChange={(e) => {
+                                      if (e.target.checked) {
+                                        handleCommonFieldChange('service_areas', [...commonFields.service_areas, state]);
+                                      } else {
+                                        handleCommonFieldChange('service_areas', commonFields.service_areas.filter(s => s !== state));
+                                      }
+                                    }}
+                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                  />
+                                  <span className="ml-2 text-sm text-gray-700">{state}</span>
+                                </label>
+                              );
+                            })}
+                          </div>
+                          <p className="mt-1 text-sm text-gray-500">Select all states where you provide services</p>
+                        </>
+                      )}
                     </div>
                     
                     {/* Primary Office Address */}
@@ -1702,13 +2060,53 @@ const ProviderSignup: React.FC = () => {
                       <div className="mt-2">
                         <div className="flex justify-center">
                           <div className="scale-90 sm:scale-100">
-                            <ReCAPTCHA
-                              ref={recaptchaRef}
-                              sitekey={API_CONFIG.RECAPTCHA_SITE_KEY}
-                              onChange={(value: string | null) => setRecaptchaToken(value || '')}
-                            />
+                            {API_CONFIG.RECAPTCHA_SITE_KEY ? (
+                              <>
+                                <ReCAPTCHA
+                                  ref={recaptchaRef}
+                                  sitekey={API_CONFIG.RECAPTCHA_SITE_KEY}
+                                  onChange={(value: string | null) => {
+                                    console.log('reCAPTCHA onChange:', value ? 'Token received' : 'Token cleared');
+                                    setRecaptchaToken(value || '');
+                                    setRecaptchaError(null);
+                                  }}
+                                  onExpired={() => {
+                                    console.log('reCAPTCHA expired');
+                                    setRecaptchaToken('');
+                                    if (recaptchaRef.current) {
+                                      recaptchaRef.current.reset();
+                                    }
+                                  }}
+                                  onError={(error: any) => {
+                                    console.error('reCAPTCHA error:', error);
+                                    setRecaptchaError('reCAPTCHA failed to load. This may be due to domain restrictions or network issues.');
+                                    toast.error('reCAPTCHA failed to load. Please refresh the page or check your connection.');
+                                  }}
+                                />
+                                {recaptchaError && (
+                                  <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded-md">
+                                    <p className="text-xs text-yellow-800">{recaptchaError}</p>
+                                    <p className="text-xs text-yellow-700 mt-1">
+                                      If the widget doesn't appear, the site key may not be registered for this domain. 
+                                      Please contact support.
+                                    </p>
+                                  </div>
+                                )}
+                              </>
+                            ) : (
+                              <div className="p-4 bg-red-50 border border-red-200 rounded-md">
+                                <p className="text-sm text-red-800">
+                                  reCAPTCHA site key is not configured. Please contact support.
+                                </p>
+                              </div>
+                            )}
                           </div>
                         </div>
+                        {process.env.NODE_ENV === 'development' && (
+                          <p className="mt-2 text-xs text-gray-500 text-center">
+                            Site Key: {API_CONFIG.RECAPTCHA_SITE_KEY ? `${API_CONFIG.RECAPTCHA_SITE_KEY.substring(0, 10)}...` : 'Not set'}
+                          </p>
+                        )}
                       </div>
                     </div>
                   </div>

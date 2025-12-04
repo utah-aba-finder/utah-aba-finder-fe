@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import utah from '../Assets/williamsonFamily.jpeg';
 import './Homepage.css';
-import Joyride, { Step } from 'react-joyride';
 import love from '../Assets/love.jpg';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -18,10 +17,6 @@ import StructuredData from '../Utility/StructuredData';
 type Props = {}
 
 interface State {
-    run: boolean;
-    steps: Step[];
-    showModal: boolean;
-    dontShowAgain: boolean;
     name: string;
     email: string;
     message: string;
@@ -36,57 +31,6 @@ class Homepage extends Component<Props, State> {
     private form = React.createRef<HTMLFormElement>();
 
     state: State = {
-        run: false,
-        steps: [
-            {
-                target: '.discover-section-button',
-                content: 'Welcome to our website! Start your journey by clicking this button to find providers.',
-                disableBeacon: true,
-                placement: 'top'
-            },
-            {
-                target: '.sponsor-section',
-                content: 'See our sponsors who help make this website possible!',
-                placement: 'top'
-            },
-            {
-                target: '.begin-section-button1',
-                content: 'Click here to view all available providers.',
-                placement: 'top'
-            },
-            {
-                target: '.begin-section-button2',
-                content: 'Take screening tests to see if you or your child meet autism criteria.',
-                placement: 'top'
-            },
-            {
-                target: '.begin-section-button3',
-                content: 'Contact us for any questions or support.',
-                placement: 'top'
-            },
-            {
-                target: '.what-we-are-about',
-                content: 'Learn more about our mission and what we do!',
-                placement: 'top'
-            },
-            {
-                target: 'header nav',
-                content: 'Use the navbar to navigate through our other pages!',
-                placement: 'bottom'
-            },
-            {
-                target: 'button[aria-label="Toggle menu"]',
-                content: 'On mobile, tap this button to open the navigation menu.',
-                placement: 'bottom'
-            },
-            {
-                target: '.lg\\:hidden nav',
-                content: 'This is the mobile navigation menu with all our pages.',
-                placement: 'top'
-            }
-        ],
-        showModal: false,
-        dontShowAgain: false,
         name: '',
         email: '',
         message: ''
@@ -125,65 +69,11 @@ class Homepage extends Component<Props, State> {
     };
 
     componentDidMount() {
-        const lastVisit = localStorage.getItem('lastVisit');
-        const dontShow = localStorage.getItem('dontShowAgain');
-        const hasVisited = localStorage.getItem('hasVisited');
-
-        const now = new Date().getTime();
-        const twentyFourHours = 24 * 60 * 60 * 1000;
-
-        // Show walkthrough first if user hasn't visited
-        if (!hasVisited) {
-            this.setState({ run: true });
-        } else {
-            // Only show modal if walkthrough has been completed and modal conditions are met
-            if (!dontShow && (!lastVisit || now - parseInt(lastVisit) > twentyFourHours)) {
-                this.setState({ showModal: true });
-            }
-        }
-    }
-
-    handleCheckboxChange = () => {
-        this.setState(prevState => ({
-            dontShowAgain: !prevState.dontShowAgain
-        }));
-    }
-
-    closeModal = () => {
-        const { dontShowAgain } = this.state;
-
-        localStorage.setItem('lastVisit', new Date().getTime().toString());
-
-        if (dontShowAgain) {
-            localStorage.setItem('dontShowAgain', 'true');
-        }
-
-        this.setState({ showModal: false });
-    }
-
-    handleJoyrideCallback = (data: any) => {
-        const { status } = data;
-        const finishedStatuses = ['finished', 'skipped'];
-
-        if (finishedStatuses.includes(status)) {
-            localStorage.setItem('hasVisited', 'true');
-            
-            // After walkthrough is completed, check if modal should be shown
-            const lastVisit = localStorage.getItem('lastVisit');
-            const dontShow = localStorage.getItem('dontShowAgain');
-            const now = new Date().getTime();
-            const twentyFourHours = 24 * 60 * 60 * 1000;
-            
-            if (!dontShow && (!lastVisit || now - parseInt(lastVisit) > twentyFourHours)) {
-                this.setState({ showModal: true });
-            }
-        }
+        // Removed walkthrough and update message functionality
     }
 
     render() {
-        const { run, steps, showModal, dontShowAgain, name, email, message } = this.state;
-
-        // console.log('is modal showing', showModal);
+        const { name, email, message } = this.state;
 
         return (
             <div className="homepage-container">
@@ -221,6 +111,7 @@ class Homepage extends Component<Props, State> {
                             "Coaching & Mentoring",
                             "Speech Therapy",
                             "Occupational Therapy",
+                            "Educational Programs",
                             "Barbers & Hair",
                             "Dentists",
                             "Orthodontists",
@@ -248,56 +139,13 @@ class Homepage extends Component<Props, State> {
                         }
                     }}
                 />
-        
-                {/* Modal */}
-                {showModal && (
-                    <div className="homepage-modal-overlay">
-                        <div className="homepage-modal">
-                            {/* <h2>Scheduled Maintenance!</h2> */}
-                            <div className="homepage-modal-content">
-                                <h1 className='text-center'>Welcome to Autism Services Locator!</h1>
-                                <p>By using our website, you agree to our <Link to="/servicedisclaimer" className='text-[#4A6FA5]'>Service Disclaimer</Link>.</p>
-                                <h2 className='text-center'>What's New</h2>
-                                <ul>
-                                    <li><strong>Nationwide Coverage:</strong> Our website is expanding to cover the entire <strong>United States</strong>! No matter where you are, you'll soon be able to find the right providers and resources near you.</li>
-                                    <br/>
-                                    <li><strong>Sponsorship Opportunities:</strong> Become a sponsor and support our mission! Sponsors will be featured in a special <strong>Sponsors Section</strong> on our site recognizing their contributions to the autism care community.</li>
-                                    <br />
-                                    <h3>💡 <strong>Are you a provider?</strong> Join our platform for free! <Link to="/provider-signup" className='text-[#4A6FA5]'>Sign up here</Link></h3>
-                                    <br />
-                                </ul>
-                            </div>
-                            <div>
-                                <label>
-                                    <input
-                                        type="checkbox"
-                                        onChange={this.handleCheckboxChange}
-                                        checked={dontShowAgain}
-                                    />
-                                    Remember my preference (don't show this message again)
-                                </label>
-                            </div>
-
-                            <button className="homepage-modal-button" onClick={this.closeModal}>Go to Homepage</button>
-                        </div>
-                    </div>
-                )}
-
-                <Joyride
-                    run={run}
-                    steps={steps}
-                    continuous={true}
-                    showProgress={true}
-                    showSkipButton={true}
-                    callback={this.handleJoyrideCallback}
-                />
 
                 {/* Discover Section */}
                 <div className="discover-section">
                     <img src={utah} alt="background-image" className="discover-section-backgroundImage" />
                     <div className="discover-section-container">
                         <h1 className="discover-section-title">Get The Care You Deserve</h1> <br />
-                            <h2 className="discover-section-subtitle">Autism Evaluations | ABA Therapy | Advocates | Coaching & Mentoring | Speech Therapy | Occupational Therapy | Barbers & Hair | Dentists | Orthodontists | Pediatricians | Physical Therapists | Therapists</h2>
+                            <h2 className="discover-section-subtitle">Autism Evaluations | ABA Therapy | Advocates | Coaching & Mentoring | Speech Therapy | Occupational Therapy | Educational Programs | Barbers & Hair | Dentists | Orthodontists | Pediatricians | Physical Therapists | Therapists</h2>
                             <div className="discover-section-content">
                             <p className="discover-section-description">
                                 We're here to make your search in finding the best providers for you and your family easier. Start your journey with a bit of ease.

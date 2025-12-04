@@ -87,6 +87,9 @@ function App() {
       handleMobileIssues();
 
       // Only reload for specific cache-related errors, not all errors
+      // DISABLED: This was causing infinite reload loops
+      // If needed, re-enable with more specific error detection
+      /*
       const originalError = console.error;
       console.error = (...args) => {
         // Only reload for specific cache issues, not all errors
@@ -106,6 +109,7 @@ function App() {
         }
         originalError.apply(console, args);
       };
+      */
     } catch (error) {
       console.error('❌ App: Error in mobile issue handling:', error);
     }
