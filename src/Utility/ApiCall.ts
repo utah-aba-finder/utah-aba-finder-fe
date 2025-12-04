@@ -629,15 +629,21 @@ export const fetchSingleProvider = async (providerId: number) => {
 }
 
 export const fetchStates = async (): Promise<StateData[]> => {
+  // States endpoint is public and doesn't require authentication
   const response = await fetch(
     "https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/states",
     {
+      method: 'GET',
       headers: {
-        'Authorization': getAdminAuthHeader(),
+        'Content-Type': 'application/json',
       },
+      // No credentials needed - public endpoint
     }
   );
-  if (!response.ok) throw new Error("Failed to fetch states");
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Failed to fetch states: ${response.status} - ${errorText}`);
+  }
   const data = await response.json();
   return data.data;
 };
