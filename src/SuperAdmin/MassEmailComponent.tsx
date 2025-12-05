@@ -51,7 +51,6 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
   // Add global error handler to prevent component unmounting
   useEffect(() => {
     const handleError = (event: ErrorEvent) => {
-      console.log('🚨 Global error caught in MassEmailComponent:', event.error);
       setHasError(true);
       setErrorMessage(event.error?.message || 'Unknown error occurred');
       event.preventDefault(); // Prevent default error handling
@@ -59,7 +58,6 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
     };
 
     const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
-      console.log('🚨 Unhandled promise rejection in MassEmailComponent:', event.reason);
       setHasError(true);
       setErrorMessage(event.reason?.message || 'Promise rejection occurred');
       event.preventDefault(); // Prevent default error handling
@@ -81,7 +79,6 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
       const data = await fetchMassEmailStats();
       setStats(data);
     } catch (error) {
-      console.error('❌ Failed to load mass email stats:', error);
       toast.error('Failed to load email statistics');
     } finally {
       setLoading(false);
@@ -112,7 +109,6 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
         toast.error(`❌ Failed to send password reminders: ${response.message}`);
       }
     } catch (error) {
-      console.error('Failed to send password reminders:', error);
       toast.error('Failed to send password reminders');
     } finally {
       setSending(false);
@@ -143,7 +139,6 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
         toast.error(`❌ Failed to send system updates: ${response.message}`);
       }
     } catch (error) {
-      console.error('Failed to send system updates:', error);
       toast.error('Failed to send system updates');
     } finally {
       setSending(false);
@@ -152,17 +147,14 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
 
   const handlePreviewEmail = async (type: 'password_update_reminder' | 'system_update') => {
     try {
-      console.log('🔄 Loading email preview for:', type);
       
       try {
         // Map frontend template names to backend parameter names
         const backendType = type === 'password_update_reminder' ? 'password_update_reminder' : type;
         const previewData = await previewEmail(backendType);
-        console.log('✅ Email preview loaded:', previewData);
         setPreview(previewData);
       } catch (error) {
         // If preview API doesn't exist, show a placeholder preview
-        console.log('⚠️ Preview API not available, showing placeholder');
         const placeholderPreview = {
           subject: type === 'password_update_reminder' 
             ? 'Password Update Required - Utah ABA Finder'
@@ -179,7 +171,6 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
       
       setShowPreview(true);
     } catch (error) {
-      console.error('❌ Failed to preview email:', error);
       toast.error('Failed to load email preview');
     }
   };
@@ -187,18 +178,13 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
   // Template Editor Functions
   const loadTemplates = async () => {
     try {
-      console.log('🔄 Loading email templates...');
       const data = await fetchEmailTemplates();
-      console.log('✅ Templates loaded:', data);
       setTemplates(data.templates);
       
       // Log available template keys for debugging
       if (data.templates) {
-        console.log('📋 Available template keys:', Object.keys(data.templates));
-        console.log('📋 Template details:', data.templates);
       }
     } catch (error) {
-      console.error('❌ Failed to load templates:', error);
       toast.error('Failed to load email templates');
     }
   };
@@ -220,16 +206,13 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
     }
 
     setTemplateLoading(true);
-    console.log('🔄 Loading template:', templateName, 'with type:', templateType);
     
     const data = await loadEmailTemplate(templateName, templateType);
-    console.log('✅ Template response received:', data);
     
     setTemplateLoading(false);
     
     if (!data.success) {
       // Handle error gracefully without unmounting the component
-      console.log('⚠️ Template loading failed, showing placeholder content');
       const placeholderContent = `<!-- ${templateName} template placeholder -->
 <html>
 <body>
@@ -271,9 +254,7 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
     
     setTemplateSaving(true);
     try {
-      console.log('💾 Saving template:', selectedTemplate, 'with content length:', templateContent.length);
       const data = await saveEmailTemplate(selectedTemplate, templateContent, templateType);
-      console.log('💾 Save response:', data);
       
       if (data.success) {
         toast.success('Template saved successfully!');
@@ -292,7 +273,6 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
         toast.error(`Error: ${data.error}`);
       }
     } catch (error) {
-      console.error('Error saving template:', error);
       toast.error('Error saving template');
     } finally {
       setTemplateSaving(false);
@@ -309,7 +289,6 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
       toast.success('Template preview loaded successfully');
     } else {
       // Handle error gracefully without unmounting the component
-      console.log('⚠️ Preview not available, showing mock preview');
       const mockPreview: TemplatePreviewResponse = {
         subject: `${templates[selectedTemplate]?.name || selectedTemplate} Preview`,
         to: 'user@example.com',
@@ -624,7 +603,6 @@ const MassEmailComponent: React.FC<MassEmailComponentProps> = ({ onClose }) => {
                         : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
                     }`}
                     onClick={() => {
-                      console.log('🖱️ Clicking on template:', key);
                       loadTemplateContent(key);
                     }}
                   >

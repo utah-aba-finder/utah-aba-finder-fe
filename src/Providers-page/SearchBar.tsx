@@ -86,9 +86,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
       try {
         const statesData = await fetchStates();
         setProviderStates(statesData || []);
-        console.log('🔍 Loaded states:', statesData);
       } catch (error) {
-        console.warn('⚠️ Could not fetch states, using fallback options');
         // Fallback state options if API fails
         const fallbackStates = [
           { id: 1, attributes: { name: 'Utah', abbreviation: 'UT' } },
@@ -114,7 +112,6 @@ const SearchBar: React.FC<SearchBarProps> = ({
         const response = await fetchPracticeTypes();
         setPracticeTypes(response.data);
       } catch (error) {
-        console.error("Failed to load practice types:", error);
       }
     };
     loadPracticeTypes();
@@ -247,11 +244,9 @@ const SearchBar: React.FC<SearchBarProps> = ({
               value={selectedStateId}
               onChange={(e) => {
                 const stateId = e.target.value;
-                console.log('🔍 State selected:', stateId);
                 setSelectedStateId(stateId);
                 if (stateId !== 'none') {
                   const state = providerStates.find(s => s.id.toString() === stateId);
-                  console.log('🔍 Found state:', state);
                   setSelectedState(state?.attributes.abbreviation || 'none');
                 } else {
                   setSelectedState('none');

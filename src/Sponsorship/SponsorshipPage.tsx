@@ -42,7 +42,6 @@ const SponsorshipPage: React.FC<SponsorshipPageProps> = ({
         }
       } catch (error: any) {
         // Don't let errors crash the component - just show them gracefully
-        console.error('Failed to load tiers:', error);
         const errorMessage = error?.message || 'Failed to load sponsorship tiers. Please try again.';
         
         if (!cancelled) {

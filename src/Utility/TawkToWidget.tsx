@@ -28,7 +28,6 @@ const TawkToWidget: React.FC<TawkToWidgetProps> = ({
   useEffect(() => {
     if (isInitialized.current) return;
 
-    console.log('TawkToWidget: Initializing with widgetId:', widgetId);
 
     try {
       // Initialize Tawk_API
@@ -105,11 +104,9 @@ const TawkToWidget: React.FC<TawkToWidgetProps> = ({
       script.setAttribute('crossorigin', '*');
       
       script.onerror = function() {
-        console.error('Failed to load Tawk.to script');
       };
       
       script.onload = function() {
-        console.log('Tawk.to script loaded successfully');
       };
 
       scriptRef.current = script;

@@ -56,8 +56,13 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
   const [isCountiesModalOpen, setIsCountiesModalOpen] = useState(false);
   const [selectedCounties, setSelectedCounties] = useState<CountiesServed[]>([]);
   const [selectedInsurances, setSelectedInsurances] = useState<Insurance[]>([]);
+  const [fullProviderData, setFullProviderData] = useState<ProviderData | null>(null);
+  
+  // Use fullProviderData if available, otherwise fall back to provider from props
+  const currentProvider = fullProviderData || provider;
+  
   const [locations, setLocations] = useState<ProviderLocation[]>(
-    provider.attributes.locations?.map(location => ({
+    currentProvider.attributes.locations?.map(location => ({
       ...location,
       services: location.services || []
     })) || []
@@ -70,28 +75,106 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
   const [availableStates, setAvailableStates] = useState<StateData[]>([]);
   const [availableCounties, setAvailableCounties] = useState<CountyData[]>([]);
   const [selectedProviderTypes, setSelectedProviderTypes] = useState<ProviderType[]>(
-    provider.attributes.provider_type || []
+    currentProvider.attributes.provider_type || []
   );
   const [activeStateForCounties, setActiveStateForCounties] = useState<string>(providerState[0] || '');
   const [selectedLogoFile, setSelectedLogoFile] = useState<File | null>(null);
   const [practiceTypes, setPracticeTypes] = useState<PracticeType[]>([]);
+  const [categoryFields, setCategoryFields] = useState<any[]>(currentProvider.attributes.category_fields || []);
+
+  // Fetch full provider data including provider_attributes when provider is selected
+  useEffect(() => {
+    const fetchFullProviderData = async () => {
+      if (provider.id) {
+        try {
+          const adminAuthHeader = getSuperAdminAuthHeader();
+          const response = await fetch(
+            `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${provider.id}`,
+            {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': adminAuthHeader, // Use admin auth to get full provider data including provider_attributes
+              },
+            }
+          );
+
+          if (!response.ok) {
+            throw new Error(`Failed to fetch provider: ${response.status}`);
+          }
+
+          const data = await response.json();
+          const fullProvider = data.data?.[0];
+          
+          if (fullProvider) {
+            setFullProviderData(fullProvider);
+          }
+        } catch (error) {
+          // Fall back to using the provider from props
+          setFullProviderData(provider);
+        }
+      }
+    };
+
+    fetchFullProviderData();
+  }, [provider.id, provider]);
+
+  // Update state when fullProviderData is loaded
+  useEffect(() => {
+    if (fullProviderData && fullProviderData !== provider) {
+      // Update locations
+      setLocations(fullProviderData.attributes.locations?.map(location => ({
+        ...location,
+        services: location.services || []
+      })) || []);
+      // Update provider state
+      setProviderState(fullProviderData.states || []);
+      // Update selected counties
+      setSelectedCounties(fullProviderData.attributes.counties_served || []);
+      // Update selected insurances
+      setSelectedInsurances(fullProviderData.attributes.insurance || []);
+      // Update selected provider types
+      setSelectedProviderTypes(fullProviderData.attributes.provider_type || []);
+      // Update editedProvider to include provider_attributes
+      if (!editedProvider) {
+        setEditedProvider({
+          ...fullProviderData.attributes,
+          in_home_only: fullProviderData.attributes.in_home_only || false,
+          service_delivery: fullProviderData.attributes.service_delivery || {
+            in_home: false,
+            in_clinic: false,
+            telehealth: false
+          },
+          category: fullProviderData.attributes.category || null,
+          category_name: fullProviderData.attributes.category_name || null,
+          provider_attributes: fullProviderData.attributes.provider_attributes || null,
+          category_fields: fullProviderData.attributes.category_fields || null
+        });
+      }
+    }
+  }, [fullProviderData, provider, editedProvider]);
 
   useEffect(() => {
-    if (provider && !editedProvider) { // Only run on initial load
+    if (currentProvider && !editedProvider) { // Only run on initial load
       setEditedProvider({
-        ...provider.attributes,
+        ...currentProvider.attributes,
         // Initialize new fields with defaults if they don't exist
-        in_home_only: provider.attributes.in_home_only || false,
-        service_delivery: provider.attributes.service_delivery || {
+        in_home_only: currentProvider.attributes.in_home_only || false,
+        service_delivery: currentProvider.attributes.service_delivery || {
           in_home: false,
           in_clinic: false,
           telehealth: false
-        }
+        },
+        // Include category fields
+        category: currentProvider.attributes.category || null,
+        category_name: currentProvider.attributes.category_name || null,
+        provider_attributes: currentProvider.attributes.provider_attributes || null,
+        category_fields: currentProvider.attributes.category_fields || null
       });
-      setProviderState(provider.states || []);
-      setSelectedCounties(provider.attributes.counties_served || []);
-      setSelectedInsurances(provider.attributes.insurance || []);
-      const mappedLocations = provider.attributes.locations.map(location => ({
+      setProviderState(currentProvider.states || []);
+      setSelectedCounties(currentProvider.attributes.counties_served || []);
+      setSelectedInsurances(currentProvider.attributes.insurance || []);
+      const mappedLocations = currentProvider.attributes.locations.map(location => ({
         ...location,
         services: location.services || [],
         // Convert old boolean waitlist values to new descriptive string format
@@ -103,10 +186,14 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
           : location.in_clinic_waitlist || "Contact for availability"
       })) || [];
       setLocations(mappedLocations);
-      setSelectedProviderTypes(provider.attributes.provider_type || []);
+      setSelectedProviderTypes(currentProvider.attributes.provider_type || []);
+      // Initialize category fields - ensure we have the full structure with options
+      const initialCategoryFields = currentProvider.attributes.category_fields || [];
+      setCategoryFields(initialCategoryFields);
+      // Category fields initialized
       setIsLoading(false);
     }
-  }, [provider, editedProvider]); // Add editedProvider to prevent re-running
+  }, [currentProvider, editedProvider]); // Use currentProvider instead of provider
 
   useEffect(() => {
     const loadInitialData = async () => {
@@ -116,15 +203,15 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
         setAvailableStates(states);
 
         // If provider has states, fetch counties for the first state
-        if (provider.states?.[0]) {
+        if (currentProvider.states?.[0]) {
           const selectedState = states.find(
-            (state) => state.attributes.name === provider.states[0]
+            (state) => state.attributes.name === currentProvider.states[0]
           );
 
           if (selectedState) {
             const counties = await fetchCountiesByState(selectedState.id);
             setAvailableCounties(counties);
-            setActiveStateForCounties(provider.states[0]);
+            setActiveStateForCounties(currentProvider.states[0]);
           }
         }
       } catch (error) {
@@ -134,7 +221,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
     };
 
     loadInitialData();
-  }, [provider.states]);
+  }, [currentProvider.states]);
 
   useEffect(() => {
     const loadPracticeTypes = async () => {
@@ -142,12 +229,128 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
         const response = await fetchPracticeTypes();
         setPracticeTypes(response.data);
       } catch (error) {
-        console.error("Failed to load practice types:", error);
         toast.error("Failed to load practice types");
       }
     };
     loadPracticeTypes();
   }, []);
+
+  // Fetch category definition and merge with provider values for Educational Programs
+  // This should run whenever provider_attributes are available, even if category_fields already exist
+  useEffect(() => {
+    const loadCategoryFields = async () => {
+      // Use fullProviderData if available, otherwise fall back to provider
+      const providerToUse = fullProviderData || currentProvider;
+      const isEducationalPrograms = providerToUse.attributes.category === 'educational_programs' || editedProvider?.category === 'educational_programs';
+      
+      // Always try to load if it's Educational Programs (similar to ProviderEdit)
+      // We fetch the category definition and merge with provider_attributes if they exist
+      if (isEducationalPrograms && providerToUse.id) {
+        try {
+          // Fetch all categories and find the educational programs one
+          const categoryResponse = await fetch(
+            `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/provider_categories`,
+            {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+            }
+          );
+
+          if (!categoryResponse.ok) {
+            throw new Error(`Failed to fetch category: ${categoryResponse.status}`);
+          }
+
+          const categoryData = await categoryResponse.json();
+          
+          // Find the educational programs category - check both slug formats
+          const category = categoryData.data?.find((cat: any) => 
+            cat.attributes?.slug === 'educational-programs' || 
+            cat.attributes?.slug === 'educational_programs' ||
+            cat.attributes?.name?.toLowerCase().includes('educational')
+          );
+          
+          
+          if (category && category.attributes?.category_fields && category.attributes.category_fields.length > 0) {
+            const fieldDefinitions = category.attributes.category_fields;
+            // provider_attributes might be null, undefined, or an empty object - handle all cases
+            // Use provider_attributes from providerToUse (which prioritizes fullProviderData)
+            const providerAttributes = providerToUse.attributes.provider_attributes || {};
+            
+            
+            // Merge field definitions with provider's current values
+            // Backend returns provider_attributes with field names (e.g., "Program Types") not slugs (e.g., "program_types")
+            const mergedFields = fieldDefinitions.map((fieldDef: any) => {
+              // Try to get value by field name first (backend format), then fall back to slug
+              let currentValue = providerAttributes[fieldDef.name];
+              if (currentValue === undefined) {
+                currentValue = providerAttributes[fieldDef.slug];
+              }
+              
+              // Backend may return comma-separated strings for multi_select, convert to arrays
+              if (fieldDef.field_type === 'multi_select' && typeof currentValue === 'string') {
+                currentValue = currentValue.split(',').map(s => s.trim()).filter(s => s.length > 0);
+              }
+              
+              // Backend may return string booleans ("true"/"false") for boolean fields, convert to actual booleans
+              if (fieldDef.field_type === 'boolean' && typeof currentValue === 'string') {
+                currentValue = currentValue.toLowerCase() === 'true' || currentValue === '1';
+              }
+              
+              // Also handle numeric booleans (1/0) for boolean fields
+              if (fieldDef.field_type === 'boolean' && typeof currentValue === 'number') {
+                currentValue = currentValue === 1;
+              }
+              
+              // Handle options - they might be in fieldDef.options as an array
+              const options = fieldDef.options || (Array.isArray(fieldDef.options) ? fieldDef.options : []);
+              
+              return {
+                id: fieldDef.id,
+                name: fieldDef.name,
+                slug: fieldDef.slug,
+                field_type: fieldDef.field_type,
+                required: fieldDef.required,
+                help_text: fieldDef.help_text,
+                display_order: fieldDef.display_order,
+                options: options,
+                value: currentValue !== undefined ? currentValue : (fieldDef.field_type === 'boolean' ? false : (fieldDef.field_type === 'multi_select' ? [] : null))
+              };
+            });
+            
+            setCategoryFields(mergedFields);
+          } else {
+            if (category) {
+            }
+            // Even if category_fields aren't found, set empty array to prevent "No category fields available" message
+            setCategoryFields([]);
+          }
+        } catch (error) {
+          toast.error('Failed to load program details. Please refresh and try again.');
+          // Set empty array on error to prevent infinite loading state
+          setCategoryFields([]);
+        }
+      } else if (isEducationalPrograms && !providerToUse.id) {
+      }
+    };
+
+    // Only run if we have a provider ID and it's Educational Programs
+    // Wait for fullProviderData to load if it's being fetched
+    if (fullProviderData || currentProvider.id) {
+      loadCategoryFields();
+    }
+  }, [
+    fullProviderData, 
+    fullProviderData?.id,
+    fullProviderData?.attributes?.category,
+    fullProviderData?.attributes?.provider_attributes,
+    currentProvider, 
+    currentProvider.id, 
+    currentProvider.attributes.category, 
+    currentProvider.attributes.provider_attributes, 
+    editedProvider?.category
+  ]);
 
   useEffect(() => {
     const loadCountiesForState = async () => {
@@ -565,7 +768,57 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
         // services: filteredLocations.flatMap(l => l.services || []),
       };
 
+      // Add provider_attributes for Educational Programs separately to ensure they're included
+      const isEducationalPrograms = provider.attributes.category === 'educational_programs' || editedProvider?.category === 'educational_programs';
+      if (isEducationalPrograms && categoryFields && categoryFields.length > 0) {
+        const providerAttrs = categoryFields.reduce((acc, field) => {
+          // Only include fields that have values
+          if (field.value !== null && field.value !== undefined && field.value !== '') {
+            if (Array.isArray(field.value) && field.value.length > 0) {
+              // Backend will handle array values by joining with commas
+              acc[field.name] = field.value;
+            } else if (!Array.isArray(field.value)) {
+              acc[field.name] = field.value;
+            }
+          }
+          return acc;
+        }, {} as Record<string, any>);
+        
+        
+        // Only add provider_attributes if we have actual values
+        if (Object.keys(providerAttrs).length > 0) {
+          attributes.provider_attributes = providerAttrs;
+        } else {
+        }
+      } else {
+      }
+
       const requestBody = { data: [{ attributes }] };
+      
+      // Log the final attributes object to verify provider_attributes is included
+
+      // Comprehensive debug logging for Educational Programs
+
+      if (isEducationalPrograms) {
+      }
+
+      // Log the exact JSON string being sent
+      const requestBodyString = JSON.stringify(requestBody);
+      
+      if (isEducationalPrograms) {
+        // Log a portion of the request body to verify provider_attributes
+        const providerAttrsMatch = requestBodyString.match(/"provider_attributes":\{[^}]*\}/);
+        if (providerAttrsMatch) {
+        } else {
+          // Try to find it with a more flexible regex
+          const flexibleMatch = requestBodyString.match(/"provider_attributes":\s*\{[^}]*\}/);
+          if (flexibleMatch) {
+          } else {
+          }
+        }
+        
+        // Also verify the attributes object directly
+      }
 
       // Use correct endpoint and method per spec
       const response = await fetch(
@@ -576,7 +829,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
             "Content-Type": "application/json",
             'Authorization': getSuperAdminAuthHeader(), // Use super admin header
           },
-          body: JSON.stringify(requestBody),
+          body: requestBodyString,
         }
       );
 
@@ -600,10 +853,13 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
 
       const updatedProvider = responseData.data[0];
       
+      // Debug: Log what we received for Educational Programs
+      if (provider.attributes.category === 'educational_programs' || editedProvider?.category === 'educational_programs') {
+      }
+      
       // Verify that all locations were saved
       const savedLocations = updatedProvider.attributes.locations || [];
       if (savedLocations.length !== filteredLocations.length) {
-        console.warn('⚠️ Some locations may not have been saved properly');
       }
       
       // Build the complete updated data object for the parent component
@@ -625,18 +881,65 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
         }),
         states: updatedProvider.attributes.states || providerState, // Use API response if available, fallback to local
         counties_served: updatedProvider.attributes.counties_served || selectedCounties, // Use API response if available, fallback to local
+        // Include provider_attributes from API response if available
+        ...(updatedProvider.attributes.provider_attributes && {
+          provider_attributes: updatedProvider.attributes.provider_attributes
+        }),
         id: provider.id
       };
       
       onUpdate(completeUpdatedData);
+      
+      // Update fullProviderData with the latest data from API response
+      if (fullProviderData) {
+        setFullProviderData({
+          ...fullProviderData,
+          attributes: {
+            ...fullProviderData.attributes,
+            ...updatedProvider.attributes,
+            // Include provider_attributes if they were updated
+            ...(completeUpdatedData.provider_attributes && {
+              provider_attributes: completeUpdatedData.provider_attributes
+            })
+          }
+        });
+      }
       
       // Update local state to reflect the changes immediately
       setEditedProvider(prev => prev ? {
         ...prev,
         ...updatedProvider.attributes,
         // Use API response locations if available, otherwise keep local
-        locations: completeUpdatedData.locations // Use our merged locations
+        locations: completeUpdatedData.locations, // Use our merged locations
+        // Include provider_attributes if they were updated
+        ...(completeUpdatedData.provider_attributes && {
+          provider_attributes: completeUpdatedData.provider_attributes
+        })
       } : null);
+      
+      // Update categoryFields state with the saved values from API response
+      // Backend returns field names (e.g., "Program Types") not slugs (e.g., "program_types")
+      if (updatedProvider.attributes.provider_attributes && categoryFields.length > 0) {
+        const updatedCategoryFields = categoryFields.map(field => {
+          // Try to find the saved value by field name (backend format)
+          let savedValue = updatedProvider.attributes.provider_attributes[field.name];
+          if (savedValue === undefined) {
+            // Fall back to slug
+            savedValue = updatedProvider.attributes.provider_attributes[field.slug];
+          }
+          
+          if (savedValue !== undefined) {
+            // Backend may return comma-separated strings for multi_select, convert back to arrays
+            if (field.field_type === 'multi_select' && typeof savedValue === 'string') {
+              const arrayValue = savedValue.split(',').map(s => s.trim()).filter(s => s.length > 0);
+              return { ...field, value: arrayValue };
+            }
+            return { ...field, value: savedValue };
+          }
+          return field;
+        });
+        setCategoryFields(updatedCategoryFields);
+      }
       
       // Update local locations state with our merged locations
       setLocations(completeUpdatedData.locations);
@@ -652,11 +955,9 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
       // Handle logo upload separately if a file is selected
       if (selectedLogoFile) {
         try {
-          console.log('🔑 SuperAdminEdit: Starting logo upload for provider:', provider.id);
           
           // Use the regular provider endpoint with admin authentication
           const adminAuthHeader = getSuperAdminAuthHeader();
-          console.log('🔑 SuperAdminEdit: Using super admin auth header for logo upload:', adminAuthHeader);
           
           const logoResult = await uploadProviderLogo(provider.id, selectedLogoFile, adminAuthHeader, true);
           
@@ -680,14 +981,12 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                 // Call the onUpdate function to update the parent state
                 onUpdate(updatedProvider.attributes);
                 
-                console.log('🔄 SuperAdminEdit: Updated provider logo in local state:', updatedProviderData.attributes.logo);
               }
             }
           } else {
             toast.error(`Logo upload failed: ${logoResult.error}`);
           }
         } catch (logoError) {
-          console.error('❌ SuperAdminEdit: Logo upload error:', logoError);
           toast.error('Failed to upload logo');
         }
       }
@@ -1057,6 +1356,128 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                       </div>
                     </div>
                   </div>
+                  
+                  {/* Category Fields Section for Educational Programs */}
+                  {editedProvider && (editedProvider.category === 'educational_programs' || provider.attributes.category === 'educational_programs') && (
+                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 md:col-span-2">
+                      <div className="flex items-center space-x-3 mb-6">
+                        <div className="p-2 bg-amber-100 rounded-lg flex-shrink-0">
+                          <Stethoscope className="w-5 h-5 text-amber-600" />
+                        </div>
+                        <h2 className="text-lg font-semibold text-gray-900">
+                          Program Details (Educational Programs)
+                        </h2>
+                      </div>
+                      
+                      <div className="space-y-6">
+                        {categoryFields && categoryFields.length > 0 ? (
+                          categoryFields
+                            .sort((a, b) => (a.id || 0) - (b.id || 0))
+                            .map((field, fieldIndex) => (
+                            <div key={field.id || field.slug || fieldIndex} className="border-b border-gray-200 pb-4 last:border-b-0">
+                              <label className="block text-sm font-medium text-gray-700 mb-2">
+                                {field.name} {field.required && <span className="text-red-500">*</span>}
+                              </label>
+                              {field.help_text && (
+                                <p className="text-xs text-gray-500 mb-2">{field.help_text}</p>
+                              )}
+                              
+                              {field.field_type === 'multi_select' && (
+                                <div className="space-y-2">
+                                  <div className="text-xs text-blue-600 mb-2">Multi-select field - Select multiple options</div>
+                                  {(!field.options || field.options.length === 0) ? (
+                                    <div className="text-sm text-gray-500 italic">No options available for this field</div>
+                                  ) : (
+                                    <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto border border-gray-200 rounded-md p-3">
+                                      {(Array.isArray(field.options) ? field.options : []).map((option: string) => {
+                                      const currentValues = Array.isArray(field.value) ? field.value : [];
+                                      const isChecked = currentValues.includes(option);
+                                      return (
+                                        <label key={option} className="flex items-center">
+                                          <input
+                                            type="checkbox"
+                                            checked={isChecked}
+                                            onChange={(e) => {
+                                              const updatedFields = [...categoryFields];
+                                              const currentValues = Array.isArray(updatedFields[fieldIndex].value) 
+                                                ? updatedFields[fieldIndex].value 
+                                                : [];
+                                              if (e.target.checked) {
+                                                updatedFields[fieldIndex].value = [...currentValues, option];
+                                              } else {
+                                                updatedFields[fieldIndex].value = currentValues.filter((v: string) => v !== option);
+                                              }
+                                              setCategoryFields(updatedFields);
+                                            }}
+                                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                          />
+                                          <span className="ml-2 text-sm text-gray-700">{option}</span>
+                                        </label>
+                                      );
+                                    })}
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                              
+                              {field.field_type === 'boolean' && (
+                                <label className="flex items-center">
+                                  <input
+                                    type="checkbox"
+                                    checked={field.value === true || field.value === 'true' || field.value === 1}
+                                    onChange={(e) => {
+                                      const updatedFields = [...categoryFields];
+                                      updatedFields[fieldIndex].value = e.target.checked;
+                                      setCategoryFields(updatedFields);
+                                    }}
+                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                  />
+                                  <span className="ml-2 text-sm text-gray-700">{field.help_text || field.name}</span>
+                                </label>
+                              )}
+                              
+                              {(field.field_type === 'text' || field.field_type === 'select') && (
+                                <div>
+                                  {field.field_type === 'select' && field.options && field.options.length > 0 ? (
+                                    <select
+                                      value={typeof field.value === 'string' ? field.value : ''}
+                                      onChange={(e) => {
+                                        const updatedFields = [...categoryFields];
+                                        updatedFields[fieldIndex].value = e.target.value;
+                                        setCategoryFields(updatedFields);
+                                      }}
+                                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    >
+                                      <option value="">Select {field.name}...</option>
+                                      {field.options.map((option: string) => (
+                                        <option key={option} value={option}>{option}</option>
+                                      ))}
+                                    </select>
+                                  ) : (
+                                    <input
+                                      type="text"
+                                      value={typeof field.value === 'string' ? field.value : ''}
+                                      onChange={(e) => {
+                                        const updatedFields = [...categoryFields];
+                                        updatedFields[fieldIndex].value = e.target.value;
+                                        setCategoryFields(updatedFields);
+                                      }}
+                                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                      placeholder={field.help_text || `Enter ${field.name}`}
+                                    />
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          ))
+                        ) : (
+                          <div className="text-sm text-gray-500 italic p-4">
+                            No category fields available. Category fields will appear here once the provider is approved and category data is loaded.
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -1243,6 +1664,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                           >
                             <option value="">Select waitlist status...</option>
                             <option value="No waitlist">No waitlist</option>
+                            <option value="This service isn't provided at this location">This service isn't provided at this location</option>
                             <option value="1-2 weeks">1-2 weeks</option>
                             <option value="2-4 weeks">2-4 weeks</option>
                             <option value="1-3 months">1-3 months</option>
@@ -1267,6 +1689,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                           >
                             <option value="">Select waitlist status...</option>
                             <option value="No waitlist">No waitlist</option>
+                            <option value="This service isn't provided at this location">This service isn't provided at this location</option>
                             <option value="1-2 weeks">1-2 weeks</option>
                             <option value="2-4 weeks">2-4 weeks</option>
                             <option value="1-3 months">1-3 months</option>
@@ -1747,13 +2170,6 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                           {providerState.length === 0 && (
                             <p className="text-sm text-gray-500">Please add states first</p>
                           )}
-                          
-                          {/* Debug info */}
-                          <div className="mt-2 text-xs text-gray-500">
-                            Debug: activeState={activeStateForCounties}, 
-                            providerState={JSON.stringify(providerState)}, 
-                            availableCounties for {activeStateForCounties}={activeStateForCounties ? availableCounties.filter(c => c.attributes.state === activeStateForCounties).length : 0}
-                          </div>
                         </div>
                       </div>
                     </div>

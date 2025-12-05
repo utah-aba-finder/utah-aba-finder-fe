@@ -375,7 +375,6 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
       };
 
       // Debug: Log the request data being sent
-      console.log('🔍 SuperAdminCreate: Request data being sent:', JSON.stringify(requestData, null, 2));
 
       const response = await fetch(
         `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/providers`,
@@ -396,7 +395,6 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
           const errorData = await response.json();
           
           // Debug: Log the full error response
-          console.log('🔍 SuperAdminCreate: Full error response:', JSON.stringify(errorData, null, 2));
           
           // Handle different error response formats
           if (errorData.message) {
@@ -418,7 +416,6 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
             errorMessage = `Server error: ${JSON.stringify(errorData)}`;
           }
         } catch (parseError) {
-          console.error('❌ SuperAdminCreate: Error parsing response:', parseError);
           // If we can't parse the error response, use a generic message with status
           errorMessage = `Server error (${response.status}): ${response.statusText}`;
         }
@@ -504,7 +501,6 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
         handleCloseForm();
       }, 3000);
     } catch (error) {
-      console.error('❌ SuperAdminCreate: Error creating provider:', error);
       
       // Extract meaningful error message
       let errorMessage = "There was an error creating the provider. Please try again.";

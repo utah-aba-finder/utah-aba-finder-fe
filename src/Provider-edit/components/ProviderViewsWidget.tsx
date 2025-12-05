@@ -80,7 +80,6 @@ export function ProviderViewsWidget({ days = 30, providerId }: ProviderViewsWidg
             setError(null);
           } else {
             // Unexpected response format
-            console.warn('Unexpected view_stats response format:', data);
             setStats(data);
             setError(null);
           }

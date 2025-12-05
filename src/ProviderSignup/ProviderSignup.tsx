@@ -215,7 +215,6 @@ const ProviderSignup: React.FC = () => {
           setHasDraft(false);
         }
       } catch (error) {
-        console.error('Error loading draft:', error);
         localStorage.removeItem(AUTOSAVE_KEY);
         setHasDraft(false);
       }
@@ -318,7 +317,6 @@ const ProviderSignup: React.FC = () => {
   // Autosave on changes - use refs to avoid infinite loops
   useEffect(() => {
     // Temporarily disable autosave to test if it's causing the refresh issue
-    console.log('🔄 Autosave useEffect triggered, hasUnsavedChanges:', hasUnsavedChanges);
     
     if (hasUnsavedChanges) {
       if (autosaveTimeoutRef.current) {
@@ -333,7 +331,6 @@ const ProviderSignup: React.FC = () => {
           step: stepRef.current,
           timestamp: Date.now()
         };
-        console.log('💾 Autosaving draft:', currentDraft);
         localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(currentDraft));
         setHasUnsavedChanges(false);
       }, AUTOSAVE_INTERVAL);
@@ -434,7 +431,6 @@ const ProviderSignup: React.FC = () => {
     // Prevent multiple simultaneous calls - check both ref and sessionStorage
     const fetchKey = 'categories_fetch_in_progress';
     if (hasFetchedCategoriesRef.current || sessionStorage.getItem(fetchKey) === 'true') {
-      console.log('⚠️ Categories fetch already in progress or completed, skipping...');
       return;
     }
     
@@ -447,13 +443,11 @@ const ProviderSignup: React.FC = () => {
       const apiUrl = API_CONFIG.BASE_API_URL;
       const categoriesUrl = `${apiUrl}/api/v1/provider_categories`;
       
-      console.log('🔄 Fetching provider categories from:', categoriesUrl);
       
       // Add timeout to prevent hanging
       const controller = new AbortController();
       const timeoutId = setTimeout(() => {
         controller.abort();
-        console.error('⏱️ Categories fetch timed out after 30 seconds');
       }, 30000); // 30 second timeout
       
       const response = await fetch(categoriesUrl, {
@@ -466,23 +460,17 @@ const ProviderSignup: React.FC = () => {
       });
       
       clearTimeout(timeoutId);
-      console.log('📡 Categories API response status:', response.status);
       
       if (response.ok) {
         const data = await response.json();
-        console.log('✅ Categories loaded:', data.data?.length || 0, 'categories');
         setCategories(data.data || []);
         setCategoriesLoadError(null);
         // Mark as successfully fetched in sessionStorage
         sessionStorage.setItem('categories_fetched_success', 'true');
       } else {
-        console.error('❌ Failed to fetch categories:', response.status, response.statusText);
-        let errorText = '';
         try {
-          errorText = await response.text();
-          console.error('❌ Error details:', errorText);
+          await response.text();
         } catch (e) {
-          console.error('❌ Could not read error response');
         }
         
         let errorMsg = '';
@@ -502,13 +490,6 @@ const ProviderSignup: React.FC = () => {
         sessionStorage.removeItem('categories_fetched_success');
       }
     } catch (error: any) {
-      console.error('❌ Error fetching categories:', error);
-      console.error('❌ Error details:', {
-        name: error.name,
-        message: error.message,
-        stack: error.stack
-      });
-      
       let errorMsg = '';
       if (error.name === 'AbortError') {
         errorMsg = 'Request timed out. Please check your connection and try again.';
@@ -532,9 +513,7 @@ const ProviderSignup: React.FC = () => {
 
   // Debug: Log mounts and unmounts to identify remount loop
   useEffect(() => {
-    console.log('🟢 ProviderSignup MOUNTED');
     return () => {
-      console.log('🔴 ProviderSignup UNMOUNTED');
     };
   }, []);
 
@@ -542,21 +521,17 @@ const ProviderSignup: React.FC = () => {
   useEffect(() => {
     // Only fetch states if we don't have them yet
     if (states.length > 0) {
-      console.log('✅ States already loaded, skipping fetch');
       return;
     }
     
     let isMounted = true;
-    console.log('🔄 Fetching states...');
     
     fetchStates().then(data => {
       if (isMounted) {
-        const stateNames = data.map(state => state.attributes.name);
-        console.log('✅ States loaded:', stateNames.length, 'states');
-        setStates(stateNames);
+      const stateNames = data.map(state => state.attributes.name);
+      setStates(stateNames);
       }
     }).catch(error => {
-      console.error('❌ Error fetching states:', error);
       // Set a fallback list of US states if API fails
       if (isMounted) {
         const fallbackStates = [
@@ -570,7 +545,6 @@ const ProviderSignup: React.FC = () => {
           'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington',
           'West Virginia', 'Wisconsin', 'Wyoming'
         ];
-        console.warn('⚠️ Using fallback states list due to API error');
         setStates(fallbackStates);
       }
     });
@@ -587,7 +561,6 @@ const ProviderSignup: React.FC = () => {
     const successKey = 'categories_fetched_success';
     
     if (hasFetchedCategoriesRef.current || sessionStorage.getItem(fetchKey) === 'true') {
-      console.log('⚠️ Categories fetch already in progress, skipping...');
       // If fetch was successful before, ensure loading is false
       if (sessionStorage.getItem(successKey) === 'true' && categories.length === 0) {
         // Categories were fetched but component remounted - don't re-fetch, just stop loading
@@ -598,19 +571,16 @@ const ProviderSignup: React.FC = () => {
     
     // If categories are already loaded, just ensure loading is false
     if (categories.length > 0) {
-      console.log('✅ Categories already loaded, skipping fetch');
       setIsLoadingCategories(false);
       sessionStorage.setItem(successKey, 'true');
       return;
     }
     
     let isMounted = true;
-    console.log('🔄 Main useEffect triggered - component mounting');
     
     // Safety timeout - ensure loading stops after 35 seconds no matter what
     const safetyTimeout = setTimeout(() => {
       if (isMounted) {
-        console.warn('⚠️ Safety timeout: Forcing loading to stop');
         setIsLoadingCategories(false);
       }
     }, 35000);
@@ -619,7 +589,6 @@ const ProviderSignup: React.FC = () => {
       try {
         await fetchProviderCategories();
       } catch (error) {
-        console.error('❌ Error in loadData:', error);
         if (isMounted) {
           setIsLoadingCategories(false);
         }
@@ -643,14 +612,11 @@ const ProviderSignup: React.FC = () => {
 
     // Check if script already exists
     if (document.querySelector('script[src*="recaptcha"]')) {
-      console.log('✅ reCAPTCHA script tag already exists');
       // Wait a bit for it to load, but only check once
       scriptCheckTimeout = setTimeout(() => {
         if (typeof window.grecaptcha !== 'undefined') {
-          console.log('✅ reCAPTCHA script loaded');
           setRecaptchaError(null);
         } else {
-          console.warn('⚠️ reCAPTCHA script tag exists but grecaptcha not available');
         }
       }, 1000);
       
@@ -665,12 +631,10 @@ const ProviderSignup: React.FC = () => {
     script.async = true;
     script.defer = true;
     script.onload = () => {
-      console.log('✅ reCAPTCHA script loaded manually');
       setRecaptchaError(null);
       if (checkInterval) clearInterval(checkInterval);
     };
     script.onerror = () => {
-      console.error('❌ Failed to load reCAPTCHA script');
       setRecaptchaError('reCAPTCHA script failed to load. Please check your network connection and refresh the page.');
       if (checkInterval) clearInterval(checkInterval);
     };
@@ -680,7 +644,6 @@ const ProviderSignup: React.FC = () => {
     if (typeof window.grecaptcha === 'undefined') {
       checkInterval = setInterval(() => {
         if (typeof window.grecaptcha !== 'undefined') {
-          console.log('✅ grecaptcha is now available');
           setRecaptchaError(null);
           if (checkInterval) clearInterval(checkInterval);
           checkInterval = null;
@@ -694,7 +657,6 @@ const ProviderSignup: React.FC = () => {
           checkInterval = null;
         }
         if (typeof window.grecaptcha === 'undefined') {
-          console.error('❌ reCAPTCHA script failed to load after 10 seconds');
           setRecaptchaError('reCAPTCHA script failed to load. This may be due to network issues or domain restrictions.');
         }
       }, 10000);
@@ -782,7 +744,6 @@ const ProviderSignup: React.FC = () => {
       }
       return false;
     } catch (error) {
-      console.error('Error checking for duplicates:', error);
       return false;
     }
   };
@@ -854,7 +815,6 @@ const ProviderSignup: React.FC = () => {
     
     // In development mode, also accept the fallback checkbox
     if (process.env.NODE_ENV === 'development' && recaptchaToken === 'dev-token') {
-      console.log('🔧 Development Mode: Using fallback reCAPTCHA checkbox');
     } else if (!recaptchaToken || recaptchaToken === '') {
       toast.error('Please complete the reCAPTCHA verification above before submitting.');
       return;
@@ -877,7 +837,6 @@ const ProviderSignup: React.FC = () => {
         if (transformedData.age_groups) {
           // Age groups are already in the right place
           if (process.env.NODE_ENV === 'development') {
-            console.log(`✅ Age groups already in correct field for ${categorySlug}:`, transformedData.age_groups);
           }
         } else if (transformedData.languages && Array.isArray(transformedData.languages)) {
           // Check if languages field contains age data (wrong mapping)
@@ -898,12 +857,7 @@ const ProviderSignup: React.FC = () => {
             transformedData.age_groups = ageData;
             transformedData.languages = actualLanguages;
             
-            if (process.env.NODE_ENV === 'development') {
-              console.log(`🔄 Fixed field mapping for ${categorySlug}:`, {
-                movedAgeData: ageData,
-                remainingLanguages: actualLanguages
-              });
-            }
+            // Data transformation complete
           }
         }
         
@@ -967,10 +921,6 @@ const ProviderSignup: React.FC = () => {
 
       // Debug logging only in development
       if (process.env.NODE_ENV === 'development') {
-        console.log('🔍 Debug: Data being sent to API:', JSON.stringify(submitData, null, 2));
-        console.log('🔍 Debug: Selected categories:', selectedCategories);
-        console.log('🔍 Debug: Original category slugs:', selectedCategories.map(cat => cat.attributes.slug));
-        console.log('🔍 Debug: Mapped service types:', selectedCategories.map(cat => mapCategoryToServiceType(cat.attributes.slug)));
       }
 
       // Generate idempotency key to prevent duplicate submissions
@@ -989,16 +939,14 @@ const ProviderSignup: React.FC = () => {
       );
 
       if (response.ok) {
-        const data = await response.json();
+        await response.json();
         const locationHeader = response.headers.get('Location');
         
         toast.success('Provider registration submitted successfully!');
-        console.log('Registration successful:', data);
         
         // Store resume link if provided
         if (locationHeader) {
           localStorage.setItem('provider_registration_resume_link', locationHeader);
-          console.log('Resume link stored:', locationHeader);
         }
         
         // Set success state and data
@@ -1012,14 +960,7 @@ const ProviderSignup: React.FC = () => {
         toast.success('Form has been reset and is ready for new registration!');
       } else {
         const errorData = await response.json();
-        // Detailed error logging only in development
-        if (process.env.NODE_ENV === 'development') {
-          console.error('🔍 Full error response:', {
-            status: response.status,
-            statusText: response.statusText,
-            body: errorData
-          });
-        }
+        // Error handling
         
         // Handle new field-level error format from API
         if (errorData.errors && Array.isArray(errorData.errors)) {
@@ -1035,7 +976,6 @@ const ProviderSignup: React.FC = () => {
         }
       }
     } catch (error) {
-      console.error('Error submitting registration:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to submit registration');
     } finally {
       setIsSubmitting(false);
@@ -1073,16 +1013,7 @@ const ProviderSignup: React.FC = () => {
               field.slug.toLowerCase().includes('age_group') || field.slug.toLowerCase().includes('age_range') ||
               field.slug.toLowerCase().includes('age_served') || field.slug.toLowerCase().includes('ages_served');
             
-            // Debug logging to see what fields we're processing
-            if (process.env.NODE_ENV === 'development') {
-              console.log(`🔍 Processing field: "${field.name}" (${field.slug})`, {
-                isAgeField,
-                fieldType: field.field_type,
-                hasOptions: !!field.options,
-                hasChoices: !!(field.options && field.options.choices),
-                choices: field.options?.choices
-              });
-            }
+            // Process field data
             
             if (isAgeField) {
               const ageFieldSlug = field.slug === 'languages' ? 'age_groups' : field.slug;
@@ -1208,7 +1139,10 @@ const ProviderSignup: React.FC = () => {
                 'insurance', 'insurances', 'insurance_types', 'insurance_type',
                 'ages_served', 'age_served', 'populations_served', 'population_served',
                 'modalities', 'modality',
-                'treatment_approaches', 'treatment_approach', 'interventions', 'intervention'
+                'treatment_approaches', 'treatment_approach', 'interventions', 'intervention',
+                // Educational Programs fields
+                'program_types', 'credentials_qualifications', 'delivery_format', 
+                'integration_options', 'pricing'
               ];
               
               // Check if this field should be multi-select
@@ -1218,21 +1152,17 @@ const ProviderSignup: React.FC = () => {
               
               // Explicit check for specific field names that should be multi-select
               const explicitMultiSelect = [
-                'licenses', 'therapy_types', 'specialties', 'certifications'
+                'licenses', 'therapy_types', 'specialties', 'certifications',
+                // Educational Programs fields
+                'program_types', 'credentials_qualifications', 'age_groups',
+                'delivery_format', 'integration_options', 'pricing'
               ];
               const isExplicitMultiSelect = explicitMultiSelect.includes(field.slug);
               
-              // Final multi-select decision
-              const finalMultiSelect = shouldBeMultiSelect || isExplicitMultiSelect;
+              // Final multi-select decision - also check field_type directly
+              const finalMultiSelect = field.field_type === 'multi_select' || shouldBeMultiSelect || isExplicitMultiSelect;
               
-              // Debug logging for field type detection (only in development)
-              if (process.env.NODE_ENV === 'development') {
-                console.log(`🔍 Field "${field.name}" (${field.slug}):`, {
-                  fieldName,
-                  finalMultiSelect,
-                  fieldType: field.field_type
-                });
-              }
+              // Process field type
               
               if (finalMultiSelect) {
                 // Special handling for insurance fields - use InsuranceInput component
@@ -1670,7 +1600,6 @@ const ProviderSignup: React.FC = () => {
                                 : 'border-gray-200 hover:border-blue-300 hover:shadow-md'
                             }`}
                             onClick={() => {
-                              console.log('Selected category:', category);
                               setSelectedCategories(prev => {
                                 const isSelected = prev.some(sc => sc.id === category.id);
                                 if (isSelected) {
@@ -1886,30 +1815,30 @@ const ProviderSignup: React.FC = () => {
                         </div>
                       ) : (
                         <>
-                          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                            {states.map((state) => {
-                              const currentValues = commonFields.service_areas || [];
-                              const isChecked = currentValues.includes(state);
-                              return (
-                                <label key={state} className="flex items-center">
-                                  <input
-                                    type="checkbox"
-                                    checked={isChecked}
-                                    onChange={(e) => {
-                                      if (e.target.checked) {
-                                        handleCommonFieldChange('service_areas', [...commonFields.service_areas, state]);
-                                      } else {
-                                        handleCommonFieldChange('service_areas', commonFields.service_areas.filter(s => s !== state));
-                                      }
-                                    }}
-                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                                  />
-                                  <span className="ml-2 text-sm text-gray-700">{state}</span>
-                                </label>
-                              );
-                            })}
-                          </div>
-                          <p className="mt-1 text-sm text-gray-500">Select all states where you provide services</p>
+                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                        {states.map((state) => {
+                          const currentValues = commonFields.service_areas || [];
+                          const isChecked = currentValues.includes(state);
+                          return (
+                            <label key={state} className="flex items-center">
+                              <input
+                                type="checkbox"
+                                checked={isChecked}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    handleCommonFieldChange('service_areas', [...commonFields.service_areas, state]);
+                                  } else {
+                                    handleCommonFieldChange('service_areas', commonFields.service_areas.filter(s => s !== state));
+                                  }
+                                }}
+                                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                              />
+                              <span className="ml-2 text-sm text-gray-700">{state}</span>
+                            </label>
+                          );
+                        })}
+                      </div>
+                      <p className="mt-1 text-sm text-gray-500">Select all states where you provide services</p>
                         </>
                       )}
                     </div>
@@ -2066,19 +1995,16 @@ const ProviderSignup: React.FC = () => {
                                   ref={recaptchaRef}
                                   sitekey={API_CONFIG.RECAPTCHA_SITE_KEY}
                                   onChange={(value: string | null) => {
-                                    console.log('reCAPTCHA onChange:', value ? 'Token received' : 'Token cleared');
                                     setRecaptchaToken(value || '');
                                     setRecaptchaError(null);
                                   }}
                                   onExpired={() => {
-                                    console.log('reCAPTCHA expired');
                                     setRecaptchaToken('');
                                     if (recaptchaRef.current) {
                                       recaptchaRef.current.reset();
                                     }
                                   }}
                                   onError={(error: any) => {
-                                    console.error('reCAPTCHA error:', error);
                                     setRecaptchaError('reCAPTCHA failed to load. This may be due to domain restrictions or network issues.');
                                     toast.error('reCAPTCHA failed to load. Please refresh the page or check your connection.');
                                   }}
@@ -2090,15 +2016,15 @@ const ProviderSignup: React.FC = () => {
                                       If the widget doesn't appear, the site key may not be registered for this domain. 
                                       Please contact support.
                                     </p>
-                                  </div>
+                            </div>
                                 )}
                               </>
                             ) : (
                               <div className="p-4 bg-red-50 border border-red-200 rounded-md">
                                 <p className="text-sm text-red-800">
                                   reCAPTCHA site key is not configured. Please contact support.
-                                </p>
-                              </div>
+                            </p>
+                          </div>
                             )}
                           </div>
                         </div>
@@ -2198,15 +2124,15 @@ const ProviderSignup: React.FC = () => {
                     </div>
                     <div className="ml-3">
                       <p className="text-sm text-blue-800">
-                        <span className="font-semibold">reCAPTCHA Ready!</span> This site is protected by reCAPTCHA and the Google{' '}
-                        <a href="https://policies.google.com/privacy" className="underline hover:text-blue-900" target="_blank" rel="noopener noreferrer">
-                          Privacy Policy
-                        </a>{' '}
-                        and{' '}
-                        <a href="https://policies.google.com/terms" className="underline hover:text-blue-900" target="_blank" rel="noopener noreferrer">
-                          Terms of Service
-                        </a>{' '}
-                        apply.
+                            <span className="font-semibold">reCAPTCHA Ready!</span> This site is protected by reCAPTCHA and the Google{' '}
+                            <a href="https://policies.google.com/privacy" className="underline hover:text-blue-900" target="_blank" rel="noopener noreferrer">
+                              Privacy Policy
+                            </a>{' '}
+                            and{' '}
+                            <a href="https://policies.google.com/terms" className="underline hover:text-blue-900" target="_blank" rel="noopener noreferrer">
+                              Terms of Service
+                            </a>{' '}
+                            apply.
                       </p>
                     </div>
                   </div>

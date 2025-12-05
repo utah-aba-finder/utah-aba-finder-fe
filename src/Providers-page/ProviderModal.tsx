@@ -35,6 +35,14 @@ interface ServiceDelivery {
   telehealth: boolean;
 }
 
+interface CategoryFieldValue {
+  id: number;
+  name: string;
+  slug: string;
+  field_type: 'select' | 'multi_select' | 'boolean' | 'text';
+  value: string | string[] | boolean | null;
+}
+
 interface ProviderAttributes {
   name: string | null;
   locations: Location[];
@@ -57,6 +65,11 @@ interface ProviderAttributes {
   // New fields from API update
   in_home_only?: boolean;
   service_delivery?: ServiceDelivery;
+  // Category fields for Educational Programs and other category-specific providers
+  category?: string | null;
+  category_name?: string | null;
+  provider_attributes?: Record<string, any> | null;
+  category_fields?: CategoryFieldValue[] | null;
 }
 
 interface County {
@@ -105,8 +118,15 @@ const ProviderModal: React.FC<ProviderModalProps> = ({
   const [isVisible, setIsVisible] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const [activeTab, setActiveTab] = useState('details');
+  const [categoryFields, setCategoryFields] = useState<CategoryFieldValue[] | null>(
+    provider.attributes.category_fields || null
+  );
   // Debug: Check logo data
 
+  // Reset categoryFields when provider changes
+  useEffect(() => {
+    setCategoryFields(provider.attributes.category_fields || null);
+  }, [provider.id, provider.attributes.category_fields]);
 
   useEffect(() => {
     setTimeout(() => setIsVisible(true), 10);
@@ -124,12 +144,103 @@ const ProviderModal: React.FC<ProviderModalProps> = ({
         });
       } catch (error) {
         // Silently fail - view tracking is not critical
-        console.debug('Failed to track view:', error);
       }
     };
     
     trackView();
   }, [provider.id]);
+
+  // Fetch category_fields if they're missing for Educational Programs providers
+  useEffect(() => {
+    const loadCategoryFields = async () => {
+      // If we already have category_fields with values, use them
+      if (provider.attributes.category_fields && provider.attributes.category_fields.length > 0) {
+        // Check if they have actual values (not just empty arrays/null)
+        const hasValues = provider.attributes.category_fields.some((field: any) => {
+          const val = field.value;
+          if (Array.isArray(val)) return val.length > 0;
+          if (typeof val === 'boolean') return true;
+          return val !== null && val !== undefined && val !== '';
+        });
+        
+        if (hasValues) {
+          setCategoryFields(provider.attributes.category_fields);
+          return;
+        }
+      }
+
+      // Always try to load if it's Educational Programs and we have provider_attributes
+      if (provider.attributes.category === 'educational_programs' && provider.attributes.provider_attributes) {
+        try {
+          // Fetch the category definition
+          const categoryResponse = await fetch(
+            `${getApiBaseUrl()}/api/v1/provider_categories`,
+            {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+            }
+          );
+
+          if (!categoryResponse.ok) {
+            throw new Error(`Failed to fetch category: ${categoryResponse.status}`);
+          }
+
+          const categoryData = await categoryResponse.json();
+          
+          // Find the educational programs category
+          const category = categoryData.data?.find((cat: any) => 
+            cat.attributes?.slug === 'educational-programs' || 
+            cat.attributes?.slug === 'educational_programs' ||
+            cat.attributes?.name?.toLowerCase().includes('educational')
+          );
+          
+          if (category && category.attributes?.category_fields && category.attributes.category_fields.length > 0) {
+            const fieldDefinitions = category.attributes.category_fields;
+            const providerAttributes = provider.attributes.provider_attributes || {};
+            
+            
+            // Merge field definitions with provider's current values
+            // Backend returns provider_attributes with field names (e.g., "Program Types") not slugs (e.g., "program_types")
+            const mergedFields = fieldDefinitions.map((fieldDef: any) => {
+              // Try to get value by field name first (backend format), then fall back to slug
+              let currentValue = providerAttributes[fieldDef.name];
+              if (currentValue === undefined) {
+                currentValue = providerAttributes[fieldDef.slug];
+              }
+              
+              // Backend may return comma-separated strings for multi_select, convert to arrays
+              if (fieldDef.field_type === 'multi_select' && typeof currentValue === 'string') {
+                currentValue = currentValue.split(',').map(s => s.trim()).filter(s => s.length > 0);
+              }
+              
+              const options = fieldDef.options || (Array.isArray(fieldDef.options) ? fieldDef.options : []);
+              
+              return {
+                id: fieldDef.id,
+                name: fieldDef.name,
+                slug: fieldDef.slug,
+                field_type: fieldDef.field_type,
+                required: fieldDef.required,
+                help_text: fieldDef.help_text,
+                display_order: fieldDef.display_order,
+                options: options,
+                value: currentValue !== undefined ? currentValue : (fieldDef.field_type === 'boolean' ? false : (fieldDef.field_type === 'multi_select' ? [] : null))
+              };
+            });
+            
+            setCategoryFields(mergedFields);
+          } else {
+          }
+        } catch (error) {
+        }
+      } else if (provider.attributes.category === 'educational_programs') {
+      }
+    };
+
+    loadCategoryFields();
+  }, [provider.id, provider.attributes.category, provider.attributes.provider_attributes, provider.attributes.category_fields]);
 
   const handleClose = () => {
     setIsClosing(true);
@@ -166,24 +277,61 @@ const ProviderModal: React.FC<ProviderModalProps> = ({
                     </span>
                   ) : (
                     <>
-                      {provider.attributes.at_home_services && provider.attributes.at_home_services.toLowerCase().includes('yes') && (
-                        <span className="service-badge in-home">
-                          <Home size={14} style={{ marginRight: '6px' }} />
-                          In-Home Services
-                        </span>
-                      )}
-                      {provider.attributes.in_clinic_services && provider.attributes.in_clinic_services.toLowerCase().includes('yes') && (
-                        <span className="service-badge in-clinic">
-                          <Building size={14} style={{ marginRight: '6px' }} />
-                          In-Clinic Services
-                        </span>
-                      )}
-                      {provider.attributes.telehealth_services && provider.attributes.telehealth_services.toLowerCase().includes('yes') && (
-                        <span className="service-badge telehealth">
-                          <Monitor size={14} style={{ marginRight: '6px' }} />
-                          Telehealth Services
-                        </span>
-                      )}
+                      {(() => {
+                        // Prioritize service_delivery object (new structure) over old string fields
+                        const serviceDelivery = provider.attributes.service_delivery;
+                        const hasServiceDelivery = serviceDelivery && typeof serviceDelivery === 'object';
+                        
+                        if (hasServiceDelivery && serviceDelivery) {
+                          // Use service_delivery boolean values
+                          return (
+                            <>
+                              {serviceDelivery.in_home === true && (
+                                <span className="service-badge in-home">
+                                  <Home size={14} style={{ marginRight: '6px' }} />
+                                  In-Home Services
+                                </span>
+                              )}
+                              {serviceDelivery.in_clinic === true && (
+                                <span className="service-badge in-clinic">
+                                  <Building size={14} style={{ marginRight: '6px' }} />
+                                  In-Clinic Services
+                                </span>
+                              )}
+                              {serviceDelivery.telehealth === true && (
+                                <span className="service-badge telehealth">
+                                  <Monitor size={14} style={{ marginRight: '6px' }} />
+                                  Telehealth Services
+                                </span>
+                              )}
+                            </>
+                          );
+                        } else {
+                          // Fallback to old string-based fields for backward compatibility
+                          return (
+                            <>
+                              {provider.attributes.at_home_services && provider.attributes.at_home_services.toLowerCase().includes('yes') && (
+                                <span className="service-badge in-home">
+                                  <Home size={14} style={{ marginRight: '6px' }} />
+                                  In-Home Services
+                                </span>
+                              )}
+                              {provider.attributes.in_clinic_services && provider.attributes.in_clinic_services.toLowerCase().includes('yes') && (
+                                <span className="service-badge in-clinic">
+                                  <Building size={14} style={{ marginRight: '6px' }} />
+                                  In-Clinic Services
+                                </span>
+                              )}
+                              {provider.attributes.telehealth_services && provider.attributes.telehealth_services.toLowerCase().includes('yes') && (
+                                <span className="service-badge telehealth">
+                                  <Monitor size={14} style={{ marginRight: '6px' }} />
+                                  Telehealth Services
+                                </span>
+                              )}
+                            </>
+                          );
+                        }
+                      })()}
                     </>
                   )}
                 </div>
@@ -228,41 +376,6 @@ const ProviderModal: React.FC<ProviderModalProps> = ({
               </div>
             </div>
             <div className="provider-details text">
-              {/* Show counties served for all providers */}
-              <p><strong>Counties Served:</strong> {
-                (() => {
-                  // Filter counties based on selected state and available counties
-                  const relevantCounties = selectedState && selectedState !== 'none'
-                    ? provider.attributes.counties_served.filter(county => {
-                        // Get the full state name from the available counties
-                        const matchingCounty = availableCounties.find(ac => 
-                          ac.attributes.name === county.county_name
-                        );
-                        return matchingCounty !== undefined;
-                      })
-                    : provider.attributes.counties_served;
-
-                  if (provider.attributes.provider_type.length > 0 && provider.attributes.provider_type[0].name === "ABA Therapy") {
-                    if (relevantCounties.length === 1 && relevantCounties[0].county_name === "Contact Us") {
-                      return 'Contact us';
-                    }
-                    return relevantCounties.length > 0
-                      ? relevantCounties
-                          .filter(county => county.county_name !== "Contact Us")
-                          .map(county => county.county_name)
-                          .join(', ')
-                      : 'Not applicable for this provider';
-                  }
-                  
-                  return relevantCounties.length > 1 || (relevantCounties.length === 1 && relevantCounties[0].county_name !== "Contact Us")
-                    ? relevantCounties
-                        .filter(county => county.county_name !== "Contact Us")
-                        .map(county => county.county_name)
-                        .join(', ')
-                    : 'Not applicable for this provider';
-                })()
-              }</p>
-              
               {/* Show ages served for all providers */}
               <p><strong>Ages Served:</strong> {provider.attributes.min_age} - {provider.attributes.max_age} years</p>
               
@@ -288,6 +401,149 @@ const ProviderModal: React.FC<ProviderModalProps> = ({
                   <p><strong>Cost:</strong> {provider.attributes.cost || 'Contact us'}</p>
                 </>
               )}
+              
+              {/* Educational Programs Category Fields */}
+              {provider.attributes.category === 'educational_programs' && (
+                <div className="educational-programs-section" style={{ marginTop: '24px', padding: '16px', backgroundColor: '#f9fafb', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
+                  <h4 style={{ marginBottom: '16px', color: '#1f2937', fontSize: '18px', fontWeight: '600' }}>
+                    <strong>Program Information</strong>
+                  </h4>
+                  {(() => {
+                    
+                    // Render category fields
+                    if (categoryFields && categoryFields.length > 0) {
+                      // Fields available for rendering
+                    }
+                    
+                    if (!categoryFields || categoryFields.length === 0) {
+                      return (
+                        <p style={{ color: '#6b7280', fontStyle: 'italic' }}>
+                          Program information is being loaded...
+                        </p>
+                      );
+                    }
+                    
+                    const fieldsWithValues = categoryFields
+                      .sort((a, b) => (a.id || 0) - (b.id || 0))
+                      .filter((field) => {
+                        const val = field.value;
+                        if (Array.isArray(val)) return val.length > 0;
+                        if (typeof val === 'boolean') return true;
+                        return val !== null && val !== undefined && val !== '';
+                      });
+                    
+                    if (fieldsWithValues.length === 0) {
+                      return (
+                        <p style={{ color: '#6b7280', fontStyle: 'italic' }}>
+                          No program information available yet.
+                        </p>
+                      );
+                    }
+                    
+                    return fieldsWithValues.map((field) => {
+                      // Convert field value to proper type for display
+                      let processedValue = field.value;
+                      
+                      // Convert string "true"/"false" to boolean
+                      if (typeof processedValue === 'string') {
+                        const lowerValue = processedValue.toLowerCase();
+                        if (lowerValue === 'true' || processedValue === '1') {
+                          processedValue = true;
+                        } else if (lowerValue === 'false' || processedValue === '0') {
+                          processedValue = false;
+                        }
+                      }
+                      
+                      // Convert numeric 1/0 to boolean
+                      if (typeof processedValue === 'number') {
+                        processedValue = processedValue === 1;
+                      }
+                      
+                      const displayValue = Array.isArray(processedValue) 
+                        ? processedValue.join(', ')
+                        : typeof processedValue === 'boolean'
+                          ? processedValue ? 'Yes' : 'No'
+                          : processedValue;
+                      
+                      return (
+                        <div key={field.id || field.slug} style={{ marginBottom: '12px' }}>
+                          <p>
+                            <strong style={{ color: '#374151' }}>{field.name}:</strong>{' '}
+                            <span style={{ color: '#6b7280' }}>{displayValue}</span>
+                          </p>
+                        </div>
+                      );
+                    });
+                  })()}
+                </div>
+              )}
+            </div>
+          </section>
+        );
+      case 'counties':
+        return (
+          <section className="modal-text-section">
+            <div className="provider-main-info">
+              <h3 className="text-xl font-semibold text-gray-900 mb-4">Counties Served</h3>
+              <div className="provider-details text">
+                {(() => {
+                  // Filter counties based on selected state
+                  // If a state is selected, only show counties from that state
+                  // If no state is selected, show all counties from all states
+                  let relevantCounties = provider.attributes.counties_served;
+                  
+                  if (selectedState && selectedState !== 'none' && selectedState.trim() !== '') {
+                    // Filter counties by the selected state
+                    relevantCounties = provider.attributes.counties_served.filter(county => {
+                      // Check if county has a state field that matches the selected state
+                      if (county.state) {
+                        return county.state.trim().toUpperCase() === selectedState.trim().toUpperCase();
+                      }
+                      // If county doesn't have state field, try to match using availableCounties
+                      const matchingCounty = availableCounties.find(ac => 
+                        ac.attributes.name === county.county_name &&
+                        ac.attributes.state?.trim().toUpperCase() === selectedState.trim().toUpperCase()
+                      );
+                      return matchingCounty !== undefined;
+                    });
+                  }
+                  // If no state selected, show all counties (already set above)
+
+                  if (provider.attributes.provider_type.length > 0 && provider.attributes.provider_type[0].name === "ABA Therapy") {
+                    if (relevantCounties.length === 1 && relevantCounties[0].county_name === "Contact Us") {
+                      return <p className="text-gray-600">Contact us</p>;
+                    }
+                    const filteredCounties = relevantCounties.filter(county => county.county_name !== "Contact Us");
+                    if (filteredCounties.length === 0) {
+                      return <p className="text-gray-600">Not applicable for this provider</p>;
+                    }
+                    return (
+                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                        {filteredCounties.map((county, index) => (
+                          <div key={index} className="bg-gray-50 px-3 py-2 rounded border border-gray-200 text-sm">
+                            {county.county_name}
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  }
+                  
+                  const filteredCounties = relevantCounties.filter(county => county.county_name !== "Contact Us");
+                  if (filteredCounties.length === 0) {
+                    return <p className="text-gray-600">Not applicable for this provider</p>;
+                  }
+                  
+                  return (
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                      {filteredCounties.map((county, index) => (
+                        <div key={index} className="bg-gray-50 px-3 py-2 rounded border border-gray-200 text-sm">
+                          {county.county_name}
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
+              </div>
             </div>
           </section>
         );
@@ -424,6 +680,14 @@ const ProviderModal: React.FC<ProviderModalProps> = ({
                 tabIndex={0}
               >
                 Details
+              </button>
+              <button
+                className={`tab-button ${activeTab === 'counties' ? 'active' : ''}`}
+                onClick={() => setActiveTab('counties')}
+                onKeyDown={(e) => handleKeyDown(e, 'counties')}
+                tabIndex={0}
+              >
+                Counties Served
               </button>
               <button
                 className={`tab-button ${activeTab === 'locations' ? 'active' : ''}`}

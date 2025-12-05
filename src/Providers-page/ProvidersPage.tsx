@@ -209,14 +209,12 @@ const ProvidersPage: React.FC = () => {
     const getProviders = async () => {
       // Add a fallback timeout to ensure loading state is reset
       const loadingTimeout = setTimeout(() => {
-        console.log('⏰ Loading timeout - forcing loading to false');
         setIsLoading(false);
         setApiStatus('error');
         setShowError("Request timed out. The server may be experiencing issues.");
       }, 30000); // 30 second timeout
       
       try {
-        console.log('🔄 Starting to fetch providers...');
         setIsLoading(true);
         setApiStatus('loading');
         setShowError("");
@@ -224,7 +222,6 @@ const ProvidersPage: React.FC = () => {
         
         // Add a more aggressive timeout for the fetch request itself
         const fetchTimeout = setTimeout(() => {
-          console.log('⏰ Fetch timeout - API request taking too long');
           setApiStatus('error');
           setShowError("API request is taking too long. The server may be experiencing issues.");
           setIsLoading(false);
@@ -236,15 +233,12 @@ const ProvidersPage: React.FC = () => {
           clearTimeout(fetchTimeout); // Clear timeout if successful
         } catch (fetchError) {
           clearTimeout(fetchTimeout);
-          console.log('❌ fetchPublicProviders threw error:', fetchError);
           throw fetchError; // Re-throw to be caught by outer catch
         }
         
-        console.log('📡 API response received:', providers);
         
         // Add null check for providers.data
         if (!providers || !providers.data || !Array.isArray(providers.data)) {
-          console.warn('⚠️ Invalid providers data structure:', providers);
           setAllProviders([]);
           setFilteredProviders([]);
           setApiStatus('error');
@@ -256,7 +250,6 @@ const ProvidersPage: React.FC = () => {
         
         // Check if we actually got any providers
         if (providers.data.length === 0) {
-          console.warn('⚠️ No providers returned from API');
           setAllProviders([]);
           setFilteredProviders([]);
           setApiStatus('error');
@@ -266,7 +259,15 @@ const ProvidersPage: React.FC = () => {
           return;
         }
         
-        console.log(`✅ Mapping ${providers.data.length} providers...`);
+        
+        // Debug: Check if any Educational Programs providers have provider_attributes
+        const educationalProviders = providers.data.filter((p: ProviderData) => 
+          (p as any).category === 'educational_programs' || p.attributes.category === 'educational_programs'
+        );
+        if (educationalProviders.length > 0) {
+          // Educational providers processed
+        }
+        
         const mappedProviders = providers.data.map((p: ProviderData) => ({
           id: p.attributes.id,
           name: p.attributes.name,
@@ -297,16 +298,19 @@ const ProvidersPage: React.FC = () => {
             in_home: false,
             in_clinic: false,
             telehealth: false
-          }
+          },
+          // Category fields for Educational Programs and other category-specific providers
+          category: (p as any).category || p.attributes.category || null,
+          category_name: (p as any).category_name || p.attributes.category_name || null,
+          provider_attributes: (p as any).provider_attributes || p.attributes.provider_attributes || null,
+          category_fields: (p as any).category_fields || p.attributes.category_fields || null
         }));
         
-        console.log('📝 Mapped providers:', mappedProviders);
         setAllProviders(mappedProviders);
         setFilteredProviders(mappedProviders);
         setApiStatus('success');
         setRetryCount(0);
       } catch (error) {
-        console.error('❌ Error fetching providers:', error);
         setApiStatus('error');
         setRetryCount(prev => prev + 1);
         
@@ -329,7 +333,6 @@ const ProvidersPage: React.FC = () => {
         setFilteredProviders([]);
         setIsLoading(false);
       } finally {
-        console.log('🏁 Setting loading to false');
         clearTimeout(loadingTimeout);
         setIsLoading(false);
       }
@@ -396,7 +399,6 @@ const ProvidersPage: React.FC = () => {
       setApiStatus('success');
       setRetryCount(0);
     } catch (error) {
-      console.error('❌ Retry failed:', error);
       setApiStatus('error');
       setShowError("Retry failed. Please check your connection and try again.");
     } finally {
@@ -405,7 +407,6 @@ const ProvidersPage: React.FC = () => {
   }, []);
 
   const handleSearch = async (searchParams: any) => {
-    console.log('🔍 handleSearch called with params:', searchParams);
     setIsLoading(true);
     setShowResultMessage(false); // Hide result message immediately when search starts
     setIsSearchRefined(false); // Reset search refined state until we have results
@@ -414,34 +415,18 @@ const ProvidersPage: React.FC = () => {
     
     try {
       const { stateId, providerType, query, county_name, insurance, spanish, service, waitlist, age, hasReviews } = searchParams;
-      console.log('🔍 Calling API with stateId:', stateId, 'providerType:', providerType);
-      console.log('🔍 Full search params:', searchParams);
       
       let results;
       try {
         results = await fetchProvidersByStateIdAndProviderType(stateId, providerType);
-        console.log('🔍 API results received:', results);
-        console.log('🔍 API results data length:', results?.data?.length || 0);
-        if (results?.data?.length > 0) {
-          console.log('🔍 First provider sample:', results.data[0]);
-        }
       } catch (apiError) {
-        console.error('❌ API call failed:', apiError);
         setShowError("Unable to search providers at this time. Please check your connection and try again.");
         setIsLoading(false);
         return;
       }
       
       // Add null check for results.data
-      console.log('🔍 Checking results structure:', {
-        hasResults: !!results,
-        hasData: !!results?.data,
-        isArray: Array.isArray(results?.data),
-        dataLength: results?.data?.length
-      });
-      
       if (!results || !results.data || !Array.isArray(results.data)) {
-        console.warn('⚠️ Invalid results structure, setting empty providers');
         setFilteredProviders([]);
         setCurrentPage(1);
         setIsLoading(false);
@@ -468,13 +453,8 @@ const ProvidersPage: React.FC = () => {
           '76': 'Tennessee',
           // Add more as needed
         };
-        const targetState = stateMap[stateId];
-        console.log('🔍 Debug: Looking for providers in', targetState, 'with type', providerType);
-        console.log('🔍 Debug: Available providers with states:', mappedProviders.map((p: ProviderAttributes) => ({
-          name: p.name,
-          states: p.states,
-          provider_types: p.provider_type?.map((t: any) => t.name) || []
-        })));
+        // State mapping available if needed
+        void stateMap[stateId];
       }
 
       // Apply comprehensive filtering
@@ -482,18 +462,13 @@ const ProvidersPage: React.FC = () => {
       
       // Note: State and provider type filtering are now handled by the backend
       // The API returns pre-filtered results, so we only need to apply additional filters
-      console.log('🔍 Frontend filtering starting with', filteredResults.length, 'providers from backend');
       
       // Name filter - only apply if a specific name is entered
       if (query && query.trim() && query.trim().length > 2) {
         const searchTerm = query.toLowerCase().trim();
-        const beforeNameFilter = filteredResults.length;
         filteredResults = filteredResults.filter((provider: ProviderAttributes) => 
           provider.name && provider.name.toLowerCase().includes(searchTerm)
         );
-        console.log('🔍 Name filter applied for "' + searchTerm + '":', beforeNameFilter, '->', filteredResults.length, 'providers');
-      } else if (query && query.trim()) {
-        console.log('🔍 Name filter skipped - query too short:', query.trim().length, 'characters');
       }
 
       // County filter
@@ -606,34 +581,6 @@ const ProvidersPage: React.FC = () => {
         );
       }
 
-      // Enhanced debugging for provider types
-      if (providerType && providerType !== 'none') {
-        console.log('🔍 Provider Type Debug:', {
-          selectedProviderType: providerType,
-          totalProviders: filteredResults.length,
-          providerTypes: filteredResults.map((p: ProviderAttributes) => ({
-            name: p.name,
-            provider_types: p.provider_type?.map((t: { name: string }) => t.name) || []
-          }))
-        });
-      }
-
-      // Log filtering results for debugging
-      console.log('🔍 Search filtering results:', {
-        originalCount: mappedProviders.length,
-        afterStateFilter: stateId && stateId !== 'none' ? filteredResults.length : 'N/A',
-        afterNameFilter: query && query.trim() && query.trim().length > 2 ? filteredResults.length : 'N/A',
-        afterCountyFilter: county_name && county_name.trim() ? 'Applied' : 'N/A',
-        afterInsuranceFilter: insurance && insurance.trim() ? 'Applied' : 'N/A',
-        afterProviderTypeFilter: providerType && providerType !== 'none' ? 'Applied' : 'N/A',
-        finalCount: filteredResults.length,
-        selectedState: stateId,
-        selectedProviderType: providerType,
-        selectedInsurance: insurance,
-        query: query,
-        queryLength: query ? query.trim().length : 0
-      });
-
       // Reviews filter
       if (hasReviews && hasReviews.trim()) {
         switch (hasReviews) {
@@ -681,7 +628,6 @@ const ProvidersPage: React.FC = () => {
     } catch (err) {
       // Error handled, setting loading to false
       if (isMountedRef.current) {
-        console.error('❌ Search error:', err);
         setShowError('An unexpected error occurred during search. Please try again.');
         setIsLoading(false);
       }
@@ -770,7 +716,6 @@ const ProvidersPage: React.FC = () => {
   const handleResults = (results: { data: ProviderData[] }) => {
     // Add null check for results.data
     if (!results || !results.data || !Array.isArray(results.data)) {
-      console.error('Invalid results format:', results);
       setFilteredProviders([]);
       return;
     }

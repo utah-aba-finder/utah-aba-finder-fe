@@ -19,7 +19,6 @@ const SponsoredProvidersCarousel: React.FC<SponsoredProvidersCarouselProps> = ({
         const sponsoredProviders = await fetchSponsoredProviders();
         setProviders(sponsoredProviders);
       } catch (err) {
-        console.error('Failed to load sponsored providers:', err);
         setError('Failed to load sponsored providers');
       } finally {
         setLoading(false);

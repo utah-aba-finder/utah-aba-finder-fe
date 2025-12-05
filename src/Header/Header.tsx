@@ -233,10 +233,10 @@ const Header = () => {
                    to={item.href}
                    className={`block py-4 px-6 text-xl font-bold no-underline ${
                      item.variant === 'donate'
-                       ? 'bg-gradient-to-r from-green-500 to-green-600 text-white mx-4 rounded-lg shadow-md text-center'
+                       ? 'bg-gradient-to-r from-green-500 to-green-600 text-white mx-4 rounded-lg shadow-md text-center' 
                        : item.variant === 'sponsor'
                          ? 'bg-gradient-to-r from-sky-500 to-blue-600 text-white mx-4 rounded-lg shadow-md text-center'
-                         : 'text-[#332d29] hover:text-[#4A6FA5]'
+                       : 'text-[#332d29] hover:text-[#4A6FA5]'
                    }`}
                    onClick={() => setIsMobileMenuOpen(false)}
                  >

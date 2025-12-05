@@ -24,15 +24,6 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
   selectedState,
   hasReviews
 }) => {
-  // Debug: Check logo data
-  console.log('🔍 ProviderCard RENDER:', {
-    providerName: provider.name,
-    providerId: provider.id,
-    logo: provider.logo,
-    logo_url: provider.logo_url,
-    hasLogo: !!(provider.logo || provider.logo_url)
-  });
-
   const handleToggleFavorite = (e: React.MouseEvent) => {
     e.stopPropagation();
 
@@ -75,29 +66,61 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
         </span>
       );
     } else {
-      if (provider.at_home_services && provider.at_home_services.toLowerCase().includes('yes')) {
-        badges.push(
-          <span key="in-home" className="service-badge in-home">
-            <Home size={12} style={{ marginRight: '4px' }} />
-            In-Home
-          </span>
-        );
-      }
-      if (provider.in_clinic_services && provider.in_clinic_services.toLowerCase().includes('yes')) {
-        badges.push(
-          <span key="in-clinic" className="service-badge in-clinic">
-            <Building size={12} style={{ marginRight: '4px' }} />
-            In-Clinic
-          </span>
-        );
-      }
-      if (provider.telehealth_services && provider.telehealth_services.toLowerCase().includes('yes')) {
-        badges.push(
-          <span key="telehealth" className="service-badge telehealth">
-            <Monitor size={12} style={{ marginRight: '4px' }} />
-            Telehealth
-          </span>
-        );
+      // Prioritize service_delivery object (new structure) over old string fields
+      const hasServiceDelivery = provider.service_delivery && typeof provider.service_delivery === 'object';
+      
+      if (hasServiceDelivery) {
+        // Use service_delivery boolean values
+        if (provider.service_delivery.in_home === true) {
+          badges.push(
+            <span key="in-home" className="service-badge in-home">
+              <Home size={12} style={{ marginRight: '4px' }} />
+              In-Home
+            </span>
+          );
+        }
+        if (provider.service_delivery.in_clinic === true) {
+          badges.push(
+            <span key="in-clinic" className="service-badge in-clinic">
+              <Building size={12} style={{ marginRight: '4px' }} />
+              In-Clinic
+            </span>
+          );
+        }
+        if (provider.service_delivery.telehealth === true) {
+          badges.push(
+            <span key="telehealth" className="service-badge telehealth">
+              <Monitor size={12} style={{ marginRight: '4px' }} />
+              Telehealth
+            </span>
+          );
+        }
+      } else {
+        // Fallback to old string-based fields for backward compatibility
+        if (provider.at_home_services && provider.at_home_services.toLowerCase().includes('yes')) {
+          badges.push(
+            <span key="in-home" className="service-badge in-home">
+              <Home size={12} style={{ marginRight: '4px' }} />
+              In-Home
+            </span>
+          );
+        }
+        if (provider.in_clinic_services && provider.in_clinic_services.toLowerCase().includes('yes')) {
+          badges.push(
+            <span key="in-clinic" className="service-badge in-clinic">
+              <Building size={12} style={{ marginRight: '4px' }} />
+              In-Clinic
+            </span>
+          );
+        }
+        if (provider.telehealth_services && provider.telehealth_services.toLowerCase().includes('yes')) {
+          badges.push(
+            <span key="telehealth" className="service-badge telehealth">
+              <Monitor size={12} style={{ marginRight: '4px' }} />
+              Telehealth
+            </span>
+          );
+        }
       }
     }
     
@@ -149,6 +172,115 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
                   </div>
                 </div>
               )}
+              
+              {/* Educational Programs - Show key program info on card */}
+              {(() => {
+                const providerCategory = (provider as any).category || provider.category;
+                const categoryFields = (provider as any).category_fields || provider.category_fields;
+                const providerAttributes = (provider as any).provider_attributes || provider.provider_attributes;
+                
+                
+                // Try to get values from category_fields first, then fall back to provider_attributes
+                let programTypesValue: string[] | null = null;
+                let ageGroupsValue: string[] | null = null;
+                let deliveryFormatValue: string[] | null = null;
+                let parentCaregiverSupportValue: boolean | null = null;
+                
+                if (categoryFields && categoryFields.length > 0) {
+                  const programTypes = categoryFields.find((f: any) => f.slug === 'program_types');
+                  const ageGroups = categoryFields.find((f: any) => f.slug === 'age_groups');
+                  const deliveryFormat = categoryFields.find((f: any) => f.slug === 'delivery_format');
+                  const parentCaregiverSupport = categoryFields.find((f: any) => f.slug === 'parent_caregiver_support');
+                  
+                  programTypesValue = programTypes?.value && Array.isArray(programTypes.value) ? programTypes.value : null;
+                  ageGroupsValue = ageGroups?.value && Array.isArray(ageGroups.value) ? ageGroups.value : null;
+                  deliveryFormatValue = deliveryFormat?.value && Array.isArray(deliveryFormat.value) ? deliveryFormat.value : null;
+                  
+                  // Convert parentCaregiverSupport value to boolean, handling strings and numbers
+                  if (parentCaregiverSupport?.value !== undefined && parentCaregiverSupport.value !== null) {
+                    let boolValue = parentCaregiverSupport.value;
+                    // Convert string "true"/"false" to boolean
+                    if (typeof boolValue === 'string') {
+                      boolValue = boolValue.toLowerCase() === 'true' || boolValue === '1';
+                    }
+                    // Convert numeric 1/0 to boolean
+                    if (typeof boolValue === 'number') {
+                      boolValue = boolValue === 1;
+                    }
+                    parentCaregiverSupportValue = typeof boolValue === 'boolean' ? boolValue : null;
+                  } else {
+                    parentCaregiverSupportValue = null;
+                  }
+                } else if (providerAttributes) {
+                  // Fall back to provider_attributes if category_fields not available
+                  // Backend returns field names (e.g., "Program Types") not slugs (e.g., "program_types")
+                  const getValue = (fieldName: string, slug: string) => {
+                    let value = providerAttributes[fieldName];
+                    if (value === undefined) {
+                      value = providerAttributes[slug];
+                    }
+                    // Backend may return comma-separated strings, convert to arrays
+                    if (typeof value === 'string') {
+                      value = value.split(',').map(s => s.trim()).filter(s => s.length > 0);
+                    }
+                    return Array.isArray(value) && value.length > 0 ? value : null;
+                  };
+                  
+                  const getBooleanValue = (fieldName: string, slug: string) => {
+                    let value = providerAttributes[fieldName];
+                    if (value === undefined) {
+                      value = providerAttributes[slug];
+                    }
+                    // Convert string "true"/"false" to boolean
+                    if (typeof value === 'string') {
+                      value = value.toLowerCase() === 'true' || value === '1';
+                    }
+                    // Convert numeric 1/0 to boolean
+                    if (typeof value === 'number') {
+                      value = value === 1;
+                    }
+                    // Return boolean if we have a valid value, otherwise null
+                    return typeof value === 'boolean' ? value : null;
+                  };
+                  
+                  programTypesValue = getValue('Program Types', 'program_types');
+                  ageGroupsValue = getValue('Age Groups', 'age_groups');
+                  deliveryFormatValue = getValue('Delivery Format', 'delivery_format');
+                  parentCaregiverSupportValue = getBooleanValue('Parent/Caregiver Support', 'parent_caregiver_support');
+                }
+                
+                if (providerCategory === 'educational_programs' && (programTypesValue || ageGroupsValue || deliveryFormatValue || parentCaregiverSupportValue !== null)) {
+                  const previewItems = [];
+                  if (programTypesValue && programTypesValue.length > 0) {
+                    previewItems.push(`Programs: ${programTypesValue.slice(0, 2).join(', ')}${programTypesValue.length > 2 ? '...' : ''}`);
+                  }
+                  if (ageGroupsValue && ageGroupsValue.length > 0) {
+                    previewItems.push(`Ages: ${ageGroupsValue.join(', ')}`);
+                  }
+                  if (deliveryFormatValue && deliveryFormatValue.length > 0) {
+                    previewItems.push(`Format: ${deliveryFormatValue.join(', ')}`);
+                  }
+                  if (parentCaregiverSupportValue !== null) {
+                    previewItems.push(`Parent/Caregiver Support: ${parentCaregiverSupportValue ? "Yes" : "No"}`);
+                  }
+                  
+                  if (previewItems.length > 0) {
+                    return (
+                      <div className="educational-programs-preview" style={{ marginTop: '12px', padding: '12px', backgroundColor: '#f0f9ff', borderRadius: '6px', border: '1px solid #bae6fd' }}>
+                        <h4 style={{ marginBottom: '8px', fontSize: '14px', fontWeight: '600', color: '#1e40af' }}>
+                          <strong>Program Details:</strong>
+                        </h4>
+                        <div style={{ fontSize: '12px', color: '#1e3a8a' }}>
+                          {previewItems.map((item, idx) => (
+                            <div key={idx} style={{ marginBottom: '4px' }}>{item}</div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  }
+                }
+                return null;
+              })()}
 
 
               

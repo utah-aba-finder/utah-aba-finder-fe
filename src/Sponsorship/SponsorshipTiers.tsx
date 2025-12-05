@@ -48,20 +48,11 @@ const SponsorshipTiers: React.FC<SponsorshipTiersProps> = ({
         
         if (!cancelled) {
           const tiersData = response.tiers || [];
-          // Debug: Log pricing options structure (remove in production if needed)
-          if (process.env.NODE_ENV === 'development') {
-            console.log('📊 Loaded sponsorship tiers:', tiersData.map(t => ({
-              name: t.name,
-              price: t.price,
-              price_display: t.price_display,
-              pricing_options: t.pricing_options
-            })));
-          }
+          // Process tiers data
           setTiers(tiersData);
         }
       } catch (error) {
         // Don't let errors crash the component
-        console.error('Failed to load sponsorship tiers:', error);
         if (!cancelled) {
           toast.error('Failed to load sponsorship options. Please try again.', {
             position: "top-center",
@@ -161,8 +152,8 @@ const SponsorshipTiers: React.FC<SponsorshipTiersProps> = ({
           const matchesName =
             normalizedCurrent !== null && normalizedTierName !== null
               ? normalizedCurrent === normalizedTierName ||
-                normalizedTierName.includes(normalizedCurrent) ||
-                normalizedCurrent.includes(normalizedTierName)
+            normalizedTierName.includes(normalizedCurrent) ||
+            normalizedCurrent.includes(normalizedTierName)
               : false;
 
           const isCurrent = matchesId || matchesName;

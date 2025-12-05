@@ -66,7 +66,6 @@ const InsuranceInput: React.FC<InsuranceInputProps> = ({
       );
       setSuggestions(filtered);
     } catch (error) {
-      console.error('Failed to search insurances:', error);
       setSuggestions(popularInsurances);
     } finally {
       setLoading(false);

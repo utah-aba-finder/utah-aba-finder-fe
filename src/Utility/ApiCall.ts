@@ -25,7 +25,6 @@ export interface PracticeTypesResponse {
 
 export const fetchPracticeTypes = async (): Promise<PracticeTypesResponse> => {
   try {
-    console.log('🔄 Fetching practice types from API...');
     
     const response = await fetch(
       `${BASE_API_URL}/practice_types`,
@@ -45,7 +44,6 @@ export const fetchPracticeTypes = async (): Promise<PracticeTypesResponse> => {
     }
     
     const data = await response.json();
-    console.log('✅ Practice types fetched successfully:', data);
     
     // Transform the response data to match our interface
     const transformedData = {
@@ -73,7 +71,6 @@ export const fetchPracticeTypes = async (): Promise<PracticeTypesResponse> => {
     
     // If we don't have enough types, use fallback
     if (finalTypes.length < 12) {
-      console.log('⚠️ API returned only', finalTypes.length, 'practice types, using fallback for complete list');
       const fallbackTypes: PracticeType[] = [
         { id: 115, name: "ABA Therapy" },
         { id: 116, name: "Autism Evaluations" },
@@ -93,7 +90,6 @@ export const fetchPracticeTypes = async (): Promise<PracticeTypesResponse> => {
     
     return { data: finalTypes };
   } catch (error) {
-    console.error('❌ Failed to fetch practice types:', error);
     
     // Fallback to hardcoded types if API fails or doesn't have all types
     const fallbackTypes: PracticeType[] = [
@@ -111,7 +107,6 @@ export const fetchPracticeTypes = async (): Promise<PracticeTypesResponse> => {
       { id: 126, name: "Pediatricians" }
     ];
     
-    console.log('🔄 Using fallback practice types');
     return { data: fallbackTypes };
   }
 };
@@ -270,7 +265,6 @@ export const fetchMassEmailStats = async (): Promise<MassEmailStats> => {
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error('❌ Failed to fetch mass email stats:', error);
     throw error;
   }
 };
@@ -295,7 +289,6 @@ export const sendPasswordReminders = async (): Promise<MassEmailResponse> => {
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error('❌ Failed to send password reminders:', error);
     throw error;
   }
 };
@@ -320,7 +313,6 @@ export const sendSystemUpdates = async (): Promise<MassEmailResponse> => {
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error('❌ Failed to send system updates:', error);
     throw error;
   }
 };
@@ -346,7 +338,6 @@ export const previewEmail = async (emailType: 'password_update_reminder' | 'syst
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error('❌ Failed to preview email:', error);
     throw error;
   }
 };
@@ -373,7 +364,6 @@ export const fetchEmailTemplates = async (): Promise<EmailTemplateResponse> => {
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error('❌ Failed to fetch email templates:', error);
     throw error;
   }
 };
@@ -384,8 +374,6 @@ export const loadEmailTemplate = async (
 ): Promise<TemplateContentResponse> => {
     const url = `${API_URL}/email_templates/${templateName}?type=${templateType}`;
   try {
-    console.log('🔄 Loading template from URL:', url);
-    console.log('🔑 Using auth header:', getSuperAdminAuthHeader());
     
     const response = await fetch(url, {
       method: 'GET',
@@ -395,7 +383,6 @@ export const loadEmailTemplate = async (
       },
     });
 
-    console.log('📡 Response status:', response.status);
 
     // If not OK, try to read text safely; DO NOT THROW
     if (!response.ok) {
@@ -405,7 +392,6 @@ export const loadEmailTemplate = async (
       } catch {
         errorText = `HTTP ${response.status}`;
       }
-      console.error('❌ API error loading template:', response.status, errorText);
       return { success: false, content: '', error: errorText || response.statusText };
     }
 
@@ -419,7 +405,6 @@ export const loadEmailTemplate = async (
       return { success: true, content: text };
     }
 
-    console.log('✅ Template data received:', data);
 
     // Normalize to TemplateContentResponse
     if (typeof data?.content === 'string') {
@@ -432,7 +417,6 @@ export const loadEmailTemplate = async (
     return { success: ok, content, error: ok ? undefined : 'Template content missing' };
 
   } catch (err: any) {
-    console.error('❌ Network/parse error loading template:', err);
     // DON'T throw — return a soft error
     return { success: false, content: '', error: err?.message ?? 'Unknown error' };
   }
@@ -463,7 +447,6 @@ export const saveEmailTemplate = async (templateName: string, content: string, t
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error('❌ Failed to save email template:', error);
     throw error;
   }
 };
@@ -488,7 +471,6 @@ export const previewEmailTemplate = async (templateName: string, templateType: '
       } catch {
         errorText = `HTTP ${response.status}`;
       }
-      console.error('❌ API error previewing template:', response.status, errorText);
       return { 
         success: false, 
         subject: '', 
@@ -500,7 +482,6 @@ export const previewEmailTemplate = async (templateName: string, templateType: '
     const data = await response.json();
     return data;
   } catch (error: any) {
-    console.error('❌ Failed to preview email template:', error);
     // DON'T throw — return a soft error
     return { 
       success: false, 
@@ -516,7 +497,6 @@ const API_URL_PROVIDERS = 'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.co
 // Fallback function to fetch all providers by state (since main endpoints are broken)
 export const fetchAllProvidersByState = async (): Promise<Providers> => {
   try {
-    console.log('🔄 Fetching providers by state (fallback method)...');
     
     // First get all states
     const statesResponse = await fetch(
@@ -554,16 +534,13 @@ export const fetchAllProvidersByState = async (): Promise<Providers> => {
           }
         }
       } catch (stateError) {
-        console.log(`⚠️ Failed to fetch providers for state ${state.attributes.name}:`, stateError);
         // Continue with other states
       }
     }
     
-    console.log(`✅ Fetched ${allProviders.length} providers using state-by-state method`);
     
     return { data: allProviders };
   } catch (error) {
-    console.error('❌ Failed to fetch providers by state:', error);
     throw new Error('Unable to fetch providers using fallback method');
   }
 };
@@ -593,10 +570,8 @@ export const fetchProviders = async (): Promise<Providers> => {
     
     return data;
   } catch (error) {
-    console.error('❌ Failed to fetch providers with admin auth:', error);
     
     // If admin auth fails, try the state-by-state method as fallback
-    console.log('🔄 Admin providers failed, trying state-by-state fallback...');
     return await fetchAllProvidersByState();
   }
 };
@@ -676,12 +651,10 @@ export const fetchInsurance = async (): Promise<InsuranceData[]> => {
   );
   
   if (!response.ok) {
-    console.error('❌ Insurance API error:', response.status, response.statusText);
     throw new Error(`Failed to fetch insurances: ${response.status}`);
   }
   
   const data = await response.json();
-  console.log('📦 Raw insurance API response:', data);
   
   // Return data.data if it exists, otherwise return empty array
   return data.data || [];
@@ -715,14 +688,12 @@ export const testAPIHealth = async (): Promise<{ status: string; message: string
 
 export const fetchProvidersByStateIdAndProviderType = async (stateId: string, providerType: string) => {
   try {
-    console.log('🔍 API Call:', { stateId, providerType });
     
     // Build query parameters for the new backend filtering
     const params = new URLSearchParams();
     
     if (providerType && providerType !== 'none' && providerType.trim() !== '') {
       params.append('provider_type', providerType);
-      console.log('🔍 Added provider_type filter:', providerType);
     }
     
     if (stateId && stateId !== 'none') {
@@ -784,9 +755,7 @@ export const fetchProvidersByStateIdAndProviderType = async (stateId: string, pr
       const targetState = stateMap[stateId];
       if (targetState) {
         params.append('state', targetState);
-        console.log('🔍 Added state filter:', targetState, 'for stateId:', stateId);
       } else {
-        console.warn('⚠️ Unknown state ID:', stateId, 'Available states:', Object.keys(stateMap));
       }
     }
     
@@ -794,8 +763,6 @@ export const fetchProvidersByStateIdAndProviderType = async (stateId: string, pr
     const baseUrl = 'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers';
     const url = params.toString() ? `${baseUrl}?${params.toString()}` : baseUrl;
     
-    console.log('🔍 URL with query params:', url);
-    console.log('🔍 Using new backend filtering system');
     
     const response = await fetch(url, {
       method: 'GET',
@@ -807,25 +774,21 @@ export const fetchProvidersByStateIdAndProviderType = async (stateId: string, pr
       cache: 'no-store'
     });
     
-    console.log('🔍 Response:', response.status, response.statusText);
     
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     
     const data = await response.json();
-    console.log('🔍 Data received from backend filtering:', data);
     
     // The backend should now return pre-filtered results
     // No need for client-side filtering
     if (data && data.data && Array.isArray(data.data)) {
-      console.log('🔍 Backend returned', data.data.length, 'filtered providers');
       return { data: data.data };
     }
     
     return data;
   } catch (error) {
-    console.error('❌ Fetch error:', error);
     return { data: [] };
   }
 };
@@ -890,8 +853,6 @@ export const validateLogoFile = (file: File): { isValid: boolean; error?: string
 // Enhanced logo upload function following the exact requirements
 export const uploadProviderLogo = async (providerId: number, logoFile: File, authToken: string, isSuperAdmin: boolean = false): Promise<{ success: boolean; error?: string; updatedProvider?: any }> => {
   try {
-    console.log('🔑 uploadProviderLogo: Starting logo upload for provider:', providerId);
-    console.log('🔑 uploadProviderLogo: Is super admin:', isSuperAdmin);
     
     // Validate file before upload
     const validation = validateLogoFile(logoFile);
@@ -913,14 +874,9 @@ export const uploadProviderLogo = async (providerId: number, logoFile: File, aut
 
     // Set authentication header - authToken already contains "Bearer {user_id}"
     const authHeader = authToken; // Don't add extra "Bearer " prefix
-    console.log('🔑 uploadProviderLogo: Using auth header:', authHeader);
-    console.log('🔑 uploadProviderLogo: Endpoint:', endpoint);
-    console.log('🔑 uploadProviderLogo: Method: PUT');
-    console.log('🔑 uploadProviderLogo: FormData contents:');
-    for (let [key, value] of formData.entries()) {
-      console.log(`  ${key}:`, value);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    for (let [_key, _value] of formData.entries()) {
     }
-    console.log('🔑 uploadProviderLogo: About to make fetch request...');
 
     const response = await fetch(
       endpoint,
@@ -934,38 +890,23 @@ export const uploadProviderLogo = async (providerId: number, logoFile: File, aut
       }
     );
 
-    console.log('🔍 uploadProviderLogo: Response status:', response.status);
-    console.log('🔍 uploadProviderLogo: Response headers:', Object.fromEntries(response.headers.entries()));
     
     if (!response.ok) {
       const errorText = await response.text();
-      console.log('❌ uploadProviderLogo: Response not OK:', response.status, response.statusText);
-      console.log('❌ uploadProviderLogo: Error response text:', errorText);
       
       // Additional debugging for S3 integration issues
       if (response.status === 500) {
-        console.log('🔍 uploadProviderLogo: 500 error detected - this might be an S3 integration issue');
-        console.log('🔍 uploadProviderLogo: Check backend logs for S3 configuration errors');
       }
       
       return { success: false, error: `Upload failed: ${response.status} - ${errorText}` };
     }
 
     const result = await response.json();
-    console.log('✅ uploadProviderLogo: Logo upload successful');
-    console.log('🔍 uploadProviderLogo: Full response data:', result);
-    console.log('🔍 uploadProviderLogo: Response data structure:', result);
     
     // Check if the response contains the new logo URL
     if (result && result.data && result.data[0] && result.data[0].attributes) {
-      console.log('🔍 uploadProviderLogo: New logo URL:', result.data[0].attributes.logo);
-      console.log('🔍 uploadProviderLogo: Full attributes:', result.data[0].attributes);
     } else {
-      console.log('⚠️ uploadProviderLogo: Response structure unexpected - logo URL might be missing');
-      console.log('⚠️ uploadProviderLogo: Response keys:', Object.keys(result || {}));
       if (result?.data) {
-        console.log('⚠️ uploadProviderLogo: Data array length:', result.data.length);
-        console.log('⚠️ uploadProviderLogo: First data item:', result.data[0]);
       }
     }
 
@@ -974,7 +915,6 @@ export const uploadProviderLogo = async (providerId: number, logoFile: File, aut
       updatedProvider: result 
     };
   } catch (error) {
-    console.error('❌ uploadProviderLogo: Unexpected error:', error);
     return { 
       success: false, 
       error: error instanceof Error ? error.message : 'Unknown error occurred' 
@@ -1164,7 +1104,6 @@ export const testAvailableEndpoints = async (): Promise<{ success: boolean; endp
 // Public providers function that uses states endpoint (no API key required)
 export const fetchPublicProviders = async (): Promise<Providers> => {
   try {
-    console.log('🔄 Fetching public providers using main providers endpoint...');
     
     // Add a timeout to the fetch request
     const controller = new AbortController();
@@ -1190,41 +1129,6 @@ export const fetchPublicProviders = async (): Promise<Providers> => {
       }
       
       const data = await response.json();
-      console.log('✅ Public providers fetched successfully from main providers endpoint');
-      console.log('📊 All provider types found:', data?.data?.length || 0);
-      console.log('🎯 This should show ABA Therapy, Autism Evaluations, Speech Therapy, Occupational Therapy, etc.');
-      
-      // Debug logo data
-      const providersWithLogos = data?.data?.filter((p: any) => p.attributes.logo_url || p.attributes.logo) || [];
-      console.log('🖼️ Providers with logos:', providersWithLogos.length);
-      if (providersWithLogos.length > 0) {
-        const sampleProvider = providersWithLogos[0];
-        console.log('🖼️ Sample provider with logo:', {
-          name: sampleProvider.attributes.name,
-          logo_url: sampleProvider.attributes.logo_url,
-          logo: sampleProvider.attributes.logo,
-          urlType: sampleProvider.attributes.logo_url ? 
-            (sampleProvider.attributes.logo_url.includes('rails/active_storage') ? 'Rails Active Storage' : 'Direct S3') : 
-            'None'
-        });
-        
-        // Test if the URL is accessible
-        if (sampleProvider.attributes.logo_url) {
-          console.log('🔗 Testing logo URL accessibility...');
-          fetch(sampleProvider.attributes.logo_url, { method: 'HEAD' })
-            .then(response => {
-              console.log('🔗 Logo URL test result:', {
-                status: response.status,
-                statusText: response.statusText,
-                url: sampleProvider.attributes.logo_url,
-                accessible: response.ok
-              });
-            })
-            .catch(error => {
-              console.error('🔗 Logo URL test failed:', error);
-            });
-        }
-      }
       
       return data;
     } catch (fetchError) {
@@ -1244,16 +1148,13 @@ export const fetchPublicProviders = async (): Promise<Providers> => {
       throw fetchError;
     }
   } catch (error) {
-    console.log('🔄 Public providers failed, trying admin fallback...');
     try {
       return await fetchProviders();
     } catch (adminError) {
-      console.log('🔄 Admin fallback failed, trying state-by-state method...');
       try {
         return await fetchAllProvidersByState();
       } catch (stateError) {
         // If all fallbacks fail, throw a comprehensive error
-        console.error('❌ All provider fetch methods failed:', { error, adminError, stateError });
         throw new Error('All provider data sources are currently unavailable. Please try again later.');
       }
     }
@@ -1296,12 +1197,6 @@ export const fetchSponsorshipTiers = async (): Promise<SponsorshipTiersResponse>
     const data = await response.json();
     return data;
   } catch (error: any) {
-    // Log the error but don't let it crash the app
-    console.error('❌ Failed to fetch sponsorship tiers:', {
-      message: error?.message,
-      status: error?.status,
-      details: error?.details
-    });
     // Re-throw with a user-friendly message
     throw error;
   }
@@ -1336,7 +1231,6 @@ export const createPaymentIntent = async (
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error('❌ Failed to create payment intent:', error);
     throw error;
   }
 };
@@ -1372,7 +1266,6 @@ export const confirmSponsorship = async (
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error('❌ Failed to confirm sponsorship:', error);
     throw error;
   }
 };
@@ -1393,7 +1286,6 @@ export const fetchSponsoredProviders = async (): Promise<SponsoredProvider[]> =>
     const data = await response.json();
     return data.providers || data.sponsored_providers || [];
   } catch (error) {
-    console.error('❌ Failed to fetch sponsored providers:', error);
     throw error;
   }
 };
@@ -1426,12 +1318,6 @@ export const fetchUserSponsorships = async (): Promise<SponsorshipsResponse> => 
     const data = await response.json();
     return data;
   } catch (error: any) {
-    // Log the error but don't let it crash the app
-    console.error('❌ Failed to fetch user sponsorships:', {
-      message: error?.message,
-      status: error?.status,
-      details: error?.details
-    });
     // Re-throw with a user-friendly message
     throw error;
   }
@@ -1458,7 +1344,6 @@ export const fetchSponsorship = async (sponsorshipId: number): Promise<Sponsorsh
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error('❌ Failed to fetch sponsorship:', error);
     throw error;
   }
 };
@@ -1482,7 +1367,6 @@ export const cancelSponsorship = async (sponsorshipId: number): Promise<void> =>
       throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
     }
   } catch (error) {
-    console.error('❌ Failed to cancel sponsorship:', error);
     throw error;
   }
 };

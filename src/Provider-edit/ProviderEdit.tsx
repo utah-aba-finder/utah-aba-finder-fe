@@ -81,6 +81,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
   const [availableCounties, setAvailableCounties] = useState<any[]>([]);
   const [isCountiesModalOpen, setIsCountiesModalOpen] = useState(false);
   const [isInsuranceModalOpen, setIsInsuranceModalOpen] = useState(false);
+  const [categoryFields, setCategoryFields] = useState<any[]>([]);
 
   // Enhanced common fields state (matching registration form structure)
   const [commonFields, setCommonFields] = useState({
@@ -155,7 +156,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
     }
     
     // Last resort - this should not happen if auth is working properly
-    console.error('❌ ProviderEdit: No user ID available for authorization');
     return null;
   }, [currentUser?.id, token]);
 
@@ -292,6 +292,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       setSelectedProviderTypes(newProviderData.attributes.provider_type || []);
       setSelectedInsurances(newProviderData.attributes.insurance || []);
       setSelectedLogoFile(null);
+      setCategoryFields(newProviderData.attributes.category_fields || []);
     
     // Initialize common fields with provider data
     setCommonFields({
@@ -341,7 +342,13 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       setSelectedProviderTypes(initialProviderData.attributes.provider_type || []);
       setSelectedInsurances(initialProviderData.attributes.insurance || []);
       setSelectedLogoFile(null);
+      setCategoryFields(initialProviderData.attributes.category_fields || []);
       previousProviderId.current = initialProviderData.id;
+      
+      // If it's Educational Programs, fetch category definition and merge with provider_attributes
+      if (initialProviderData.attributes.category === 'educational_programs' && initialProviderData.attributes.provider_attributes) {
+        // This will be handled by the useEffect below
+      }
       
       // Initialize common fields with initial provider data
       setCommonFields({
@@ -366,6 +373,88 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       });
     }
   }, [loggedInProvider, currentProvider]);
+  
+  // Fetch category definition and merge with provider_attributes for Educational Programs
+  useEffect(() => {
+    const loadCategoryFields = async () => {
+      if (currentProvider?.attributes?.category === 'educational_programs' && currentProvider.attributes.provider_attributes) {
+        try {
+          const categoryResponse = await fetch(
+            `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/provider_categories`,
+            {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+            }
+          );
+
+          if (!categoryResponse.ok) {
+            throw new Error(`Failed to fetch category: ${categoryResponse.status}`);
+          }
+
+          const categoryData = await categoryResponse.json();
+          
+          const category = categoryData.data?.find((cat: any) => 
+            cat.attributes?.slug === 'educational-programs' || 
+            cat.attributes?.slug === 'educational_programs' ||
+            cat.attributes?.name?.toLowerCase().includes('educational')
+          );
+          
+          if (category && category.attributes?.category_fields && category.attributes.category_fields.length > 0) {
+            const fieldDefinitions = category.attributes.category_fields;
+            const providerAttributes = currentProvider.attributes.provider_attributes || {};
+            
+            
+            // Merge field definitions with provider's current values
+            // Backend returns provider_attributes with field names (e.g., "Program Types") not slugs (e.g., "program_types")
+            const mergedFields = fieldDefinitions.map((fieldDef: any) => {
+              // Try to get value by field name first (backend format), then fall back to slug
+              let currentValue = providerAttributes[fieldDef.name];
+              if (currentValue === undefined) {
+                currentValue = providerAttributes[fieldDef.slug];
+              }
+              
+              // Backend may return comma-separated strings for multi_select, convert to arrays
+              if (fieldDef.field_type === 'multi_select' && typeof currentValue === 'string') {
+                currentValue = currentValue.split(',').map(s => s.trim()).filter(s => s.length > 0);
+              }
+              
+              // Backend may return string booleans ("true"/"false") for boolean fields, convert to actual booleans
+              if (fieldDef.field_type === 'boolean' && typeof currentValue === 'string') {
+                currentValue = currentValue.toLowerCase() === 'true' || currentValue === '1';
+              }
+              
+              // Also handle numeric booleans (1/0) for boolean fields
+              if (fieldDef.field_type === 'boolean' && typeof currentValue === 'number') {
+                currentValue = currentValue === 1;
+              }
+              
+              const options = fieldDef.options || (Array.isArray(fieldDef.options) ? fieldDef.options : []);
+              
+              return {
+                id: fieldDef.id,
+                name: fieldDef.name,
+                slug: fieldDef.slug,
+                field_type: fieldDef.field_type,
+                required: fieldDef.required,
+                help_text: fieldDef.help_text,
+                display_order: fieldDef.display_order,
+                options: options,
+                value: currentValue !== undefined ? currentValue : (fieldDef.field_type === 'boolean' ? false : (fieldDef.field_type === 'multi_select' ? [] : null))
+              };
+            });
+            
+            setCategoryFields(mergedFields);
+          }
+        } catch (error) {
+        }
+      }
+    };
+
+    loadCategoryFields();
+  }, [currentProvider?.id, currentProvider?.attributes?.category, currentProvider?.attributes?.provider_attributes]);
+  
   const { logout } = useAuth();
 
   const handleLogout = useCallback(() => {
@@ -388,7 +477,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       
       // Check if we have a valid token for authorization
       if (!token) {
-        console.error('🔍 ProviderEdit: No JWT token available for authorization');
         toast.error('Failed to refresh provider data - no authentication token');
         return;
       }
@@ -404,12 +492,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('❌ ProviderEdit: Server error response:', {
-          status: response.status,
-          statusText: response.statusText,
-          errorText: errorText
-        });
-
         throw new Error(`HTTP ${response.status}: ${errorText}`);
       }
 
@@ -421,7 +503,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       try {
         allInsurances = await fetchInsurance();
       } catch (err) {
-        console.warn('⚠️ Failed to fetch insurance list for normalization, will use fallback');
       }
       
       // Normalize insurance data - match names to IDs from full insurance list
@@ -482,7 +563,12 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
           updated_last: providerData.attributes?.updated_last || null,
           status: providerData.attributes?.status || null,
           in_home_only: providerData.attributes?.in_home_only || false,
-          service_delivery: providerData.attributes?.service_delivery || { in_home: false, in_clinic: false, telehealth: false }
+          service_delivery: providerData.attributes?.service_delivery || { in_home: false, in_clinic: false, telehealth: false },
+          // Include category fields for Educational Programs
+          category: providerData.attributes?.category || null,
+          category_name: providerData.attributes?.category_name || null,
+          provider_attributes: providerData.attributes?.provider_attributes || null,
+          category_fields: providerData.attributes?.category_fields || null
         }
       };
       
@@ -499,7 +585,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       
       toast.success('Provider data refreshed successfully');
     } catch (error) {
-      console.error('🔍 ProviderEdit: Error in refreshProviderData:', error);
       toast.error('Failed to refresh provider data');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -661,7 +746,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
         const response = await fetchPracticeTypes();
         setPracticeTypes(response.data);
       } catch (error) {
-        console.error("Failed to load practice types:", error);
         toast.error("Failed to load practice types");
       }
     };
@@ -726,7 +810,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       await refreshProviderData();
       
     } catch (error) {
-      console.error('Logo upload error:', error);
       toast.error('Failed to upload logo. Please try again.');
     } finally {
       setIsSaving(false);
@@ -753,6 +836,22 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
         // Add some fields that might be required by the backend
         status: editedProvider?.status || 'approved',
         in_home_only: editedProvider?.in_home_only || false,
+        // Category fields for Educational Programs
+        ...(currentProvider?.attributes?.category === 'educational_programs' && categoryFields && categoryFields.length > 0 && {
+          // Backend expects field names (e.g., "Program Types") not slugs (e.g., "program_types")
+          provider_attributes: categoryFields.reduce((acc, field) => {
+            // Only include fields that have values
+            if (field.value !== null && field.value !== undefined && field.value !== '') {
+              if (Array.isArray(field.value) && field.value.length > 0) {
+                // Backend will handle array values by joining with commas
+                acc[field.name] = field.value;
+              } else if (!Array.isArray(field.value)) {
+                acc[field.name] = field.value;
+              }
+            }
+            return acc;
+          }, {} as Record<string, any>)
+        }),
         // Remove complex nested objects temporarily to test
         // primary_address: commonFields.primary_address,
         // service_delivery: commonFields.service_delivery,
@@ -774,7 +873,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       });
 
       // Essential debugging for provider_type issue
-      console.log('🔍 ProviderEdit: Provider type being sent:', cleanedAttributes.provider_type);
       
       // Get the proper user ID for authorization using the existing helper
       const userId = extractUserId();
@@ -792,7 +890,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
 
       // Check if this provider ID makes sense
       if (typeof providerId !== 'number' || providerId <= 0) {
-        console.error('❌ ProviderEdit: Invalid provider ID:', providerId);
         throw new Error(`Invalid provider ID: ${providerId}`);
       }
 
@@ -802,7 +899,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       }
 
       // Verify the provider exists before attempting update
-      console.log('🔍 ProviderEdit: Verifying provider exists before update...');
       try {
         const verifyResponse = await fetch(
           `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${providerId}`,
@@ -821,9 +917,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
           }
         }
         
-        console.log('✅ ProviderEdit: Provider verified successfully');
       } catch (verifyError) {
-        console.error('❌ ProviderEdit: Provider verification failed:', verifyError);
         throw verifyError;
       }
 
@@ -831,7 +925,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       // Use the correct provider_self endpoint as per API documentation
       const apiEndpoint = 'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/provider_self';
       
-      console.log('🔍 ProviderEdit: Using API endpoint:', apiEndpoint);
 
       const requestBody = {
         data: [{
@@ -841,10 +934,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       };
 
       // Debug: Log the exact data being sent to help debug 500 error
-      console.log('🔍 ProviderEdit: Full request body being sent:', requestBody);
-      console.log('🔍 ProviderEdit: Provider type in request:', cleanedAttributes.provider_type);
-      console.log('🔍 ProviderEdit: Insurance in request:', cleanedAttributes.insurance);
-      console.log('🔍 ProviderEdit: Counties in request:', cleanedAttributes.counties_served);
 
       // Step 1: Set the active provider context before updating (optional - don't fail if it doesn't work)
       // Removed provider context call due to 403 errors - going straight to provider update
@@ -863,13 +952,10 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
         );
 
         if (contextResponse.ok) {
-          console.log('✅ ProviderEdit: Active provider context set successfully');
         } else {
           const contextErrorText = await contextResponse.text();
-          console.warn('⚠️ ProviderEdit: Failed to set active provider context:', contextResponse.status, contextErrorText);
         }
       } catch (contextError) {
-        console.warn('⚠️ ProviderEdit: Error setting provider context:', contextError);
       }
       */
 
@@ -887,12 +973,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('❌ ProviderEdit: Server error response:', {
-          status: response.status,
-          statusText: response.statusText,
-          errorText: errorText
-        });
-
         throw new Error(`HTTP ${response.status}: ${errorText}`);
       }
 
@@ -964,7 +1044,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
         await refreshProviderData();
       } catch (refreshError) {
         // Don't fail the save operation if refresh fails, but log it
-        console.warn('⚠️ ProviderEdit: Failed to refresh provider data after save:', refreshError);
       }
       
       // Show success toast only after everything is complete
@@ -1382,12 +1461,10 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                                 alt="Current Provider Logo" 
                                       className="w-48 h-48 object-contain border border-gray-300 rounded-lg shadow-sm"
                                 onError={(e) => {
-                                  console.error('🔍 Logo image failed to load:', currentProvider.attributes.logo);
                                   e.currentTarget.style.display = 'none';
                                   e.currentTarget.nextElementSibling?.classList.remove('hidden');
                                 }}
                                 onLoad={() => {
-                                  console.log('🔍 Logo image loaded successfully:', currentProvider.attributes.logo);
                                 }}
                               />
                               </div>
@@ -1511,7 +1588,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                                   
                                   await refreshProviderData();
                                 } catch (error) {
-                                  console.error('Logo removal error:', error);
                                   toast.error('Failed to remove logo. Please try again.');
                                 } finally {
                                   setIsSaving(false);
@@ -1715,6 +1791,110 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                         placeholder="Enter any additional information about your services..."
                       />
                     </div>
+
+                    {/* Category Fields Section for Educational Programs */}
+                    {currentProvider?.attributes?.category === 'educational_programs' && categoryFields && categoryFields.length > 0 && (
+                      <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Program Details</h3>
+                        <div className="space-y-4">
+                          {categoryFields
+                            .sort((a, b) => (a.id || 0) - (b.id || 0))
+                            .map((field, fieldIndex) => (
+                              <div key={field.id || field.slug || fieldIndex} className="border-b border-gray-200 pb-4 last:border-b-0">
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                  {field.name} {field.required && <span className="text-red-500">*</span>}
+                                </label>
+                                {field.help_text && (
+                                  <p className="text-xs text-gray-500 mb-2">{field.help_text}</p>
+                                )}
+                                
+                                {field.field_type === 'multi_select' && (
+                                  <div className="space-y-2">
+                                    <div className="text-xs text-blue-600 mb-2">Multi-select field - Select multiple options</div>
+                                    <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto border border-gray-200 rounded-md p-3">
+                                      {(field.options || []).map((option: string) => {
+                                        const currentValues = Array.isArray(field.value) ? field.value : [];
+                                        const isChecked = currentValues.includes(option);
+                                        return (
+                                          <label key={option} className="flex items-center">
+                                            <input
+                                              type="checkbox"
+                                              checked={isChecked}
+                                              onChange={(e) => {
+                                                const updatedFields = [...categoryFields];
+                                                const currentValues = Array.isArray(updatedFields[fieldIndex].value) 
+                                                  ? updatedFields[fieldIndex].value 
+                                                  : [];
+                                                if (e.target.checked) {
+                                                  updatedFields[fieldIndex].value = [...currentValues, option];
+                                                } else {
+                                                  updatedFields[fieldIndex].value = currentValues.filter((v: string) => v !== option);
+                                                }
+                                                setCategoryFields(updatedFields);
+                                              }}
+                                              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                            />
+                                            <span className="ml-2 text-sm text-gray-700">{option}</span>
+                                          </label>
+                                        );
+                                      })}
+                                    </div>
+                                  </div>
+                                )}
+                                
+                                {field.field_type === 'boolean' && (
+                                  <label className="flex items-center">
+                                    <input
+                                      type="checkbox"
+                                      checked={field.value === true || field.value === 'true' || field.value === 1}
+                                      onChange={(e) => {
+                                        const updatedFields = [...categoryFields];
+                                        updatedFields[fieldIndex].value = e.target.checked;
+                                        setCategoryFields(updatedFields);
+                                      }}
+                                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                    />
+                                    <span className="ml-2 text-sm text-gray-700">{field.help_text || field.name}</span>
+                                  </label>
+                                )}
+                                
+                                {(field.field_type === 'text' || field.field_type === 'select') && (
+                                  <div>
+                                    {field.field_type === 'select' && field.options && field.options.length > 0 ? (
+                                      <select
+                                        value={typeof field.value === 'string' ? field.value : ''}
+                                        onChange={(e) => {
+                                          const updatedFields = [...categoryFields];
+                                          updatedFields[fieldIndex].value = e.target.value;
+                                          setCategoryFields(updatedFields);
+                                        }}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                      >
+                                        <option value="">Select {field.name}...</option>
+                                        {field.options.map((option: string) => (
+                                          <option key={option} value={option}>{option}</option>
+                                        ))}
+                                      </select>
+                                    ) : (
+                                      <input
+                                        type="text"
+                                        value={typeof field.value === 'string' ? field.value : ''}
+                                        onChange={(e) => {
+                                          const updatedFields = [...categoryFields];
+                                          updatedFields[fieldIndex].value = e.target.value;
+                                          setCategoryFields(updatedFields);
+                                        }}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        placeholder={field.help_text || `Enter ${field.name}`}
+                                      />
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+                    )}
 
                     {/* Save and Discard Buttons */}
                     <div className="mt-6 flex justify-end space-x-4">

@@ -128,7 +128,6 @@ const SuperAdmin = () => {
         // setApiError('Failed to fetch providers from API.'); // This line was removed
       }
     } catch (error) {
-      console.error('❌ SuperAdmin: Error fetching providers:', error);
       setAllProviders([]);
       // setApiStatus('error'); // This line was removed
       // setApiError(error instanceof Error ? error.message : "Failed to fetch providers."); // This line was removed
@@ -143,7 +142,6 @@ const SuperAdmin = () => {
         const response = await fetchPracticeTypes();
         setPracticeTypes(response.data);
       } catch (error) {
-        console.error("Failed to load practice types:", error);
         toast.error("Failed to load practice types");
       }
     };
@@ -159,7 +157,6 @@ const SuperAdmin = () => {
   const handleProviderUpdate = async (updatedProvider: ProviderAttributes) => {
     try {
       if (!currentUser) {
-        console.error('❌ SuperAdmin: No current user found for update');
         toast.error("Authentication error - please log in again");
         return;
       }
@@ -167,7 +164,6 @@ const SuperAdmin = () => {
       // Update the local state immediately with the data from SuperAdminEdit
       setAllProviders((prevProviders) => {
         if (!selectedProvider?.id) {
-          console.warn('⚠️ SuperAdmin: No selectedProvider ID for update');
           return prevProviders;
         }
 
@@ -199,6 +195,11 @@ const SuperAdmin = () => {
                   ...(updatedProvider.states !== undefined && { states: updatedProvider.states }),
                   ...(updatedProvider.status !== undefined && { status: updatedProvider.status }),
                   ...(updatedProvider.updated_last !== undefined && { updated_last: updatedProvider.updated_last }),
+                  // Include category fields for Educational Programs
+                  ...(updatedProvider.category !== undefined && { category: updatedProvider.category }),
+                  ...(updatedProvider.category_name !== undefined && { category_name: updatedProvider.category_name }),
+                  ...(updatedProvider.provider_attributes !== undefined && { provider_attributes: updatedProvider.provider_attributes }),
+                  ...(updatedProvider.category_fields !== undefined && { category_fields: updatedProvider.category_fields }),
                 } 
               }
             : provider
@@ -245,7 +246,6 @@ const SuperAdmin = () => {
       // Don't show generic success toast - SuperAdminEdit will show a comprehensive one
       // toast.success("Provider updated successfully!");
     } catch (error) {
-      console.error("❌ SuperAdmin: Error updating provider:", error);
       toast.error(error instanceof Error ? error.message : "Failed to update provider");
     }
   };

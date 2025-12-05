@@ -189,7 +189,6 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
           await Promise.all(countiesPromises);
         }
       } catch (error) {
-        console.error('Error fetching states and counties:', error);
       }
     };
     

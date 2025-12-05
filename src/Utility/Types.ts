@@ -49,6 +49,14 @@ export interface ServiceDelivery {
     telehealth: boolean;
 }
 
+export interface CategoryFieldValue {
+    id: number;
+    name: string;
+    slug: string;
+    field_type: 'select' | 'multi_select' | 'boolean' | 'text';
+    value: string | string[] | boolean | null;
+}
+
 export interface ProviderAttributes {
     id: number;
     name: string | null;
@@ -89,6 +97,11 @@ export interface ProviderAttributes {
         zip: string;
         phone: string;
     } | null;
+    // Category and provider attributes for Educational Programs and other category-specific providers
+    category?: string | null;
+    category_name?: string | null;
+    provider_attributes?: Record<string, any> | null;
+    category_fields?: CategoryFieldValue[] | null;
     // Sponsorship fields
     // Backend uses integer enum: 0=free, 1=featured, 2=sponsor, 3=partner
     // Frontend may receive as string or number

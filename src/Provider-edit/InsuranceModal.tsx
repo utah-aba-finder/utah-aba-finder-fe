@@ -27,22 +27,15 @@ const InsuranceModal: React.FC<InsuranceModalProps> = ({
         const loadInsurance = async () => {
             try {
                 setIsLoading(true);
-                console.log('🔄 Loading insurances...');
                 const insurances = await fetchInsurance();
-                console.log('✅ Insurances loaded:', insurances);
-                console.log('✅ Insurances type:', typeof insurances);
-                console.log('✅ Is array?:', Array.isArray(insurances));
-                console.log('✅ Insurances length:', insurances?.length);
                 
                 // Handle both array and undefined cases
                 if (insurances && Array.isArray(insurances)) {
                     setInsurance(insurances);
                 } else {
-                    console.warn('⚠️ Insurances is not an array, setting empty array');
                     setInsurance([]);
                 }
             } catch (error) {
-                console.error('❌ Error loading insurances:', error);
                 setInsurance([]);
             } finally {
                 setIsLoading(false);

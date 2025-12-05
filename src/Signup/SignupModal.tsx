@@ -110,7 +110,6 @@ const SignupModal: React.FC<SignupModalProps> = ({
         const response = await fetchPracticeTypes();
         setPracticeTypes(response.data);
       } catch (error) {
-        console.error("Failed to load practice types:", error);
         toast.error("Failed to load practice types");
       }
     };

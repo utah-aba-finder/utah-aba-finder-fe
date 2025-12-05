@@ -104,9 +104,7 @@ const LocationManagement: React.FC<LocationManagementProps> = ({
       setLocations(fetchedLocations);
       onLocationsUpdate(fetchedLocations);
       
-      console.log('🔍 LocationManagement: Fetched locations:', fetchedLocations);
     } catch (error) {
-      console.error('🔍 LocationManagement: Error fetching locations:', error);
       toast.error('Failed to fetch locations');
     } finally {
       setIsLoading(false);
@@ -155,9 +153,7 @@ const LocationManagement: React.FC<LocationManagementProps> = ({
       });
       
       toast.success('Location added successfully!');
-      console.log('🔍 LocationManagement: Added new location:', newLocation);
     } catch (error) {
-      console.error('🔍 LocationManagement: Error adding location:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to add location');
     } finally {
       setIsLoading(false);
@@ -208,9 +204,7 @@ const LocationManagement: React.FC<LocationManagementProps> = ({
       });
       
       toast.success('Location updated successfully!');
-      console.log('🔍 LocationManagement: Updated location:', updatedLocation);
     } catch (error) {
-      console.error('🔍 LocationManagement: Error updating location:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to update location');
     } finally {
       setIsLoading(false);
@@ -245,9 +239,7 @@ const LocationManagement: React.FC<LocationManagementProps> = ({
       setDeletingLocation(null);
       
       toast.success('Location deleted successfully!');
-      console.log('🔍 LocationManagement: Deleted location:', deletingLocation.id);
     } catch (error) {
-      console.error('🔍 LocationManagement: Error deleting location:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to delete location');
     } finally {
       setIsLoading(false);
