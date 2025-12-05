@@ -103,7 +103,6 @@ const UserProviderLinking: React.FC = () => {
   const testApiKey = async () => {
     try {
       const authHeader = getAdminAuthHeader();
-      console.log('🧪 Testing API key:', authHeader);
       
       const response = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/users/providers_list', {
         headers: {
@@ -111,19 +110,15 @@ const UserProviderLinking: React.FC = () => {
         }
       });
       
-      console.log('🧪 Test response status:', response.status);
       
       if (response.ok) {
         const data = await response.json();
-        console.log('🧪 Test successful, providers count:', data.providers?.length || 0);
         toast.success('API key test successful!');
       } else {
         const errorText = await response.text();
-        console.error('🧪 Test failed:', errorText);
         toast.error(`API key test failed: ${response.status}`);
       }
     } catch (error) {
-      console.error('🧪 Test error:', error);
       toast.error('API key test error');
     }
   };
@@ -133,30 +128,23 @@ const UserProviderLinking: React.FC = () => {
     const testEmail = 'mfielder@abacenters.com';
     const testProviderId = 1095;
     
-    console.log('🧪🧪🧪 Testing All API Endpoints 🧪🧪🧪');
     
     // Test 1: User Providers Endpoint (This should work for existing user)
-    console.log('🧪 Test 1: User Providers Endpoint');
     try {
       const response1 = await fetch(`https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/user_providers?user_email=${encodeURIComponent(testEmail)}`, {
         headers: {
           'Authorization': getAdminAuthHeader(),
         }
       });
-      console.log('🧪 User Providers Status:', response1.status);
       if (response1.ok) {
         const data = await response1.json();
-        console.log('🧪 User Providers Success:', data);
       } else {
         const errorText = await response1.text();
-        console.error('🧪 User Providers Error:', errorText);
       }
     } catch (error) {
-      console.error('🧪 User Providers Exception:', error);
     }
     
     // Test 2: Set Active Provider (This should work for existing user)
-    console.log('🧪 Test 2: Set Active Provider Endpoint');
     try {
       const response2 = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/set_active_provider', {
         method: 'POST',
@@ -169,20 +157,15 @@ const UserProviderLinking: React.FC = () => {
           provider_id: testProviderId
         })
       });
-      console.log('🧪 Set Active Provider Status:', response2.status);
       if (response2.ok) {
         const data = await response2.json();
-        console.log('🧪 Set Active Provider Success:', data);
       } else {
         const errorText = await response2.text();
-        console.error('🧪 Set Active Provider Error:', errorText);
       }
     } catch (error) {
-      console.error('🧪 Set Active Provider Exception:', error);
     }
     
     // Test 3: Individual Assignment Endpoint (This will fail for owner - expected)
-    console.log('🧪 Test 3: Individual Assignment Endpoint (Expected to fail for owner)');
     try {
       const response3 = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/assign_provider_to_user', {
         method: 'POST',
@@ -195,20 +178,15 @@ const UserProviderLinking: React.FC = () => {
           provider_id: testProviderId
         })
       });
-      console.log('🧪 Individual Assignment Status:', response3.status);
       if (response3.ok) {
         const data = await response3.json();
-        console.log('🧪 Individual Assignment Success:', data);
       } else {
         const errorText = await response3.text();
-        console.error('🧪 Individual Assignment Error (Expected for owner):', errorText);
       }
     } catch (error) {
-      console.error('🧪 Individual Assignment Exception:', error);
     }
     
     // Test 4: Bulk Assignment Endpoint (This will fail for owner - expected)
-    console.log('🧪 Test 4: Bulk Assignment Endpoint (Expected to fail for owner)');
     try {
       const response4 = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/users/bulk_assign_users', {
         method: 'POST',
@@ -221,19 +199,14 @@ const UserProviderLinking: React.FC = () => {
           provider_id: testProviderId
         })
       });
-      console.log('🧪 Bulk Assignment Status:', response4.status);
       if (response4.ok) {
         const data = await response4.json();
-        console.log('🧪 Bulk Assignment Success:', data);
       } else {
         const errorText = await response4.text();
-        console.error('🧪 Bulk Assignment Error (Expected for owner):', errorText);
       }
     } catch (error) {
-      console.error('🧪 Bulk Assignment Exception:', error);
     }
     
-    console.log('🧪🧪🧪 Endpoint Testing Complete 🧪🧪🧪');
   };
 
   // Multi-Provider Management Functions
@@ -249,22 +222,17 @@ const UserProviderLinking: React.FC = () => {
         const data = await response.json();
         return data.providers || [];
       } else {
-        console.error('Failed to fetch user providers:', response.status);
         // Enhanced error logging for 422 errors
         if (response.status === 422) {
           const errorText = await response.text();
-          console.error('422 Error Details:', errorText);
           try {
             const errorJson = JSON.parse(errorText);
-            console.error('422 Error JSON:', errorJson);
           } catch (e) {
-            console.error('422 Error is not JSON:', errorText);
           }
         }
         return [];
       }
     } catch (error) {
-      console.error('Error fetching user providers:', error);
       return [];
     }
   };
@@ -297,7 +265,6 @@ const UserProviderLinking: React.FC = () => {
         return false;
       }
     } catch (error) {
-      console.error('Error setting active provider:', error);
       toast.error('Failed to update active provider');
       return false;
     }
@@ -332,7 +299,6 @@ const UserProviderLinking: React.FC = () => {
         return false;
       }
     } catch (error) {
-      console.error('Error removing user from provider:', error);
       toast.error('Failed to remove user from provider');
       return false;
     }
@@ -354,7 +320,6 @@ const UserProviderLinking: React.FC = () => {
       }));
       setShowUserProviderDetails(userEmail);
     } catch (error) {
-      console.error('Error loading user provider details:', error);
       toast.error('Failed to load user provider details');
     } finally {
       setIsLoadingUserProviders(false);
@@ -393,20 +358,12 @@ const UserProviderLinking: React.FC = () => {
   const fetchUsers = async () => {
     try {
       const authHeader = getAdminAuthHeader();
-      console.log('🔑 Auth header being sent:', authHeader);
-      console.log('🔑 Full headers:', {
-        'Authorization': authHeader,
-        'Content-Type': 'application/json'
-      });
-      
       const response = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/users/users_with_providers', {
         headers: {
           'Authorization': authHeader,
         }
       });
       
-      console.log('📡 Response status:', response.status);
-      console.log('📡 Response headers:', response.headers);
       
       if (response.ok) {
         const data = await response.json();
@@ -422,11 +379,9 @@ const UserProviderLinking: React.FC = () => {
         setUsers(users);
       } else {
         await response.text();
-        console.error('❌ Error response:', response.status);
         toast.error(`Failed to fetch users: ${response.status}`);
       }
     } catch (error) {
-      console.error('❌ Fetch error:', error);
       toast.error('Failed to fetch users');
     }
   };
@@ -516,10 +471,6 @@ const UserProviderLinking: React.FC = () => {
         user_email: userEmails[0], // API expects user_email (singular), not user_emails (array)
         provider_id: providerId
       };
-      console.log('🔍 Debug: userEmails array:', userEmails);
-      console.log('🔍 Debug: requestBody object:', requestBody);
-      console.log('🔍 Debug: JSON.stringify(requestBody):', JSON.stringify(requestBody));
-      
       // Try the bulk assignment endpoint first
       const response = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/users/bulk_assign_users', {
         method: 'POST',
@@ -529,9 +480,6 @@ const UserProviderLinking: React.FC = () => {
         },
         body: JSON.stringify(requestBody)
       });
-
-      console.log('🔍 Debug: Response status:', response.status);
-      console.log('🔍 Debug: Response ok:', response.ok);
 
       if (response.ok) {
         const result = await response.json();
@@ -545,7 +493,6 @@ const UserProviderLinking: React.FC = () => {
       }
       
       // If bulk endpoint fails, fall back to individual assignments
-      console.log('Bulk endpoint failed, falling back to individual assignments...');
       let successCount = 0;
       let failureCount = 0;
       const failedEmails: string[] = [];
@@ -584,12 +531,9 @@ const UserProviderLinking: React.FC = () => {
             // Enhanced error logging for 422 errors
             if (individualResponse.status === 422) {
               const errorText = await individualResponse.text();
-              console.error(`422 Error for ${email}:`, errorText);
               try {
                 const errorJson = JSON.parse(errorText);
-                console.error(`422 Error JSON for ${email}:`, errorJson);
               } catch (e) {
-                console.error(`422 Error is not JSON for ${email}:`, errorText);
               }
             }
             failedEmails.push(email);
@@ -617,7 +561,6 @@ const UserProviderLinking: React.FC = () => {
       }
       
     } catch (error) {
-      console.error('Bulk assignment error:', error);
       toast.error('Failed to bulk assign users');
     } finally {
       setIsLoading(false);
@@ -728,47 +671,6 @@ const UserProviderLinking: React.FC = () => {
       <div className="max-w-6xl mx-auto">
         <h1 className="text-3xl font-bold text-gray-900 mb-8">User-Provider Linking Tool</h1>
         
-        {/* Debug Section */}
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-8">
-          <h3 className="text-lg font-semibold text-yellow-800 mb-2">🔍 Debug Information</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-            <div>
-              <strong>Total Users:</strong> {users.length}
-            </div>
-            <div>
-              <strong>Connected Users:</strong> {connectedUsers.length}
-            </div>
-            <div>
-              <strong>Users with Providers:</strong> {users.filter(u => u.provider_id).length}
-            </div>
-          </div>
-          <div className="mt-2 text-xs text-yellow-700">
-            Note: Multiple provider assignments are not visible in Super Admin view due to authentication limitations
-          </div>
-          <div className="mt-4">
-            <button
-              onClick={testApiKey}
-              className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700"
-            >
-              🧪 Test API Key
-            </button>
-            <span className="ml-2 text-xs text-yellow-700">
-              Click to test if the API key is working
-            </span>
-          </div>
-          <div className="mt-2">
-            <button
-              onClick={testAllEndpoints}
-              className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700"
-            >
-              🧪🧪🧪 Test All Endpoints
-            </button>
-            <span className="ml-2 text-xs text-yellow-700">
-              Click to test all API endpoints individually
-            </span>
-          </div>
-        </div>
-
         {/* Statistics */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div className="bg-white p-6 rounded-lg shadow">

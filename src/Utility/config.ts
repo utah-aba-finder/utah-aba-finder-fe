@@ -26,7 +26,6 @@ export const getAdminAuthHeader = () => {
       const user = JSON.parse(currentUser);
       return `Bearer ${user.id}`;
     } catch (error) {
-      console.error('Error parsing currentUser:', error);
     }
   }
   
@@ -47,7 +46,6 @@ export const getSuperAdminAuthHeader = () => {
       const user = JSON.parse(currentUser);
       return `Bearer ${user.id}`;
     } catch (error) {
-      console.error('Error parsing currentUser for super admin:', error);
       throw new Error('Super admin authentication failed: No valid user session');
     }
   }
@@ -58,7 +56,6 @@ export const getSuperAdminAuthHeader = () => {
 export const getApiBaseUrl = (): string => {
   // Temporarily use production for testing multi-provider system
   if (process.env.NODE_ENV === 'development') {
-    console.log('🔧 DEV MODE: Using production backend for testing');
     return 'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com';
   }
   return 'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com';

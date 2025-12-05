@@ -20,7 +20,6 @@ class ErrorBoundary extends React.Component<
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('React Error Boundary caught an error:', error, errorInfo);
   }
 
   render() {
@@ -75,11 +74,9 @@ class ErrorBoundary extends React.Component<
 
 // Global error handler
 window.addEventListener('error', (event) => {
-  console.error('Global error caught:', event.error);
 });
 
 window.addEventListener('unhandledrejection', (event) => {
-  console.error('Unhandled promise rejection:', event.reason);
 });
 
 const root = ReactDOM.createRoot(
@@ -97,7 +94,6 @@ try {
     </React.StrictMode>
   );
 } catch (error) {
-  console.error('Failed to render app:', error);
   // Fallback rendering
   const rootElement = document.getElementById('root');
   if (rootElement) {

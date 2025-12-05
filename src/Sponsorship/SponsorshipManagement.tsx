@@ -33,16 +33,13 @@ const SponsorshipManagement: React.FC<SponsorshipManagementProps> = ({ providerI
 
       setSponsorships(filteredSponsorships);
     } catch (error: any) {
-      console.error('Failed to load sponsorships:', error);
       // Handle 401/403 errors gracefully without crashing
       if (error?.status === 401 || error?.status === 403) {
-        console.warn('⚠️ Authentication error loading sponsorships - user may need to re-login');
         // Don't show error toast for auth errors - just show empty state
         setSponsorships([]);
         setResponseData(null);
       } else {
         // For other errors, show a subtle message but don't crash
-        console.warn('⚠️ Error loading sponsorships:', error?.message);
         setSponsorships([]);
         setResponseData(null);
       }
@@ -67,7 +64,6 @@ const SponsorshipManagement: React.FC<SponsorshipManagementProps> = ({ providerI
       toast.success('Sponsorship cancelled successfully');
       loadSponsorships(); // Reload list
     } catch (error: any) {
-      console.error('Failed to cancel sponsorship:', error);
       toast.error(error.message || 'Failed to cancel sponsorship');
     } finally {
       setCancellingId(null);

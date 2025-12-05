@@ -32,10 +32,6 @@ import FavoriteProviders from "../FavoriteProviders-page/FavoriteProviders";
 import ServiceDisclaimer from "../Footer/servicedisclaimer";
 import Careers from "../Footer/Careers";
 import { handleMobileIssues } from "../Utility/cacheUtils";
-import GoogleDebugTest from "../Providers-page/GoogleDebugTest";
-import SimpleMapsDebug from "../Providers-page/SimpleMapsDebug";
-import SimpleMapTest from "../Providers-page/SimpleMapTest";
-import MobileDebugTest from "../Providers-page/MobileDebugTest";
 import PasswordReset from "../PasswordReset/PasswordReset";
 import ForgotPassword from "../ForgotPassword/ForgotPassword";
 import ProviderDashboard from "../Utility/ProviderDashboard";
@@ -43,17 +39,6 @@ import ProviderSignup from "../ProviderSignup/ProviderSignup";
 import ProviderWalkthrough from "../ProviderSignup/ProviderWalkthrough";
 import TawkToWidget from "../Utility/TawkToWidget";
 import SponsorLanding from "../Sponsorship/SponsorLanding";
-
-// Simple test component to check if React loads
-const TestComponent = () => {
-  return (
-    <div style={{ padding: '20px', textAlign: 'center' }}>
-      <h1>React App is Loading!</h1>
-      <p>If you can see this, the React app is working.</p>
-      <p>Time: {new Date().toLocaleString()}</p>
-    </div>
-  );
-};
 
 // Safe Header wrapper that only renders when AuthProvider is ready
 const SafeHeader = () => {
@@ -76,12 +61,10 @@ function App() {
     try {
       // Only run this once per browser session, not on every page load
       if (localStorage.getItem('mobileIssuesHandled')) {
-        console.log('🔄 App: Mobile issues already handled this session, skipping');
         return;
       }
       
       localStorage.setItem('mobileIssuesHandled', 'true');
-      console.log('🔄 App: Handling mobile issues (first time only)');
       
       // Use the utility function to handle mobile issues
       handleMobileIssues();
@@ -97,21 +80,17 @@ function App() {
             (args[0].includes('Failed to load') || args[0].includes('under construction'))) {
           // Add a flag to prevent infinite reloads
           if (!localStorage.getItem('reloadAttempted')) {
-            console.log('⚠️ App: Cache error detected, attempting reload');
             localStorage.setItem('reloadAttempted', 'true');
             setTimeout(() => {
-              console.log('🔄 App: Force reloading due to cache error');
               window.location.reload();
             }, 1000);
           } else {
-            console.log('⚠️ App: Reload already attempted, not reloading again');
           }
         }
         originalError.apply(console, args);
       };
       */
     } catch (error) {
-      console.error('❌ App: Error in mobile issue handling:', error);
     }
   }, []);
 
@@ -216,7 +195,6 @@ function App() {
         <SafeHeader /> 
         <div className="main-content">
           <Routes>
-            <Route path="/test" element={<TestComponent />} />
             <Route path="/" element={<Homepage />} />
             <Route path="/information" element={<InformationPage />} />
             <Route path="/providers" element={<ProvidersPage />} />
@@ -233,10 +211,6 @@ function App() {
             <Route path="/sponsor" element={<SponsorLanding />} />
             <Route path="/servicedisclaimer" element={<ServiceDisclaimer />} />
             <Route path="/careers" element={<Careers />} />
-            <Route path="/google-debug" element={<GoogleDebugTest />} />
-            <Route path="/maps-debug" element={<SimpleMapsDebug />} />
-            <Route path="/map-test" element={<SimpleMapTest />} />
-            <Route path="/mobile-debug" element={<MobileDebugTest />} />
             <Route path="/reset-password" element={<PasswordReset />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             
@@ -388,7 +362,6 @@ function ProviderEditWrapper({
     if (!hasProvider && currentUser && id && !restorationStartedRef.current && !restorationFailedRef.current) {
       restorationStartedRef.current = true;
       setIsRestoring(true);
-      console.warn('ProviderEditWrapper: No provider in state, but user is authenticated and URL has ID:', id);
       
       // Clear any existing timers first
       clearRestorationTimers();
@@ -402,7 +375,6 @@ function ProviderEditWrapper({
           JSON.parse(sessionStorage.getItem('loggedInProvider') || 'null');
         
         if (restoredFromStorage) {
-          console.log('✅ ProviderEditWrapper: Provider restored from storage, clearing loading state');                                                        
           setIsRestoring(false);
           restorationStartedRef.current = false;
           restorationFailedRef.current = false; // Reset failed flag on success
@@ -412,7 +384,6 @@ function ProviderEditWrapper({
 
       // Stop checking after 2 seconds - if provider isn't restored by then, give up                                                                            
       timeoutRef.current = setTimeout(() => {
-        console.log('⚠️ ProviderEditWrapper: Restoration timeout - provider not restored after 2 seconds');                                                      
         setIsRestoring(false);
         restorationStartedRef.current = false;
         restorationFailedRef.current = true; // Mark as failed so we don't try again
@@ -432,7 +403,6 @@ function ProviderEditWrapper({
     if (!isRestoring) return;
     
     const failsafeTimeout = setTimeout(() => {
-      console.error('⚠️ ProviderEditWrapper: Failsafe triggered - forcing loading state to clear after 3 seconds');
       setIsRestoring(false);
       restorationStartedRef.current = false;
       restorationFailedRef.current = true;
@@ -523,7 +493,6 @@ function ProviderEditWrapper({
   // This allows ProviderEdit to render and fetch the real data via refreshProviderData
   // This should rarely happen if sessionStorage is working correctly
   if (!providerToUse && isAuthenticated && id) {
-    console.warn('⚠️ ProviderEditWrapper: Authenticated but no provider data found, creating temporary provider object');
     providerToUse = {
       id: parseInt(id || '0'),
       type: 'Provider',
@@ -559,7 +528,6 @@ function ProviderEditWrapper({
   
   // Final safety check - if still no provider, don't render ProviderEdit
   if (!providerToUse) {
-    console.error('❌ ProviderEditWrapper: Cannot render - no provider data available');
     return (
       <div style={{ minHeight: '60vh', display: 'grid', placeItems: 'center' }}>
         <div style={{ textAlign: 'center', padding: '2rem' }}>

@@ -75,7 +75,6 @@ const PaymentForm: React.FC<{
         setProcessing(false);
       }
     } catch (err: any) {
-      console.error('Payment error:', err);
       const errorMessage = err.message || 'An error occurred during payment';
       setError(errorMessage);
       toast.error(errorMessage);

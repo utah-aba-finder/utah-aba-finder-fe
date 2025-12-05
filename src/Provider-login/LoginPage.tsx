@@ -49,10 +49,8 @@ export const LoginPage: React.FC = () => {
         // Don't redirect if we don't have currentUser
         if (!currentUser) return;
         
-        console.log('🚀 Login: Auth state ready, checking navigation for role:', currentUser.role);
         
         if (currentUser.role === 'super_admin') {
-            console.log('🚀 Login: Navigating super admin to /superAdmin');
             setIsRedirecting(true);
             navigate('/superAdmin', { replace: true });
         } else if (currentUser.role === 'provider_admin') {
@@ -68,21 +66,17 @@ export const LoginPage: React.FC = () => {
             if (hasProviderData && providerId) {
                 if (tier) {
                     // Redirect to sponsorship tab with tier pre-selected
-                    console.log('🚀 Login: Navigating provider to sponsorship with tier:', tier);
                     setIsRedirecting(true);
                     navigate(`/providerEdit/${providerId}?tab=sponsorship&tier=${encodeURIComponent(tier)}`, { replace: true });
                 } else {
-                    console.log('🚀 Login: Navigating provider to /providerEdit/' + providerId);
                     setIsRedirecting(true);
                     navigate(`/providerEdit/${providerId}`, { replace: true });
                 }
             } else if (providerId) {
                 // We have a provider ID but no provider data - try to restore it
-                console.log('⚠️ Login: Provider ID exists but provider data missing, attempting to restore...');
                 // Don't redirect yet - let the user stay on login page or try to restore
                 // The initialization logic should handle restoring provider data
             } else {
-                console.log('🚀 Login: No provider ID, navigating to /contact');
                 setIsRedirecting(true);
                 navigate('/contact', { replace: true });
             }
@@ -91,27 +85,22 @@ export const LoginPage: React.FC = () => {
 
     const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        console.log('🔍 Login: Form submitted');
         
         // Prevent double submission
         if (isLoading) {
-            console.log('❌ Login: Already loading, preventing double submission');
             return;
         }
         
-        console.log('🔍 Login: Starting login process for:', username);
         setError('');
         setIsLoading(true);
 
         try {
-            console.log('📡 Login: Making API call to login endpoint');
             const requestBody = {
                 user: {
                     email: username,
                     password: password
                 }
             };
-            console.log('📡 Login: Request body:', { email: username, password: '***' });
             
             // Create AbortController for timeout
             const controller = new AbortController();
@@ -129,14 +118,10 @@ export const LoginPage: React.FC = () => {
                 
                 clearTimeout(timeoutId); // Clear timeout if request succeeds
                 
-                console.log('📡 Login: API response status:', response.status);
-                console.log('📡 Login: API response headers:', Object.fromEntries(response.headers.entries()));
                 
                 const data = await response.json();
-                console.log('📡 Login: API response data:', data);
 
                 if (!response.ok) {
-                    console.log('❌ Login: API returned error status:', response.status);
                     let errorMessage = 'Login failed';
                     if (response.status === 401) {
                         errorMessage = 'Invalid email or password';
@@ -144,27 +129,21 @@ export const LoginPage: React.FC = () => {
                         errorMessage = data.error;
                     }
 
-                    console.log('❌ Login: Error message:', errorMessage);
                     throw new Error(errorMessage);
                 }
                 
-                console.log('✅ Login: API call successful');
 
                 // Check for Authorization header first
                 const authHeader = response.headers.get('Authorization');
-                console.log('🔑 Login: Authorization header:', authHeader);
                 let token = null;
                 
                 if (authHeader) {
                     token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : authHeader;
-                    console.log('🔑 Login: Using Authorization header token');
                 } else {
                     // If no Authorization header, use the user ID directly for backend authentication
                     token = data.user.id.toString(); // Use user ID directly, not JWT
-                    console.log('🔑 Login: Using user ID directly for backend authentication:', token);
                 }
                 
-                console.log('🔑 Login: Final token (preview):', token ? `${token.substring(0, 20)}...` : 'none');
                 initializeSession(token);
 
                 // Map role numbers to role strings - handle both string and numeric roles
@@ -199,9 +178,7 @@ export const LoginPage: React.FC = () => {
                     
                     // Update AuthProvider state
                     setCurrentUser(currentUserData);
-                    console.log('🔐 Login: Updated AuthProvider currentUser state:', currentUserData);
                     
-                    console.log('🎉 Login: Success toast for super admin');
                     toast.success(`Welcome back, ${data.user.email}!`);
                 } else if (userRole === 'provider_admin') {
                     const providerId = data.user?.provider_id;
@@ -218,7 +195,6 @@ export const LoginPage: React.FC = () => {
                     // Save to session storage and update context
                     sessionStorage.setItem('currentUser', JSON.stringify(currentUserData));
                     setCurrentUser(currentUserData);
-                    console.log('🔐 Login: Updated AuthProvider currentUser state for provider:', currentUserData);
                     
                     if (providerId && providerId !== null) {
                         try {
@@ -227,10 +203,8 @@ export const LoginPage: React.FC = () => {
                                 ...providerDetails,
                                 role: 'provider_admin'
                             });
-                            console.log('🎉 Login: Success toast for provider admin');
                             toast.success(`Welcome back, ${providerDetails.attributes.name}!`);
                         } catch (error) {
-                            console.log('⚠️ Login: Failed to load provider details, but auth state will still trigger navigation');
                             setLoggedInProvider({
                                 ...data.user,
                                 role: 'provider_admin'
@@ -240,7 +214,6 @@ export const LoginPage: React.FC = () => {
                         }
                     } else {
                         // For users without a provider_id, show an error
-                        console.log('⚠️ Login: No provider ID found, auth state will trigger navigation to contact');
                         setLoggedInProvider({
                             ...data.user,
                             role: 'provider_admin'
@@ -259,7 +232,6 @@ export const LoginPage: React.FC = () => {
                 clearTimeout(timeoutId); // Clear timeout on error
                 
                 if (fetchError instanceof Error && fetchError.name === 'AbortError') {
-                    console.log('⏰ Login: Request timed out after 15 seconds');
                     throw new Error('Login request timed out. The server is not responding. Please try again later.');
                 }
                 

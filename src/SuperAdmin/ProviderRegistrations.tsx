@@ -27,36 +27,19 @@ const ProviderRegistrations: React.FC = () => {
   const { currentUser } = useAuth();
   const [registrations, setRegistrations] = useState<ProviderRegistration[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [processingId, setProcessingId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
   const [serviceTypeFilter, setServiceTypeFilter] = useState<string>('all');
 
-  // Debug currentUser
-  useEffect(() => {
-    console.log('🔍 ProviderRegistrations: Component mounted/rendered', {
-      hasCurrentUser: !!currentUser,
-      currentUserId: currentUser?.id,
-      currentUserRole: currentUser?.role,
-      currentUserEmail: currentUser?.email
-    });
-  }, [currentUser]);
-
   // Fetch registrations
   const fetchRegistrations = useCallback(async () => {
-    console.log('🔍 ProviderRegistrations: fetchRegistrations called', {
-      hasCurrentUser: !!currentUser,
-      currentUserId: currentUser?.id,
-      currentUserRole: currentUser?.role
-    });
-    
     if (!currentUser?.id) {
-      console.log('❌ ProviderRegistrations: No currentUser.id available');
       return;
     }
     
     setIsLoading(true);
     try {
-      console.log('📡 ProviderRegistrations: Making API call with Authorization: Bearer', currentUser.id);
       const response = await fetch(
         'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/provider_registrations',
         {
@@ -67,19 +50,15 @@ const ProviderRegistrations: React.FC = () => {
         }
       );
 
-      console.log('📡 ProviderRegistrations: API response status:', response.status);
       
       if (response.ok) {
         const data = await response.json();
-        console.log('📊 ProviderRegistrations: Data received:', data);
         setRegistrations(data.data || []);
       } else {
         const errorText = await response.text();
-        console.error('❌ ProviderRegistrations: API error response:', errorText);
         throw new Error(`HTTP error: ${response.status} - ${errorText}`);
       }
     } catch (error) {
-      console.error('❌ ProviderRegistrations: Error fetching registrations:', error);
       toast.error('Failed to fetch registrations');
     } finally {
       setIsLoading(false);
@@ -88,7 +67,16 @@ const ProviderRegistrations: React.FC = () => {
 
   // Approve registration
   const approveRegistration = async (registrationId: string) => {
-    if (!currentUser?.id) return;
+    if (!currentUser?.id) {
+      toast.error('You must be logged in to approve registrations');
+      return;
+    }
+    
+    if (processingId === registrationId) {
+      return;
+    }
+    
+    setProcessingId(registrationId);
     
     try {
       const response = await fetch(
@@ -102,21 +90,34 @@ const ProviderRegistrations: React.FC = () => {
         }
       );
 
+
       if (response.ok) {
+        const data = await response.json();
         toast.success('Registration approved successfully');
         fetchRegistrations(); // Refresh the list
       } else {
-        throw new Error(`HTTP error: ${response.status}`);
+        const errorText = await response.text();
+        toast.error(`Failed to approve registration: ${response.status} - ${errorText || response.statusText}`);
       }
-    } catch (error) {
-      console.error('Error approving registration:', error);
-      toast.error('Failed to approve registration');
+    } catch (error: any) {
+      toast.error(`Failed to approve registration: ${error.message || 'Network error'}`);
+    } finally {
+      setProcessingId(null);
     }
   };
 
   // Reject registration
   const rejectRegistration = async (registrationId: string) => {
-    if (!currentUser?.id) return;
+    if (!currentUser?.id) {
+      toast.error('You must be logged in to reject registrations');
+      return;
+    }
+    
+    if (processingId === registrationId) {
+      return;
+    }
+    
+    setProcessingId(registrationId);
     
     try {
       const response = await fetch(
@@ -130,15 +131,19 @@ const ProviderRegistrations: React.FC = () => {
         }
       );
 
+
       if (response.ok) {
+        const data = await response.json();
         toast.success('Registration rejected successfully');
         fetchRegistrations(); // Refresh the list
       } else {
-        throw new Error(`HTTP error: ${response.status}`);
+        const errorText = await response.text();
+        toast.error(`Failed to reject registration: ${response.status} - ${errorText || response.statusText}`);
       }
-    } catch (error) {
-      console.error('Error rejecting registration:', error);
-      toast.error('Failed to reject registration');
+    } catch (error: any) {
+      toast.error(`Failed to reject registration: ${error.message || 'Network error'}`);
+    } finally {
+      setProcessingId(null);
     }
   };
 
@@ -157,26 +162,11 @@ const ProviderRegistrations: React.FC = () => {
       (registration.attributes.service_types || []).includes(serviceTypeFilter);
     
     // Debug filtering
-    if (searchTerm || statusFilter !== 'all' || serviceTypeFilter !== 'all') {
-      console.log('🔍 Filtering registration:', {
-        providerName: registration.attributes.provider_name,
-        email: registration.attributes.email,
-        status: registration.attributes.status,
-        serviceTypes: registration.attributes.service_types,
-        matchesSearch,
-        matchesStatus,
-        matchesServiceType,
-        searchTerm,
-        statusFilter,
-        serviceTypeFilter
-      });
-    }
     
     return matchesSearch && matchesStatus && matchesServiceType;
   });
 
   useEffect(() => {
-    console.log('🔍 ProviderRegistrations: useEffect triggered, calling fetchRegistrations');
     fetchRegistrations();
   }, [fetchRegistrations]);
 
@@ -373,17 +363,37 @@ const ProviderRegistrations: React.FC = () => {
                         <div className="flex space-x-2">
                           <button
                             onClick={() => approveRegistration(registration.id)}
-                            className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                            disabled={processingId === registration.id}
+                            className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
-                            <CheckCircle className="w-3 h-3 mr-1" />
-                            Approve
+                            {processingId === registration.id ? (
+                              <>
+                                <RefreshCw className="w-3 h-3 mr-1 animate-spin" />
+                                Processing...
+                              </>
+                            ) : (
+                              <>
+                                <CheckCircle className="w-3 h-3 mr-1" />
+                                Approve
+                              </>
+                            )}
                           </button>
                           <button
                             onClick={() => rejectRegistration(registration.id)}
-                            className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                            disabled={processingId === registration.id}
+                            className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
-                            <XCircle className="w-3 h-3 mr-1" />
-                            Reject
+                            {processingId === registration.id ? (
+                              <>
+                                <RefreshCw className="w-3 h-3 mr-1 animate-spin" />
+                                Processing...
+                              </>
+                            ) : (
+                              <>
+                                <XCircle className="w-3 h-3 mr-1" />
+                                Reject
+                              </>
+                            )}
                           </button>
                         </div>
                       )}

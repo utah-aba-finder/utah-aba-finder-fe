@@ -60,33 +60,27 @@ export const handleMobileIssues = (): void => {
   if (isMobile) {
     // Only run this once per browser session, not on every page load
     if (localStorage.getItem('mobileIssuesHandled')) {
-      console.log('🔄 Mobile: Mobile issues already handled this session, skipping');
       return;
     }
     
     // Set flag in localStorage (persists across page loads)
     localStorage.setItem('mobileIssuesHandled', 'true');
     
-    console.log('🔄 Mobile: Handling mobile cache issues (first time only)');
     
     // Only clear caches if we detect actual construction messages
     if (checkForConstructionMessage()) {
-      console.log('⚠️ Mobile: Construction message detected, clearing caches');
       clearAllCaches();
       
       // Only reload if absolutely necessary and not already attempted
       const reloadAttempted = localStorage.getItem('mobileReloadAttempted');
       if (!reloadAttempted) {
         localStorage.setItem('mobileReloadAttempted', 'true');
-        console.log('🔄 Mobile: Force reloading due to construction message');
         setTimeout(() => {
           forceReload();
         }, 1000);
       } else {
-        console.log('⚠️ Mobile: Reload already attempted, not reloading again');
       }
     } else {
-      console.log('✅ Mobile: No construction messages detected, skipping cache clear');
     }
   }
 }; 

@@ -163,7 +163,6 @@ export default function SponsorLanding() {
         throw new Error("No checkout URL returned");
       }
     } catch (err: any) {
-      console.error('Checkout error:', err);
       alert(err.message || "We couldn't start checkout. Please try again or contact support.");
       setLoadingTier(null);
     }

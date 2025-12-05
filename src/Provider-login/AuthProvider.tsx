@@ -115,15 +115,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   //   JSON.parse(sessionStorage.getItem("activeProvider") || "null")
   // );
   
-  // Debug authentication state changes
-  useEffect(() => {
-    console.log('🔄 AuthProvider: Authentication state changed', {
-      hasToken: !!token,
-      hasLoggedInProvider: !!loggedInProvider,
-      userRole: loggedInProvider?.role,
-      isAuthenticated: !!token
-    });
-  }, [token, loggedInProvider]);
 
   
   const navigate = useNavigate();
@@ -151,7 +142,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
     // First, check if token is already a user ID (new approach)
     if (/^\d+$/.test(token)) {
-      console.log('🔍 AuthProvider: Token is already a user ID:', token);
       return token;
     }
 
@@ -216,7 +206,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const logout = useCallback((reason?: string) => {
-    console.log('🔐 AuthProvider: Logging out, reason:', reason);
     
     // Clear all auth data
     setToken(null);
@@ -251,7 +240,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     
     // Check if token is already a user ID (new approach)
     if (/^\d+$/.test(token)) {
-      console.log('🔍 AuthProvider: Token is a user ID, always valid');
       return true;
     }
     
@@ -286,14 +274,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const initializeSession = useCallback(
     (newToken: string) => {
-      console.log('🔐 AuthProvider: Initializing session with token:', { 
-        hasToken: !!newToken, 
-        tokenLength: newToken?.length,
-        currentLoggedInProvider: loggedInProvider 
-      });
-      
       if (!validateToken(newToken)) {
-        console.error('❌ AuthProvider: Token validation failed');
         logout();
         return;
       }
@@ -302,7 +283,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       try {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const _decoded = JSON.parse(atob(newToken));
-        console.log('🔐 AuthProvider: Using temporary token with 7-day expiration');
         // For temporary tokens, set a 7-day expiration
         const expirationTime = Date.now() + (7 * 24 * 60 * 60 * 1000);
         sessionStorage.setItem("tokenExpiry", expirationTime.toString());
@@ -310,12 +290,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       } catch {
         // Check if this is a user ID token
         if (/^\d+$/.test(newToken)) {
-          console.log('🔐 AuthProvider: Using user ID token with 7-day expiration');
           // For user ID tokens, set a 7-day expiration
           const expirationTime = Date.now() + (7 * 24 * 60 * 60 * 1000);
           sessionStorage.setItem("tokenExpiry", expirationTime.toString());
         } else {
-          console.log('🔐 AuthProvider: Using JWT token with built-in expiration');
           // For JWT tokens, use the token's expiration
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const _decoded = jwtDecode<TokenPayload>(newToken);
@@ -326,7 +304,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
       setToken(newToken);
       setAuthLoading(false);
-      console.log('✅ AuthProvider: Session initialized successfully, authLoading set to false');
     },
     [logout, loggedInProvider, validateToken, setToken]
   );
@@ -451,7 +428,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // Inactivity monitoring useEffect:
   useEffect(() => {
-    console.log('🔄 AuthProvider: Inactivity monitoring useEffect triggered', { token: !!token });
     if (!token) return;
 
     let inactivityTimeout: NodeJS.Timeout;
@@ -472,7 +448,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       warningTimeout = setTimeout(() => {
         // Only show inactivity warning if user is still logged in
         if (token && sessionStorage.getItem("authToken")) {
-          console.log('⚠️ AuthProvider: Showing inactivity warning modal');
           setShowInactivityWarning(true);
           
           // Start countdown
@@ -491,7 +466,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       inactivityTimeout = setTimeout(() => {
         // Only show inactivity logout if user is still logged in
         if (token && sessionStorage.getItem("authToken")) {
-          console.log('⏰ AuthProvider: Logging out due to inactivity');
           setShowInactivityWarning(false);
           setShowInactivityLogout(true);
           
@@ -528,14 +502,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   }, [token, logout]);
 
   useEffect(() => {
-    console.log('🔄 AuthProvider: Token useEffect triggered', { token: !!token });
     if (token) {
-      console.log('✅ AuthProvider: Setting authToken in sessionStorage');
       sessionStorage.setItem("authToken", token);
       const cleanup = checkTokenExpiration(token);
       return cleanup;
     } else {
-      console.log('❌ AuthProvider: Removing authToken from sessionStorage');
       sessionStorage.removeItem("authToken");
       toast.dismiss("session-warning-five-min");
       toast.dismiss("session-warning-one-min");
@@ -556,14 +527,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         loggedInProvider?.user_email;
 
       if (!userEmail) {
-        console.error('fetchUserProviders: No user email available');
         return;
       }
 
       // 2) User id for Authorization header
       const userId = extractUserIdForAuth(token, loggedInProvider);
       if (!userId) {
-        console.error('fetchUserProviders: No user id for Authorization');
         return;
       }
 
@@ -578,13 +547,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
       if (!listResp.ok) {
         const txt = await listResp.text();
-        console.error('fetchUserProviders: user_providers failed', listResp.status, txt);
         return;
       }
 
       const listData = await listResp.json();
       if (!listData?.success || !Array.isArray(listData?.providers)) {
-        console.error('fetchUserProviders: Unexpected list response format', listData);
         return;
       }
 
@@ -622,7 +589,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
       if (!detailResp.ok) {
         const txt = await detailResp.text();
-        console.error('fetchUserProviders: provider detail failed', detailResp.status, txt);
         return;
       }
 
@@ -632,7 +598,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       setActiveProvider(normalized);
       sessionStorage.setItem('activeProvider', JSON.stringify(normalized));
     } catch (err) {
-      console.error('fetchUserProviders: Error', err);
     }
   }, [token, loggedInProvider, setActiveProvider, setUserProvidersState, extractUserIdForAuth]);
 
@@ -642,7 +607,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       const userId = extractUserIdForAuth(token, loggedInProvider);
       if (!userId) {
-        console.error('switchProvider: No user id for Authorization');
         return false;
       }
 
@@ -658,13 +622,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
       if (!setResp.ok) {
         const txt = await setResp.text();
-        console.error('switchProvider: set_active_provider failed', setResp.status, txt);
         return false;
       }
 
       const setData = await setResp.json();
       if (!setData?.success) {
-        console.error('switchProvider: set_active_provider returned non-success', setData);
         return false;
       }
 
@@ -678,7 +640,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
       if (!detailResp.ok) {
         const txt = await detailResp.text();
-        console.error('switchProvider: provider detail failed', detailResp.status, txt);
         return false;
       }
 
@@ -690,7 +651,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       sessionStorage.setItem('activeProvider', JSON.stringify(normalized));
       return true;
     } catch (err) {
-      console.error('switchProvider: Error', err);
       return false;
     }
   }, [token, loggedInProvider, setActiveProvider, extractUserIdForAuth]);
@@ -717,7 +677,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     const providerId = currentUser.active_provider_id || currentUser.primary_provider_id;
     if (!providerId) return;
     
-        console.log('🔄 AuthProvider: currentUser exists but provider data missing, attempting to restore provider:', providerId);                                  
     
     let cancelled = false;
     (async () => {
@@ -726,7 +685,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         const userId = currentUser.id.toString();
         
         if (!userId) {
-          console.error('❌ AuthProvider: No user ID available for provider restoration');
           return;
         }
         
@@ -742,13 +700,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         
         if (!resp.ok) {
           const errorText = await resp.text();
-          console.error('❌ AuthProvider: Failed to restore provider data:', {
-            status: resp.status,
-            statusText: resp.statusText,
-            errorText: errorText,
-            providerId: providerId,
-            userId: userId
-          });
           
           // Don't throw - just log the error, user can still try to refresh manually
           return;
@@ -763,11 +714,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             setActiveProvider(normalized);
             sessionStorage.setItem('loggedInProvider', JSON.stringify(normalized));                                                                           
             sessionStorage.setItem('activeProvider', JSON.stringify(normalized));                                                                             
-            console.log('✅ AuthProvider: Successfully restored provider data');                                                                              
           }
         }
       } catch (error: any) {
-        console.error('❌ AuthProvider: Exception during provider restoration:', error);                                                                              
       }
     })();
     
@@ -779,16 +728,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     let cancelled = false;
     (async () => {
       try {
-        console.log('🔄 AuthProvider: Starting auth initialization...');
         
         // If we already have a user in storage, we're good
         if (currentUser) {
-          console.log('✅ AuthProvider: currentUser already exists, skipping fetch');
           // Still set authReady and authLoading even if we skip the fetch
           if (!cancelled) {
             setAuthReady(true);
             setAuthLoading(false);
-            console.log('✅ AuthProvider: Auth initialization complete (user from storage), authReady set to true, authLoading set to false');
           }
           return;
         }
@@ -801,11 +747,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           null;
 
         if (!token || !emailFromStorage) {
-          console.log('⚠️ AuthProvider: No token or email, skipping user fetch');
           return;
         }
 
-        console.log('🔄 AuthProvider: Fetching user data for email:', emailFromStorage);
 
         // Extract user id for Authorization (matches your backend)
         let userId = null as null | string;
@@ -813,7 +757,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         // Check if token is already a user ID
         if (/^\d+$/.test(token)) {
           userId = token;
-          console.log('🔍 AuthProvider: Token is already a user ID:', userId);
         } else {
           // Try to decode as JWT token
           try {
@@ -824,7 +767,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         
         if (!userId) userId = JSON.parse(sessionStorage.getItem('loggedInProvider') || 'null')?.id?.toString?.() || null;
         if (!userId) {
-          console.log('⚠️ AuthProvider: Could not extract userId, skipping user fetch');
           return;
         }
 
@@ -838,7 +780,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
         if (resp.ok) {
           const data = await resp.json();
-          console.log('📊 AuthProvider: User data response:', data);
           
           if (data?.user?.id && data?.user?.role) {
             const u: CurrentUser = {
@@ -850,20 +791,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             };
             if (!cancelled) {
               setCurrentUser(u);
-              console.log('✅ AuthProvider: Successfully set currentUser:', u);
             }
           }
           // You likely also set userProviders/activeProvider here as you already do
         } else {
-          console.log('⚠️ AuthProvider: Failed to fetch user data, status:', resp.status);
         }
       } catch (error) {
-        console.error('❌ AuthProvider: Error during auth initialization:', error);
       } finally {
         if (!cancelled) {
           setAuthReady(true);
           setAuthLoading(false);
-          console.log('✅ AuthProvider: Auth initialization complete, authReady set to true, authLoading set to false');
         }
       }
     })();

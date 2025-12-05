@@ -81,7 +81,6 @@ const CreateLocation: React.FC<CreateLocationProps> = ({
         const response = await fetchPracticeTypes();
         setPracticeTypes(response.data);
       } catch (error) {
-        console.error("Failed to load practice types:", error);
         toast.error("Failed to load practice types");
       }
     };
@@ -297,7 +296,7 @@ const CreateLocation: React.FC<CreateLocationProps> = ({
               >
                 <option value="">Select waitlist status...</option>
                 <option value="No waitlist">No waitlist</option>
-                <option value="Service not available">Service not available</option>
+                <option value="This service isn't provided at this location">This service isn't provided at this location</option>
                 <option value="1-2 weeks">1-2 weeks</option>
                 <option value="2-4 weeks">2-4 weeks</option>
                 <option value="1-3 months">1-3 months</option>
@@ -317,7 +316,7 @@ const CreateLocation: React.FC<CreateLocationProps> = ({
               >
                 <option value="">Select waitlist status...</option>
                 <option value="No waitlist">No waitlist</option>
-                <option value="Service not available">Service not available</option>
+                <option value="This service isn't provided at this location">This service isn't provided at this location</option>
                 <option value="1-2 weeks">1-2 weeks</option>
                 <option value="2-4 weeks">2-4 weeks</option>
                 <option value="1-3 months">1-3 months</option>

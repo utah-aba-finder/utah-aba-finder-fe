@@ -73,7 +73,6 @@ const ClaimAccount: React.FC<ClaimAccountProps> = ({ onBackToSignup }) => {
         throw new Error(errorData.error || `HTTP error: ${response.status}`);
       }
     } catch (error) {
-      console.error('Error submitting claim request:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to submit claim request. Please try again or contact support.');
     } finally {
       setIsSubmitting(false);
