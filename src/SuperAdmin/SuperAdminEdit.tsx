@@ -117,7 +117,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
     };
 
     fetchFullProviderData();
-  }, [provider.id]);
+  }, [provider.id, provider]);
 
   // Update state when fullProviderData is loaded
   useEffect(() => {
@@ -345,6 +345,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
     fullProviderData?.id,
     fullProviderData?.attributes?.category,
     fullProviderData?.attributes?.provider_attributes,
+    currentProvider, 
     currentProvider.id, 
     currentProvider.attributes.category, 
     currentProvider.attributes.provider_attributes, 

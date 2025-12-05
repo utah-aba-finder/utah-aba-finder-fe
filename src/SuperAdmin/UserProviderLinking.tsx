@@ -100,6 +100,7 @@ const UserProviderLinking: React.FC = () => {
   };
 
   // Test function to verify API key
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const testApiKey = async () => {
     try {
       const authHeader = getAdminAuthHeader();
@@ -112,10 +113,10 @@ const UserProviderLinking: React.FC = () => {
       
       
       if (response.ok) {
-        const data = await response.json();
+        await response.json();
         toast.success('API key test successful!');
       } else {
-        const errorText = await response.text();
+        await response.text();
         toast.error(`API key test failed: ${response.status}`);
       }
     } catch (error) {
@@ -124,6 +125,7 @@ const UserProviderLinking: React.FC = () => {
   };
 
   // Comprehensive API endpoint testing
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const testAllEndpoints = async () => {
     const testEmail = 'mfielder@abacenters.com';
     const testProviderId = 1095;
@@ -137,9 +139,9 @@ const UserProviderLinking: React.FC = () => {
         }
       });
       if (response1.ok) {
-        const data = await response1.json();
+        await response1.json();
       } else {
-        const errorText = await response1.text();
+        await response1.text();
       }
     } catch (error) {
     }
@@ -158,9 +160,9 @@ const UserProviderLinking: React.FC = () => {
         })
       });
       if (response2.ok) {
-        const data = await response2.json();
+        await response2.json();
       } else {
-        const errorText = await response2.text();
+        await response2.text();
       }
     } catch (error) {
     }
@@ -179,9 +181,9 @@ const UserProviderLinking: React.FC = () => {
         })
       });
       if (response3.ok) {
-        const data = await response3.json();
+        await response3.json();
       } else {
-        const errorText = await response3.text();
+        await response3.text();
       }
     } catch (error) {
     }
@@ -200,9 +202,9 @@ const UserProviderLinking: React.FC = () => {
         })
       });
       if (response4.ok) {
-        const data = await response4.json();
+        await response4.json();
       } else {
-        const errorText = await response4.text();
+        await response4.text();
       }
     } catch (error) {
     }
@@ -226,6 +228,7 @@ const UserProviderLinking: React.FC = () => {
         if (response.status === 422) {
           const errorText = await response.text();
           try {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const errorJson = JSON.parse(errorText);
           } catch (e) {
           }
@@ -532,6 +535,7 @@ const UserProviderLinking: React.FC = () => {
             if (individualResponse.status === 422) {
               const errorText = await individualResponse.text();
               try {
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 const errorJson = JSON.parse(errorText);
               } catch (e) {
               }

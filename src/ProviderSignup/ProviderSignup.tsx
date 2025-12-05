@@ -468,9 +468,8 @@ const ProviderSignup: React.FC = () => {
         // Mark as successfully fetched in sessionStorage
         sessionStorage.setItem('categories_fetched_success', 'true');
       } else {
-        let errorText = '';
         try {
-          errorText = await response.text();
+          await response.text();
         } catch (e) {
         }
         
@@ -940,7 +939,7 @@ const ProviderSignup: React.FC = () => {
       );
 
       if (response.ok) {
-        const data = await response.json();
+        await response.json();
         const locationHeader = response.headers.get('Location');
         
         toast.success('Provider registration submitted successfully!');

@@ -126,7 +126,7 @@ const ProviderModal: React.FC<ProviderModalProps> = ({
   // Reset categoryFields when provider changes
   useEffect(() => {
     setCategoryFields(provider.attributes.category_fields || null);
-  }, [provider.id]);
+  }, [provider.id, provider.attributes.category_fields]);
 
   useEffect(() => {
     setTimeout(() => setIsVisible(true), 10);
@@ -240,7 +240,7 @@ const ProviderModal: React.FC<ProviderModalProps> = ({
     };
 
     loadCategoryFields();
-  }, [provider.id, provider.attributes.category, provider.attributes.provider_attributes]);
+  }, [provider.id, provider.attributes.category, provider.attributes.provider_attributes, provider.attributes.category_fields]);
 
   const handleClose = () => {
     setIsClosing(true);

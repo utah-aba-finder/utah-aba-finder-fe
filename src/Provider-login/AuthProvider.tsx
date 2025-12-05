@@ -305,7 +305,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       setToken(newToken);
       setAuthLoading(false);
     },
-    [logout, loggedInProvider, validateToken, setToken]
+    [logout, validateToken, setToken]
   );
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -546,7 +546,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       });
 
       if (!listResp.ok) {
-        const txt = await listResp.text();
+        await listResp.text();
         return;
       }
 
@@ -588,7 +588,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       });
 
       if (!detailResp.ok) {
-        const txt = await detailResp.text();
+        await detailResp.text();
         return;
       }
 
@@ -621,7 +621,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       });
 
       if (!setResp.ok) {
-        const txt = await setResp.text();
+        await setResp.text();
         return false;
       }
 
@@ -639,7 +639,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       });
 
       if (!detailResp.ok) {
-        const txt = await detailResp.text();
+        await detailResp.text();
         return false;
       }
 
@@ -699,7 +699,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         });
         
         if (!resp.ok) {
-          const errorText = await resp.text();
+          await resp.text();
           
           // Don't throw - just log the error, user can still try to refresh manually
           return;

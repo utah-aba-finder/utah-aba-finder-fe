@@ -874,7 +874,8 @@ export const uploadProviderLogo = async (providerId: number, logoFile: File, aut
 
     // Set authentication header - authToken already contains "Bearer {user_id}"
     const authHeader = authToken; // Don't add extra "Bearer " prefix
-    for (let [key, value] of formData.entries()) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    for (let [_key, _value] of formData.entries()) {
     }
 
     const response = await fetch(

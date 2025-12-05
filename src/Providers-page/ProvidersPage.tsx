@@ -453,7 +453,8 @@ const ProvidersPage: React.FC = () => {
           '76': 'Tennessee',
           // Add more as needed
         };
-        const targetState = stateMap[stateId];
+        // State mapping available if needed
+        void stateMap[stateId];
       }
 
       // Apply comprehensive filtering

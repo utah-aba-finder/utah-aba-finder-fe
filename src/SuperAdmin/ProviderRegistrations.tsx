@@ -92,7 +92,7 @@ const ProviderRegistrations: React.FC = () => {
 
 
       if (response.ok) {
-        const data = await response.json();
+        await response.json();
         toast.success('Registration approved successfully');
         fetchRegistrations(); // Refresh the list
       } else {
@@ -133,7 +133,7 @@ const ProviderRegistrations: React.FC = () => {
 
 
       if (response.ok) {
-        const data = await response.json();
+        await response.json();
         toast.success('Registration rejected successfully');
         fetchRegistrations(); // Refresh the list
       } else {
