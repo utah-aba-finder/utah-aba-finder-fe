@@ -5,7 +5,8 @@ import {
   XCircle, 
   Clock, 
   RefreshCw,
-  Search
+  Search,
+  X
 } from 'lucide-react';
 import { useAuth } from '../Provider-login/AuthProvider';
 
@@ -16,6 +17,7 @@ interface ProviderRegistration {
     email: string;
     provider_name: string;
     service_types: string[];
+    category?: string; // Category slug (e.g., "autism_evaluations")
     submitted_data: Record<string, any>;
     status: 'pending' | 'approved' | 'rejected';
     created_at: string;
@@ -31,6 +33,8 @@ const ProviderRegistrations: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
   const [serviceTypeFilter, setServiceTypeFilter] = useState<string>('all');
+  const [selectedRegistration, setSelectedRegistration] = useState<ProviderRegistration | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Fetch registrations
   const fetchRegistrations = useCallback(async () => {
@@ -308,10 +312,7 @@ const ProviderRegistrations: React.FC = () => {
                     Provider
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Services
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Contact
+                    Provider Type
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
@@ -326,7 +327,14 @@ const ProviderRegistrations: React.FC = () => {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredRegistrations.map((registration) => (
-                  <tr key={registration.id} className="hover:bg-gray-50">
+                  <tr 
+                    key={registration.id} 
+                    className="hover:bg-gray-50 cursor-pointer"
+                    onClick={() => {
+                      setSelectedRegistration(registration);
+                      setIsModalOpen(true);
+                    }}
+                  >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div>
                         <div className="text-sm font-medium text-gray-900">
@@ -337,20 +345,80 @@ const ProviderRegistrations: React.FC = () => {
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="flex flex-wrap gap-1">
-                        {(registration.attributes.service_types || []).map((serviceType, index) => (
-                          <span
-                            key={index}
-                            className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
-                          >
-                            {serviceType.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                          </span>
-                        ))}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">
+                        {(() => {
+                          // First check attributes.category (the main category field)
+                          let category = registration.attributes.category;
+                          
+                          // If not found, check submitted_data for category-related fields
+                          if (!category) {
+                            const submittedData = registration.attributes.submitted_data || {};
+                            const serviceTypes = registration.attributes.service_types || [];
+                            
+                            // Check if submitted_data has a key that looks like a category slug
+                            // (e.g., "autism_evaluations", "aba_therapy", etc.)
+                            const categoryKeys = Object.keys(submittedData).filter(key => {
+                              const keyLower = key.toLowerCase();
+                              // Common category slugs
+                              return keyLower.includes('autism') || 
+                                     keyLower.includes('aba') || 
+                                     keyLower.includes('speech') ||
+                                     keyLower.includes('occupational') ||
+                                     keyLower.includes('educational') ||
+                                     keyLower.includes('therapy') ||
+                                     keyLower.includes('evaluation');
+                            });
+                            
+                            if (categoryKeys.length > 0) {
+                              // Use the first category key found
+                              category = categoryKeys[0];
+                            }
+                            
+                            // Also check specific field names in submitted_data
+                            if (!category) {
+                              const categoryFields = [
+                                'category_name', 
+                                'category', 
+                                'provider_type', 
+                                'provider_category', 
+                                'category_slug',
+                                'service_type',
+                                'selected_category',
+                                'provider_category_name',
+                                'service_category'
+                              ];
+                              
+                              for (const field of categoryFields) {
+                                const value = submittedData[field];
+                                if (value) {
+                                  if (Array.isArray(value) && value.length > 0) {
+                                    category = value[0];
+                                    break;
+                                  } else if (typeof value === 'string' && value.trim()) {
+                                    category = value;
+                                    break;
+                                  }
+                                }
+                              }
+                            }
+                            
+                            // If still no category, use first service type as fallback
+                            if (!category && serviceTypes.length > 0) {
+                              category = serviceTypes[0];
+                            }
+                          }
+                          
+                          // Format category if it's a slug (has underscores or hyphens)
+                          if (category && typeof category === 'string') {
+                            if (category.includes('_') || category.includes('-')) {
+                              category = category.replace(/_/g, ' ').replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                            }
+                          }
+                          
+                          return category || <span className="text-gray-400 italic">N/A</span>;
+                        })()}
                       </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {(registration.attributes.submitted_data?.contact_phone) || 'N/A'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {getStatusBadge(registration.attributes.status)}
@@ -360,7 +428,7 @@ const ProviderRegistrations: React.FC = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       {registration.attributes.status === 'pending' && (
-                        <div className="flex space-x-2">
+                        <div className="flex space-x-2" onClick={(e) => e.stopPropagation()}>
                           <button
                             onClick={() => approveRegistration(registration.id)}
                             disabled={processingId === registration.id}
@@ -408,6 +476,254 @@ const ProviderRegistrations: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Detail Modal */}
+      {isModalOpen && selectedRegistration && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
+              <h2 className="text-2xl font-bold text-gray-900">
+                Registration Details
+              </h2>
+              <button
+                onClick={() => {
+                  setIsModalOpen(false);
+                  setSelectedRegistration(null);
+                }}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-6">
+              {/* Basic Information */}
+              <div className="bg-gray-50 rounded-lg p-5">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-200">Basic Information</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-white p-3 rounded border border-gray-200">
+                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Provider Name</label>
+                    <p className="text-sm font-medium text-gray-900">{selectedRegistration.attributes.provider_name}</p>
+                  </div>
+                  <div className="bg-white p-3 rounded border border-gray-200">
+                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Email</label>
+                    <p className="text-sm font-medium text-gray-900 break-words">{selectedRegistration.attributes.email}</p>
+                  </div>
+                  <div className="bg-white p-3 rounded border border-gray-200">
+                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Provider Type/Category</label>
+                    <p className="text-sm font-medium text-gray-900">
+                      {(() => {
+                        // First check attributes.category (the main category field)
+                        let category = selectedRegistration.attributes.category;
+                        
+                        // If not found, check submitted_data
+                        if (!category) {
+                          const submittedData = selectedRegistration.attributes.submitted_data || {};
+                          
+                          // Check if submitted_data has a key that looks like a category slug
+                          const categoryKeys = Object.keys(submittedData).filter(key => {
+                            const keyLower = key.toLowerCase();
+                            return keyLower.includes('autism') || 
+                                   keyLower.includes('aba') || 
+                                   keyLower.includes('speech') ||
+                                   keyLower.includes('occupational') ||
+                                   keyLower.includes('educational') ||
+                                   keyLower.includes('therapy') ||
+                                   keyLower.includes('evaluation');
+                          });
+                          
+                          if (categoryKeys.length > 0) {
+                            category = categoryKeys[0];
+                          }
+                          
+                          // Also check specific field names
+                          if (!category) {
+                            category = submittedData.category_name || 
+                                      submittedData.category ||
+                                      submittedData.provider_type ||
+                                      submittedData.provider_category ||
+                                      submittedData.category_slug ||
+                                      null;
+                          }
+                          
+                          // Fallback to first service type
+                          if (!category && selectedRegistration.attributes.service_types && selectedRegistration.attributes.service_types.length > 0) {
+                            category = selectedRegistration.attributes.service_types[0];
+                          }
+                        }
+                        
+                        // Format category if it's a slug
+                        if (category && typeof category === 'string') {
+                          if (category.includes('_') || category.includes('-')) {
+                            category = category.replace(/_/g, ' ').replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                          }
+                        }
+                        
+                        return category || 'N/A';
+                      })()}
+                    </p>
+                  </div>
+                  <div className="bg-white p-3 rounded border border-gray-200">
+                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Status</label>
+                    <div className="mt-1">
+                      {getStatusBadge(selectedRegistration.attributes.status)}
+                    </div>
+                  </div>
+                  <div className="bg-white p-3 rounded border border-gray-200">
+                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Submitted</label>
+                    <p className="text-sm font-medium text-gray-900">{formatDate(selectedRegistration.attributes.created_at)}</p>
+                  </div>
+                  <div className="bg-white p-3 rounded border border-gray-200">
+                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Last Updated</label>
+                    <p className="text-sm font-medium text-gray-900">{formatDate(selectedRegistration.attributes.updated_at)}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Service Types */}
+              <div className="bg-blue-50 rounded-lg p-5">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b border-blue-200">Service Types</h3>
+                <div className="flex flex-wrap gap-2">
+                  {(selectedRegistration.attributes.service_types || []).map((serviceType, index) => (
+                    <span
+                      key={index}
+                      className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-blue-600 text-white shadow-sm"
+                    >
+                      {serviceType.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* All Submitted Data */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-200">All Submitted Information</h3>
+                <div className="bg-white rounded-lg border border-gray-200 divide-y divide-gray-200">
+                  {Object.entries(selectedRegistration.attributes.submitted_data || {}).map(([key, value]) => {
+                    // Skip already displayed fields
+                    const categoryFields = ['category_name', 'category', 'provider_type', 'provider_category', 'category_slug'];
+                    if (categoryFields.includes(key)) {
+                      return null;
+                    }
+                    
+                    const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    
+                    // Helper function to format values nicely
+                    const formatValue = (val: any, indent: number = 0): any => {
+                      if (val === null || val === undefined || val === '') {
+                        return <span className="text-gray-400 italic">N/A</span>;
+                      }
+                      
+                      if (typeof val === 'boolean') {
+                        return (
+                          <span className={`font-medium ${val ? 'text-green-700' : 'text-gray-600'}`}>
+                            {val ? 'Yes' : 'No'}
+                          </span>
+                        );
+                      }
+                      
+                      if (Array.isArray(val)) {
+                        if (val.length === 0) {
+                          return <span className="text-gray-400 italic">None</span>;
+                        }
+                        return (
+                          <ul className="list-disc list-inside space-y-1 ml-4">
+                            {val.map((item, idx) => (
+                              <li key={idx} className="text-gray-900">
+                                {typeof item === 'object' ? formatValue(item, indent + 1) : String(item)}
+                              </li>
+                            ))}
+                          </ul>
+                        );
+                      }
+                      
+                      if (typeof val === 'object') {
+                        return (
+                          <div className="ml-4 space-y-2 border-l-2 border-gray-300 pl-4">
+                            {Object.entries(val).map(([objKey, objValue]) => (
+                              <div key={objKey} className="text-sm">
+                                <span className="font-semibold text-gray-700">
+                                  {objKey.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}:
+                                </span>{' '}
+                                <span className="text-gray-900">
+                                  {formatValue(objValue, indent + 1)}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      }
+                      
+                      return <span className="text-gray-900">{String(val)}</span>;
+                    };
+                    
+                    return (
+                      <div key={key} className="p-4 hover:bg-gray-50 transition-colors">
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          {displayKey}
+                        </label>
+                        <div className="text-sm bg-gray-50 p-3 rounded border border-gray-200">
+                          {formatValue(value)}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Actions */}
+              {selectedRegistration.attributes.status === 'pending' && (
+                <div className="flex justify-end space-x-3 pt-4 border-t">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      rejectRegistration(selectedRegistration.id);
+                      setIsModalOpen(false);
+                      setSelectedRegistration(null);
+                    }}
+                    disabled={processingId === selectedRegistration.id}
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {processingId === selectedRegistration.id ? (
+                      <>
+                        <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <XCircle className="w-4 h-4 mr-2" />
+                        Reject
+                      </>
+                    )}
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      approveRegistration(selectedRegistration.id);
+                      setIsModalOpen(false);
+                      setSelectedRegistration(null);
+                    }}
+                    disabled={processingId === selectedRegistration.id}
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {processingId === selectedRegistration.id ? (
+                      <>
+                        <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle className="w-4 h-4 mr-2" />
+                        Approve
+                      </>
+                    )}
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

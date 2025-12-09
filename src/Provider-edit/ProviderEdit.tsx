@@ -5,6 +5,7 @@ import { useSearchParams } from "react-router-dom";
 import Dashboard from "./components/Dashboard";
 import EditLocation from "./components/EditLocation";
 import LocationManagement from "./components/LocationManagement";
+import PasswordChangeForm from "./components/PasswordChangeForm";
 import { AuthModal } from "./AuthModal";
 import {
   Building2,
@@ -16,6 +17,7 @@ import {
   DollarSign,
   Tag,
   Crown,
+  User,
 } from "lucide-react";
 import "react-toastify/dist/ReactToastify.css";
 import { ProviderData, ProviderAttributes } from "../Utility/Types";
@@ -51,7 +53,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
 
   // Handle URL parameter changes (only sync from URL, don't override manual clicks)
   // This allows deep linking to specific tabs but respects user navigation
-  const validTabsRef = useRef(['dashboard', 'edit', 'details', 'coverage', 'locations', 'provider-types', 'common-fields', 'insurance', 'sponsorship']);
+  const validTabsRef = useRef(['dashboard', 'edit', 'details', 'coverage', 'locations', 'provider-types', 'common-fields', 'insurance', 'sponsorship', 'account']);
   useEffect(() => {
     const tab = searchParams.get('tab');
     // Only sync from URL if:
@@ -1127,6 +1129,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                       {selectedTab === "common-fields" && "Contact & Services"}
                       {selectedTab === "billing" && "Billing Management"}
                       {selectedTab === "sponsorship" && "Sponsorship"}
+                      {selectedTab === "account" && "Account Settings"}
                     </div>
                     
                     {/* Saving indicator */}
@@ -1405,6 +1408,25 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
               >
                 <Crown className="w-4 h-4" />
                 <span className="text-sm">Sponsorship</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  setSelectedTab("account");
+                  setSearchParams({ tab: 'account' });
+                }}
+                className={`
+                  flex items-center justify-center gap-2 px-3 py-2 rounded-lg
+                  transition-colors duration-200
+                  ${
+                    selectedTab === "account"
+                      ? "bg-[#4A6FA5] text-white"
+                      : "text-gray-700 hover:bg-gray-100"
+                  }
+                `}
+              >
+                <User className="w-4 h-4" />
+                <span className="text-sm">Account Settings</span>
               </button>
             </nav>
 
@@ -2134,6 +2156,34 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                     toast.success('Sponsorship updated successfully!');
                   }}
                 />
+              )}
+              {selectedTab === "account" && (
+                <div className="space-y-6">
+                  <div className="bg-white rounded-lg shadow p-6">
+                    <h2 className="text-xl font-semibold mb-6">Account Settings</h2>
+                    
+                    {/* User Information */}
+                    <div className="mb-8 pb-8 border-b border-gray-200">
+                      <h3 className="text-lg font-medium text-gray-900 mb-4">User Information</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                          <p className="text-sm text-gray-900">{currentUser?.email || 'N/A'}</p>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                          <p className="text-sm text-gray-900">{currentUser?.first_name || 'Not set'}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Password Change */}
+                    <div>
+                      <h3 className="text-lg font-medium text-gray-900 mb-4">Change Password</h3>
+                      <PasswordChangeForm />
+                    </div>
+                  </div>
+                </div>
               )}
               {selectedTab === "insurance" && (
                 <div className="space-y-6">

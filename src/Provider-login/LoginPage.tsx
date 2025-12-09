@@ -168,6 +168,7 @@ export const LoginPage: React.FC = () => {
                     const currentUserData = {
                         id: data.user.id,
                         email: data.user.email,
+                        first_name: data.user.first_name || null,
                         role: userRole,
                         primary_provider_id: data.user.primary_provider_id || null,
                         active_provider_id: data.user.active_provider_id || null,
@@ -187,6 +188,7 @@ export const LoginPage: React.FC = () => {
                     const currentUserData = {
                         id: data.user.id,
                         email: data.user.email,
+                        first_name: data.user.first_name || null,
                         role: userRole,
                         primary_provider_id: providerId || null,
                         active_provider_id: data.user.active_provider_id || providerId || null,
