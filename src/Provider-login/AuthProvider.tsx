@@ -17,6 +17,7 @@ type Role = 'super_admin' | 'provider_admin' | 'user' | string;
 interface CurrentUser {
   id: number;
   email: string;
+  first_name?: string | null;
   role: Role;
   primary_provider_id?: number | null;
   active_provider_id?: number | null;

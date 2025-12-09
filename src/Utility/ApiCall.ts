@@ -686,6 +686,52 @@ export const testAPIHealth = async (): Promise<{ status: string; message: string
   }
 };
 
+export const changePassword = async (
+  currentPassword: string,
+  newPassword: string,
+  newPasswordConfirmation: string
+): Promise<{ message: string }> => {
+  // Get user from session storage
+  const currentUserStr = sessionStorage.getItem('currentUser');
+  
+  if (!currentUserStr) {
+    throw new Error('Not authenticated');
+  }
+  
+  const user = JSON.parse(currentUserStr);
+  const authHeader = `Bearer ${user.id}`;
+  
+  const response = await fetch(`${BASE_API_URL}/change_password`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': authHeader,
+    },
+    credentials: 'include',
+    body: JSON.stringify({
+      current_password: currentPassword,
+      new_password: newPassword,
+      new_password_confirmation: newPasswordConfirmation,
+    }),
+  });
+  
+  if (!response.ok) {
+    const errorText = await response.text();
+    let errorMessage = `Failed to change password: ${response.status}`;
+    try {
+      const errorJson = JSON.parse(errorText);
+      errorMessage = errorJson.error || errorJson.message || errorMessage;
+    } catch {
+      if (errorText) {
+        errorMessage = errorText;
+      }
+    }
+    throw new Error(errorMessage);
+  }
+  
+  return await response.json();
+};
+
 export const fetchProvidersByStateIdAndProviderType = async (stateId: string, providerType: string) => {
   try {
     
