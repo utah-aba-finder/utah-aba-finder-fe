@@ -7,79 +7,15 @@ import moment from 'moment';
 import GoogleReviewsSection from './GoogleReviewsSection';
 import ProviderLogo from '../Utility/ProviderLogo';
 import { getApiBaseUrl } from '../Utility/config';
+import { ProviderAttributes, Location, Insurance, ProviderType, ServiceDelivery, CountiesServed, CategoryField } from '../Utility/Types';
 
-interface Location {
-  name?: string | null;
-  address_1: string | null;
-  address_2?: string | null;
-  city: string | null;
-  state: string | null;
-  zip: string | null;
-  phone?: string | null;
-  services?: Service[];
-  in_home_waitlist?: string | null;
-  in_clinic_waitlist?: string | null;
-}
+// Local type aliases for compatibility
+type County = CountiesServed;
+type Service = { name: string };
 
-interface Insurance {
-  name: string | null;
-}
-
-interface ProviderType {
-  name: string;
-}
-
-interface ServiceDelivery {
-  in_home: boolean;
-  in_clinic: boolean;
-  telehealth: boolean;
-}
-
-interface CategoryFieldValue {
-  id: number;
-  name: string;
-  slug: string;
-  field_type: 'select' | 'multi_select' | 'boolean' | 'text';
-  value: string | string[] | boolean | null;
-}
-
-interface ProviderAttributes {
-  name: string | null;
-  locations: Location[];
-  insurance: Insurance[];
-  website?: string | null;
-  email?: string | null;
-  cost?: string | null;
-  min_age?: number | null;
-  max_age?: number | null;
-  provider_type: ProviderType[];
-  waitlist?: string | null;
-  telehealth_services?: string | null;
-  spanish_speakers?: string | null;
-  at_home_services?: string | null;
-  in_clinic_services?: string | null;
-  counties_served: County[];
-  logo?: string | null;
-  updated_last: string | null;
-  states: string[];
-  // New fields from API update
-  in_home_only?: boolean;
-  service_delivery?: ServiceDelivery;
-  // Category fields for Educational Programs and other category-specific providers
-  category?: string | null;
-  category_name?: string | null;
-  provider_attributes?: Record<string, any> | null;
-  category_fields?: CategoryFieldValue[] | null;
-}
-
-interface County {
-  county_id: number | null;
-  county_name: string | null;
-  state?: string | null;
-}
-
-interface Service {
-  name: string;
+// Category field with value (merged definition + value from provider_attributes)
+interface CategoryFieldWithValue extends CategoryField {
+  value: string | string[] | boolean | number | null;
 }
 
 interface CountyData {
@@ -118,15 +54,12 @@ const ProviderModal: React.FC<ProviderModalProps> = ({
   const [isVisible, setIsVisible] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const [activeTab, setActiveTab] = useState('details');
-  const [categoryFields, setCategoryFields] = useState<CategoryFieldValue[] | null>(
-    provider.attributes.category_fields || null
+  const [categoryFields, setCategoryFields] = useState<CategoryFieldWithValue[] | null>(
+    null
   );
   // Debug: Check logo data
 
-  // Reset categoryFields when provider changes
-  useEffect(() => {
-    setCategoryFields(provider.attributes.category_fields || null);
-  }, [provider.id, provider.attributes.category_fields]);
+  // Reset categoryFields when provider changes - handled in loadCategoryFields
 
   useEffect(() => {
     setTimeout(() => setIsVisible(true), 10);
@@ -153,10 +86,29 @@ const ProviderModal: React.FC<ProviderModalProps> = ({
   // Fetch category_fields if they're missing for Educational Programs providers
   useEffect(() => {
     const loadCategoryFields = async () => {
-      // If we already have category_fields with values, use them
-      if (provider.attributes.category_fields && provider.attributes.category_fields.length > 0) {
-        // Check if they have actual values (not just empty arrays/null)
-        const hasValues = provider.attributes.category_fields.some((field: any) => {
+      // If we already have category_fields and provider_attributes, merge them
+      if (provider.attributes.category_fields && provider.attributes.category_fields.length > 0 && provider.attributes.provider_attributes) {
+        const fieldDefinitions = provider.attributes.category_fields;
+        const providerAttributes = provider.attributes.provider_attributes;
+        
+        // Merge field definitions with provider's current values
+        const mergedFields: CategoryFieldWithValue[] = fieldDefinitions.map((fieldDef: CategoryField) => {
+          const currentValue = providerAttributes[fieldDef.name];
+          
+          // Backend may return comma-separated strings for multi_select, convert to arrays
+          let processedValue: string | string[] | boolean | number | null = currentValue;
+          if (fieldDef.field_type === 'multi_select' && typeof currentValue === 'string') {
+            processedValue = currentValue.split(',').map(s => s.trim()).filter(s => s.length > 0);
+          }
+          
+          return {
+            ...fieldDef,
+            value: processedValue !== undefined ? processedValue : (fieldDef.field_type === 'boolean' ? false : (fieldDef.field_type === 'multi_select' ? [] : null))
+          };
+        });
+        
+        // Check if they have actual values
+        const hasValues = mergedFields.some((field) => {
           const val = field.value;
           if (Array.isArray(val)) return val.length > 0;
           if (typeof val === 'boolean') return true;
@@ -164,7 +116,7 @@ const ProviderModal: React.FC<ProviderModalProps> = ({
         });
         
         if (hasValues) {
-          setCategoryFields(provider.attributes.category_fields);
+          setCategoryFields(mergedFields);
           return;
         }
       }
@@ -203,7 +155,7 @@ const ProviderModal: React.FC<ProviderModalProps> = ({
             
             // Merge field definitions with provider's current values
             // Backend returns provider_attributes with field names (e.g., "Program Types") not slugs (e.g., "program_types")
-            const mergedFields = fieldDefinitions.map((fieldDef: any) => {
+            const mergedFields: CategoryFieldWithValue[] = fieldDefinitions.map((fieldDef: any) => {
               // Try to get value by field name first (backend format), then fall back to slug
               let currentValue = providerAttributes[fieldDef.name];
               if (currentValue === undefined) {

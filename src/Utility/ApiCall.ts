@@ -596,7 +596,21 @@ export const fetchSingleProvider = async (providerId: number) => {
     }
 
     const data = await response.json();
-    return data.data[0];
+    // Single provider response includes provider_attributes, category_fields, category_name
+    // These are at the top level of the response, not in data[0]
+    const provider = data.data?.[0] || data.data || data;
+    
+    // Merge top-level category fields if they exist
+    if (data.category_name || data.provider_attributes || data.category_fields) {
+      return {
+        ...provider,
+        category_name: data.category_name || provider?.category_name,
+        provider_attributes: data.provider_attributes || provider?.provider_attributes,
+        category_fields: data.category_fields || provider?.category_fields,
+      };
+    }
+    
+    return provider;
   } catch (error) {
     
     throw error;

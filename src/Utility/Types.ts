@@ -49,6 +49,24 @@ export interface ServiceDelivery {
     telehealth: boolean;
 }
 
+// Category field definition (schema) - from category_fields array
+export interface CategoryField {
+    id: number;
+    name: string;
+    field_type: 'select' | 'multi_select' | 'boolean' | 'text' | 'number' | 'date';
+    options?: string[]; // For select/multi_select fields
+    required?: boolean;
+    validation_rules?: Record<string, any>;
+    // Additional fields that may come from backend
+    slug?: string;
+    description?: string;
+}
+
+// Category field value - from provider_attributes hash
+// Format: {"Field Name": "value"}
+export type ProviderAttributesHash = Record<string, string | string[] | boolean | number | null>;
+
+// Legacy interface for backward compatibility
 export interface CategoryFieldValue {
     id: number;
     name: string;
@@ -100,8 +118,10 @@ export interface ProviderAttributes {
     // Category and provider attributes for Educational Programs and other category-specific providers
     category?: string | null;
     category_name?: string | null;
-    provider_attributes?: Record<string, any> | null;
-    category_fields?: CategoryFieldValue[] | null;
+    // provider_attributes: hash of category-specific field values (e.g., {"Program Types": "Early Learning Programs"})
+    provider_attributes?: ProviderAttributesHash | null;
+    // category_fields: array of field definitions/schema (only in single provider requests)
+    category_fields?: CategoryField[] | null;
     // Sponsorship fields
     // Backend uses integer enum: 0=free, 1=featured, 2=sponsor, 3=partner
     // Frontend may receive as string or number
@@ -128,6 +148,10 @@ export interface ProviderData {
     type: string;
     states: string[]; 
     attributes: ProviderAttributes;
+    // New category-specific fields (only in single provider GET requests)
+    category_name?: string | null;
+    provider_attributes?: ProviderAttributesHash | null;
+    category_fields?: CategoryField[] | null;
 }
 
 export interface Providers {

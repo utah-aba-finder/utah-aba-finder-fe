@@ -202,6 +202,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         service_delivery:
           attributes?.service_delivery ??
           p?.service_delivery ?? { in_home: false, in_clinic: false, telehealth: false },
+        // New category-specific fields (only in single provider requests)
+        category_name: p?.category_name || attributes?.category_name || null,
+        provider_attributes: p?.provider_attributes || attributes?.provider_attributes || null,
+        category_fields: p?.category_fields || attributes?.category_fields || null,
+        category: p?.category || attributes?.category || null,
       },
     };
   };
