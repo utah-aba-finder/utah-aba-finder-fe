@@ -97,10 +97,15 @@ export const LoginPage: React.FC = () => {
         try {
             const requestBody = {
                 user: {
-                    email: username,
+                    email: username.trim(),
                     password: password
                 }
             };
+            
+            // Validate input before sending
+            if (!username.trim() || !password) {
+                throw new Error('Please enter both email and password');
+            }
             
             // Create AbortController for timeout
             const controller = new AbortController();
@@ -118,20 +123,61 @@ export const LoginPage: React.FC = () => {
                 
                 clearTimeout(timeoutId); // Clear timeout if request succeeds
                 
-                
-                const data = await response.json();
-
+                // Check response status before parsing JSON
                 if (!response.ok) {
                     let errorMessage = 'Login failed';
-                    if (response.status === 401) {
+                    let errorData: any = {};
+                    
+                    // Try to parse error response, but don't fail if it's not JSON
+                    try {
+                        const errorText = await response.text();
+                        if (errorText) {
+                            try {
+                                errorData = JSON.parse(errorText);
+                            } catch {
+                                // If not JSON, use the text as error message
+                                errorMessage = errorText || errorMessage;
+                            }
+                        }
+                    } catch (readError) {
+                        // If we can't read the response, use status-based message
+                        console.error('Error reading response:', readError);
+                    }
+                    
+                    // Provide specific error messages based on status code
+                    // Prioritize server-provided error messages
+                    if (errorData.error) {
+                        errorMessage = errorData.error;
+                    } else if (errorData.message) {
+                        errorMessage = errorData.message;
+                    } else if (response.status === 401) {
                         errorMessage = 'Invalid email or password';
-                    } else if (data.error) {
-                        errorMessage = data.error;
+                    } else if (response.status === 500) {
+                        errorMessage = 'Server error. Please try again later or contact support.';
+                        console.error('Server error during login:', errorData);
+                    } else if (response.status >= 500) {
+                        errorMessage = 'Server error. Please try again later.';
+                    } else if (response.status >= 400) {
+                        errorMessage = 'Invalid request. Please check your credentials and try again.';
                     }
 
                     throw new Error(errorMessage);
                 }
                 
+                // Parse JSON only if response is OK
+                // Clone the response to avoid consuming the body if we need to debug
+                let data: any;
+                try {
+                    data = await response.json();
+                } catch (parseError) {
+                    console.error('Error parsing login response:', parseError);
+                    throw new Error('Invalid response from server. Please try again.');
+                }
+                
+                // Validate response structure
+                if (!data || !data.user) {
+                    throw new Error('Invalid response from server. Please try again.');
+                }
 
                 // Check for Authorization header first
                 const authHeader = response.headers.get('Authorization');
@@ -141,6 +187,9 @@ export const LoginPage: React.FC = () => {
                     token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : authHeader;
                 } else {
                     // If no Authorization header, use the user ID directly for backend authentication
+                    if (!data.user.id) {
+                        throw new Error('User ID not found in response. Please contact support.');
+                    }
                     token = data.user.id.toString(); // Use user ID directly, not JWT
                 }
                 
@@ -148,6 +197,10 @@ export const LoginPage: React.FC = () => {
 
                 // Map role numbers to role strings - handle both string and numeric roles
                 let userRole = 'unknown';
+                
+                if (data.user.role === undefined || data.user.role === null) {
+                    throw new Error('User role not found in response. Please contact support.');
+                }
                 
                 if (typeof data.user.role === 'string') {
                     // Backend returns string roles directly
@@ -159,6 +212,10 @@ export const LoginPage: React.FC = () => {
                         1: 'provider_admin'    // Backend clarified: 1 is Provider Admin
                     };
                     userRole = roleMap[data.user.role] || 'unknown';
+                }
+                
+                if (userRole === 'unknown') {
+                    throw new Error('Unknown user role. Please contact support.');
                 }
                 
                 if (userRole === 'super_admin') {
@@ -244,16 +301,25 @@ export const LoginPage: React.FC = () => {
             setError(errorMessage);
             
             // Provide more specific error messages
+            // Show the server's error message if available, otherwise use generic messages
             if (errorMessage.includes('Invalid email or password')) {
                 toast.error('Invalid email or password. Please try again.');
+            } else if (errorMessage.includes('An error occurred during login')) {
+                // Show the server's specific error message
+                toast.error(errorMessage);
+            } else if (errorMessage.includes('Server error')) {
+                toast.error('Server error. Please try again later or contact support.');
             } else if (errorMessage.includes('timed out')) {
                 toast.error('Login request timed out. The server is not responding. Please try again later.');
             } else if (errorMessage.includes('network') || errorMessage.includes('fetch')) {
                 toast.error('Network error. Please check your connection and try again.');
             } else if (errorMessage.includes('Provider ID not found')) {
                 toast.error('Account configuration error. Please contact support.');
+            } else if (errorMessage.includes('Invalid response')) {
+                toast.error('Invalid response from server. Please try again.');
             } else {
-                toast.error('Login failed. Please try again.');
+                // Show the actual error message from the server or a generic fallback
+                toast.error(errorMessage || 'Login failed. Please try again.');
             }
         } finally {
             setIsLoading(false);
