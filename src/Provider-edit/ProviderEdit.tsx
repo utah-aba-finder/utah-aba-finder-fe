@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import "react-toastify/dist/ReactToastify.css";
 import { ProviderData, ProviderAttributes } from "../Utility/Types";
-import { fetchStates, fetchCountiesByState, uploadProviderLogo, removeProviderLogo, fetchPracticeTypes, PracticeType, fetchInsurance, changePassword } from "../Utility/ApiCall";
+import { fetchStates, fetchCountiesByState, uploadProviderLogo, removeProviderLogo, fetchPracticeTypes, PracticeType, fetchInsurance } from "../Utility/ApiCall";
 import InsuranceModal from "./InsuranceModal";
 import CountiesModal from "./CountiesModal";
 import { SponsorshipPage } from "../Sponsorship";
