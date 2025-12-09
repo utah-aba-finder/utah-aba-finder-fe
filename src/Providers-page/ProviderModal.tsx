@@ -7,11 +7,7 @@ import moment from 'moment';
 import GoogleReviewsSection from './GoogleReviewsSection';
 import ProviderLogo from '../Utility/ProviderLogo';
 import { getApiBaseUrl } from '../Utility/config';
-import { ProviderAttributes, Location, Insurance, ProviderType, ServiceDelivery, CountiesServed, CategoryField } from '../Utility/Types';
-
-// Local type aliases for compatibility
-type County = CountiesServed;
-type Service = { name: string };
+import { ProviderAttributes, CategoryField } from '../Utility/Types';
 
 // Category field with value (merged definition + value from provider_attributes)
 interface CategoryFieldWithValue extends CategoryField {
