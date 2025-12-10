@@ -451,8 +451,8 @@ const LocationManagement: React.FC<LocationManagementProps> = ({
 
       {/* Add/Edit Location Modal */}
       {(isAddingLocation || editingLocation) && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-4 mx-auto p-4 w-full max-w-xl">
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" onClick={closeModal}>
+          <div className="relative top-4 mx-auto p-4 w-full max-w-xl" onClick={(e) => e.stopPropagation()}>
             <div className="bg-white rounded-lg shadow-xl">
               {/* Modal Header */}
               <div className="flex items-center justify-between p-6 border-b border-gray-200">
@@ -478,7 +478,8 @@ const LocationManagement: React.FC<LocationManagementProps> = ({
                     value={formData.name}
                     onChange={handleInputChange}
                     required
-                    className="w-full  py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base"
+                    disabled={isLoading}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base disabled:opacity-50 disabled:cursor-not-allowed"
                     placeholder="Main Office, Branch Location, etc."
                   />
                 </div>
@@ -494,7 +495,8 @@ const LocationManagement: React.FC<LocationManagementProps> = ({
                     value={formData.phone}
                     onChange={handleInputChange}
                     required
-                    className="w-full  py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base"
+                    disabled={isLoading}
+                    className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base disabled:opacity-50 disabled:cursor-not-allowed"
                     placeholder="555-123-4567"
                   />
                 </div>
@@ -509,7 +511,8 @@ const LocationManagement: React.FC<LocationManagementProps> = ({
                     name="address_1"
                     value={formData.address_1}
                     onChange={handleInputChange}
-                    className="w-full  py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base"
+                    disabled={isLoading}
+                    className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base disabled:opacity-50 disabled:cursor-not-allowed"
                     placeholder="123 Main Street"
                   />
                 </div>
@@ -525,7 +528,8 @@ const LocationManagement: React.FC<LocationManagementProps> = ({
                       name="city"
                       value={formData.city}
                       onChange={handleInputChange}
-                      className="w-full text-center py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base"
+                      disabled={isLoading}
+                      className="w-full px-3 text-center py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base disabled:opacity-50 disabled:cursor-not-allowed"
                       placeholder="City Name"
                     />
                   </div>
@@ -538,7 +542,8 @@ const LocationManagement: React.FC<LocationManagementProps> = ({
                       name="state"
                       value={formData.state}
                       onChange={handleInputChange}
-                      className="w-full text-center py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base"
+                      disabled={isLoading}
+                      className="w-full px-3 text-center py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base disabled:opacity-50 disabled:cursor-not-allowed"
                       placeholder="ST"
                       maxLength={2}
                     />
@@ -552,7 +557,8 @@ const LocationManagement: React.FC<LocationManagementProps> = ({
                       name="zip"
                       value={formData.zip}
                       onChange={handleInputChange}
-                      className="w-full  text-center py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base"
+                      disabled={isLoading}
+                      className="w-full px-3 text-center py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base disabled:opacity-50 disabled:cursor-not-allowed"
                       placeholder="12345"
                     />
                   </div>
@@ -578,8 +584,9 @@ const LocationManagement: React.FC<LocationManagementProps> = ({
                     ))}
                   </div>
                   <select
-                    className="w-full rounded-md border border-gray-300 py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full rounded-md border border-gray-300 py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                     value=""
+                    disabled={isLoading}
                     onChange={(e) => {
                       const [id, name] = e.target.value.split('|');
                       if (id && name) {
