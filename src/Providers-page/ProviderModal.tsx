@@ -324,11 +324,16 @@ const ProviderModal: React.FC<ProviderModalProps> = ({
               </div>
             </div>
             <div className="provider-details text">
+              {/* Show provider type */}
+              {provider.attributes.provider_type && provider.attributes.provider_type.length > 0 && (
+                <p><strong>Provider Type:</strong> {provider.attributes.provider_type.map(pt => pt.name).join(', ')}</p>
+              )}
+              
               {/* Show ages served for all providers */}
               <p><strong>Ages Served:</strong> {provider.attributes.min_age} - {provider.attributes.max_age} years</p>
               
               {/* Show insurance for all providers */}
-              <p><strong>Insurance:</strong> {provider.attributes.insurance.map(i => i.name).join(', ') || 'Contact us'}</p>
+              <p><strong>Insurance:</strong> {provider.attributes.insurance && provider.attributes.insurance.length > 0 ? provider.attributes.insurance.map(i => i.name).join(', ') : 'Contact us'}</p>
               
               {/* Only show additional details for non-in-home-only providers */}
               {!provider.attributes.in_home_only && (

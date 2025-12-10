@@ -237,7 +237,8 @@ export const LoginPage: React.FC = () => {
                     // Update AuthProvider state
                     setCurrentUser(currentUserData);
                     
-                    toast.success(`Welcome back, ${data.user.email}!`);
+                    const welcomeName = data.user.first_name || data.user.email;
+                    toast.success(`Welcome back, ${welcomeName}!`);
                 } else if (userRole === 'provider_admin') {
                     const providerId = data.user?.provider_id;
                     
@@ -262,7 +263,8 @@ export const LoginPage: React.FC = () => {
                                 ...providerDetails,
                                 role: 'provider_admin'
                             });
-                            toast.success(`Welcome back, ${providerDetails.attributes.name}!`);
+                            const welcomeName = data.user.first_name || providerDetails.attributes.name;
+                            toast.success(`Welcome back, ${welcomeName}!`);
                         } catch (error) {
                             setLoggedInProvider({
                                 ...data.user,
