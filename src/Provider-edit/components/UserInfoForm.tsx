@@ -46,9 +46,7 @@ const UserInfoForm: React.FC = () => {
         throw new Error(errorText || 'Failed to update user information');
       }
 
-      const data = await response.json();
-      
-      // Update currentUser in context and session storage
+      // Response is successful, update currentUser in context and session storage
       const updatedUser = {
         ...currentUser,
         first_name: firstName.trim() || null
