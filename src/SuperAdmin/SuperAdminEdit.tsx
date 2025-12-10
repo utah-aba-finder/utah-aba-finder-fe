@@ -119,10 +119,10 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
     fetchFullProviderData();
   }, [provider.id, provider]);
 
-  // Update state when fullProviderData is loaded
+  // Update state when fullProviderData is loaded - only on initial load, not when user is editing
   useEffect(() => {
-    if (fullProviderData && fullProviderData !== provider) {
-      // Update locations
+    if (fullProviderData && fullProviderData !== provider && !editedProvider) {
+      // Update locations - only on initial load
       setLocations(fullProviderData.attributes.locations?.map(location => ({
         ...location,
         services: location.services || []
@@ -136,23 +136,21 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
       // Update selected provider types
       setSelectedProviderTypes(fullProviderData.attributes.provider_type || []);
       // Update editedProvider to include provider_attributes
-      if (!editedProvider) {
-        setEditedProvider({
-          ...fullProviderData.attributes,
-          in_home_only: fullProviderData.attributes.in_home_only || false,
-          service_delivery: fullProviderData.attributes.service_delivery || {
-            in_home: false,
-            in_clinic: false,
-            telehealth: false
-          },
-          category: fullProviderData.attributes.category || null,
-          category_name: fullProviderData.attributes.category_name || null,
-          provider_attributes: fullProviderData.attributes.provider_attributes || null,
-          category_fields: fullProviderData.attributes.category_fields || null
-        });
-      }
+      setEditedProvider({
+        ...fullProviderData.attributes,
+        in_home_only: fullProviderData.attributes.in_home_only || false,
+        service_delivery: fullProviderData.attributes.service_delivery || {
+          in_home: false,
+          in_clinic: false,
+          telehealth: false
+        },
+        category: fullProviderData.attributes.category || null,
+        category_name: fullProviderData.attributes.category_name || null,
+        provider_attributes: fullProviderData.attributes.provider_attributes || null,
+        category_fields: fullProviderData.attributes.category_fields || null
+      });
     }
-  }, [fullProviderData, provider, editedProvider]);
+  }, [fullProviderData, provider]); // Removed editedProvider from dependencies to prevent reset loop
 
   useEffect(() => {
     if (currentProvider && !editedProvider) { // Only run on initial load
@@ -1504,7 +1502,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
 
                   {locations.map((location, index) => (
                     <div
-                      key={index}
+                      key={location.id || `location-${index}`}
                       className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
                     >
                       <div className="flex justify-between items-center mb-6">

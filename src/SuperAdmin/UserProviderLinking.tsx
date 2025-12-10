@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { getAdminAuthHeader } from '../Utility/config';
+import { getAdminAuthHeader, getSuperAdminAuthHeader } from '../Utility/config';
+import { Edit, Save, X } from 'lucide-react';
 
 interface User {
   id: number;
   email: string;
+  first_name?: string | null;
   provider_id?: number;
   provider_name?: string;
-  role?: number;
+  role?: string | number;
   created_at?: string;
   updated_at?: string;
 }
@@ -39,6 +41,16 @@ const UserProviderLinking: React.FC = () => {
   const [showUserProviderDetails, setShowUserProviderDetails] = useState<string | null>(null);
   const [isLoadingUserProviders, setIsLoadingUserProviders] = useState(false);
 
+  // User Editing State
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [editUserForm, setEditUserForm] = useState({
+    first_name: '',
+    email: '',
+    role: '',
+    provider_id: ''
+  });
+  const [isSavingUser, setIsSavingUser] = useState(false);
+
   useEffect(() => {
     fetchUsers();
     fetchProviders();
@@ -62,10 +74,121 @@ const UserProviderLinking: React.FC = () => {
   // Filter users based on search term and role
   const filteredUsers = users.filter(user => {
     const matchesSearch = user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (user.first_name && user.first_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
                          (user.provider_name && user.provider_name.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesRole = filterRole === 'all' || user.role?.toString() === filterRole;
     return matchesSearch && matchesRole;
   });
+
+  // Fetch a single user by ID
+  const fetchUserById = async (userId: number): Promise<User | null> => {
+    try {
+      const response = await fetch(`https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/users/${userId}`, {
+        headers: {
+          'Authorization': getSuperAdminAuthHeader(),
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch user: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data.user || data.data;
+    } catch (error) {
+      toast.error('Failed to fetch user details');
+      return null;
+    }
+  };
+
+  // Update user information
+  const updateUser = async (userId: number, userData: Partial<User>) => {
+    setIsSavingUser(true);
+    try {
+      const response = await fetch(`https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/users/${userId}`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': getSuperAdminAuthHeader(),
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          user: userData
+        })
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || `Failed to update user: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const updatedUser = data.user || data.data;
+      
+      // Update the user in the local state
+      setUsers(prevUsers => 
+        prevUsers.map(u => u.id === userId ? { ...u, ...updatedUser } : u)
+      );
+      
+      toast.success('User updated successfully!');
+      setEditingUser(null);
+      return updatedUser;
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to update user');
+      throw error;
+    } finally {
+      setIsSavingUser(false);
+    }
+  };
+
+  // Open edit modal for a user
+  const openEditUser = async (user: User) => {
+    // Fetch full user details
+    const fullUser = await fetchUserById(user.id);
+    if (fullUser) {
+      setEditingUser(fullUser);
+      setEditUserForm({
+        first_name: fullUser.first_name || '',
+        email: fullUser.email || '',
+        role: fullUser.role?.toString() || '',
+        provider_id: fullUser.provider_id?.toString() || ''
+      });
+    } else {
+      // Fallback to using the user from the list
+      setEditingUser(user);
+      setEditUserForm({
+        first_name: user.first_name || '',
+        email: user.email || '',
+        role: user.role?.toString() || '',
+        provider_id: user.provider_id?.toString() || ''
+      });
+    }
+  };
+
+  // Handle save user
+  const handleSaveUser = async () => {
+    if (!editingUser) return;
+
+    try {
+      const updateData: any = {};
+      if (editUserForm.first_name !== editingUser.first_name) {
+        updateData.first_name = editUserForm.first_name || null;
+      }
+      if (editUserForm.email !== editingUser.email) {
+        updateData.email = editUserForm.email;
+      }
+      if (editUserForm.role !== editingUser.role?.toString()) {
+        updateData.role = editUserForm.role;
+      }
+      if (editUserForm.provider_id !== editingUser.provider_id?.toString()) {
+        updateData.provider_id = editUserForm.provider_id ? parseInt(editUserForm.provider_id) : null;
+      }
+
+      await updateUser(editingUser.id, updateData);
+    } catch (error) {
+      // Error already handled in updateUser
+    }
+  };
 
   // Filter and sort providers
   const filteredAndSortedProviders = providers
@@ -361,27 +484,24 @@ const UserProviderLinking: React.FC = () => {
   const fetchUsers = async () => {
     try {
       const authHeader = getAdminAuthHeader();
+      // Use the working endpoint for now
       const response = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/users/users_with_providers', {
         headers: {
           'Authorization': authHeader,
         }
       });
       
-      
       if (response.ok) {
         const data = await response.json();
-
         const users = data.users || [];
         
         // Note: The accessible_providers endpoint requires user-specific authentication
         // which is not available in the Super Admin context. We'll work with the
         // basic user-provider relationship data we already have.
 
-        
-        // Log summary of users with providers
         setUsers(users);
       } else {
-        await response.text();
+        const errorText = await response.text();
         toast.error(`Failed to fetch users: ${response.status}`);
       }
     } catch (error) {
@@ -982,7 +1102,11 @@ const UserProviderLinking: React.FC = () => {
                   return (
                     <tr key={user.id}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {user.email} (ID: {user.id})
+                        <div>
+                          {user.first_name && <div className="font-medium">{user.first_name}</div>}
+                          <div className="text-gray-500">{user.email}</div>
+                          <div className="text-xs text-gray-400">ID: {user.id}</div>
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {user.provider_name ? (
@@ -1045,6 +1169,13 @@ const UserProviderLinking: React.FC = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         <div className="flex space-x-2">
+                          <button
+                            onClick={() => openEditUser(user)}
+                            className="text-blue-600 hover:text-blue-900 disabled:opacity-50"
+                            title="Edit user information"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
                           {user.provider_id ? (
                             <button
                               onClick={() => unlinkUserFromProvider(user.id)}
@@ -1190,18 +1321,32 @@ const UserProviderLinking: React.FC = () => {
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {unconnectedUsers.map(user => (
                   <tr key={user.id}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {user.email} (ID: {user.id})
+                      <div>
+                        {user.first_name && <div className="font-medium">{user.first_name}</div>}
+                        <div className="text-gray-500">{user.email}</div>
+                        <div className="text-xs text-gray-400">ID: {user.id}</div>
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
                         Unconnected
                       </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <button
+                        onClick={() => openEditUser(user)}
+                        className="text-blue-600 hover:text-blue-900"
+                        title="Edit user information"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -1211,6 +1356,118 @@ const UserProviderLinking: React.FC = () => {
         </div>
       </div>
 
+      {/* Edit User Modal */}
+      {editingUser && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" onClick={() => setEditingUser(null)}>
+          <div className="relative top-4 mx-auto p-4 w-full max-w-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="bg-white rounded-lg shadow-xl">
+              {/* Modal Header */}
+              <div className="flex items-center justify-between p-6 border-b border-gray-200">
+                <h3 className="text-xl font-semibold text-gray-900">
+                  Edit User: {editingUser.email}
+                </h3>
+                <X 
+                  onClick={() => setEditingUser(null)}
+                  className="h-6 w-6 text-gray-400 hover:text-red-600 cursor-pointer transition-colors"
+                />
+              </div>
+
+              {/* Modal Body */}
+              <form onSubmit={(e) => { e.preventDefault(); handleSaveUser(); }} className="p-6 space-y-6">
+                {/* First Name */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    First Name
+                  </label>
+                  <input
+                    type="text"
+                    value={editUserForm.first_name}
+                    onChange={(e) => setEditUserForm({ ...editUserForm, first_name: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Enter first name"
+                  />
+                </div>
+
+                {/* Email */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Email *
+                  </label>
+                  <input
+                    type="email"
+                    value={editUserForm.email}
+                    onChange={(e) => setEditUserForm({ ...editUserForm, email: e.target.value })}
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="user@example.com"
+                  />
+                </div>
+
+                {/* Role */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Role
+                  </label>
+                  <select
+                    value={editUserForm.role}
+                    onChange={(e) => setEditUserForm({ ...editUserForm, role: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="user">User</option>
+                    <option value="provider_admin">Provider Admin</option>
+                    <option value="super_admin">Super Admin</option>
+                  </select>
+                </div>
+
+                {/* Provider ID */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Provider ID (Optional)
+                  </label>
+                  <input
+                    type="number"
+                    value={editUserForm.provider_id}
+                    onChange={(e) => setEditUserForm({ ...editUserForm, provider_id: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Enter provider ID or leave empty"
+                  />
+                  <p className="mt-1 text-xs text-gray-500">
+                    Leave empty to remove provider association
+                  </p>
+                </div>
+
+                {/* Modal Footer */}
+                <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
+                  <button
+                    type="button"
+                    onClick={() => setEditingUser(null)}
+                    className="px-6 py-3 border border-gray-300 rounded-lg text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSavingUser}
+                    className="px-6 py-3 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 transition-colors"
+                  >
+                    {isSavingUser ? (
+                      <div className="flex items-center">
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                        Saving...
+                      </div>
+                    ) : (
+                      <div className="flex items-center">
+                        <Save className="w-4 h-4 mr-2" />
+                        Save Changes
+                      </div>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
