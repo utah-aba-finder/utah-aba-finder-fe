@@ -27,9 +27,11 @@ const UserProviderLinking: React.FC = () => {
   const [providers, setProviders] = useState<Provider[]>([]);
   const [selectedUser, setSelectedUser] = useState<number | null>(null);
   const [selectedProvider, setSelectedProvider] = useState<number | null>(null);
+  const [selectedProvidersForUser, setSelectedProvidersForUser] = useState<number[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedUsersForBulk, setSelectedUsersForBulk] = useState<number[]>([]);
   const [showBulkAssignment, setShowBulkAssignment] = useState(false);
+  const [useMultiProviderAssignment, setUseMultiProviderAssignment] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRole, setFilterRole] = useState<string>('all');
   const [providerSearchTerm, setProviderSearchTerm] = useState('');
@@ -526,24 +528,83 @@ const UserProviderLinking: React.FC = () => {
     }
   };
 
-  const linkUserToProvider = async () => {
-    if (!selectedUser || !selectedProvider) {
-      toast.error('Please select both a user and a provider');
+  // Assign multiple providers to a single user using the new admin endpoint
+  const assignMultipleProvidersToUser = async (userEmail: string, providerIds: number[]) => {
+    if (providerIds.length === 0) {
+      toast.error('Please select at least one provider');
       return;
     }
 
     setIsLoading(true);
     try {
-      // Find the user object from the selected user ID
-      const selectedUserObj = users.find(user => user.id === selectedUser);
-      if (!selectedUserObj) {
-        toast.error('Selected user not found');
-        return;
-      }
+      const response = await fetch('https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/users/assign_providers', {
+        method: 'POST',
+        headers: {
+          'Authorization': getSuperAdminAuthHeader(),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_email: userEmail,
+          provider_ids: providerIds
+        })
+      });
 
+      if (response.ok) {
+        const result = await response.json();
+        
+        if (result.success) {
+          const successCount = result.summary?.successful || providerIds.length;
+          toast.success(`Successfully assigned user to ${successCount} provider(s)!`);
+          
+          if (result.summary?.failed > 0) {
+            toast.warning(`${result.summary.failed} provider assignment(s) failed`);
+          }
+
+          await fetchUsers(); // Refresh the user list
+          setSelectedUser(null);
+          setSelectedProvidersForUser([]);
+          setSelectedProvider(null);
+          setProviderSearchTerm('');
+          setUseMultiProviderAssignment(false);
+        } else {
+          toast.error(`Failed to assign providers: ${result.message || 'Unknown error'}`);
+        }
+      } else {
+        const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
+        toast.error(`Failed to assign providers: ${errorData.message || 'Unknown error'}`);
+      }
+    } catch (error: any) {
+      toast.error(`Failed to assign providers: ${error.message || 'Unknown error'}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const linkUserToProvider = async () => {
+    // Find the user object from the selected user ID
+    const selectedUserObj = users.find(user => user.id === selectedUser);
+    if (!selectedUserObj) {
+      toast.error('Selected user not found');
+      return;
+    }
+
+    // If multi-provider assignment is enabled and providers are selected
+    if (useMultiProviderAssignment && selectedProvidersForUser.length > 0) {
+      await assignMultipleProvidersToUser(selectedUserObj.email, selectedProvidersForUser);
+      return;
+    }
+
+    // Single provider assignment (existing functionality)
+    if (!selectedProvider) {
+      toast.error('Please select a provider');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
       // Check if user already has a provider
       if (selectedUserObj.provider_id && selectedUserObj.provider_id !== selectedProvider) {
-
+        // User has a different provider, but we'll still assign the new one
       }
       
       // Use the recommended manual link endpoint for super admin use
@@ -578,7 +639,6 @@ const UserProviderLinking: React.FC = () => {
         toast.error(`Failed to assign user: ${errorData.message || 'Unknown error'}`);
       }
     } catch (error) {
-
       toast.error('Failed to assign user to provider');
     } finally {
       setIsLoading(false);
@@ -984,6 +1044,30 @@ const UserProviderLinking: React.FC = () => {
         <div className="bg-white p-6 rounded-lg shadow mb-8">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">Manual Linking</h2>
           
+          <div className="mb-4">
+            <label className="flex items-center space-x-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={useMultiProviderAssignment}
+                onChange={(e) => {
+                  setUseMultiProviderAssignment(e.target.checked);
+                  if (!e.target.checked) {
+                    setSelectedProvidersForUser([]);
+                  } else {
+                    setSelectedProvider(null);
+                  }
+                }}
+                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+              />
+              <span className="text-sm font-medium text-gray-700">
+                Assign to Multiple Providers (uses new admin endpoint)
+              </span>
+            </label>
+            <p className="text-xs text-gray-500 mt-1 ml-6">
+              Enable to assign one user to multiple providers at once
+            </p>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -991,13 +1075,16 @@ const UserProviderLinking: React.FC = () => {
               </label>
               <select
                 value={selectedUser || ''}
-                onChange={(e) => setSelectedUser(Number(e.target.value) || null)}
+                onChange={(e) => {
+                  setSelectedUser(Number(e.target.value) || null);
+                  setSelectedProvidersForUser([]);
+                }}
                 className="w-full p-2 border border-gray-300 rounded-md"
               >
                 <option value="">Choose a user...</option>
                 {filteredUsers.map(user => (
                   <option key={user.id} value={user.id}>
-                    {user.email} 
+                    {user.first_name ? `${user.first_name} - ` : ''}{user.email} 
                     {user.provider_name 
                       ? ` (Currently: ${user.provider_name})` 
                       : ' (No Provider)'
@@ -1007,11 +1094,12 @@ const UserProviderLinking: React.FC = () => {
               </select>
             </div>
             
-            <div className="relative">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Select Provider
-              </label>
-                              <div className="relative provider-dropdown">
+            {!useMultiProviderAssignment ? (
+              <div className="relative">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Select Provider
+                </label>
+                <div className="relative provider-dropdown">
                   <div className="relative">
                     <input
                       type="text"
@@ -1033,51 +1121,114 @@ const UserProviderLinking: React.FC = () => {
                       </button>
                     )}
                   </div>
-                {showProviderDropdown && (
-                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
-                    <div className="p-2">
-                      <div className="text-sm text-gray-500 mb-2">
-                        {filteredAndSortedProviders.length} providers found
+                  {showProviderDropdown && (
+                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                      <div className="p-2">
+                        <div className="text-sm text-gray-500 mb-2">
+                          {filteredAndSortedProviders.length} providers found
+                        </div>
+                        {filteredAndSortedProviders.map(provider => (
+                          <div
+                            key={provider.id}
+                            onClick={() => {
+                              setSelectedProvider(provider.id);
+                              setProviderSearchTerm(provider.name);
+                              setShowProviderDropdown(false);
+                            }}
+                            className="p-2 hover:bg-gray-100 cursor-pointer rounded"
+                          >
+                            <div className="font-medium">{provider.name}</div>
+                            <div className="text-sm text-gray-500">ID: {provider.id}</div>
+                          </div>
+                        ))}
+                        {filteredAndSortedProviders.length === 0 && (
+                          <div className="p-2 text-gray-500 text-sm">
+                            No providers found matching "{providerSearchTerm}"
+                          </div>
+                        )}
                       </div>
-                      {filteredAndSortedProviders.map(provider => (
-                        <div
-                          key={provider.id}
-                          onClick={() => {
-                            setSelectedProvider(provider.id);
-                            setProviderSearchTerm(provider.name);
-                            setShowProviderDropdown(false);
-                          }}
-                          className="p-2 hover:bg-gray-100 cursor-pointer rounded"
-                        >
-                          <div className="font-medium">{provider.name}</div>
-                          <div className="text-sm text-gray-500">ID: {provider.id}</div>
-                        </div>
-                      ))}
-                      {filteredAndSortedProviders.length === 0 && (
-                        <div className="p-2 text-gray-500 text-sm">
-                          No providers found matching "{providerSearchTerm}"
-                        </div>
-                      )}
+                    </div>
+                  )}
+                </div>
+                {selectedProvider && (
+                  <div className="mt-2 p-2 bg-blue-50 rounded-md">
+                    <div className="text-sm">
+                      <span className="font-medium">Selected:</span> {providers.find(p => p.id === selectedProvider)?.name}
                     </div>
                   </div>
                 )}
               </div>
-              {selectedProvider && (
-                <div className="mt-2 p-2 bg-blue-50 rounded-md">
-                  <div className="text-sm">
-                    <span className="font-medium">Selected:</span> {providers.find(p => p.id === selectedProvider)?.name}
-                  </div>
+            ) : (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Select Multiple Providers
+                </label>
+                <div className="max-h-60 overflow-y-auto border border-gray-300 rounded-md p-2">
+                  <input
+                    type="text"
+                    value={providerSearchTerm}
+                    onChange={(e) => setProviderSearchTerm(e.target.value)}
+                    placeholder="Search providers..."
+                    className="w-full p-2 border border-gray-300 rounded-md mb-2"
+                  />
+                  {filteredAndSortedProviders.map(provider => (
+                    <label key={provider.id} className="flex items-center space-x-2 p-1 hover:bg-gray-50 rounded">
+                      <input
+                        type="checkbox"
+                        checked={selectedProvidersForUser.includes(provider.id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedProvidersForUser([...selectedProvidersForUser, provider.id]);
+                          } else {
+                            setSelectedProvidersForUser(selectedProvidersForUser.filter(id => id !== provider.id));
+                          }
+                        }}
+                        className="rounded"
+                      />
+                      <span className="text-sm">
+                        <span className="font-medium">{provider.name}</span>
+                        <span className="text-gray-500 ml-2">ID: {provider.id}</span>
+                      </span>
+                    </label>
+                  ))}
                 </div>
-              )}
-            </div>
+                {selectedProvidersForUser.length > 0 && (
+                  <div className="mt-2 p-2 bg-blue-50 rounded-md">
+                    <div className="text-sm">
+                      <span className="font-medium">Selected {selectedProvidersForUser.length} provider(s):</span>
+                      <div className="mt-1 flex flex-wrap gap-2">
+                        {selectedProvidersForUser.map(providerId => {
+                          const provider = providers.find(p => p.id === providerId);
+                          return provider ? (
+                            <span key={providerId} className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">
+                              {provider.name}
+                            </span>
+                          ) : null;
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
           
           <button
             onClick={linkUserToProvider}
-            disabled={!selectedUser || !selectedProvider || isLoading}
+            disabled={
+              !selectedUser || 
+              isLoading || 
+              (!useMultiProviderAssignment && !selectedProvider) ||
+              (useMultiProviderAssignment && selectedProvidersForUser.length === 0)
+            }
             className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isLoading ? 'Linking...' : 'Assign User to Provider'}
+            {isLoading 
+              ? 'Linking...' 
+              : useMultiProviderAssignment
+                ? `Assign User to ${selectedProvidersForUser.length} Provider(s)`
+                : 'Assign User to Provider'
+            }
           </button>
         </div>
 
@@ -1208,9 +1359,30 @@ const UserProviderLinking: React.FC = () => {
         <div className="bg-white p-6 rounded-lg shadow mb-8">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">Multi-Provider Management</h2>
           <p className="text-sm text-gray-600 mb-4">
-            Assign users to multiple providers for enhanced access control and flexibility.
+            Assign users to multiple providers for enhanced access control and flexibility. Use the new admin endpoint to assign multiple providers at once.
           </p>
           
+          <div className="mb-4">
+            <label className="flex items-center space-x-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={useMultiProviderAssignment}
+                onChange={(e) => {
+                  setUseMultiProviderAssignment(e.target.checked);
+                  if (!e.target.checked) {
+                    setSelectedProvidersForUser([]);
+                  } else {
+                    setSelectedProvider(null);
+                  }
+                }}
+                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+              />
+              <span className="text-sm font-medium text-gray-700">
+                Assign Multiple Providers (uses new admin endpoint)
+              </span>
+            </label>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1218,13 +1390,16 @@ const UserProviderLinking: React.FC = () => {
               </label>
               <select
                 value={selectedUser || ''}
-                onChange={(e) => setSelectedUser(Number(e.target.value) || null)}
+                onChange={(e) => {
+                  setSelectedUser(Number(e.target.value) || null);
+                  setSelectedProvidersForUser([]);
+                }}
                 className="w-full p-2 border border-gray-300 rounded-md"
               >
                 <option value="">Choose a user...</option>
                 {filteredUsers.map(user => (
                   <option key={user.id} value={user.id}>
-                    {user.email} 
+                    {user.first_name ? `${user.first_name} - ` : ''}{user.email} 
                     {user.provider_name 
                       ? ` (Primary: ${user.provider_name})` 
                       : ' (No Primary Provider)'
@@ -1234,69 +1409,133 @@ const UserProviderLinking: React.FC = () => {
               </select>
             </div>
             
-            <div className="relative">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Select Additional Provider
-              </label>
-              <div className="relative provider-dropdown">
-                <div className="relative">
+            {!useMultiProviderAssignment ? (
+              <div className="relative">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Select Additional Provider
+                </label>
+                <div className="relative provider-dropdown">
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={providerSearchTerm}
+                      onChange={(e) => setProviderSearchTerm(e.target.value)}
+                      onFocus={() => setShowProviderDropdown(true)}
+                      placeholder="Search providers..."
+                      className="w-full p-2 border border-gray-300 rounded-md pr-8"
+                    />
+                    {providerSearchTerm && (
+                      <button
+                        onClick={() => {
+                          setProviderSearchTerm('');
+                          setSelectedProvider(null);
+                        }}
+                        className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+                  {showProviderDropdown && (
+                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                      <div className="p-2">
+                        {filteredAndSortedProviders.map(provider => (
+                          <div
+                            key={provider.id}
+                            onClick={() => {
+                              setSelectedProvider(provider.id);
+                              setProviderSearchTerm(provider.name);
+                              setShowProviderDropdown(false);
+                            }}
+                            className="p-2 hover:bg-gray-100 cursor-pointer rounded"
+                          >
+                            <div className="font-medium">{provider.name}</div>
+                            <div className="text-sm text-gray-500">
+                              ID: {provider.id} • {usersPerProvider[provider.id] || 0} users
+                            </div>
+                          </div>
+                        ))}
+                        {filteredAndSortedProviders.length === 0 && (
+                          <div className="p-2 text-gray-500 text-sm">
+                            No providers found matching "{providerSearchTerm}"
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Select Multiple Providers
+                </label>
+                <div className="max-h-60 overflow-y-auto border border-gray-300 rounded-md p-2">
                   <input
                     type="text"
                     value={providerSearchTerm}
                     onChange={(e) => setProviderSearchTerm(e.target.value)}
-                    onFocus={() => setShowProviderDropdown(true)}
                     placeholder="Search providers..."
-                    className="w-full p-2 border border-gray-300 rounded-md pr-8"
+                    className="w-full p-2 border border-gray-300 rounded-md mb-2"
                   />
-                  {providerSearchTerm && (
-                    <button
-                      onClick={() => {
-                        setProviderSearchTerm('');
-                        setSelectedProvider(null);
-                      }}
-                      className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                    >
-                      ✕
-                    </button>
-                  )}
+                  {filteredAndSortedProviders.map(provider => (
+                    <label key={provider.id} className="flex items-center space-x-2 p-1 hover:bg-gray-50 rounded">
+                      <input
+                        type="checkbox"
+                        checked={selectedProvidersForUser.includes(provider.id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedProvidersForUser([...selectedProvidersForUser, provider.id]);
+                          } else {
+                            setSelectedProvidersForUser(selectedProvidersForUser.filter(id => id !== provider.id));
+                          }
+                        }}
+                        className="rounded"
+                      />
+                      <span className="text-sm">
+                        <span className="font-medium">{provider.name}</span>
+                        <span className="text-gray-500 ml-2">ID: {provider.id}</span>
+                      </span>
+                    </label>
+                  ))}
                 </div>
-                {showProviderDropdown && (
-                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
-                    <div className="p-2">
-                      {filteredAndSortedProviders.map(provider => (
-                        <div
-                          key={provider.id}
-                          onClick={() => {
-                            setSelectedProvider(provider.id);
-                            setProviderSearchTerm(provider.name);
-                            setShowProviderDropdown(false);
-                          }}
-                          className="p-2 hover:bg-gray-100 cursor-pointer rounded"
-                        >
-                          <div className="font-medium">{provider.name}</div>
-                          <div className="text-sm text-gray-500">
-                            ID: {provider.id} • {usersPerProvider[provider.id] || 0} users
-                          </div>
-                        </div>
-                      ))}
-                      {filteredAndSortedProviders.length === 0 && (
-                        <div className="p-2 text-gray-500 text-sm">
-                          No providers found matching "{providerSearchTerm}"
-                        </div>
-                      )}
+                {selectedProvidersForUser.length > 0 && (
+                  <div className="mt-2 p-2 bg-purple-50 rounded-md">
+                    <div className="text-sm">
+                      <span className="font-medium">Selected {selectedProvidersForUser.length} provider(s):</span>
+                      <div className="mt-1 flex flex-wrap gap-2">
+                        {selectedProvidersForUser.map(providerId => {
+                          const provider = providers.find(p => p.id === providerId);
+                          return provider ? (
+                            <span key={providerId} className="px-2 py-1 bg-purple-100 text-purple-800 rounded text-xs">
+                              {provider.name}
+                            </span>
+                          ) : null;
+                        })}
+                      </div>
                     </div>
                   </div>
                 )}
               </div>
-            </div>
+            )}
             
             <div className="flex items-end">
               <button
                 onClick={linkUserToProvider}
-                disabled={!selectedUser || !selectedProvider || isLoading}
+                disabled={
+                  !selectedUser || 
+                  isLoading || 
+                  (!useMultiProviderAssignment && !selectedProvider) ||
+                  (useMultiProviderAssignment && selectedProvidersForUser.length === 0)
+                }
                 className="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isLoading ? 'Adding...' : 'Add Provider Access'}
+                {isLoading 
+                  ? 'Adding...' 
+                  : useMultiProviderAssignment
+                    ? `Add ${selectedProvidersForUser.length} Provider Access`
+                    : 'Add Provider Access'
+                }
               </button>
             </div>
           </div>
