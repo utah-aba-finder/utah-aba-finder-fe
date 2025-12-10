@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { toast } from 'react-toastify';
 import { useAuth } from '../../Provider-login/AuthProvider';
 import { Plus, Edit, Trash2, MapPin, Phone, Building2, X, AlertCircle } from 'lucide-react';
@@ -41,6 +41,7 @@ const LocationManagement: React.FC<LocationManagementProps> = ({
   });
   const [locationServices, setLocationServices] = useState<Service[]>([]);
   const [practiceTypes, setPracticeTypes] = useState<PracticeType[]>([]);
+  const initializedLocationIdRef = useRef<number | null>(null);
 
   // Update local state when prop changes
   useEffect(() => {
@@ -60,41 +61,7 @@ const LocationManagement: React.FC<LocationManagementProps> = ({
     loadPracticeTypes();
   }, []);
 
-  // Reset form when adding new location
-  useEffect(() => {
-    if (isAddingLocation) {
-      setFormData({
-        name: '',
-        phone: '',
-        address_1: '',
-        city: '',
-        state: '',
-        zip: ''
-      });
-    }
-  }, [isAddingLocation]);
-
-  // Reset form when editing location
-  useEffect(() => {
-    if (editingLocation) {
-      setFormData({
-        name: editingLocation.name || '',
-        phone: editingLocation.phone || '',
-        address_1: editingLocation.address_1 || '',
-        city: editingLocation.city || '',
-        state: editingLocation.state || '',
-        zip: editingLocation.zip || ''
-      });
-      setLocationServices(editingLocation.services || []);
-    }
-  }, [editingLocation]);
-
-  // Reset services when adding new location
-  useEffect(() => {
-    if (isAddingLocation && !editingLocation) {
-      setLocationServices([]);
-    }
-  }, [isAddingLocation, editingLocation]);
+  // Initialize form when modal opens - removed useEffect to prevent re-render loops
 
   const getApiBaseUrl = () => {
     if (process.env.NODE_ENV === 'development') {
@@ -306,11 +273,33 @@ const LocationManagement: React.FC<LocationManagementProps> = ({
   };
 
   const openEditModal = (location: Location) => {
+    // Initialize form data when opening edit modal
+    setFormData({
+      name: location.name || '',
+      phone: location.phone || '',
+      address_1: location.address_1 || '',
+      city: location.city || '',
+      state: location.state || '',
+      zip: location.zip || ''
+    });
+    setLocationServices(location.services || []);
+    initializedLocationIdRef.current = location.id;
     setEditingLocation(location);
     setIsAddingLocation(false);
   };
 
   const openAddModal = () => {
+    // Initialize form data when opening add modal
+    setFormData({
+      name: '',
+      phone: '',
+      address_1: '',
+      city: '',
+      state: '',
+      zip: ''
+    });
+    setLocationServices([]);
+    initializedLocationIdRef.current = null;
     setIsAddingLocation(true);
     setEditingLocation(null);
   };
@@ -327,6 +316,7 @@ const LocationManagement: React.FC<LocationManagementProps> = ({
       zip: ''
     });
     setLocationServices([]);
+    initializedLocationIdRef.current = null;
   };
 
   return (

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Dispatch, SetStateAction } from "react";
+import React, { useState, useEffect, useRef, Dispatch, SetStateAction } from "react";
 import { toast } from "react-toastify";
 import {
   Building2,
@@ -57,6 +57,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
   const [selectedCounties, setSelectedCounties] = useState<CountiesServed[]>([]);
   const [selectedInsurances, setSelectedInsurances] = useState<Insurance[]>([]);
   const [fullProviderData, setFullProviderData] = useState<ProviderData | null>(null);
+  const hasInitializedRef = useRef(false);
   
   // Use fullProviderData if available, otherwise fall back to provider from props
   const currentProvider = fullProviderData || provider;
@@ -119,10 +120,10 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
     fetchFullProviderData();
   }, [provider.id, provider]);
 
-  // Update state when fullProviderData is loaded
+  // Update state when fullProviderData is loaded - only on initial load, not when user is editing
   useEffect(() => {
-    if (fullProviderData && fullProviderData !== provider) {
-      // Update locations
+    if (fullProviderData && fullProviderData !== provider && !hasInitializedRef.current) {
+      // Update locations - only on initial load
       setLocations(fullProviderData.attributes.locations?.map(location => ({
         ...location,
         services: location.services || []
@@ -136,26 +137,25 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
       // Update selected provider types
       setSelectedProviderTypes(fullProviderData.attributes.provider_type || []);
       // Update editedProvider to include provider_attributes
-      if (!editedProvider) {
-        setEditedProvider({
-          ...fullProviderData.attributes,
-          in_home_only: fullProviderData.attributes.in_home_only || false,
-          service_delivery: fullProviderData.attributes.service_delivery || {
-            in_home: false,
-            in_clinic: false,
-            telehealth: false
-          },
-          category: fullProviderData.attributes.category || null,
-          category_name: fullProviderData.attributes.category_name || null,
-          provider_attributes: fullProviderData.attributes.provider_attributes || null,
-          category_fields: fullProviderData.attributes.category_fields || null
-        });
-      }
+      setEditedProvider({
+        ...fullProviderData.attributes,
+        in_home_only: fullProviderData.attributes.in_home_only || false,
+        service_delivery: fullProviderData.attributes.service_delivery || {
+          in_home: false,
+          in_clinic: false,
+          telehealth: false
+        },
+        category: fullProviderData.attributes.category || null,
+        category_name: fullProviderData.attributes.category_name || null,
+        provider_attributes: fullProviderData.attributes.provider_attributes || null,
+        category_fields: fullProviderData.attributes.category_fields || null
+      });
+      hasInitializedRef.current = true;
     }
-  }, [fullProviderData, provider, editedProvider]);
+  }, [fullProviderData, provider]);
 
   useEffect(() => {
-    if (currentProvider && !editedProvider) { // Only run on initial load
+    if (currentProvider && !hasInitializedRef.current) { // Only run on initial load
       setEditedProvider({
         ...currentProvider.attributes,
         // Initialize new fields with defaults if they don't exist
@@ -192,8 +192,9 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
       setCategoryFields(initialCategoryFields);
       // Category fields initialized
       setIsLoading(false);
+      hasInitializedRef.current = true;
     }
-  }, [currentProvider, editedProvider]); // Use currentProvider instead of provider
+  }, [currentProvider]); // Use currentProvider instead of provider
 
   useEffect(() => {
     const loadInitialData = async () => {
@@ -1504,7 +1505,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
 
                   {locations.map((location, index) => (
                     <div
-                      key={index}
+                      key={location.id || `location-${index}`}
                       className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
                     >
                       <div className="flex justify-between items-center mb-6">
