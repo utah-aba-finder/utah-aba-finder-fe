@@ -501,7 +501,6 @@ const UserProviderLinking: React.FC = () => {
 
         setUsers(users);
       } else {
-        const errorText = await response.text();
         toast.error(`Failed to fetch users: ${response.status}`);
       }
     } catch (error) {
