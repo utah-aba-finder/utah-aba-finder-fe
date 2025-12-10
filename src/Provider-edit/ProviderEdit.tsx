@@ -6,6 +6,7 @@ import Dashboard from "./components/Dashboard";
 import EditLocation from "./components/EditLocation";
 import LocationManagement from "./components/LocationManagement";
 import PasswordChangeForm from "./components/PasswordChangeForm";
+import UserInfoForm from "./components/UserInfoForm";
 import { AuthModal } from "./AuthModal";
 import {
   Building2,
@@ -2165,16 +2166,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                     {/* User Information */}
                     <div className="mb-8 pb-8 border-b border-gray-200">
                       <h3 className="text-lg font-medium text-gray-900 mb-4">User Information</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                          <p className="text-sm text-gray-900">{currentUser?.email || 'N/A'}</p>
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-                          <p className="text-sm text-gray-900">{currentUser?.first_name || 'Not set'}</p>
-                        </div>
-                      </div>
+                      <UserInfoForm />
                     </div>
 
                     {/* Password Change */}

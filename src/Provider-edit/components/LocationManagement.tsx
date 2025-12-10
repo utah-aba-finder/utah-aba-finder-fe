@@ -2,7 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { toast } from 'react-toastify';
 import { useAuth } from '../../Provider-login/AuthProvider';
 import { Plus, Edit, Trash2, MapPin, Phone, Building2, X, AlertCircle } from 'lucide-react';
-import { Location } from '../../Utility/Types';
+import { Location, Service } from '../../Utility/Types';
+import { fetchPracticeTypes, PracticeType } from '../../Utility/ApiCall';
 
 interface LocationManagementProps {
   providerId: number;
@@ -38,11 +39,26 @@ const LocationManagement: React.FC<LocationManagementProps> = ({
     state: '',
     zip: ''
   });
+  const [locationServices, setLocationServices] = useState<Service[]>([]);
+  const [practiceTypes, setPracticeTypes] = useState<PracticeType[]>([]);
 
   // Update local state when prop changes
   useEffect(() => {
     setLocations(currentLocations || []);
   }, [currentLocations]);
+
+  // Load practice types for services selector
+  useEffect(() => {
+    const loadPracticeTypes = async () => {
+      try {
+        const response = await fetchPracticeTypes();
+        setPracticeTypes(response.data);
+      } catch (error) {
+        toast.error('Failed to load practice types');
+      }
+    };
+    loadPracticeTypes();
+  }, []);
 
   // Reset form when adding new location
   useEffect(() => {
@@ -69,8 +85,16 @@ const LocationManagement: React.FC<LocationManagementProps> = ({
         state: editingLocation.state || '',
         zip: editingLocation.zip || ''
       });
+      setLocationServices(editingLocation.services || []);
     }
   }, [editingLocation]);
+
+  // Reset services when adding new location
+  useEffect(() => {
+    if (isAddingLocation && !editingLocation) {
+      setLocationServices([]);
+    }
+  }, [isAddingLocation, editingLocation]);
 
   const getApiBaseUrl = () => {
     if (process.env.NODE_ENV === 'development') {
@@ -111,6 +135,16 @@ const LocationManagement: React.FC<LocationManagementProps> = ({
     }
   }, [providerId, getAuthHeader, onLocationsUpdate]);
 
+  // Handle service change
+  const handleServiceChange = (service: Service) => {
+    const serviceExists = locationServices.some(s => s.id === service.id);
+    if (serviceExists) {
+      setLocationServices(locationServices.filter(s => s.id !== service.id));
+    } else {
+      setLocationServices([...locationServices, service]);
+    }
+  };
+
   // Add new location
   const handleAddLocation = async () => {
     if (!providerId) return;
@@ -124,7 +158,10 @@ const LocationManagement: React.FC<LocationManagementProps> = ({
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          location: formData
+          location: {
+            ...formData,
+            services: locationServices
+          }
         })
       });
 
@@ -151,6 +188,7 @@ const LocationManagement: React.FC<LocationManagementProps> = ({
         state: '',
         zip: ''
       });
+      setLocationServices([]);
       
       toast.success('Location added successfully!');
     } catch (error) {
@@ -173,7 +211,10 @@ const LocationManagement: React.FC<LocationManagementProps> = ({
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          location: formData
+          location: {
+            ...formData,
+            services: locationServices
+          }
         })
       });
 
@@ -202,6 +243,7 @@ const LocationManagement: React.FC<LocationManagementProps> = ({
         state: '',
         zip: ''
       });
+      setLocationServices([]);
       
       toast.success('Location updated successfully!');
     } catch (error) {
@@ -284,6 +326,7 @@ const LocationManagement: React.FC<LocationManagementProps> = ({
       state: '',
       zip: ''
     });
+    setLocationServices([]);
   };
 
   return (
@@ -381,6 +424,21 @@ const LocationManagement: React.FC<LocationManagementProps> = ({
                         <div className="truncate">
                           {[location.city, location.state, location.zip].filter(Boolean).join(', ')}
                         </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+                {location.services && location.services.length > 0 && (
+                  <div className="mt-2">
+                    <div className="text-xs font-medium text-gray-500 mb-1">Services:</div>
+                    <div className="flex flex-wrap gap-1">
+                      {location.services.slice(0, 3).map((service) => (
+                        <span key={service.id} className="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded">
+                          {service.name}
+                        </span>
+                      ))}
+                      {location.services.length > 3 && (
+                        <span className="text-xs text-gray-500">+{location.services.length - 3} more</span>
                       )}
                     </div>
                   </div>
@@ -500,6 +558,47 @@ const LocationManagement: React.FC<LocationManagementProps> = ({
                   </div>
                 </div>
 
+                {/* Services Offered at this Location */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Services Offered at this Location
+                  </label>
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {locationServices.map((service) => (
+                      <div
+                        key={service.id}
+                        className="bg-blue-100 text-blue-800 px-2 py-1 rounded-md flex items-center"
+                      >
+                        <span>{service.name}</span>
+                        <X 
+                          className="ml-2 w-4 h-4 cursor-pointer" 
+                          onClick={() => handleServiceChange(service)}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                  <select
+                    className="w-full rounded-md border border-gray-300 py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value=""
+                    onChange={(e) => {
+                      const [id, name] = e.target.value.split('|');
+                      if (id && name) {
+                        handleServiceChange({ id: parseInt(id), name });
+                      }
+                    }}
+                  >
+                    <option value="">Add a service...</option>
+                    {practiceTypes
+                      .filter(service => !locationServices.some(s => s.id === service.id))
+                      .map(service => (
+                        <option key={service.id} value={`${service.id}|${service.name}`}>
+                          {service.name}
+                        </option>
+                      ))
+                    }
+                  </select>
+                </div>
+
                 {/* Helpful Note */}
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <div className="flex items-start">
@@ -510,7 +609,7 @@ const LocationManagement: React.FC<LocationManagementProps> = ({
                     </div>
                     <div className="ml-3">
                       <p className="text-sm text-blue-700">
-                        <strong>Note:</strong> Only the location name and phone number are required. Address fields are optional and can be filled in later.
+                        <strong>Note:</strong> Only the location name and phone number are required. Address fields and services are optional and can be filled in later.
                       </p>
                     </div>
                   </div>
