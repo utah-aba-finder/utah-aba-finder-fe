@@ -13,9 +13,17 @@ import {
 import { useAuth } from '../Provider-login/AuthProvider';
 import { getSuperAdminAuthHeader } from '../Utility/config';
 
+interface ProviderInfo {
+  id: number;
+  name: string;
+  email?: string;
+  website?: string;
+}
+
 interface ProviderClaimRequest {
   id: number;
   provider_id?: number;
+  provider?: ProviderInfo;
   provider_name?: string;
   provider_email?: string;
   claimer_email: string;
@@ -58,7 +66,9 @@ const ProviderClaimRequests: React.FC = () => {
 
       if (response.ok) {
         const data = await response.json();
-        setClaimRequests(data.data || data.claim_requests || []);
+        const requests = data.data || data.claim_requests || [];
+        console.log('Fetched claim requests:', requests);
+        setClaimRequests(requests);
       } else {
         const errorText = await response.text();
         throw new Error(`HTTP error: ${response.status} - ${errorText}`);
@@ -166,12 +176,31 @@ const ProviderClaimRequests: React.FC = () => {
     }
   };
 
+  // Helper function to get provider name from request
+  const getProviderName = (request: ProviderClaimRequest): string => {
+    return request.provider?.name || request.provider_name || 'N/A';
+  };
+
+  // Helper function to get provider email from request
+  const getProviderEmail = (request: ProviderClaimRequest): string => {
+    return request.provider?.email || request.provider_email || 'N/A';
+  };
+
+  // Helper function to get provider ID from request
+  const getProviderId = (request: ProviderClaimRequest): number | null => {
+    return request.provider?.id || request.provider_id || null;
+  };
+
   // Filter claim requests
   const filteredRequests = claimRequests.filter(request => {
+    const providerName = getProviderName(request).toLowerCase();
+    const providerEmail = getProviderEmail(request).toLowerCase();
+    const claimerEmail = request.claimer_email?.toLowerCase() || '';
+    
     const matchesSearch = 
-      request.claimer_email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      request.provider_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      request.provider_email?.toLowerCase().includes(searchTerm.toLowerCase());
+      claimerEmail.includes(searchTerm.toLowerCase()) ||
+      providerName.includes(searchTerm.toLowerCase()) ||
+      providerEmail.includes(searchTerm.toLowerCase());
     
     const matchesStatus = statusFilter === 'all' || request.status === statusFilter;
     
@@ -306,11 +335,11 @@ const ProviderClaimRequests: React.FC = () => {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <Building2 className="w-4 h-4 text-gray-400 mr-2" />
-                        <span className="text-sm text-gray-900">{request.provider_name || 'N/A'}</span>
+                        <span className="text-sm text-gray-900">{getProviderName(request)}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {request.provider_email || 'N/A'}
+                      {getProviderEmail(request)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(request.status)}`}>
@@ -389,17 +418,33 @@ const ProviderClaimRequests: React.FC = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Provider Name</label>
-                <p className="text-sm text-gray-900">{selectedRequest.provider_name || 'N/A'}</p>
+                <p className="text-sm text-gray-900">{getProviderName(selectedRequest)}</p>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Provider Email</label>
-                <p className="text-sm text-gray-900">{selectedRequest.provider_email || 'N/A'}</p>
+                <p className="text-sm text-gray-900">{getProviderEmail(selectedRequest)}</p>
               </div>
+
+              {selectedRequest.provider?.website && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Provider Website</label>
+                  <p className="text-sm text-gray-900">
+                    <a 
+                      href={selectedRequest.provider.website} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:text-blue-800"
+                    >
+                      {selectedRequest.provider.website}
+                    </a>
+                  </p>
+                </div>
+              )}
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Provider ID</label>
-                <p className="text-sm text-gray-900">{selectedRequest.provider_id || 'N/A'}</p>
+                <p className="text-sm text-gray-900">{getProviderId(selectedRequest) || 'N/A'}</p>
               </div>
 
               <div>
