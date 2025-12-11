@@ -8,7 +8,8 @@ import {
   Search,
   X,
   Mail,
-  Building2
+  Building2,
+  Send
 } from 'lucide-react';
 import { useAuth } from '../Provider-login/AuthProvider';
 import { getSuperAdminAuthHeader } from '../Utility/config';
@@ -45,6 +46,7 @@ const ProviderClaimRequests: React.FC = () => {
   const [selectedRequest, setSelectedRequest] = useState<ProviderClaimRequest | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [rejectionReason, setRejectionReason] = useState('');
+  const [resendingEmailId, setResendingEmailId] = useState<number | null>(null);
 
   // Fetch claim requests
   const fetchClaimRequests = useCallback(async () => {
@@ -125,6 +127,45 @@ const ProviderClaimRequests: React.FC = () => {
       toast.error(`Failed to approve claim request: ${error.message || 'Unknown error'}`);
     } finally {
       setProcessingId(null);
+    }
+  };
+
+  // Resend email for claim request
+  const resendEmail = async (requestId: number) => {
+    if (!currentUser?.id) {
+      toast.error('You must be logged in to resend emails');
+      return;
+    }
+    
+    if (resendingEmailId === requestId) {
+      return;
+    }
+    
+    setResendingEmailId(requestId);
+    
+    try {
+      const response = await fetch(
+        `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/provider_claim_requests/${requestId}/resend_email`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': getSuperAdminAuthHeader(),
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        toast.success(data.message || 'Email resent successfully');
+      } else {
+        const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
+        toast.error(errorData.message || errorData.error || 'Failed to resend email');
+      }
+    } catch (error: any) {
+      toast.error(`Failed to resend email: ${error.message || 'Unknown error'}`);
+    } finally {
+      setResendingEmailId(null);
     }
   };
 
@@ -258,7 +299,7 @@ const ProviderClaimRequests: React.FC = () => {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Search by email or provider name..."
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-3/4 pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </div>
@@ -351,38 +392,60 @@ const ProviderClaimRequests: React.FC = () => {
                       {formatDate(request.created_at)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium" onClick={(e) => e.stopPropagation()}>
-                      {request.status === 'pending' && (
-                        <div className="flex space-x-2">
+                      <div className="flex space-x-2">
+                        {request.status === 'pending' && (
+                          <>
+                            <button
+                              onClick={() => approveClaimRequest(request.id)}
+                              disabled={processingId === request.id || resendingEmailId === request.id}
+                              className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              {processingId === request.id ? (
+                                <>
+                                  <RefreshCw className="w-3 h-3 mr-1 animate-spin" />
+                                  Processing...
+                                </>
+                              ) : (
+                                <>
+                                  <CheckCircle className="w-3 h-3 mr-1" />
+                                  Approve
+                                </>
+                              )}
+                            </button>
+                            <button
+                              onClick={() => {
+                                setSelectedRequest(request);
+                                setIsModalOpen(true);
+                              }}
+                              disabled={processingId === request.id || resendingEmailId === request.id}
+                              className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              <XCircle className="w-3 h-3 mr-1" />
+                              Reject
+                            </button>
+                          </>
+                        )}
+                        {(request.status === 'approved' || request.status === 'rejected') && (
                           <button
-                            onClick={() => approveClaimRequest(request.id)}
-                            disabled={processingId === request.id}
-                            className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                            onClick={() => resendEmail(request.id)}
+                            disabled={resendingEmailId === request.id || processingId === request.id}
+                            className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                            title="Resend email to claimer"
                           >
-                            {processingId === request.id ? (
+                            {resendingEmailId === request.id ? (
                               <>
                                 <RefreshCw className="w-3 h-3 mr-1 animate-spin" />
-                                Processing...
+                                Sending...
                               </>
                             ) : (
                               <>
-                                <CheckCircle className="w-3 h-3 mr-1" />
-                                Approve
+                                <Send className="w-3 h-3 mr-1" />
+                                Resend Email
                               </>
                             )}
                           </button>
-                          <button
-                            onClick={() => {
-                              setSelectedRequest(request);
-                              setIsModalOpen(true);
-                            }}
-                            disabled={processingId === request.id}
-                            className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            <XCircle className="w-3 h-3 mr-1" />
-                            Reject
-                          </button>
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -487,7 +550,7 @@ const ProviderClaimRequests: React.FC = () => {
                   <div className="flex space-x-3 mt-4">
                     <button
                       onClick={() => approveClaimRequest(selectedRequest.id)}
-                      disabled={processingId === selectedRequest.id}
+                      disabled={processingId === selectedRequest.id || resendingEmailId === selectedRequest.id}
                       className="flex-1 inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {processingId === selectedRequest.id ? (
@@ -504,7 +567,7 @@ const ProviderClaimRequests: React.FC = () => {
                     </button>
                     <button
                       onClick={() => rejectClaimRequest(selectedRequest.id, rejectionReason || undefined)}
-                      disabled={processingId === selectedRequest.id}
+                      disabled={processingId === selectedRequest.id || resendingEmailId === selectedRequest.id}
                       className="flex-1 inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {processingId === selectedRequest.id ? (
@@ -520,6 +583,35 @@ const ProviderClaimRequests: React.FC = () => {
                       )}
                     </button>
                   </div>
+                </div>
+              )}
+
+              {(selectedRequest.status === 'approved' || selectedRequest.status === 'rejected') && (
+                <div className="pt-4 border-t">
+                  <div className="flex space-x-3">
+                    <button
+                      onClick={() => resendEmail(selectedRequest.id)}
+                      disabled={resendingEmailId === selectedRequest.id || processingId === selectedRequest.id}
+                      className="flex-1 inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {resendingEmailId === selectedRequest.id ? (
+                        <>
+                          <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                          Sending...
+                        </>
+                      ) : (
+                        <>
+                          <Send className="w-4 h-4 mr-2" />
+                          Resend Email
+                        </>
+                      )}
+                    </button>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">
+                    {selectedRequest.status === 'approved' 
+                      ? 'Resend the approval email with login credentials to the claimer.'
+                      : 'Resend the rejection email to the claimer.'}
+                  </p>
                 </div>
               )}
             </div>
