@@ -15,6 +15,7 @@ import {
   ChevronDown,
   ClipboardCheck,
   Mail,
+  User,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import { useAuth } from "../Provider-login/AuthProvider";
@@ -26,6 +27,7 @@ import moment from "moment";
 import CreateUser from "./CreateUser";
 import UserProviderLinking from "./UserProviderLinking";
 import ProviderRegistrations from "./ProviderRegistrations";
+import ProviderClaimRequests from "./ProviderClaimRequests";
 import MassEmailComponent from "./MassEmailComponent";
 import { ProviderData, ProviderAttributes } from "../Utility/Types";
 import { fetchPracticeTypes, PracticeType } from "../Utility/ApiCall";
@@ -514,6 +516,25 @@ const SuperAdmin = () => {
                 <li>
                   <button
                     onClick={() => {
+                      setSelectedTab("claimRequests");
+                    }}
+                    className={`
+            w-full flex items-center space-x-3 px-3 py-2 rounded-lg
+            transition-colors hover:cursor-pointer duration-200
+            ${
+              selectedTab === "claimRequests"
+                ? "bg-[#4A6FA5] text-white"
+                : "text-gray-700 hover:bg-gray-100"
+            }
+          `}
+                  >
+                    <User className="w-4 h-4" />
+                    <span className="text-sm">Claim Requests</span>
+                  </button>
+                </li>
+                <li>
+                  <button
+                    onClick={() => {
                       setSelectedTab("massEmail");
                     }}
                     className={`
@@ -595,6 +616,7 @@ const SuperAdmin = () => {
                             {selectedTab === "createUser" && "Create User"}
                             {selectedTab === "linking" && "User-Provider Linking"}
                             {selectedTab === "registrations" && "Provider Registrations"}
+                            {selectedTab === "claimRequests" && "Provider Claim Requests"}
                             {selectedTab === "massEmail" && "Mass Email System"}
                           </div>
                         )}
@@ -949,6 +971,9 @@ const SuperAdmin = () => {
 
               {selectedTab === "registrations" && (
                 <ProviderRegistrations />
+              )}
+              {selectedTab === "claimRequests" && (
+                <ProviderClaimRequests />
               )}
 
               {selectedTab === "massEmail" && (

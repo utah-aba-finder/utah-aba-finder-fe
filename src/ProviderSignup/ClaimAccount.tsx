@@ -28,37 +28,52 @@ const ClaimAccount: React.FC<ClaimAccountProps> = ({ onBackToSignup }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.provider_name || !formData.contact_email) {
-      toast.error('Please provide at least your provider name and contact email');
+    if (!formData.contact_email) {
+      toast.error('Please provide your contact email address');
       return;
     }
+
+    // Build request body based on what user provided
+    // Backend accepts: provider_id, provider_name, or email (provider's registered email)
+    // Always requires claimer_email (the person requesting access)
+    let requestBody: any = {
+      claimer_email: formData.contact_email
+    };
+
+    // If provider name is provided, use it
+    if (formData.provider_name && formData.provider_name.trim()) {
+      requestBody.provider_name = formData.provider_name.trim();
+    } else {
+      // Otherwise, use the email to find the provider
+      requestBody.email = formData.contact_email;
+    }
+
+    console.log('Submitting claim request:', requestBody);
 
     try {
       setIsSubmitting(true);
       
       // Send claim request to backend
       const response = await fetch(
-        'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/provider_registrations/claim_account',
+        'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/claim_account',
         {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            claim_request: {
-              provider_name: formData.provider_name,
-              contact_email: formData.contact_email,
-              contact_phone: formData.contact_phone || null,
-              website: formData.website || null,
-              additional_info: formData.additional_info || null
-            }
-          })
+          body: JSON.stringify(requestBody)
         }
       );
 
+      // Clone response before reading to allow multiple reads if needed
+      const responseClone = response.clone();
+      
       if (response.ok) {
-        await response.json(); // Response is consumed but data not needed
-        toast.success('Account claim request submitted successfully! We will verify your identity and send you login credentials within 24-48 hours.');
+        const data = await response.json();
+        console.log('Claim request success response:', data);
+        // New flow: claim requests require admin approval
+        const successMessage = data.message || 'Claim request submitted successfully! Your request is pending admin approval. You will receive an email once it has been reviewed.';
+        toast.success(successMessage);
         
         // Reset form
         setFormData({
@@ -69,11 +84,78 @@ const ClaimAccount: React.FC<ClaimAccountProps> = ({ onBackToSignup }) => {
           additional_info: ''
         });
       } else {
-        const errorData = await response.json();
-        throw new Error(errorData.error || `HTTP error: ${response.status}`);
+        let errorMessage = `Failed to submit claim request (HTTP ${response.status})`;
+        let suggestion = '';
+        let fullErrorData: any = null;
+        
+        try {
+          const errorData = await response.json();
+          fullErrorData = errorData;
+          console.error('Claim request error response:', errorData);
+          
+          // Handle different error response formats
+          if (errorData.error) {
+            errorMessage = errorData.error;
+          } else if (errorData.message) {
+            errorMessage = errorData.message;
+          } else if (errorData.errors) {
+            // Handle validation errors (array or object)
+            if (Array.isArray(errorData.errors)) {
+              errorMessage = errorData.errors.join(', ');
+            } else if (typeof errorData.errors === 'object') {
+              const errorMessages = Object.entries(errorData.errors).map(([field, messages]) => {
+                const fieldMessages = Array.isArray(messages) ? messages.join(', ') : String(messages);
+                // Clean up field names for better readability
+                const cleanField = field.replace(/^claim_request\[|\]$/g, '').replace(/_/g, ' ');
+                return `${cleanField}: ${fieldMessages}`;
+              });
+              errorMessage = errorMessages.join('; ');
+            } else {
+              errorMessage = String(errorData.errors);
+            }
+          }
+          
+          // Show suggestion if provided by backend
+          if (errorData.suggestion) {
+            suggestion = errorData.suggestion;
+          }
+        } catch (parseError) {
+          // If response isn't JSON, try to get text from cloned response
+          try {
+            const errorText = await responseClone.text();
+            console.error('Claim request error (non-JSON):', errorText);
+            if (errorText && errorText.trim()) {
+              errorMessage = errorText;
+            } else {
+              errorMessage = `Failed to submit claim request (HTTP ${response.status}). Please try again or contact support.`;
+            }
+          } catch (textError) {
+            // Fall back to default error message
+            errorMessage = `Failed to submit claim request (HTTP ${response.status}). Please try again or contact support.`;
+          }
+        }
+        
+        // Log full error details for debugging
+        console.error('Full error details:', {
+          status: response.status,
+          statusText: response.statusText,
+          errorData: fullErrorData,
+          requestBody: requestBody
+        });
+        
+        // Show error with suggestion if available
+        if (suggestion) {
+          toast.error(`${errorMessage}\n${suggestion}`);
+        } else {
+          throw new Error(errorMessage);
+        }
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to submit claim request. Please try again or contact support.');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to submit claim request. Please try again or contact support.';
+      toast.error(errorMessage);
+      console.error('Claim account error:', error);
+      console.error('Request body was:', requestBody);
+      console.error('Form data was:', formData);
     } finally {
       setIsSubmitting(false);
     }
@@ -111,10 +193,10 @@ const ClaimAccount: React.FC<ClaimAccountProps> = ({ onBackToSignup }) => {
         {/* Claim Form */}
         <div className="bg-white rounded-lg shadow-lg p-6">
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Provider Name */}
+            {/* Provider Name - Optional, for reference */}
             <div>
               <label htmlFor="provider_name" className="block text-sm font-medium text-gray-700 mb-2">
-                Provider Name *
+                Provider Name (Optional)
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -123,13 +205,13 @@ const ClaimAccount: React.FC<ClaimAccountProps> = ({ onBackToSignup }) => {
                 <input
                   id="provider_name"
                   type="text"
-                  required
                   value={formData.provider_name}
                   onChange={(e) => handleInputChange('provider_name', e.target.value)}
                   className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent box-border"
-                  placeholder="Enter your provider organization name"
+                  placeholder="Enter your provider organization name (optional)"
                 />
               </div>
+              <p className="text-xs text-gray-500 mt-1">We'll find your provider account using your email address</p>
             </div>
 
             {/* Contact Email */}
