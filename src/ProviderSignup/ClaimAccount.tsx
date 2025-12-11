@@ -55,7 +55,8 @@ const ClaimAccount: React.FC<ClaimAccountProps> = ({ onBackToSignup }) => {
       
       if (response.ok) {
         const data = await response.json();
-        const successMessage = data.message || 'Account created successfully! Check your email for login credentials.';
+        // New flow: claim requests require admin approval
+        const successMessage = data.message || 'Claim request submitted successfully! Your request is pending admin approval. You will receive an email once it has been reviewed.';
         toast.success(successMessage);
         
         // Reset form
