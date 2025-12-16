@@ -351,11 +351,13 @@ const UserProviderLinking: React.FC = () => {
       } else {
         // Enhanced error logging for 422 errors
         if (response.status === 422) {
-          const errorText = await response.text();
           try {
+            const errorText = await response.text();
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const errorJson = JSON.parse(errorText);
+            // Error text parsed for potential future debugging/logging
           } catch (e) {
+            // Ignore parse errors
           }
         }
         return [];
@@ -712,11 +714,13 @@ const UserProviderLinking: React.FC = () => {
           } else {
             // Enhanced error logging for 422 errors
             if (individualResponse.status === 422) {
-              const errorText = await individualResponse.text();
               try {
+                const errorText = await individualResponse.text();
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 const errorJson = JSON.parse(errorText);
+                // Error text parsed for potential future debugging/logging
               } catch (e) {
+                // Ignore parse errors
               }
             }
             failedEmails.push(email);

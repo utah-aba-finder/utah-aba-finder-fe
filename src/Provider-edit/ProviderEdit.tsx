@@ -46,7 +46,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
     const tab = searchParams.get('tab');
     return tab || "dashboard";
   });
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [isSavingBeforeTabSwitch, setIsSavingBeforeTabSwitch] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false); // Disabled - session management improved, no longer needed
   const [sessionTimeLeft, setSessionTimeLeft] = useState<number | null>(null);

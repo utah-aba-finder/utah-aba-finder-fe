@@ -242,7 +242,8 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
     const loadCategoryFields = async () => {
       // Use fullProviderData if available, otherwise fall back to provider
       const providerToUse = fullProviderData || currentProvider;
-      const isEducationalPrograms = providerToUse.attributes.category === 'educational_programs' || editedProvider?.category === 'educational_programs';
+      const editedProviderCategory = editedProvider?.category;
+      const isEducationalPrograms = providerToUse.attributes.category === 'educational_programs' || editedProviderCategory === 'educational_programs';
       
       // Always try to load if it's Educational Programs (similar to ProviderEdit)
       // We fetch the category definition and merge with provider_attributes if they exist
@@ -350,7 +351,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
     currentProvider.id, 
     currentProvider.attributes.category, 
     currentProvider.attributes.provider_attributes, 
-    editedProvider?.category
+    editedProvider
   ]);
 
   useEffect(() => {
