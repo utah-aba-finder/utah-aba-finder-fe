@@ -820,7 +820,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
     }
   };
 
-  const handleSaveChanges = async () => {
+  const handleSaveChanges = useCallback(async () => {
     try {
       setIsSaving(true);
       
@@ -1076,7 +1076,26 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
     } finally {
       setIsSaving(false);
     }
-  };
+  }, [
+    currentProvider,
+    editedProvider,
+    commonFields,
+    selectedProviderTypes,
+    selectedInsurances,
+    selectedCounties,
+    providerState,
+    categoryFields,
+    extractUserId,
+    loggedInProvider,
+    currentUser,
+    onUpdate,
+    setProviderState,
+    setSelectedInsurances,
+    setSelectedCounties,
+    setSelectedProviderTypes,
+    setCurrentProvider,
+    refreshProviderData
+  ]);
 
   // Handle tab switching with auto-save and data refresh
   const handleTabSwitch = useCallback(async (newTab: string) => {
