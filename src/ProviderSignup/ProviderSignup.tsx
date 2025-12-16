@@ -51,7 +51,7 @@ interface CategoryField {
   id: number;
   name: string;
   slug: string; // Added slug for future-proofing
-  field_type: 'select' | 'multi_select' | 'boolean' | 'text';
+  field_type: 'select' | 'multi_select' | 'boolean' | 'text' | 'textarea' | 'text_area';
   required: boolean;
   options?: {
     choices?: string[];
@@ -1307,68 +1307,85 @@ const ProviderSignup: React.FC = () => {
             />
           )}
           
-          {/* Fallback: Render any unhandled fields as text inputs */}
-          {!(
-            // Age field handled
-            (field.slug === 'age_groups' || field.slug === 'age_groups_served' || 
-             field.name.toLowerCase().includes('age group') || field.name.toLowerCase().includes('age range') ||
-             field.name.toLowerCase().includes('age served') || field.name.toLowerCase().includes('ages served') ||
-             field.slug.toLowerCase().includes('age_group') || field.slug.toLowerCase().includes('age_range') ||
-             field.slug.toLowerCase().includes('age_served') || field.slug.toLowerCase().includes('ages_served')) ||
-            // Language field handled
-            (field.slug === 'languages' || field.name.toLowerCase().includes('language')) ||
-            // Select/multi_select with choices handled
-            ((field.field_type === 'select' || field.field_type === 'multi_select') && field.options && field.options.choices) ||
-            // Boolean handled
-            field.field_type === 'boolean' ||
-            // Text handled
-            field.field_type === 'text'
-          ) && (
-            <div>
-              {field.field_type === 'multi_select' ? (
-                <textarea
-                  value={Array.isArray(formData.submitted_data[categorySlug]?.[field.slug]) 
-                    ? (formData.submitted_data[categorySlug]?.[field.slug] as string[]).join(', ')
-                    : (formData.submitted_data[categorySlug]?.[field.slug] || '')}
-                  onChange={(e) => {
-                    // Store as string while typing to allow spaces and normal text input
-                    // Only convert to array when needed (on blur or submit)
-                    const value = e.target.value;
-                    handleInputChange(`submitted_data.${field.slug}`, value, categorySlug);
-                  }}
-                  onBlur={(e) => {
-                    // Convert to array on blur if comma-separated values exist
-                    const value = e.target.value;
-                    if (value.includes(',')) {
-                      const values = value.split(',').map(v => v.trim()).filter(v => v.length > 0);
-                      if (values.length > 0) {
-                        handleInputChange(`submitted_data.${field.slug}`, values, categorySlug);
-                      }
-                    }
-                  }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder={field.help_text || `Enter ${field.name.toLowerCase()} (comma-separated for multiple values)`}
-                  required={field.required}
-                  rows={3}
-                />
-              ) : (
-                <input
-                  type="text"
-                  value={
-                    Array.isArray(formData.submitted_data[categorySlug]?.[field.slug])
+          {field.field_type === 'textarea' || field.field_type === 'text_area' ? (
+            <textarea
+              value={
+                Array.isArray(formData.submitted_data[categorySlug]?.[field.slug])
+                  ? (formData.submitted_data[categorySlug]?.[field.slug] as string[]).join(', ')
+                  : (formData.submitted_data[categorySlug]?.[field.slug] || '')
+              }
+              onChange={(e) => {
+                handleInputChange(`submitted_data.${field.slug}`, e.target.value, categorySlug);
+              }}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder={field.help_text || `Enter ${field.name.toLowerCase()}...`}
+              required={field.required}
+              rows={4}
+            />
+          ) : (
+            // Fallback: Render any unhandled fields as text inputs
+            !(
+              // Age field handled
+              (field.slug === 'age_groups' || field.slug === 'age_groups_served' || 
+               field.name.toLowerCase().includes('age group') || field.name.toLowerCase().includes('age range') ||
+               field.name.toLowerCase().includes('age served') || field.name.toLowerCase().includes('ages served') ||
+               field.slug.toLowerCase().includes('age_group') || field.slug.toLowerCase().includes('age_range') ||
+               field.slug.toLowerCase().includes('age_served') || field.slug.toLowerCase().includes('ages_served')) ||
+              // Language field handled
+              (field.slug === 'languages' || field.name.toLowerCase().includes('language')) ||
+              // Select/multi_select with choices handled
+              ((field.field_type === 'select' || field.field_type === 'multi_select') && field.options && field.options.choices) ||
+              // Boolean handled
+              field.field_type === 'boolean' ||
+              // Text handled
+              field.field_type === 'text'
+            ) && (
+              <div>
+                {field.field_type === 'multi_select' ? (
+                  <textarea
+                    value={Array.isArray(formData.submitted_data[categorySlug]?.[field.slug]) 
                       ? (formData.submitted_data[categorySlug]?.[field.slug] as string[]).join(', ')
-                      : (formData.submitted_data[categorySlug]?.[field.slug] || '')
-                  }
-                  onChange={(e) => {
-                    // Store the raw value directly - preserve all spaces
-                    handleInputChange(`submitted_data.${field.slug}`, e.target.value, categorySlug);
-                  }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder={field.help_text || `Enter ${field.name.toLowerCase()}`}
-                  required={field.required}
-                />
-              )}
-            </div>
+                      : (formData.submitted_data[categorySlug]?.[field.slug] || '')}
+                    onChange={(e) => {
+                      // Store as string while typing to allow spaces and normal text input
+                      // Only convert to array when needed (on blur or submit)
+                      const value = e.target.value;
+                      handleInputChange(`submitted_data.${field.slug}`, value, categorySlug);
+                    }}
+                    onBlur={(e) => {
+                      // Convert to array on blur if comma-separated values exist
+                      const value = e.target.value;
+                      if (value.includes(',')) {
+                        const values = value.split(',').map(v => v.trim()).filter(v => v.length > 0);
+                        if (values.length > 0) {
+                          handleInputChange(`submitted_data.${field.slug}`, values, categorySlug);
+                        }
+                      }
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder={field.help_text || `Enter ${field.name.toLowerCase()} (comma-separated for multiple values)`}
+                    required={field.required}
+                    rows={3}
+                  />
+                ) : (
+                  <input
+                    type="text"
+                    value={
+                      Array.isArray(formData.submitted_data[categorySlug]?.[field.slug])
+                        ? (formData.submitted_data[categorySlug]?.[field.slug] as string[]).join(', ')
+                        : (formData.submitted_data[categorySlug]?.[field.slug] || '')
+                    }
+                    onChange={(e) => {
+                      // Store the raw value directly - preserve all spaces
+                      handleInputChange(`submitted_data.${field.slug}`, e.target.value, categorySlug);
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder={field.help_text || `Enter ${field.name.toLowerCase()}`}
+                    required={field.required}
+                  />
+                )}
+              </div>
+            )
           )}
           
           {field.help_text && field.field_type !== 'boolean' && (

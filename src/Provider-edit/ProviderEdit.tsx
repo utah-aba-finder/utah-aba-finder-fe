@@ -46,6 +46,8 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
     const tab = searchParams.get('tab');
     return tab || "dashboard";
   });
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [isSavingBeforeTabSwitch, setIsSavingBeforeTabSwitch] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false); // Disabled - session management improved, no longer needed
   const [sessionTimeLeft, setSessionTimeLeft] = useState<number | null>(null);
   
@@ -830,7 +832,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
         // Basic fields only - remove complex nested objects temporarily
         name: editedProvider?.name || '',
         email: editedProvider?.email || '',
-        website: editedProvider?.website || '',
+        website: commonFields.website || editedProvider?.website || '',
         logo: currentLogo || null,
         provider_type: selectedProviderTypes.map(type => ({ name: type.name })), // Send objects with name property as per API docs
         insurance: selectedInsurances.map(ins => ins.name || ins), // Send just names
@@ -839,16 +841,32 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
         // Add some fields that might be required by the backend
         status: editedProvider?.status || 'approved',
         in_home_only: editedProvider?.in_home_only || false,
+        // Common fields that should be saved for all provider types
+        contact_phone: commonFields.contact_phone || null,
+        waitlist_status: commonFields.waitlist_status || null,
+        additional_notes: commonFields.additional_notes || null,
+        service_areas: commonFields.service_areas && commonFields.service_areas.length > 0 ? commonFields.service_areas : null,
         // Category fields for Educational Programs
         ...(currentProvider?.attributes?.category === 'educational_programs' && categoryFields && categoryFields.length > 0 && {
           // Backend expects field names (e.g., "Program Types") not slugs (e.g., "program_types")
           provider_attributes: categoryFields.reduce((acc, field) => {
-            // Only include fields that have values
-            if (field.value !== null && field.value !== undefined && field.value !== '') {
-              if (Array.isArray(field.value) && field.value.length > 0) {
-                // Backend will handle array values by joining with commas
+            // Include all fields, even if empty (to allow clearing fields)
+            // But skip if value is explicitly null or undefined
+            if (field.value !== null && field.value !== undefined) {
+              if (Array.isArray(field.value)) {
+                // For multi_select fields, backend expects array or comma-separated string
+                // Based on API structure, it seems to accept arrays
+                if (field.value.length > 0) {
+                  acc[field.name] = field.value;
+                }
+              } else if (typeof field.value === 'string') {
+                // Include strings (even empty ones for text/textarea fields to allow clearing)
                 acc[field.name] = field.value;
-              } else if (!Array.isArray(field.value)) {
+              } else if (typeof field.value === 'boolean') {
+                // Convert boolean to string "true" or "false" as per API structure
+                acc[field.name] = field.value ? 'true' : 'false';
+              } else if (typeof field.value === 'number') {
+                // Include numbers
                 acc[field.name] = field.value;
               }
             }
@@ -1061,6 +1079,73 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
     }
   };
 
+  // Handle tab switching with auto-save and data refresh
+  const handleTabSwitch = useCallback(async (newTab: string) => {
+    // Don't do anything if already saving or if switching to the same tab
+    if (isSavingBeforeTabSwitch || newTab === selectedTab) {
+      return;
+    }
+    
+    // Check if we have unsaved changes (check categoryFields and editedProvider)
+    const hasChanges = 
+      (categoryFields && categoryFields.length > 0) ? 
+        categoryFields.some((field: any) => {
+          // Get the original value from provider_attributes if available
+          const providerAttributes = currentProvider?.attributes?.provider_attributes || {};
+          const originalValue = providerAttributes[field.name] || providerAttributes[field.slug];
+          const newValue = field.value;
+          
+          // If original value doesn't exist, check if new value is non-empty
+          if (originalValue === undefined || originalValue === null) {
+            // New field with value is a change
+            return newValue !== null && newValue !== undefined && newValue !== '';
+          }
+          
+          // Normalize values for comparison (handle arrays, strings, booleans)
+          let normalizedOriginal = originalValue;
+          let normalizedNew = newValue;
+          
+          // Handle multi_select arrays
+          if (Array.isArray(normalizedOriginal) && Array.isArray(normalizedNew)) {
+            return JSON.stringify(normalizedOriginal.sort()) !== JSON.stringify(normalizedNew.sort());
+          }
+          
+          // Compare values
+          return JSON.stringify(normalizedNew) !== JSON.stringify(normalizedOriginal);
+        }) : false;
+    
+    if (hasChanges) {
+      setIsSavingBeforeTabSwitch(true);
+      try {
+        // Save changes silently before switching tabs
+        const saved = await handleSaveChanges();
+        if (saved) {
+          // Refresh data from backend to ensure we have the latest after save
+          await refreshProviderData();
+        }
+      } catch (error) {
+        // If save fails, still allow tab switch but show a warning
+        console.error('Failed to save before tab switch:', error);
+        toast.warning('Some changes may not have been saved');
+      } finally {
+        setIsSavingBeforeTabSwitch(false);
+      }
+    } else {
+      // Even if no changes, refresh data when switching tabs to ensure we have latest from backend
+      // This helps with the issue where data shows on some tabs but not others
+      try {
+        await refreshProviderData();
+      } catch (error) {
+        // Silent fail - refreshing data is nice to have but not critical
+        console.error('Failed to refresh data on tab switch:', error);
+      }
+    }
+    
+    // Switch to the new tab
+    setSelectedTab(newTab);
+    setSearchParams({});
+  }, [categoryFields, currentProvider, selectedTab, isSavingBeforeTabSwitch, handleSaveChanges, refreshProviderData, setSearchParams]);
+
   // Check if we have a valid provider to work with
   const hasValidProvider = currentProvider && currentProvider.id && Number(currentProvider.id) > 0;
   
@@ -1241,10 +1326,8 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
         {/* Navigation Menu */}
         <nav className="flex-1 overflow-y-auto flex flex-col justify-start gap-2 py-4 px-4">
           <button
-            onClick={() => {
-              setSelectedTab("dashboard");
-              setSearchParams({});
-            }}
+            onClick={() => handleTabSwitch("dashboard")}
+            disabled={isSavingBeforeTabSwitch}
             className={`
               flex items-center justify-center gap-2 px-3 py-2 rounded-lg
               transition-colors duration-200
@@ -1253,6 +1336,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                   ? "bg-[#4A6FA5] text-white"
                   : "text-gray-700 hover:bg-gray-100"
               }
+              ${isSavingBeforeTabSwitch ? "opacity-50 cursor-not-allowed" : ""}
             `}
           >
             <BarChart className="w-4 h-4" />
@@ -1260,10 +1344,8 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
           </button>
 
           <button
-            onClick={() => {
-              setSelectedTab("edit");
-              setSearchParams({});
-            }}
+            onClick={() => handleTabSwitch("edit")}
+            disabled={isSavingBeforeTabSwitch}
             className={`
               flex items-center justify-center gap-2 px-3 py-2 rounded-lg
               transition-colors duration-200
@@ -1272,6 +1354,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                   ? "bg-[#4A6FA5] text-white"
                   : "text-gray-700 hover:bg-gray-100"
               }
+              ${isSavingBeforeTabSwitch ? "opacity-50 cursor-not-allowed" : ""}
             `}
           >
             <Building2 className="w-4 h-4" />
@@ -1279,10 +1362,8 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
           </button>
 
           <button
-            onClick={() => {
-              setSelectedTab("details");
-              setSearchParams({});
-            }}
+            onClick={() => handleTabSwitch("details")}
+            disabled={isSavingBeforeTabSwitch}
             className={`
               flex items-center justify-center gap-2 px-3 py-2 rounded-lg
               transition-colors duration-200
@@ -1291,6 +1372,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                   ? "bg-[#4A6FA5] text-white"
                   : "text-gray-700 hover:bg-gray-100"
               }
+              ${isSavingBeforeTabSwitch ? "opacity-50 cursor-not-allowed" : ""}
             `}
           >
             <Building2 className="w-4 h-4" />
@@ -1298,10 +1380,8 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
           </button>
 
           <button
-            onClick={() => {
-              setSelectedTab("provider-types");
-              setSearchParams({});
-            }}
+            onClick={() => handleTabSwitch("provider-types")}
+            disabled={isSavingBeforeTabSwitch}
             className={`
               flex items-center justify-center gap-2 px-3 py-2 rounded-lg
               transition-colors duration-200
@@ -1310,6 +1390,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                   ? "bg-[#4A6FA5] text-white"
                   : "text-gray-700 hover:bg-gray-100"
               }
+              ${isSavingBeforeTabSwitch ? "opacity-50 cursor-not-allowed" : ""}
             `}
           >
             <Tag className="w-4 h-4" />
@@ -1317,10 +1398,8 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
           </button>
 
           <button
-            onClick={() => {
-              setSelectedTab("common-fields");
-              setSearchParams({});
-            }}
+            onClick={() => handleTabSwitch("common-fields")}
+            disabled={isSavingBeforeTabSwitch}
             className={`
               flex items-center justify-center gap-2 px-3 py-2 rounded-lg
               transition-colors duration-200
@@ -1329,6 +1408,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                   ? "bg-[#4A6FA5] text-white"
                   : "text-gray-700 hover:bg-gray-100"
               }
+              ${isSavingBeforeTabSwitch ? "opacity-50 cursor-not-allowed" : ""}
             `}
           >
             <DollarSign className="w-4 h-4" />
@@ -1336,10 +1416,8 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
           </button>
 
           <button
-            onClick={() => {
-              setSelectedTab("coverage");
-              setSearchParams({});
-            }}
+            onClick={() => handleTabSwitch("coverage")}
+            disabled={isSavingBeforeTabSwitch}
             className={`
               flex items-center justify-center gap-2 px-3 py-2 rounded-lg
               transition-colors duration-200
@@ -1348,6 +1426,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                   ? "bg-[#4A6FA5] text-white"
                   : "text-gray-700 hover:bg-gray-100"
               }
+              ${isSavingBeforeTabSwitch ? "opacity-50 cursor-not-allowed" : ""}
             `}
           >
             <MapPin className="w-4 h-4" />
@@ -1355,10 +1434,8 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
           </button>
 
           <button
-            onClick={() => {
-              setSelectedTab("locations");
-              setSearchParams({});
-            }}
+            onClick={() => handleTabSwitch("locations")}
+            disabled={isSavingBeforeTabSwitch}
             className={`
               flex items-center justify-center gap-2 px-3 py-2 rounded-lg
               transition-colors duration-200
@@ -1367,6 +1444,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                   ? "bg-[#4A6FA5] text-white"
                   : "text-gray-700 hover:bg-gray-100"
               }
+              ${isSavingBeforeTabSwitch ? "opacity-50 cursor-not-allowed" : ""}
             `}
           >
             <Building2 className="w-4 h-4" />
@@ -1374,10 +1452,8 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
           </button>
 
           <button
-            onClick={() => {
-              setSelectedTab("insurance");
-              setSearchParams({});
-            }}
+            onClick={() => handleTabSwitch("insurance")}
+            disabled={isSavingBeforeTabSwitch}
             className={`
               flex items-center justify-center gap-2 px-3 py-2 rounded-lg
               transition-colors duration-200
@@ -1386,6 +1462,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                   ? "bg-[#4A6FA5] text-white"
                   : "text-gray-700 hover:bg-gray-100"
               }
+              ${isSavingBeforeTabSwitch ? "opacity-50 cursor-not-allowed" : ""}
             `}
           >
             <DollarSign className="w-4 h-4" />
@@ -1393,10 +1470,8 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
           </button>
 
               <button
-                onClick={() => {
-                  setSelectedTab("sponsorship");
-                  setSearchParams({ tab: 'sponsorship' });
-                }}
+                onClick={() => handleTabSwitch("sponsorship")}
+                disabled={isSavingBeforeTabSwitch}
                 className={`
                   flex items-center justify-center gap-2 px-3 py-2 rounded-lg
                   transition-colors duration-200
@@ -1405,6 +1480,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                       ? "bg-[#4A6FA5] text-white"
                       : "text-gray-700 hover:bg-gray-100"
                   }
+                  ${isSavingBeforeTabSwitch ? "opacity-50 cursor-not-allowed" : ""}
                 `}
               >
                 <Crown className="w-4 h-4" />
@@ -1412,10 +1488,8 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
               </button>
 
               <button
-                onClick={() => {
-                  setSelectedTab("account");
-                  setSearchParams({ tab: 'account' });
-                }}
+                onClick={() => handleTabSwitch("account")}
+                disabled={isSavingBeforeTabSwitch}
                 className={`
                   flex items-center justify-center gap-2 px-3 py-2 rounded-lg
                   transition-colors duration-200
@@ -1424,6 +1498,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                       ? "bg-[#4A6FA5] text-white"
                       : "text-gray-700 hover:bg-gray-100"
                   }
+                  ${isSavingBeforeTabSwitch ? "opacity-50 cursor-not-allowed" : ""}
                 `}
               >
                 <User className="w-4 h-4" />
@@ -1818,10 +1893,11 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                     {/* Category Fields Section for Educational Programs */}
                     {currentProvider?.attributes?.category === 'educational_programs' && categoryFields && categoryFields.length > 0 && (
                       <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Program Details</h3>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Program Information & Details</h3>
+                        <p className="text-sm text-gray-600 mb-4">Please fill out all program details to help families find the right educational program for their needs.</p>
                         <div className="space-y-4">
                           {categoryFields
-                            .sort((a, b) => (a.id || 0) - (b.id || 0))
+                            .sort((a, b) => (a.display_order || a.id || 0) - (b.display_order || b.id || 0))
                             .map((field, fieldIndex) => (
                               <div key={field.id || field.slug || fieldIndex} className="border-b border-gray-200 pb-4 last:border-b-0">
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1881,7 +1957,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                                   </label>
                                 )}
                                 
-                                {(field.field_type === 'text' || field.field_type === 'select') && (
+                                {(field.field_type === 'text' || field.field_type === 'select' || field.field_type === 'textarea' || field.field_type === 'text_area') && (
                                   <div>
                                     {field.field_type === 'select' && field.options && field.options.length > 0 ? (
                                       <select
@@ -1898,6 +1974,18 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                                           <option key={option} value={option}>{option}</option>
                                         ))}
                                       </select>
+                                    ) : (field.field_type === 'textarea' || field.field_type === 'text_area' || field.name?.toLowerCase().includes('information') || field.name?.toLowerCase().includes('description') || field.name?.toLowerCase().includes('notes')) ? (
+                                      <textarea
+                                        value={typeof field.value === 'string' ? field.value : ''}
+                                        onChange={(e) => {
+                                          const updatedFields = [...categoryFields];
+                                          updatedFields[fieldIndex].value = e.target.value;
+                                          setCategoryFields(updatedFields);
+                                        }}
+                                        rows={4}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        placeholder={field.help_text || `Enter ${field.name}...`}
+                                      />
                                     ) : (
                                       <input
                                         type="text"

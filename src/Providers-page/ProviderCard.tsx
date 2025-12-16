@@ -185,16 +185,23 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
                 let ageGroupsValue: string[] | null = null;
                 let deliveryFormatValue: string[] | null = null;
                 let parentCaregiverSupportValue: boolean | null = null;
+                let additionalInformationValue: string | null = null;
                 
                 if (categoryFields && categoryFields.length > 0) {
                   const programTypes = categoryFields.find((f: any) => f.slug === 'program_types');
                   const ageGroups = categoryFields.find((f: any) => f.slug === 'age_groups');
                   const deliveryFormat = categoryFields.find((f: any) => f.slug === 'delivery_format');
                   const parentCaregiverSupport = categoryFields.find((f: any) => f.slug === 'parent_caregiver_support');
+                  const additionalInformation = categoryFields.find((f: any) => f.slug === 'additional_information' || f.name === 'Additional Information');
                   
                   programTypesValue = programTypes?.value && Array.isArray(programTypes.value) ? programTypes.value : null;
                   ageGroupsValue = ageGroups?.value && Array.isArray(ageGroups.value) ? ageGroups.value : null;
                   deliveryFormatValue = deliveryFormat?.value && Array.isArray(deliveryFormat.value) ? deliveryFormat.value : null;
+                  
+                  // Get Additional Information as string
+                  if (additionalInformation?.value && typeof additionalInformation.value === 'string' && additionalInformation.value.trim().length > 0) {
+                    additionalInformationValue = additionalInformation.value;
+                  }
                   
                   // Convert parentCaregiverSupport value to boolean, handling strings and numbers
                   if (parentCaregiverSupport?.value !== undefined && parentCaregiverSupport.value !== null) {
@@ -226,6 +233,14 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
                     return Array.isArray(value) && value.length > 0 ? value : null;
                   };
                   
+                  const getStringValue = (fieldName: string, slug: string) => {
+                    let value = providerAttributes[fieldName];
+                    if (value === undefined) {
+                      value = providerAttributes[slug];
+                    }
+                    return typeof value === 'string' && value.trim().length > 0 ? value : null;
+                  };
+                  
                   const getBooleanValue = (fieldName: string, slug: string) => {
                     let value = providerAttributes[fieldName];
                     if (value === undefined) {
@@ -247,9 +262,10 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
                   ageGroupsValue = getValue('Age Groups', 'age_groups');
                   deliveryFormatValue = getValue('Delivery Format', 'delivery_format');
                   parentCaregiverSupportValue = getBooleanValue('Parent/Caregiver Support', 'parent_caregiver_support');
+                  additionalInformationValue = getStringValue('Additional Information', 'additional_information');
                 }
                 
-                if (providerCategory === 'educational_programs' && (programTypesValue || ageGroupsValue || deliveryFormatValue || parentCaregiverSupportValue !== null)) {
+                if (providerCategory === 'educational_programs' && (programTypesValue || ageGroupsValue || deliveryFormatValue || parentCaregiverSupportValue !== null || additionalInformationValue)) {
                   const previewItems = [];
                   if (programTypesValue && programTypesValue.length > 0) {
                     previewItems.push(`Programs: ${programTypesValue.slice(0, 2).join(', ')}${programTypesValue.length > 2 ? '...' : ''}`);
@@ -262,6 +278,13 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
                   }
                   if (parentCaregiverSupportValue !== null) {
                     previewItems.push(`Parent/Caregiver Support: ${parentCaregiverSupportValue ? "Yes" : "No"}`);
+                  }
+                  if (additionalInformationValue) {
+                    // Truncate Additional Information to first 100 characters for preview
+                    const truncated = additionalInformationValue.length > 100 
+                      ? additionalInformationValue.substring(0, 100) + '...' 
+                      : additionalInformationValue;
+                    previewItems.push(`Additional Info: ${truncated}`);
                   }
                   
                   if (previewItems.length > 0) {
