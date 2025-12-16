@@ -51,16 +51,22 @@ const ProviderClaimRequests: React.FC = () => {
   // Fetch claim requests
   const fetchClaimRequests = useCallback(async () => {
     if (!currentUser?.id) {
+      console.error('Cannot fetch claim requests: No current user');
+      toast.error('You must be logged in to view claim requests');
       return;
     }
     
     setIsLoading(true);
     try {
+      const authHeader = getSuperAdminAuthHeader();
+      console.log('Fetching claim requests with auth header:', authHeader ? 'Bearer [REDACTED]' : 'MISSING');
+      console.log('Current user ID:', currentUser.id);
+      
       const response = await fetch(
         'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/provider_claim_requests',
         {
           headers: {
-            'Authorization': getSuperAdminAuthHeader(),
+            'Authorization': authHeader,
             'Content-Type': 'application/json'
           }
         }
@@ -73,10 +79,27 @@ const ProviderClaimRequests: React.FC = () => {
         setClaimRequests(requests);
       } else {
         const errorText = await response.text();
-        throw new Error(`HTTP error: ${response.status} - ${errorText}`);
+        console.error('Failed to fetch claim requests:', {
+          status: response.status,
+          statusText: response.statusText,
+          error: errorText,
+          authHeader: authHeader ? 'Bearer [REDACTED]' : 'MISSING',
+          userId: currentUser.id
+        });
+        
+        if (response.status === 401) {
+          toast.error('Authentication failed. Please log out and log back in.');
+        } else {
+          throw new Error(`HTTP error: ${response.status} - ${errorText}`);
+        }
       }
     } catch (error: any) {
-      toast.error(`Failed to fetch claim requests: ${error.message || 'Unknown error'}`);
+      console.error('Error fetching claim requests:', error);
+      if (error.message?.includes('Super admin authentication failed')) {
+        toast.error('Authentication failed. Please log out and log back in.');
+      } else {
+        toast.error(`Failed to fetch claim requests: ${error.message || 'Unknown error'}`);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -100,12 +123,13 @@ const ProviderClaimRequests: React.FC = () => {
     setProcessingId(requestId);
     
     try {
+      const authHeader = getSuperAdminAuthHeader();
       const response = await fetch(
         `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/provider_claim_requests/${requestId}/approve`,
         {
           method: 'POST',
           headers: {
-            'Authorization': getSuperAdminAuthHeader(),
+            'Authorization': authHeader,
             'Content-Type': 'application/json'
           }
         }
@@ -121,10 +145,27 @@ const ProviderClaimRequests: React.FC = () => {
         }
       } else {
         const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
-        toast.error(errorData.message || errorData.error || 'Failed to approve claim request');
+        console.error('Failed to approve claim request:', {
+          status: response.status,
+          statusText: response.statusText,
+          error: errorData,
+          requestId,
+          userId: currentUser.id
+        });
+        
+        if (response.status === 401) {
+          toast.error('Authentication failed. Please log out and log back in.');
+        } else {
+          toast.error(errorData.message || errorData.error || 'Failed to approve claim request');
+        }
       }
     } catch (error: any) {
-      toast.error(`Failed to approve claim request: ${error.message || 'Unknown error'}`);
+      console.error('Error approving claim request:', error);
+      if (error.message?.includes('Super admin authentication failed')) {
+        toast.error('Authentication failed. Please log out and log back in.');
+      } else {
+        toast.error(`Failed to approve claim request: ${error.message || 'Unknown error'}`);
+      }
     } finally {
       setProcessingId(null);
     }
@@ -144,12 +185,13 @@ const ProviderClaimRequests: React.FC = () => {
     setResendingEmailId(requestId);
     
     try {
+      const authHeader = getSuperAdminAuthHeader();
       const response = await fetch(
         `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/provider_claim_requests/${requestId}/resend_email`,
         {
           method: 'POST',
           headers: {
-            'Authorization': getSuperAdminAuthHeader(),
+            'Authorization': authHeader,
             'Content-Type': 'application/json'
           }
         }
@@ -160,10 +202,27 @@ const ProviderClaimRequests: React.FC = () => {
         toast.success(data.message || 'Email resent successfully');
       } else {
         const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
-        toast.error(errorData.message || errorData.error || 'Failed to resend email');
+        console.error('Failed to resend email:', {
+          status: response.status,
+          statusText: response.statusText,
+          error: errorData,
+          requestId,
+          userId: currentUser.id
+        });
+        
+        if (response.status === 401) {
+          toast.error('Authentication failed. Please log out and log back in.');
+        } else {
+          toast.error(errorData.message || errorData.error || 'Failed to resend email');
+        }
       }
     } catch (error: any) {
-      toast.error(`Failed to resend email: ${error.message || 'Unknown error'}`);
+      console.error('Error resending email:', error);
+      if (error.message?.includes('Super admin authentication failed')) {
+        toast.error('Authentication failed. Please log out and log back in.');
+      } else {
+        toast.error(`Failed to resend email: ${error.message || 'Unknown error'}`);
+      }
     } finally {
       setResendingEmailId(null);
     }
@@ -183,12 +242,13 @@ const ProviderClaimRequests: React.FC = () => {
     setProcessingId(requestId);
     
     try {
+      const authHeader = getSuperAdminAuthHeader();
       const response = await fetch(
         `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/admin/provider_claim_requests/${requestId}/reject`,
         {
           method: 'POST',
           headers: {
-            'Authorization': getSuperAdminAuthHeader(),
+            'Authorization': authHeader,
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
@@ -208,10 +268,27 @@ const ProviderClaimRequests: React.FC = () => {
         }
       } else {
         const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
-        toast.error(errorData.message || errorData.error || 'Failed to reject claim request');
+        console.error('Failed to reject claim request:', {
+          status: response.status,
+          statusText: response.statusText,
+          error: errorData,
+          requestId,
+          userId: currentUser.id
+        });
+        
+        if (response.status === 401) {
+          toast.error('Authentication failed. Please log out and log back in.');
+        } else {
+          toast.error(errorData.message || errorData.error || 'Failed to reject claim request');
+        }
       }
     } catch (error: any) {
-      toast.error(`Failed to reject claim request: ${error.message || 'Unknown error'}`);
+      console.error('Error rejecting claim request:', error);
+      if (error.message?.includes('Super admin authentication failed')) {
+        toast.error('Authentication failed. Please log out and log back in.');
+      } else {
+        toast.error(`Failed to reject claim request: ${error.message || 'Unknown error'}`);
+      }
     } finally {
       setProcessingId(null);
     }

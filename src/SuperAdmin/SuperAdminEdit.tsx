@@ -242,7 +242,8 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
     const loadCategoryFields = async () => {
       // Use fullProviderData if available, otherwise fall back to provider
       const providerToUse = fullProviderData || currentProvider;
-      const isEducationalPrograms = providerToUse.attributes.category === 'educational_programs' || editedProvider?.category === 'educational_programs';
+      const editedProviderCategory = editedProvider?.category;
+      const isEducationalPrograms = providerToUse.attributes.category === 'educational_programs' || editedProviderCategory === 'educational_programs';
       
       // Always try to load if it's Educational Programs (similar to ProviderEdit)
       // We fetch the category definition and merge with provider_attributes if they exist
@@ -350,7 +351,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
     currentProvider.id, 
     currentProvider.attributes.category, 
     currentProvider.attributes.provider_attributes, 
-    editedProvider?.category
+    editedProvider
   ]);
 
   useEffect(() => {
@@ -1437,7 +1438,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                                 </label>
                               )}
                               
-                              {(field.field_type === 'text' || field.field_type === 'select') && (
+                              {(field.field_type === 'text' || field.field_type === 'select' || field.field_type === 'textarea' || field.field_type === 'text_area') && (
                                 <div>
                                   {field.field_type === 'select' && field.options && field.options.length > 0 ? (
                                     <select
@@ -1454,6 +1455,18 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                                         <option key={option} value={option}>{option}</option>
                                       ))}
                                     </select>
+                                  ) : (field.field_type === 'textarea' || field.field_type === 'text_area' || field.name?.toLowerCase().includes('information') || field.name?.toLowerCase().includes('description') || field.name?.toLowerCase().includes('notes')) ? (
+                                    <textarea
+                                      value={typeof field.value === 'string' ? field.value : ''}
+                                      onChange={(e) => {
+                                        const updatedFields = [...categoryFields];
+                                        updatedFields[fieldIndex].value = e.target.value;
+                                        setCategoryFields(updatedFields);
+                                      }}
+                                      rows={4}
+                                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                      placeholder={field.help_text || `Enter ${field.name}...`}
+                                    />
                                   ) : (
                                     <input
                                       type="text"

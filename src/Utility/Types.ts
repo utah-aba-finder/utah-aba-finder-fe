@@ -53,7 +53,7 @@ export interface ServiceDelivery {
 export interface CategoryField {
     id: number;
     name: string;
-    field_type: 'select' | 'multi_select' | 'boolean' | 'text' | 'number' | 'date';
+    field_type: 'select' | 'multi_select' | 'boolean' | 'text' | 'number' | 'date' | 'textarea' | 'text_area';
     options?: string[]; // For select/multi_select fields
     required?: boolean;
     validation_rules?: Record<string, any>;
@@ -71,7 +71,7 @@ export interface CategoryFieldValue {
     id: number;
     name: string;
     slug: string;
-    field_type: 'select' | 'multi_select' | 'boolean' | 'text';
+    field_type: 'select' | 'multi_select' | 'boolean' | 'text' | 'textarea' | 'text_area';
     value: string | string[] | boolean | null;
 }
 
