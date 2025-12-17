@@ -629,7 +629,12 @@ const SuperAdmin = () => {
                             Admin User
                           </div>
                           <div className="text-xs text-gray-500">
-                            {loggedInProvider?.email || 'admin@example.com'}
+                            {/* Show first name if available, otherwise show email */}
+                            {(() => {
+                              const firstName = currentUser?.first_name || loggedInProvider?.first_name || loggedInProvider?.attributes?.first_name;
+                              const email = currentUser?.email || loggedInProvider?.email || loggedInProvider?.attributes?.email;
+                              return firstName || email || 'User';
+                            })()}
                           </div>
                         </div>
                         
