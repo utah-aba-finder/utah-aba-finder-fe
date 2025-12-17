@@ -31,6 +31,7 @@ interface SearchBarProps {
   onReset: () => void;
   providers: ProviderAttributes[];
   onProviderTypeChange: (providerType: string) => void;
+  onStateChange?: (stateId: string) => void;
   totalProviders: number;
   showSearchNotification?: boolean;
 }
@@ -49,6 +50,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
   providers = [],
   totalProviders,
   onProviderTypeChange,
+  onStateChange,
   showSearchNotification = false
 }) => {
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -123,17 +125,28 @@ const SearchBar: React.FC<SearchBarProps> = ({
     const getCounties = async () => {
       if (selectedStateId !== 'none') {
         try {
-  
           const countiesData = await fetchCountiesByState(parseInt(selectedStateId));
-          
           setCounties(countiesData || []);
-          // Only reset county if state changes and not during initial load
-          if (selectedCounty !== '') {
-            setSelectedCounty('');
-            onCountyChange('');
+          // Reset county selection when state changes (counties list changed)
+          setSelectedCounty('');
+          onCountyChange('');
+        } catch (err: any) {
+          // 401 is expected for public users - counties endpoint requires auth
+          // We can't reliably extract counties from provider data because:
+          // 1. Providers may serve multiple states
+          // 2. County.state field is often missing
+          // 3. We can't verify which state a county belongs to without the API
+          // So we'll set an empty array - county filtering won't be available for public users
+          if (err?.message && !err.message.includes('401') && !err.message.includes('Unauthorized')) {
+            console.error('Failed to load counties:', err);
           }
-        } catch (err) {
-  
+          
+          // Set empty array - county filtering requires authentication
+          setCounties([]);
+          
+          // Reset county selection when state changes and counties couldn't be loaded
+          setSelectedCounty('');
+          onCountyChange('');
         }
       } else {
         setCounties([]);
@@ -143,7 +156,8 @@ const SearchBar: React.FC<SearchBarProps> = ({
     };
 
     getCounties();
-  }, [selectedStateId, selectedCounty, onCountyChange]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedStateId]); // Only depend on selectedStateId, not onCountyChange
 
   useEffect(() => {
     if (showNotification) {
@@ -245,6 +259,10 @@ const SearchBar: React.FC<SearchBarProps> = ({
               onChange={(e) => {
                 const stateId = e.target.value;
                 setSelectedStateId(stateId);
+                // Notify parent component of state change
+                if (onStateChange) {
+                  onStateChange(stateId);
+                }
                 if (stateId !== 'none') {
                   const state = providerStates.find(s => s.id.toString() === stateId);
                   setSelectedState(state?.attributes.abbreviation || 'none');

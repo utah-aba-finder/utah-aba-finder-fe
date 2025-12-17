@@ -1,13 +1,13 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import './ProviderModal.css';
 import GoogleMap from './GoogleMap';
-import { MapPin, Phone, Globe, Mail, Briefcase, Home, Building, Monitor } from 'lucide-react'
-import { useEffect, useState } from 'react';
+import { MapPin, Phone, Globe, Mail, Briefcase, Home, Building, Monitor } from 'lucide-react';
 import moment from 'moment';
 import GoogleReviewsSection from './GoogleReviewsSection';
 import ProviderLogo from '../Utility/ProviderLogo';
 import { getApiBaseUrl } from '../Utility/config';
 import { ProviderAttributes, CategoryField } from '../Utility/Types';
+import { fetchStates, fetchCountiesByState } from '../Utility/ApiCall';
 
 // Category field with value (merged definition + value from provider_attributes)
 interface CategoryFieldWithValue extends CategoryField {
@@ -53,7 +53,65 @@ const ProviderModal: React.FC<ProviderModalProps> = ({
   const [categoryFields, setCategoryFields] = useState<CategoryFieldWithValue[] | null>(
     null
   );
+  const [availableStates, setAvailableStates] = useState<any[]>([]);
+  const [countiesForSelectedState, setCountiesForSelectedState] = useState<CountyData[]>([]);
   // Debug: Check logo data
+
+  // Fetch states to convert state ID to state name
+  useEffect(() => {
+    const loadStates = async () => {
+      try {
+        const statesData = await fetchStates();
+        setAvailableStates(statesData || []);
+      } catch (error) {
+        // Silently fail - we'll just show all counties if we can't convert ID to name
+        console.error('Failed to load states for county filtering:', error);
+      }
+    };
+    loadStates();
+  }, []);
+
+  // Fetch counties for the selected state to enable filtering by county_id
+  // Note: This may fail with 401 if user is not authenticated - that's okay, we'll fall back to state name matching
+  useEffect(() => {
+    const loadCountiesForState = async () => {
+      if (selectedState && selectedState !== 'none' && selectedState !== '' && selectedState.trim() !== '') {
+        // Check if selectedState is a numeric ID
+        if (/^\d+$/.test(selectedState)) {
+          try {
+            const stateId = parseInt(selectedState);
+            const counties = await fetchCountiesByState(stateId);
+            setCountiesForSelectedState(counties || []);
+          } catch (error: any) {
+            // Log all errors for debugging - 401 may no longer be expected if backend fixed auth
+            console.error('Failed to load counties for selected state in modal:', error);
+            setCountiesForSelectedState([]);
+          }
+        } else {
+          // If it's a state name, find the ID first
+          if (availableStates.length > 0) {
+            const matchingState = availableStates.find(s => 
+              s.attributes?.name?.toUpperCase() === selectedState.trim().toUpperCase() ||
+              s.attributes?.abbreviation?.toUpperCase() === selectedState.trim().toUpperCase()
+            );
+            if (matchingState) {
+              try {
+                const counties = await fetchCountiesByState(matchingState.id);
+                setCountiesForSelectedState(counties || []);
+              } catch (error: any) {
+                // Log all errors for debugging - 401 may no longer be expected if backend fixed auth
+                console.error('Failed to load counties for selected state in modal:', error);
+                setCountiesForSelectedState([]);
+              }
+            }
+          }
+        }
+      } else {
+        setCountiesForSelectedState([]);
+      }
+    };
+    loadCountiesForState();
+  }, [selectedState, availableStates]);
 
   // Reset categoryFields when provider changes - handled in loadCategoryFields
 
@@ -443,24 +501,73 @@ const ProviderModal: React.FC<ProviderModalProps> = ({
                   // Filter counties based on selected state
                   // If a state is selected, only show counties from that state
                   // If no state is selected, show all counties from all states
-                  let relevantCounties = provider.attributes.counties_served;
+                  let relevantCounties = provider.attributes.counties_served || [];
                   
-                  if (selectedState && selectedState !== 'none' && selectedState.trim() !== '') {
-                    // Filter counties by the selected state
-                    relevantCounties = provider.attributes.counties_served.filter(county => {
-                      // Check if county has a state field that matches the selected state
-                      if (county.state) {
-                        return county.state.trim().toUpperCase() === selectedState.trim().toUpperCase();
+                  // Only filter if we have a valid selected state
+                  // First check if the provider even serves the selected state
+                  if (selectedState && selectedState !== 'none' && selectedState !== '' && selectedState.trim() !== '') {
+                    // Get the state name from the selected state ID
+                    let selectedStateName: string | null = null;
+                    
+                    if (/^\d+$/.test(selectedState)) {
+                      // It's a state ID - convert to state name
+                      const stateId = parseInt(selectedState);
+                      if (availableStates.length > 0) {
+                        const matchingState = availableStates.find(s => s.id === stateId);
+                        if (matchingState) {
+                          selectedStateName = matchingState.attributes?.name;
+                        }
+                      } else {
+                        // States not loaded yet - can't convert ID to name, so skip filtering for now
+                        // This will be re-evaluated when states load
                       }
-                      // If county doesn't have state field, try to match using availableCounties
-                      const matchingCounty = availableCounties.find(ac => 
-                        ac.attributes.name === county.county_name &&
-                        ac.attributes.state?.trim().toUpperCase() === selectedState.trim().toUpperCase()
-                      );
-                      return matchingCounty !== undefined;
-                    });
+                    } else {
+                      // It's already a state name
+                      selectedStateName = selectedState.trim();
+                      // Normalize it if we have states loaded
+                      if (availableStates.length > 0) {
+                        const matchingState = availableStates.find(s => 
+                          s.attributes?.name?.toUpperCase() === selectedState.trim().toUpperCase() ||
+                          s.attributes?.abbreviation?.toUpperCase() === selectedState.trim().toUpperCase()
+                        );
+                        if (matchingState) {
+                          selectedStateName = matchingState.attributes?.name;
+                        }
+                      }
+                    }
+                    
+                    // Only proceed with filtering if we have a valid state name
+                    // (or if states aren't loaded yet, we'll skip filtering and show all counties)
+                    if (selectedStateName) {
+                      // Filter counties by matching county_id using countiesForSelectedState
+                      // We don't need to check if provider serves the state in their states array,
+                      // because they might serve counties in that state even if it's not listed
+                      if (countiesForSelectedState.length > 0) {
+                        // Normalize ALL ids to numbers to avoid string/number mismatches
+                        const selectedStateCountyIds = new Set(
+                          countiesForSelectedState.map(c => Number(c.id))
+                        );
+                        
+                        // Filter counties by matching county_id - only include counties that match the selected state
+                        relevantCounties = relevantCounties.filter(county => {
+                          const id = county.county_id;
+                          if (id == null) return false;
+                          const normalizedId = Number(id);
+                          return selectedStateCountyIds.has(normalizedId);
+                        });
+                      } else {
+                        // Fallback: if counties aren't loaded yet, try matching by state name in county.state field
+                        const matchStateNameUpper = selectedStateName.toUpperCase();
+                        const filteredByState = relevantCounties.filter(county => {
+                          const countyStateUpper = county.state?.trim().toUpperCase();
+                          return countyStateUpper === matchStateNameUpper;
+                        });
+                        
+                        // Use filtered counties if we found matches, otherwise show nothing (can't reliably filter)
+                        relevantCounties = filteredByState.length > 0 ? filteredByState : [];
+                      }
+                    }
                   }
-                  // If no state selected, show all counties (already set above)
 
                   if (provider.attributes.provider_type.length > 0 && provider.attributes.provider_type[0].name === "ABA Therapy") {
                     if (relevantCounties.length === 1 && relevantCounties[0].county_name === "Contact Us") {
