@@ -914,10 +914,10 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       // Essential debugging for provider_type issue
       
       // Get the proper user ID for authorization using the existing helper
-      const userId = extractUserId();
+      const authUserId = extractUserId();
 
-      if (!userId) {
-        throw new Error('No user ID available for authorization');
+      if (!authUserId) {
+        throw new Error('No user ID available for authorization. Please log out and log back in.');
       }
 
       // Use loggedInProvider ID as the primary source, fallback to currentProvider ID
@@ -932,27 +932,32 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
         throw new Error(`Invalid provider ID: ${providerId}`);
       }
 
-      // Verify currentUser exists before proceeding
-      if (!currentUser?.id) {
-        throw new Error('No current user ID available for provider verification');
-      }
-
-      // Verify the provider exists before attempting update
+      // Verify the provider exists and user has access before attempting update
       try {
         const verifyResponse = await fetch(
           `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${providerId}`,
           {
             headers: {
-              'Authorization': `Bearer ${currentUser.id.toString()}`,
+              'Authorization': `Bearer ${authUserId}`,
             },
           }
         );
         
         if (!verifyResponse.ok) {
-          if (verifyResponse.status === 404) {
+          if (verifyResponse.status === 401) {
+            const errorText = await verifyResponse.text();
+            console.error('401 Unauthorized when verifying provider access:', {
+              userId: authUserId,
+              providerId: providerId,
+              currentUser: currentUser,
+              errorText: errorText
+            });
+            throw new Error(`Unauthorized: You may not have permission to access this provider. Please ensure you are assigned to provider ID ${providerId}. Error: ${errorText}`);
+          } else if (verifyResponse.status === 404) {
             throw new Error(`Provider ID ${providerId} does not exist in the database`);
           } else {
-            throw new Error(`Failed to verify provider: ${verifyResponse.status} ${verifyResponse.statusText}`);
+            const errorText = await verifyResponse.text();
+            throw new Error(`Failed to verify provider: ${verifyResponse.status} ${verifyResponse.statusText}. ${errorText}`);
           }
         }
         
@@ -998,13 +1003,14 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       }
       */
 
+      // Use the authUserId we already extracted above
       const response = await fetch(
         apiEndpoint,
         {
           method: "PATCH", // Use PATCH method as specified in API documentation
           headers: {
             "Content-Type": "application/json",
-            'Authorization': `Bearer ${currentUser.id.toString()}`, // Use user ID with Bearer prefix for backend authentication
+            'Authorization': `Bearer ${authUserId}`, // Use extracted user ID with Bearer prefix for backend authentication
           },
           body: JSON.stringify(requestBody),
         }
@@ -1012,6 +1018,19 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       
       if (!response.ok) {
         const errorText = await response.text();
+        
+        // Provide more helpful error messages for 401 errors
+        if (response.status === 401) {
+          console.error('401 Unauthorized Error Details:', {
+            userId: authUserId,
+            providerId: providerId,
+            currentUser: currentUser,
+            loggedInProvider: loggedInProvider?.id,
+            errorText: errorText
+          });
+          throw new Error(`Unauthorized: You may not have permission to edit this provider. Please ensure you are assigned to this provider account. Error: ${errorText}`);
+        }
+        
         throw new Error(`HTTP ${response.status}: ${errorText}`);
       }
 
