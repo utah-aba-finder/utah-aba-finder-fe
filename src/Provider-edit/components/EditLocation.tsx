@@ -4,6 +4,7 @@ import { Building2, DollarSign, Clock, Stethoscope, Languages, Mail, Globe } fro
 import moment from "moment";
 import { ProviderData, ProviderAttributes, Insurance, CountiesServed, Location } from "../../Utility/Types";
 import { fetchStates, fetchCountiesByState } from "../../Utility/ApiCall";
+import { useAuth } from "../../Provider-login/AuthProvider";
 
 interface EditLocationProps {
   provider: ProviderData;
@@ -11,6 +12,7 @@ interface EditLocationProps {
 }
 
 const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
+  const { currentUser } = useAuth();
   
   const [formData, setFormData] = useState<ProviderAttributes>(
     provider.attributes
@@ -88,20 +90,44 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
 
       
 
-                const response = await fetch(
-            `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${provider.id}`,
-            {
-              method: "PATCH",
-              headers: {
-                "Content-Type": "application/json",
-                'Authorization': provider.id.toString(),
-              },
-              body: JSON.stringify(requestBody),
-            }
-          );
+      // Get user ID for authorization
+      const userId = currentUser?.id?.toString();
+      if (!userId) {
+        throw new Error('No user ID available for authorization. Please log out and log back in.');
+      }
+
+      const response = await fetch(
+        `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${provider.id}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            'Authorization': `Bearer ${userId}`,
+          },
+          body: JSON.stringify(requestBody),
+        }
+      );
 
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorText = await response.text();
+        
+        // Provide better error messages for 401 errors
+        if (response.status === 401) {
+          console.error('401 Unauthorized in EditLocation:', {
+            userId: userId,
+            providerId: provider.id,
+            currentUser: currentUser,
+            errorText: errorText
+          });
+          throw new Error(`Unauthorized: You may not have permission to edit this provider. Please ensure you are assigned to this provider account. Error: ${errorText}`);
+        }
+        
+        let errorData;
+        try {
+          errorData = JSON.parse(errorText);
+        } catch {
+          errorData = { message: errorText };
+        }
 
         throw new Error(errorData.message || `HTTP ${response.status}: Failed to update provider`);
       }
