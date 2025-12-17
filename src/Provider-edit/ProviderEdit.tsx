@@ -588,6 +588,10 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       setSelectedInsurances(normalizedInsurance);
       setSelectedLogoFile(null);
       
+      // Update categoryFields if provider_attributes were refreshed (for Educational Programs)
+      // This will trigger the useEffect that loads category fields, which will merge with the refreshed provider_attributes
+      // The useEffect at line 382 will handle updating categoryFields with the new provider_attributes
+      
       toast.success('Provider data refreshed successfully');
     } catch (error) {
       toast.error('Failed to refresh provider data');
@@ -1094,14 +1098,34 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
             }
           } : null);
         }
+        
+        // Update categoryFields immediately with saved provider_attributes from response
+        // This ensures the UI shows the saved values right away, before refreshProviderData runs
+        if (responseData.data?.attributes?.provider_attributes && categoryFields && categoryFields.length > 0) {
+          const savedProviderAttributes = responseData.data.attributes.provider_attributes;
+          const updatedCategoryFields = categoryFields.map(field => {
+            // Get the saved value from provider_attributes (backend uses field name)
+            const savedValue = savedProviderAttributes[field.name] || savedProviderAttributes[field.slug];
+            // Use saved value if available, otherwise keep current value
+            return {
+              ...field,
+              value: savedValue !== undefined ? savedValue : field.value
+            };
+          });
+          setCategoryFields(updatedCategoryFields);
+          console.log('Updated categoryFields after save with saved values:', updatedCategoryFields.map(f => ({ name: f.name, value: f.value })));
+        }
       }
       
       // Always refresh data from server to ensure we have the latest state
       // This is especially important for mobile where state might not update properly
+      // Note: refreshProviderData will update currentProvider.provider_attributes, which triggers
+      // the useEffect at line 461 to reload categoryFields with the latest values from the API
       try {
         await refreshProviderData();
       } catch (refreshError) {
         // Don't fail the save operation if refresh fails, but log it
+        console.error('Failed to refresh provider data after save:', refreshError);
       }
       
       // Show success toast only after everything is complete
