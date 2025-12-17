@@ -378,6 +378,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
     }
   }, [loggedInProvider, currentProvider]);
   
+  
   // Fetch category definition and merge with provider_attributes for Educational Programs
   useEffect(() => {
     const loadCategoryFields = async () => {
@@ -602,8 +603,8 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
         const states = await fetchStates();
         setAvailableStates(states);
 
-        // Get the provider's saved states
-        const savedStates = activeProvider?.states || loggedInProvider?.states || [];
+        // Get the provider's saved states - prioritize currentProvider as it's updated after saves
+        const savedStates = currentProvider?.states || activeProvider?.states || loggedInProvider?.states || [];
         setProviderState(savedStates);
 
         // If there are saved states, set the first one as active and fetch counties
@@ -627,7 +628,25 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
     };
 
     initializeStatesAndCounties();
-  }, [activeProvider?.states, loggedInProvider?.states]); // Update dependency to use correct path
+  }, [currentProvider?.states, activeProvider?.states, loggedInProvider?.states]); // Prioritize currentProvider as source of truth
+  
+  // Refresh provider data from server after initial load to ensure data is fresh
+  // This runs once when currentProvider is first set (e.g., after page refresh)
+  const hasRefreshedOnMountRef = useRef(false);
+  useEffect(() => {
+    if (currentProvider?.id && token && currentUser?.id && refreshProviderData && !hasRefreshedOnMountRef.current) {
+      hasRefreshedOnMountRef.current = true;
+      // Small delay to ensure all initialization is complete
+      const timer = setTimeout(() => {
+        refreshProviderData().catch(error => {
+          console.error('Failed to refresh provider data on mount:', error);
+          // Don't show error toast here - user might be offline or data might be fine from sessionStorage
+        });
+      }, 500);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [currentProvider?.id, token, currentUser?.id, refreshProviderData]);
 
   // Update provider data when loggedInProvider changes
   // useEffect(() => {
