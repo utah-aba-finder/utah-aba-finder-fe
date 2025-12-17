@@ -416,6 +416,9 @@ const ProvidersPage: React.FC = () => {
     try {
       const { stateId, providerType, query, county_name, insurance, spanish, service, waitlist, age, hasReviews } = searchParams;
       
+      // Store the selected state ID so it can be passed to ProviderModal
+      setSelectedStateId(stateId || '');
+      
       let results;
       try {
         results = await fetchProvidersByStateIdAndProviderType(stateId, providerType);
@@ -711,6 +714,10 @@ const ProvidersPage: React.FC = () => {
     setSelectedProviderType(type);
   };
 
+  const handleStateChange = (stateId: string) => {
+    setSelectedStateId(stateId === 'none' ? '' : stateId);
+  };
+
     // Removed automatic advanced filtering - users must click search button to see results
 
   const handleResults = (results: { data: ProviderData[] }) => {
@@ -975,6 +982,7 @@ const ProvidersPage: React.FC = () => {
             onAgeChange={handleAgeChange}
             onReviewsChange={handleReviewsChange}
             onProviderTypeChange={handleProviderTypeChange}
+            onStateChange={handleStateChange}
             onReset={handleResetSearch}
             showSearchNotification={showSearchNotification}
           />
@@ -1290,7 +1298,7 @@ const ProvidersPage: React.FC = () => {
             mapAddress={mapAddress}
             onClose={() => setSelectedProvider(null)}
             onViewOnMapClick={handleViewOnMapClick}
-            selectedState={selectedStateId}
+            selectedState={selectedStateId || null}
             availableCounties={[]} // Counties are no longer fetched here
           />
         )}
