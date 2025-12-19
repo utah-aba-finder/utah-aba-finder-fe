@@ -56,7 +56,7 @@ export function ProviderViewsWidget({ days = 30, providerId }: ProviderViewsWidg
     fetch(url, { 
       credentials: "include",
       headers: {
-        'Authorization': userId || '',
+        'Authorization': userId ? `Bearer ${userId}` : '',
         'Content-Type': 'application/json',
       },
     })
