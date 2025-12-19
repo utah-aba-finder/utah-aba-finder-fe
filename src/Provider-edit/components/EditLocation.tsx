@@ -140,7 +140,7 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
             method: "GET",
             headers: {
               "Content-Type": "application/json",
-              'Authorization': provider.id.toString(),
+              'Authorization': `Bearer ${userId}`,
             },
           }
         );

@@ -858,8 +858,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
         logo: currentLogo || null,
         provider_type: selectedProviderTypes.map(type => ({ name: type.name })), // Send objects with name property as per API docs
         insurance: selectedInsurances.map(ins => ins.name || ins), // Send just names
-        counties_served: selectedCounties.map(county => county.name || county), // Send just names
-        states: providerState || [],
+        counties_served: selectedCounties.map(county => county.name || county), // Send just names (states are computed from counties on backend)
         // Add some fields that might be required by the backend
         status: editedProvider?.status || 'approved',
         in_home_only: editedProvider?.in_home_only || false,
@@ -1145,7 +1144,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
     selectedProviderTypes,
     selectedInsurances,
     selectedCounties,
-    providerState,
     categoryFields,
     extractUserId,
     loggedInProvider,
