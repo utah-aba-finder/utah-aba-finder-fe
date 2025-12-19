@@ -16,6 +16,7 @@ import {
 import { fetchStates, fetchCountiesByState, fetchPracticeTypes, PracticeType } from "../../Utility/ApiCall";
 import { Building2, MapPin, Phone, X } from 'lucide-react';
 import { getAdminAuthHeader } from "../../Utility/config";
+import { useAuth } from "../../Provider-login/AuthProvider";
 
 interface CreateLocationProps {
   provider: ProviderData;
@@ -28,6 +29,7 @@ const CreateLocation: React.FC<CreateLocationProps> = ({
   onLocationCreated,
   setSelectedTab,
 }) => {
+  const { currentUser } = useAuth();
   const [newLocation, setNewLocation] = useState<Location>({
     id: null,
     name: '',
@@ -109,6 +111,11 @@ const CreateLocation: React.FC<CreateLocationProps> = ({
     try {
       const updatedLocations = [newLocation, ...provider.attributes.locations];
 
+      // Get user ID for authorization (not provider ID)
+      const userId = currentUser?.id?.toString();
+      if (!userId) {
+        throw new Error('No user ID available for authorization. Please log out and log back in.');
+      }
 
                 const response = await fetch(
             `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${provider.id}`,
@@ -116,7 +123,7 @@ const CreateLocation: React.FC<CreateLocationProps> = ({
               method: 'PATCH',
               headers: {
                 'Content-Type': 'application/json',
-                'Authorization': provider.id.toString()
+                'Authorization': `Bearer ${userId}`
               },
           body: JSON.stringify({
             data: {

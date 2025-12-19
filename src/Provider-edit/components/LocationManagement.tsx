@@ -25,7 +25,7 @@ const LocationManagement: React.FC<LocationManagementProps> = ({
   currentLocations,
   onLocationsUpdate
 }) => {
-  const { loggedInProvider } = useAuth();
+  const { currentUser } = useAuth();
   const [locations, setLocations] = useState<Location[]>(currentLocations || []);
   const [isLoading, setIsLoading] = useState(false);
   const [isAddingLocation, setIsAddingLocation] = useState(false);
@@ -71,8 +71,9 @@ const LocationManagement: React.FC<LocationManagementProps> = ({
   };
 
   const getAuthHeader = useCallback(() => {
-    return loggedInProvider?.id?.toString() || '';
-  }, [loggedInProvider?.id]);
+    // Use user ID for authorization, not provider ID
+    return currentUser?.id ? `Bearer ${currentUser.id.toString()}` : '';
+  }, [currentUser?.id]);
 
   // Fetch all locations for the provider
   const fetchLocations = useCallback(async () => {
