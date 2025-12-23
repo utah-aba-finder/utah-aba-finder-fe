@@ -11,6 +11,9 @@ import {
   Languages,
   X,
   Plus,
+  Star,
+  ChevronUp,
+  ChevronDown,
 } from "lucide-react";
 import moment from "moment";
 import InsuranceModal from "../Provider-edit/InsuranceModal";
@@ -610,6 +613,97 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
     const updatedServices = services.filter((_, i) => i !== index);
     setServices(updatedServices);
     setLocations(updatedLocations);
+  };
+
+  // Move location to top (set as primary)
+  const handleSetAsPrimary = (index: number) => {
+    if (index <= 0 || index >= locations.length) return;
+    
+    const reorderedLocations = [
+      locations[index],
+      ...locations.slice(0, index),
+      ...locations.slice(index + 1)
+    ];
+    
+    // Also reorder services array to match
+    const reorderedServices = [
+      services[index],
+      ...services.slice(0, index),
+      ...services.slice(index + 1)
+    ];
+    
+    setLocations(reorderedLocations);
+    setServices(reorderedServices);
+    
+    // Update editedProvider if it exists
+    if (editedProvider) {
+      const updatedEditedProvider = { ...editedProvider };
+      if (!updatedEditedProvider.locations) {
+        updatedEditedProvider.locations = [];
+      }
+      updatedEditedProvider.locations = reorderedLocations;
+      setEditedProvider(updatedEditedProvider);
+    }
+    
+    toast.success('Location set as primary (will appear first)');
+  };
+
+  // Move location up in the list
+  const handleMoveUp = (index: number) => {
+    if (index <= 0 || index >= locations.length) return;
+    
+    const reorderedLocations = [...locations];
+    [reorderedLocations[index - 1], reorderedLocations[index]] = 
+      [reorderedLocations[index], reorderedLocations[index - 1]];
+    
+    // Also reorder services array to match
+    const reorderedServices = [...services];
+    [reorderedServices[index - 1], reorderedServices[index]] = 
+      [reorderedServices[index], reorderedServices[index - 1]];
+    
+    setLocations(reorderedLocations);
+    setServices(reorderedServices);
+    
+    // Update editedProvider if it exists
+    if (editedProvider) {
+      const updatedEditedProvider = { ...editedProvider };
+      if (!updatedEditedProvider.locations) {
+        updatedEditedProvider.locations = [];
+      }
+      updatedEditedProvider.locations = reorderedLocations;
+      setEditedProvider(updatedEditedProvider);
+    }
+    
+    toast.info('Location order updated');
+  };
+
+  // Move location down in the list
+  const handleMoveDown = (index: number) => {
+    if (index < 0 || index >= locations.length - 1) return;
+    
+    const reorderedLocations = [...locations];
+    [reorderedLocations[index], reorderedLocations[index + 1]] = 
+      [reorderedLocations[index + 1], reorderedLocations[index]];
+    
+    // Also reorder services array to match
+    const reorderedServices = [...services];
+    [reorderedServices[index], reorderedServices[index + 1]] = 
+      [reorderedServices[index + 1], reorderedServices[index]];
+    
+    setLocations(reorderedLocations);
+    setServices(reorderedServices);
+    
+    // Update editedProvider if it exists
+    if (editedProvider) {
+      const updatedEditedProvider = { ...editedProvider };
+      if (!updatedEditedProvider.locations) {
+        updatedEditedProvider.locations = [];
+      }
+      updatedEditedProvider.locations = reorderedLocations;
+      setEditedProvider(updatedEditedProvider);
+    }
+    
+    toast.info('Location order updated');
   };
 
   const handleInsurancesChange = (insurances: Insurance[]) => {
@@ -1526,17 +1620,62 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                           <div className="p-2 bg-blue-100 rounded-lg">
                             <Building2 className="w-5 h-5 text-blue-600" />
                           </div>
-                          <h3 className="text-lg font-semibold text-gray-900">
-                            Location {index + 1} of {locations.length}
-                          </h3>
+                          <div className="flex items-center gap-2">
+                            {index === 0 && (
+                              <span title="Primary location">
+                                <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+                              </span>
+                            )}
+                            <h3 className="text-lg font-semibold text-gray-900">
+                              Location {index + 1} of {locations.length}
+                              {index === 0 && (
+                                <span className="ml-2 text-sm text-gray-500">(Primary)</span>
+                              )}
+                            </h3>
+                          </div>
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => removeLocation(index)}
-                          className="p-2 text-gray-400 hover:text-red-600 rounded-full hover:bg-gray-100"
-                        >
-                          <X className="w-5 h-5" />
-                        </button>
+                        <div className="flex items-center space-x-1">
+                          {/* Reorder buttons - only show if more than one location */}
+                          {locations.length > 1 && (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => handleSetAsPrimary(index)}
+                                disabled={index === 0}
+                                className="p-2 text-gray-400 hover:text-yellow-600 rounded-full hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed"
+                                title="Set as primary location (appears first)"
+                              >
+                                <Star className="w-5 h-5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleMoveUp(index)}
+                                disabled={index === 0}
+                                className="p-2 text-gray-400 hover:text-blue-600 rounded-full hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed"
+                                title="Move up"
+                              >
+                                <ChevronUp className="w-5 h-5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleMoveDown(index)}
+                                disabled={index === locations.length - 1}
+                                className="p-2 text-gray-400 hover:text-blue-600 rounded-full hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed"
+                                title="Move down"
+                              >
+                                <ChevronDown className="w-5 h-5" />
+                              </button>
+                            </>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => removeLocation(index)}
+                            className="p-2 text-gray-400 hover:text-red-600 rounded-full hover:bg-gray-100"
+                            title="Remove location"
+                          >
+                            <X className="w-5 h-5" />
+                          </button>
+                        </div>
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

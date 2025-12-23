@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { toast } from 'react-toastify';
 import { useAuth } from '../../Provider-login/AuthProvider';
-import { Plus, Edit, Trash2, MapPin, Phone, Building2, X, AlertCircle } from 'lucide-react';
+import { Plus, Edit, Trash2, MapPin, Phone, Building2, X, AlertCircle, ChevronUp, ChevronDown, Star } from 'lucide-react';
 import { Location, Service } from '../../Utility/Types';
 import { fetchPracticeTypes, PracticeType } from '../../Utility/ApiCall';
 
@@ -139,12 +139,10 @@ const LocationManagement: React.FC<LocationManagementProps> = ({
       }
 
       const data = await response.json();
-      const newLocation = data.location || data.data;
       
-      // Add to local state
-      const updatedLocations = [...locations, newLocation];
-      setLocations(updatedLocations);
-      onLocationsUpdate(updatedLocations);
+      // Refresh locations from server to ensure we have all locations
+      // This is important because the backend manages location order and we want the complete list
+      await fetchLocations();
       
       // Reset form and close modal
       setIsAddingLocation(false);
@@ -191,15 +189,9 @@ const LocationManagement: React.FC<LocationManagementProps> = ({
         throw new Error(`Failed to update location: ${response.status} - ${errorText}`);
       }
 
-      const data = await response.json();
-      const updatedLocation = data.location || data.data;
-      
-      // Update local state
-      const updatedLocations = locations.map(loc => 
-        loc.id === editingLocation.id ? updatedLocation : loc
-      );
-      setLocations(updatedLocations);
-      onLocationsUpdate(updatedLocations);
+      // Refresh locations from server to ensure we have the latest data
+      // This ensures we have all locations with complete data from the backend
+      await fetchLocations();
       
       // Reset form and close modal
       setEditingLocation(null);
@@ -216,6 +208,235 @@ const LocationManagement: React.FC<LocationManagementProps> = ({
       toast.success('Location updated successfully!');
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to update location');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Move location to top (set as primary)
+  const handleSetAsPrimary = async (locationId: number | null) => {
+    if (!locationId) return;
+    
+    const locationIndex = locations.findIndex(loc => loc.id === locationId);
+    if (locationIndex <= 0) return; // Already first or not found
+    
+    // Reorder locations: move selected location to index 0
+    // IMPORTANT: Include ALL locations to prevent deletion - backend uses destroy_all then recreates
+    const reorderedLocations = [
+      locations[locationIndex],
+      ...locations.slice(0, locationIndex),
+      ...locations.slice(locationIndex + 1)
+    ];
+    
+    // Verify we have all locations before sending
+    if (reorderedLocations.length !== locations.length) {
+      toast.error('Error: Location count mismatch. Cannot reorder.');
+      return;
+    }
+    
+    setLocations(reorderedLocations);
+    onLocationsUpdate(reorderedLocations);
+    
+    // Save the new order by updating the provider with ALL reordered locations
+    // Backend uses destroy_all then recreates - we must send ALL locations with complete data
+    try {
+      setIsLoading(true);
+      
+      // Map all locations with complete data (preserve all fields)
+      const locationsToSend = reorderedLocations.map(loc => ({
+        ...loc, // Preserve all existing fields
+        id: loc.id,
+        name: loc.name || null,
+        address_1: loc.address_1 || null,
+        address_2: loc.address_2 || null,
+        city: loc.city || null,
+        state: loc.state || null,
+        zip: loc.zip || null,
+        phone: loc.phone || null,
+        services: loc.services || [],
+        in_home_waitlist: loc.in_home_waitlist || null,
+        in_clinic_waitlist: loc.in_clinic_waitlist || null
+      }));
+      
+      console.log(`Sending ${locationsToSend.length} locations to backend (original count: ${locations.length})`);
+      
+      const response = await fetch(`${getApiBaseUrl()}/api/v1/provider_self`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': getAuthHeader(),
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          data: [{
+            id: providerId,
+            attributes: {
+              // Send ALL locations - backend destroys all then recreates these
+              locations: locationsToSend
+            }
+          }]
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to update location order: ${response.status}`);
+      }
+
+      toast.success('Location set as primary successfully!');
+    } catch (error) {
+      // Revert on error
+      setLocations(locations);
+      onLocationsUpdate(locations);
+      toast.error(error instanceof Error ? error.message : 'Failed to update location order');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Move location up in the list
+  const handleMoveUp = async (locationId: number | null) => {
+    if (!locationId) return;
+    
+    const locationIndex = locations.findIndex(loc => loc.id === locationId);
+    if (locationIndex <= 0) return; // Already first or not found
+    
+    // Swap with previous location
+    const reorderedLocations = [...locations];
+    [reorderedLocations[locationIndex - 1], reorderedLocations[locationIndex]] = 
+      [reorderedLocations[locationIndex], reorderedLocations[locationIndex - 1]];
+    
+    // Verify we have all locations before sending
+    if (reorderedLocations.length !== locations.length) {
+      toast.error('Error: Location count mismatch. Cannot reorder.');
+      return;
+    }
+    
+    setLocations(reorderedLocations);
+    onLocationsUpdate(reorderedLocations);
+    
+    // Save the new order - must send ALL locations (backend uses destroy_all then recreates)
+    try {
+      setIsLoading(true);
+      
+      // Map all locations with complete data (preserve all fields)
+      const locationsToSend = reorderedLocations.map(loc => ({
+        ...loc, // Preserve all existing fields
+        id: loc.id,
+        name: loc.name || null,
+        address_1: loc.address_1 || null,
+        address_2: loc.address_2 || null,
+        city: loc.city || null,
+        state: loc.state || null,
+        zip: loc.zip || null,
+        phone: loc.phone || null,
+        services: loc.services || [],
+        in_home_waitlist: loc.in_home_waitlist || null,
+        in_clinic_waitlist: loc.in_clinic_waitlist || null
+      }));
+      
+      console.log(`Sending ${locationsToSend.length} locations to backend (original count: ${locations.length})`);
+      
+      const response = await fetch(`${getApiBaseUrl()}/api/v1/provider_self`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': getAuthHeader(),
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          data: [{
+            id: providerId,
+            attributes: {
+              // Send ALL locations - backend destroys all then recreates these
+              locations: locationsToSend
+            }
+          }]
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to update location order: ${response.status}`);
+      }
+
+      toast.success('Location order updated!');
+    } catch (error) {
+      // Revert on error
+      setLocations(locations);
+      onLocationsUpdate(locations);
+      toast.error(error instanceof Error ? error.message : 'Failed to update location order');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Move location down in the list
+  const handleMoveDown = async (locationId: number | null) => {
+    if (!locationId) return;
+    
+    const locationIndex = locations.findIndex(loc => loc.id === locationId);
+    if (locationIndex < 0 || locationIndex >= locations.length - 1) return; // Already last or not found
+    
+    // Swap with next location
+    const reorderedLocations = [...locations];
+    [reorderedLocations[locationIndex], reorderedLocations[locationIndex + 1]] = 
+      [reorderedLocations[locationIndex + 1], reorderedLocations[locationIndex]];
+    
+    // Verify we have all locations before sending
+    if (reorderedLocations.length !== locations.length) {
+      toast.error('Error: Location count mismatch. Cannot reorder.');
+      return;
+    }
+    
+    setLocations(reorderedLocations);
+    onLocationsUpdate(reorderedLocations);
+    
+    // Save the new order - must send ALL locations (backend uses destroy_all then recreates)
+    try {
+      setIsLoading(true);
+      
+      // Map all locations with complete data (preserve all fields)
+      const locationsToSend = reorderedLocations.map(loc => ({
+        ...loc, // Preserve all existing fields
+        id: loc.id,
+        name: loc.name || null,
+        address_1: loc.address_1 || null,
+        address_2: loc.address_2 || null,
+        city: loc.city || null,
+        state: loc.state || null,
+        zip: loc.zip || null,
+        phone: loc.phone || null,
+        services: loc.services || [],
+        in_home_waitlist: loc.in_home_waitlist || null,
+        in_clinic_waitlist: loc.in_clinic_waitlist || null
+      }));
+      
+      console.log(`Sending ${locationsToSend.length} locations to backend (original count: ${locations.length})`);
+      
+      const response = await fetch(`${getApiBaseUrl()}/api/v1/provider_self`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': getAuthHeader(),
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          data: [{
+            id: providerId,
+            attributes: {
+              // Send ALL locations - backend destroys all then recreates these
+              locations: locationsToSend
+            }
+          }]
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to update location order: ${response.status}`);
+      }
+
+      toast.success('Location order updated!');
+    } catch (error) {
+      // Revert on error
+      setLocations(locations);
+      onLocationsUpdate(locations);
+      toast.error(error instanceof Error ? error.message : 'Failed to update location order');
     } finally {
       setIsLoading(false);
     }
@@ -240,10 +461,8 @@ const LocationManagement: React.FC<LocationManagementProps> = ({
         throw new Error(`Failed to delete location: ${response.status} - ${errorText}`);
       }
 
-      // Remove from local state
-      const updatedLocations = locations.filter(loc => loc.id !== deletingLocation.id);
-      setLocations(updatedLocations);
-      onLocationsUpdate(updatedLocations);
+      // Refresh locations from server to ensure we have the complete, up-to-date list
+      await fetchLocations();
       
       // Close modal
       setDeletingLocation(null);
@@ -377,21 +596,62 @@ const LocationManagement: React.FC<LocationManagementProps> = ({
             >
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1 min-w-0">
-                  <h4 className="text-sm font-semibold text-gray-900 truncate">
-                    {location.name || 'Unnamed Location'}
-                  </h4>
+                  <div className="flex items-center gap-2">
+                    {locations.findIndex(loc => loc.id === location.id) === 0 && (
+                      <span title="Primary location">
+                        <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+                      </span>
+                    )}
+                    <h4 className="text-sm font-semibold text-gray-900 truncate">
+                      {location.name || 'Unnamed Location'}
+                      {locations.findIndex(loc => loc.id === location.id) === 0 && (
+                        <span className="ml-2 text-xs text-gray-500">(Primary)</span>
+                      )}
+                    </h4>
+                  </div>
                 </div>
                 <div className="flex space-x-1 ml-2">
+                  {/* Reorder buttons - only show if more than one location */}
+                  {locations.length > 1 && (
+                    <>
+                      <button
+                        onClick={() => handleSetAsPrimary(location.id)}
+                        disabled={locations.findIndex(loc => loc.id === location.id) === 0 || isLoading}
+                        className="p-1.5 text-gray-400 hover:text-yellow-600 transition-colors rounded disabled:opacity-30 disabled:cursor-not-allowed"
+                        title="Set as primary location (appears first)"
+                      >
+                        <Star className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => handleMoveUp(location.id)}
+                        disabled={locations.findIndex(loc => loc.id === location.id) === 0 || isLoading}
+                        className="p-1.5 text-gray-400 hover:text-blue-600 transition-colors rounded disabled:opacity-30 disabled:cursor-not-allowed"
+                        title="Move up"
+                      >
+                        <ChevronUp className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => handleMoveDown(location.id)}
+                        disabled={locations.findIndex(loc => loc.id === location.id) === locations.length - 1 || isLoading}
+                        className="p-1.5 text-gray-400 hover:text-blue-600 transition-colors rounded disabled:opacity-30 disabled:cursor-not-allowed"
+                        title="Move down"
+                      >
+                        <ChevronDown className="h-4 w-4" />
+                      </button>
+                    </>
+                  )}
                   <button
                     onClick={() => openEditModal(location)}
-                    className="p-1.5 text-gray-400 hover:text-blue-600 transition-colors rounded"
+                    disabled={isLoading}
+                    className="p-1.5 text-gray-400 hover:text-blue-600 transition-colors rounded disabled:opacity-50"
                     title="Edit location"
                   >
                     <Edit className="h-4 w-4" />
                   </button>
                   <button
                     onClick={() => setDeletingLocation(location)}
-                    className="p-1.5 text-gray-400 hover:text-red-600 transition-colors rounded"
+                    disabled={isLoading}
+                    className="p-1.5 text-gray-400 hover:text-red-600 transition-colors rounded disabled:opacity-50"
                     title="Delete location"
                   >
                     <Trash2 className="h-4 w-4" />
