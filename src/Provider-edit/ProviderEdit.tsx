@@ -111,6 +111,10 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
 
   // Track the previous provider ID to detect actual switches
   const previousProviderId = useRef<number | null>(null);
+  
+  // Track optimistic primary_location_id (set when user clicks star, preserved until backend confirms)
+  const optimisticPrimaryLocationIdRef = useRef<number | null | undefined>(undefined);
+  const optimisticPrimaryLocationTimestampRef = useRef<number | null>(null); // Track when optimistic value was set
 
   // Add beforeunload event handler to warn about unsaved changes
   useEffect(() => {
@@ -486,11 +490,13 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
         return;
       }
       
+      // Use provider_self endpoint to match the PATCH endpoint and ensure primary_location_id is returned
       const response = await fetch(
-        `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${currentProvider?.id}`,
+        `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/provider_self`,
         {
           headers: {
             'Authorization': `Bearer ${currentUser?.id?.toString() || ''}`,
+            'Content-Type': 'application/json',
           },
         }
       );
@@ -502,6 +508,24 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
 
       const data = await response.json();
       const providerData = data.data?.[0] || {};
+      
+      // Backend should always return primary_location_id in attributes
+      // Log full response to debug
+      console.log('🔄 refreshProviderData - Full API response:', JSON.stringify(data, null, 2));
+      console.log('🔄 refreshProviderData - providerData:', providerData);
+      console.log('🔄 refreshProviderData - providerData.attributes:', providerData.attributes);
+      console.log('🔄 refreshProviderData - primary_location_id in attributes:', providerData.attributes?.primary_location_id);
+      console.log('🔄 refreshProviderData - primary_location_id at top level:', providerData.primary_location_id);
+      
+      // Check all possible locations for primary_location_id
+      const possiblePrimaryLocationId = 
+        providerData.attributes?.primary_location_id ||
+        providerData.primary_location_id ||
+        (data as any).primary_location_id ||
+        (data as any).attributes?.primary_location_id ||
+        null;
+      
+      console.log('🔄 refreshProviderData - Found primary_location_id:', possiblePrimaryLocationId);
       
       // Fetch insurance list to match insurance names to IDs
       let allInsurances: any[] = [];
@@ -574,8 +598,75 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
           category_name: providerData.attributes?.category_name || null,
           provider_attributes: providerData.attributes?.provider_attributes || null,
           category_fields: providerData.attributes?.category_fields || null
-        }
+        } as any // Cast to any to allow primary_location_id which may not be in type definition
       };
+      
+      // Ensure primary_location_id is included in attributes for LocationManagement component
+      // Check all possible locations in the response
+      const backendPrimaryLocationId = 
+        providerData.attributes?.primary_location_id !== undefined ? providerData.attributes?.primary_location_id :
+        providerData.primary_location_id !== undefined ? providerData.primary_location_id :
+        (data as any).primary_location_id !== undefined ? (data as any).primary_location_id :
+        (data as any).attributes?.primary_location_id !== undefined ? (data as any).attributes?.primary_location_id :
+        undefined; // Use undefined to indicate backend didn't provide the value
+      
+      // Special handling: If backend returns a different value than our optimistic value,
+      // preserve the optimistic value (backend may not have saved it correctly)
+      // Only use backend value if it matches our optimistic value OR we don't have an optimistic value
+      let extractedPrimaryLocationId: number | null;
+      
+      const optimisticValue = optimisticPrimaryLocationIdRef.current;
+      const hasOptimisticValue = optimisticValue !== undefined;
+      
+      // Log all the values separately so we can see them clearly
+      console.log('🔄 DEBUG Primary location logic check:');
+      console.log('  - optimisticValue (from ref):', optimisticValue);
+      console.log('  - hasOptimisticValue:', hasOptimisticValue);
+      console.log('  - backendPrimaryLocationId:', backendPrimaryLocationId);
+      console.log('  - backendPrimaryLocationId type:', typeof backendPrimaryLocationId);
+      console.log('  - optimisticValue type:', typeof optimisticValue);
+      console.log('  - Are they equal?', backendPrimaryLocationId === optimisticValue);
+      console.log('  - Are they different?', backendPrimaryLocationId !== optimisticValue);
+      console.log('  - Should preserve?', hasOptimisticValue && backendPrimaryLocationId !== undefined && backendPrimaryLocationId !== null && backendPrimaryLocationId !== optimisticValue);
+      
+      if (hasOptimisticValue && backendPrimaryLocationId !== undefined && backendPrimaryLocationId !== null && backendPrimaryLocationId !== optimisticValue) {
+        // Backend returned a different value than what we optimistically set - preserve optimistic value
+        // This handles cases where the backend didn't save the change correctly
+        // DO NOT clear the ref - keep it so we continue preserving the optimistic value
+        extractedPrimaryLocationId = optimisticValue ?? null;
+        console.log('🔄 Backend returned different value (', backendPrimaryLocationId, 'vs optimistic', optimisticValue, '), preserving optimistic value - NOT clearing ref');
+      } else if (backendPrimaryLocationId !== undefined && backendPrimaryLocationId !== null) {
+        // Backend returned a valid ID - check if it matches our optimistic value
+        if (hasOptimisticValue && backendPrimaryLocationId === optimisticValue) {
+          // Backend value matches our optimistic value - use it and clear the ref (success!)
+          extractedPrimaryLocationId = backendPrimaryLocationId;
+          optimisticPrimaryLocationIdRef.current = undefined;
+          optimisticPrimaryLocationTimestampRef.current = null;
+          console.log('🔄 Backend confirmed optimistic value (', backendPrimaryLocationId, '), clearing ref');
+        } else {
+          // Backend returned a valid ID but we don't have an optimistic value, or it's different
+          // If we have an optimistic value that's different, we should have caught it in the first condition
+          // This branch is for when we don't have an optimistic value
+          extractedPrimaryLocationId = backendPrimaryLocationId;
+          console.log('🔄 Using primary_location_id from backend (no optimistic value):', backendPrimaryLocationId);
+        }
+      } else if (hasOptimisticValue) {
+        // Backend returned null or undefined, but we have an optimistic value - preserve it
+        extractedPrimaryLocationId = optimisticValue ?? null;
+        console.log('🔄 Backend returned null/undefined, preserving optimistic value:', extractedPrimaryLocationId);
+      } else if (backendPrimaryLocationId === null) {
+        // Backend explicitly returned null and we don't have an optimistic value - use null
+        extractedPrimaryLocationId = null;
+        console.log('🔄 Using null from backend (no optimistic value)');
+      } else {
+        // Backend didn't return the field (undefined) - preserve existing value from currentProvider
+        extractedPrimaryLocationId = (currentProvider?.attributes as any)?.primary_location_id ?? null;
+        console.log('🔄 Backend did not return field, using existing value:', extractedPrimaryLocationId);
+      }
+      
+      (updatedProvider.attributes as any).primary_location_id = extractedPrimaryLocationId;
+      
+      console.log('🔄 refreshProviderData - Extracted and setting primary_location_id to:', extractedPrimaryLocationId);
       
       setCurrentProvider(updatedProvider);
       setEditedProvider({
@@ -2298,6 +2389,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                       key={currentProvider?.id}
                       providerId={currentProvider?.id || 0}
                       currentLocations={currentProvider?.attributes?.locations || []}
+                      primaryLocationId={(currentProvider?.attributes as any)?.primary_location_id || null}
                       onLocationsUpdate={(locations) => {
                         // Update the currentProvider with new locations
                         if (currentProvider) {
@@ -2310,6 +2402,31 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                           };
                           setCurrentProvider(updatedProvider);
                         }
+                      }}
+                      onPrimaryLocationChange={(newPrimaryLocationId) => {
+                        // Store optimistic value in ref (available immediately to refreshProviderData)
+                        if (newPrimaryLocationId !== undefined && newPrimaryLocationId !== null) {
+                          optimisticPrimaryLocationIdRef.current = newPrimaryLocationId;
+                          optimisticPrimaryLocationTimestampRef.current = Date.now();
+                          console.log('🔄 Stored optimistic primary_location_id in ref:', newPrimaryLocationId);
+                        }
+                        
+                        // Optimistically update currentProvider with new primary_location_id
+                        // This ensures UI reflects the change even if backend doesn't return it
+                        if (currentProvider && newPrimaryLocationId !== undefined && newPrimaryLocationId !== null) {
+                          const updatedProvider = {
+                            ...currentProvider,
+                            attributes: {
+                              ...currentProvider.attributes,
+                              primary_location_id: newPrimaryLocationId
+                            } as any
+                          };
+                          setCurrentProvider(updatedProvider);
+                          console.log('🔄 Optimistically updated primary_location_id in state to:', newPrimaryLocationId);
+                        }
+                        // Don't call refreshProviderData immediately - let the LocationManagement component
+                        // use the response data from the API call to update the UI
+                        // refreshProviderData will be called later if needed
                       }}
                     />
               )}

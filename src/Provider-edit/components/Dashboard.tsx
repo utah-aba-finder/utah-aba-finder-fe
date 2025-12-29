@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Building2, Globe, Mail, Home, MapPin } from "lucide-react";
+import { Building2, Globe, Mail, Home, MapPin, Star } from "lucide-react";
 import moment from "moment";
 import { ProviderData, Location, ProviderType, CountiesServed, CountyData } from "../../Utility/Types";
 import { useAuth } from "../../Provider-login/AuthProvider";
@@ -171,10 +171,21 @@ const Dashboard: React.FC<DashboardProps> = ({ provider, onUpdate }) => {
 
             {/* Table Content */}
             <div className="divide-y divide-gray-200">
-              {attributes.locations?.map(
+              {(() => {
+                // Sort locations so primary location appears first
+                const primaryLocationId = (attributes as any).primary_location_id;
+                const sortedLocations = [...(attributes.locations || [])].sort((a, b) => {
+                  // Primary location comes first
+                  if (primaryLocationId && a.id === primaryLocationId) return -1;
+                  if (primaryLocationId && b.id === primaryLocationId) return 1;
+                  // Keep original order for non-primary locations
+                  return 0;
+                });
+                return sortedLocations;
+              })().map(
                 (location: Location, index: number) => (
                   <div
-                    key={index}
+                    key={location.id || index}
                     className="grid grid-cols-1 md:grid-cols-6 gap-2 md:gap-4 px-3 sm:px-4 py-3 sm:py-4 hover:bg-gray-50 transition-colors duration-150 items-center"
                   >
                     {/* Mobile & Desktop Location Name */}
@@ -185,6 +196,17 @@ const Dashboard: React.FC<DashboardProps> = ({ provider, onUpdate }) => {
                       <span className="text-sm sm:text-base md:text-lg font-medium text-gray-900">
                         {location.name || `Location ${index + 1}`}
                       </span>
+                      {(() => {
+                        const primaryLocationId = (attributes as any).primary_location_id;
+                        if (primaryLocationId && location.id === primaryLocationId) {
+                          return (
+                            <span title="Primary location">
+                              <Star className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500 fill-yellow-500 flex-shrink-0" />
+                            </span>
+                          );
+                        }
+                        return null;
+                      })()}
                     </div>
 
                     {/* Desktop View */}
