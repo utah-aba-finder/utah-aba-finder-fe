@@ -236,7 +236,7 @@ const LocationManagement: React.FC<LocationManagementProps> = ({
     } finally {
       setIsLoading(false);
     }
-  }, [providerId, getAuthHeader, onLocationsUpdate, practiceTypes]);
+  }, [providerId, getAuthHeader, onLocationsUpdate, practiceTypes, primaryLocationId]);
 
   // Handle service change - work with practice type names (strings)
   const handleServiceChange = (service: Service) => {
