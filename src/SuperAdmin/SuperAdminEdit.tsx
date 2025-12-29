@@ -32,6 +32,19 @@ import { fetchStates, fetchCountiesByState, fetchPracticeTypes, PracticeType } f
 import { validateLogoFile, uploadProviderLogo } from "../Utility/ApiCall";
 import { getSuperAdminAuthHeader } from "../Utility/config";
 
+// Valid waitlist options for in_home_waitlist and in_clinic_waitlist
+const WAITLIST_OPTIONS = [
+  "No waitlist",
+  "1-2 weeks",
+  "2-4 weeks",
+  "1-3 months",
+  "3-6 months",
+  "6+ months",
+  "Not accepting new clients",
+  "Contact for availability",
+  "No in-home services available at this location"
+];
+
 interface SuperAdminEditProps {
   provider: ProviderData;
   onUpdate: (updatedProvider: ProviderAttributes) => void;
@@ -447,7 +460,7 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
   const handleLocationChange = (
     index: number,
     field: keyof ProviderLocation,
-    value: string | Service[] | boolean
+    value: string | Service[] | boolean | null
   ) => {
     const updatedLocations = [...locations];
     updatedLocations[index] = { ...updatedLocations[index], [field]: value };
@@ -1939,15 +1952,11 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                             className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                           >
                             <option value="">Select waitlist status...</option>
-                            <option value="No waitlist">No waitlist</option>
-                            <option value="This service isn't provided at this location">This service isn't provided at this location</option>
-                            <option value="1-2 weeks">1-2 weeks</option>
-                            <option value="2-4 weeks">2-4 weeks</option>
-                            <option value="1-3 months">1-3 months</option>
-                            <option value="3-6 months">3-6 months</option>
-                            <option value="6+ months">6+ months</option>
-                            <option value="Not accepting new clients">Not accepting new clients</option>
-                            <option value="Contact for availability">Contact for availability</option>
+                            {WAITLIST_OPTIONS.map((option) => (
+                              <option key={option} value={option}>
+                                {option}
+                              </option>
+                            ))}
                           </select>
                         </div>
 
@@ -1959,20 +1968,16 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                           <select
                             value={typeof location.in_clinic_waitlist === 'boolean' ? '' : String(location.in_clinic_waitlist || '')}
                             onChange={(e) =>
-                              handleLocationChange(index, "in_clinic_waitlist", e.target.value)
+                              handleLocationChange(index, "in_clinic_waitlist", e.target.value || null)
                             }
                             className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                           >
                             <option value="">Select waitlist status...</option>
-                            <option value="No waitlist">No waitlist</option>
-                            <option value="This service isn't provided at this location">This service isn't provided at this location</option>
-                            <option value="1-2 weeks">1-2 weeks</option>
-                            <option value="2-4 weeks">2-4 weeks</option>
-                            <option value="1-3 months">1-3 months</option>
-                            <option value="3-6 months">3-6 months</option>
-                            <option value="6+ months">6+ months</option>
-                            <option value="Not accepting new clients">Not accepting new clients</option>
-                            <option value="Contact for availability">Contact for availability</option>
+                            {WAITLIST_OPTIONS.filter(option => option !== "No in-home services available at this location").map((option) => (
+                              <option key={option} value={option}>
+                                {option}
+                              </option>
+                            ))}
                           </select>
                         </div>
                       </div>

@@ -8,6 +8,19 @@ import { fetchStates, fetchCountiesByState, fetchProviders, validateLogoFile, up
 import { getAdminAuthHeader, getSuperAdminAuthHeader } from "../Utility/config";
 import "react-toastify/dist/ReactToastify.css";
 
+// Valid waitlist options for in_home_waitlist and in_clinic_waitlist
+const WAITLIST_OPTIONS = [
+  "No waitlist",
+  "1-2 weeks",
+  "2-4 weeks",
+  "1-3 months",
+  "3-6 months",
+  "6+ months",
+  "Not accepting new clients",
+  "Contact for availability",
+  "No in-home services available at this location"
+];
+
 interface SuperAdminCreateProps {
   handleCloseForm: () => void;
   onProviderCreated: () => void;
@@ -36,8 +49,8 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
         zip: "",
         phone: "",
         services: [] as Service[],
-        in_clinic_waitlist: "",
-        in_home_waitlist: ""
+        in_clinic_waitlist: null as string | null,
+        in_home_waitlist: null as string | null
       },
     ],
     insurances: [] as string[],
@@ -1025,46 +1038,52 @@ const SuperAdminCreate: React.FC<SuperAdminCreateProps> = ({
               <div className="grid grid-cols-2 gap-4 mt-4">
                 <div>
                     <label className="block text-sm text-gray-600 mb-2">In-Clinic Waitlist</label>
-                    <select
-                        id={`location-in-home-waitlist-${index}`}
-                        value={location.in_clinic_waitlist}
+                    <p className="text-sm text-gray-500 mb-2">Select the current waitlist status for in-clinic services</p>
+                      <select
+                        id={`location-in-clinic-waitlist-${index}`}
+                        value={location.in_clinic_waitlist || ""}
                         onChange={(e) => {
-                          const value = e.target.value;
+                          const value = e.target.value || "";
                           const newLocations = [...formData.locations];
                           newLocations[index] = {
                             ...location,
-                            in_clinic_waitlist: value
+                            in_clinic_waitlist: value || null as string | null
                           };
                           setFormData((prev) => ({ ...prev, locations: newLocations }));
                         }}
-                        required
-                        className="w-[90%] px-3 py-2 rounded-lg border border-gray-300 hover:cursor-text focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm"
+                        className="w-[90%] px-3 py-2 rounded-lg border border-gray-300 hover:cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm"
                       >
-                        <option value="">Select...</option>
-                        <option value="true">Yes</option>
-                        <option value="false">No</option>
+                        <option value="">Select waitlist status...</option>
+                        {WAITLIST_OPTIONS.filter((option: string) => option !== "No in-home services available at this location").map((option: string) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
                       </select>
                 </div>
                 <div>
-                    <label className="block text-sm text-gray-600 mb-2">At-Home Waitlist</label>
+                    <label className="block text-sm text-gray-600 mb-2">In-Home Waitlist</label>
+                    <p className="text-sm text-gray-500 mb-2">Select the current waitlist status for in-home services</p>
                     <select
                         id={`location-in-home-waitlist-${index}`}
-                        value={location.in_home_waitlist}
+                        value={location.in_home_waitlist || ""}
                         onChange={(e) => {
-                          const value = e.target.value;
+                          const value = e.target.value || "";
                           const newLocations = [...formData.locations];
                           newLocations[index] = {
                             ...location,
-                            in_home_waitlist: value
+                            in_home_waitlist: value || null as string | null
                           };
                           setFormData((prev) => ({ ...prev, locations: newLocations }));
                         }}
-                        required
-                        className="w-[90%] px-3 py-2 rounded-lg border border-gray-300 hover:cursor-text focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm"
+                        className="w-[90%] px-3 py-2 rounded-lg border border-gray-300 hover:cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm"
                       >
-                        <option value="">Select...</option>
-                        <option value="true">Yes</option>
-                        <option value="false">No</option>
+                        <option value="">Select waitlist status...</option>
+                        {WAITLIST_OPTIONS.map((option: string) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
                       </select>
                 </div>
                 

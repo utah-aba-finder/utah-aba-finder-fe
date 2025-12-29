@@ -9,6 +9,19 @@ import emailjs from 'emailjs-com';
 import Confetti from 'react-confetti';
 import ReCAPTCHA from "react-google-recaptcha";
 
+// Valid waitlist options for in_home_waitlist and in_clinic_waitlist
+const WAITLIST_OPTIONS = [
+  "No waitlist",
+  "1-2 weeks",
+  "2-4 weeks",
+  "1-3 months",
+  "3-6 months",
+  "6+ months",
+  "Not accepting new clients",
+  "Contact for availability",
+  "No in-home services available at this location"
+];
+
 interface SignupModalProps {
   handleCloseForm: () => void;
   onProviderCreated: () => void;
@@ -978,14 +991,11 @@ In-Home Services Only: ${providerData.in_home_only ? "Yes" : "No"}
                         required
                       >
                         <option value="">Select waitlist status...</option>
-                        <option value="No waitlist">No waitlist</option>
-                        <option value="1-2 weeks">1-2 weeks</option>
-                        <option value="2-4 weeks">2-4 weeks</option>
-                        <option value="1-3 months">1-3 months</option>
-                        <option value="3-6 months">3-6 months</option>
-                        <option value="6+ months">6+ months</option>
-                        <option value="Not accepting new clients">Not accepting new clients</option>
-                        <option value="Contact for availability">Contact for availability</option>
+                        {WAITLIST_OPTIONS.map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
                       </select>
                     </div>
                     <div className="form-group">
@@ -1002,14 +1012,11 @@ In-Home Services Only: ${providerData.in_home_only ? "Yes" : "No"}
                         required
                       >
                         <option value="">Select waitlist status...</option>
-                        <option value="No waitlist">No waitlist</option>
-                        <option value="1-2 weeks">1-2 weeks</option>
-                        <option value="2-4 weeks">2-4 weeks</option>
-                        <option value="1-3 months">1-3 months</option>
-                        <option value="3-6 months">3-6 months</option>
-                        <option value="6+ months">6+ months</option>
-                        <option value="Not accepting new clients">Not accepting new clients</option>
-                        <option value="Contact for availability">Contact for availability</option>
+                        {WAITLIST_OPTIONS.filter(option => option !== "No in-home services available at this location").map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
                       </select>
                     </div>
                   </div>

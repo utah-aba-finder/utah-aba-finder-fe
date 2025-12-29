@@ -18,6 +18,19 @@ import { Building2, MapPin, Phone, X } from 'lucide-react';
 import { getAdminAuthHeader } from "../../Utility/config";
 import { useAuth } from "../../Provider-login/AuthProvider";
 
+// Valid waitlist options for in_home_waitlist and in_clinic_waitlist
+const WAITLIST_OPTIONS = [
+  "No waitlist",
+  "1-2 weeks",
+  "2-4 weeks",
+  "1-3 months",
+  "3-6 months",
+  "6+ months",
+  "Not accepting new clients",
+  "Contact for availability",
+  "No in-home services available at this location"
+];
+
 interface CreateLocationProps {
   provider: ProviderData;
   onLocationCreated: (updatedProvider: ProviderAttributes) => void;
@@ -299,18 +312,14 @@ const CreateLocation: React.FC<CreateLocationProps> = ({
               <select
                 className="w-full rounded-md border border-gray-300 py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 value={newLocation.in_home_waitlist || ""}
-                onChange={(e) => setNewLocation({ ...newLocation, in_home_waitlist: e.target.value })}
+                onChange={(e) => setNewLocation({ ...newLocation, in_home_waitlist: e.target.value || null })}
               >
                 <option value="">Select waitlist status...</option>
-                <option value="No waitlist">No waitlist</option>
-                <option value="This service isn't provided at this location">This service isn't provided at this location</option>
-                <option value="1-2 weeks">1-2 weeks</option>
-                <option value="2-4 weeks">2-4 weeks</option>
-                <option value="1-3 months">1-3 months</option>
-                <option value="3-6 months">3-6 months</option>
-                <option value="6+ months">6+ months</option>
-                <option value="Not accepting new clients">Not accepting new clients</option>
-                <option value="Contact for availability">Contact for availability</option>
+                {WAITLIST_OPTIONS.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
               </select>
             </div>
             <div>
@@ -319,18 +328,14 @@ const CreateLocation: React.FC<CreateLocationProps> = ({
               <select
                 className="w-full rounded-md border border-gray-300 py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 value={newLocation.in_clinic_waitlist || ""}
-                onChange={(e) => setNewLocation({ ...newLocation, in_clinic_waitlist: e.target.value })}
+                onChange={(e) => setNewLocation({ ...newLocation, in_clinic_waitlist: e.target.value || null })}
               >
                 <option value="">Select waitlist status...</option>
-                <option value="No waitlist">No waitlist</option>
-                <option value="This service isn't provided at this location">This service isn't provided at this location</option>
-                <option value="1-2 weeks">1-2 weeks</option>
-                <option value="2-4 weeks">2-4 weeks</option>
-                <option value="1-3 months">1-3 months</option>
-                <option value="3-6 months">3-6 months</option>
-                <option value="6+ months">6+ months</option>
-                <option value="Not accepting new clients">Not accepting new clients</option>
-                <option value="Contact for availability">Contact for availability</option>
+                {WAITLIST_OPTIONS.filter(option => option !== "No in-home services available at this location").map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
