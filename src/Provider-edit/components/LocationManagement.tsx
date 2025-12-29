@@ -5,6 +5,19 @@ import { Plus, Edit, Trash2, MapPin, Phone, Building2, X, AlertCircle, ChevronUp
 import { Location, Service } from '../../Utility/Types';
 import { fetchPracticeTypes, PracticeType } from '../../Utility/ApiCall';
 
+// Valid waitlist options for in_home_waitlist and in_clinic_waitlist
+const WAITLIST_OPTIONS = [
+  "No waitlist",
+  "1-2 weeks",
+  "2-4 weeks",
+  "1-3 months",
+  "3-6 months",
+  "6+ months",
+  "Not accepting new clients",
+  "Contact for availability",
+  "No in-home services available at this location"
+];
+
 interface LocationManagementProps {
   providerId: number;
   currentLocations: Location[];
@@ -20,6 +33,8 @@ interface LocationFormData {
   city: string;
   state: string;
   zip: string;
+  in_home_waitlist: string | null;
+  in_clinic_waitlist: string | null;
 }
 
 const LocationManagement: React.FC<LocationManagementProps> = ({
@@ -51,7 +66,9 @@ const LocationManagement: React.FC<LocationManagementProps> = ({
     address_1: '',
     city: '',
     state: '',
-    zip: ''
+    zip: '',
+    in_home_waitlist: null,
+    in_clinic_waitlist: null
   });
   // Store practice_types as strings (canonical format) - no dependency on practiceTypes being loaded
   const [locationPracticeTypes, setLocationPracticeTypes] = useState<string[]>([]);
@@ -279,8 +296,8 @@ const LocationManagement: React.FC<LocationManagementProps> = ({
         zip: formData.zip || null,
         // Only include practice_types if user selected some
         ...(locationPracticeTypes.length > 0 ? { practice_types: locationPracticeTypes } : {}),
-        in_home_waitlist: null,
-        in_clinic_waitlist: null,
+        in_home_waitlist: formData.in_home_waitlist || null,
+        in_clinic_waitlist: formData.in_clinic_waitlist || null,
         primary: false // New location is NOT primary
       };
       
@@ -477,7 +494,9 @@ const LocationManagement: React.FC<LocationManagementProps> = ({
         address_1: '',
         city: '',
         state: '',
-        zip: ''
+        zip: '',
+        in_home_waitlist: null,
+        in_clinic_waitlist: null
       });
       setLocationPracticeTypes([]);
       
@@ -580,9 +599,9 @@ const LocationManagement: React.FC<LocationManagementProps> = ({
         city: formData.city?.trim() || null,
         state: formData.state?.trim() || null,
         zip: formData.zip?.trim() || null,
-        // Preserve waitlist fields from existing location
-        in_home_waitlist: editingLocation.in_home_waitlist || null,
-        in_clinic_waitlist: editingLocation.in_clinic_waitlist || null,
+        // Use waitlist values from form data
+        in_home_waitlist: formData.in_home_waitlist || null,
+        in_clinic_waitlist: formData.in_clinic_waitlist || null,
         // Preserve primary flag
         primary: primaryLocationId !== null && primaryLocationId !== undefined && editingLocation.id === primaryLocationId
       };
@@ -711,7 +730,9 @@ const LocationManagement: React.FC<LocationManagementProps> = ({
         address_1: '',
         city: '',
         state: '',
-        zip: ''
+        zip: '',
+        in_home_waitlist: null,
+        in_clinic_waitlist: null
       });
       setLocationPracticeTypes([]);
       
@@ -1168,11 +1189,11 @@ const LocationManagement: React.FC<LocationManagementProps> = ({
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: value === '' ? null : value
     }));
   };
 
@@ -1199,7 +1220,9 @@ const LocationManagement: React.FC<LocationManagementProps> = ({
       address_1: location.address_1 || '',
       city: location.city || '',
       state: location.state || '',
-      zip: location.zip || ''
+      zip: location.zip || '',
+      in_home_waitlist: location.in_home_waitlist || null,
+      in_clinic_waitlist: location.in_clinic_waitlist || null
     });
     
     // Use practice_types first (canonical format), fallback to extracting from services
@@ -1224,7 +1247,9 @@ const LocationManagement: React.FC<LocationManagementProps> = ({
       address_1: '',
       city: '',
       state: '',
-      zip: ''
+      zip: '',
+      in_home_waitlist: null,
+      in_clinic_waitlist: null
     });
     setLocationPracticeTypes([]);
     initializedLocationIdRef.current = null;
@@ -1241,7 +1266,9 @@ const LocationManagement: React.FC<LocationManagementProps> = ({
       address_1: '',
       city: '',
       state: '',
-      zip: ''
+      zip: '',
+      in_home_waitlist: null,
+      in_clinic_waitlist: null
     });
     setLocationPracticeTypes([]);
     initializedLocationIdRef.current = null;
@@ -1578,6 +1605,48 @@ const LocationManagement: React.FC<LocationManagementProps> = ({
                       ))
                     }
                   </select>
+                </div>
+
+                {/* Waitlist Fields */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      In-Home Waitlist
+                    </label>
+                    <select
+                      name="in_home_waitlist"
+                      value={formData.in_home_waitlist || ""}
+                      onChange={handleInputChange}
+                      disabled={isLoading}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <option value="">Select waitlist status...</option>
+                      {WAITLIST_OPTIONS.map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      In-Clinic Waitlist
+                    </label>
+                    <select
+                      name="in_clinic_waitlist"
+                      value={formData.in_clinic_waitlist || ""}
+                      onChange={handleInputChange}
+                      disabled={isLoading}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <option value="">Select waitlist status...</option>
+                      {WAITLIST_OPTIONS.filter(option => option !== "No in-home services available at this location").map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
 
                 {/* Helpful Note */}

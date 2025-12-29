@@ -114,6 +114,8 @@ export interface ProviderAttributes {
         state: string;
         zip: string;
         phone: string;
+        in_home_waitlist?: string | null;
+        in_clinic_waitlist?: string | null;
     } | null;
     // Category and provider attributes for Educational Programs and other category-specific providers
     category?: string | null;

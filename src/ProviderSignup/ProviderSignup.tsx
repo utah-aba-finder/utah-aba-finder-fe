@@ -13,6 +13,19 @@ import ReCAPTCHA from "react-google-recaptcha";
 import './InsuranceInput.css';
 import './ProviderSignup.css';
 
+// Valid waitlist options for in_home_waitlist and in_clinic_waitlist
+const WAITLIST_OPTIONS = [
+  "No waitlist",
+  "1-2 weeks",
+  "2-4 weeks",
+  "1-3 months",
+  "3-6 months",
+  "6+ months",
+  "Not accepting new clients",
+  "Contact for availability",
+  "No in-home services available at this location"
+];
+
 // TypeScript declarations for reCAPTCHA
 declare global {
   interface Window {
@@ -115,7 +128,9 @@ const ProviderSignup: React.FC = () => {
       city: '',
       state: '',
       zip: '',
-      phone: ''
+      phone: '',
+      in_home_waitlist: null as string | null,
+      in_clinic_waitlist: null as string | null
     },
     service_delivery: {
       in_clinic: false,
@@ -197,7 +212,9 @@ const ProviderSignup: React.FC = () => {
               city: '',
               state: '',
               zip: '',
-              phone: ''
+              phone: '',
+              in_home_waitlist: null as string | null,
+              in_clinic_waitlist: null as string | null
             },
             service_delivery: {
               in_clinic: false,
@@ -249,7 +266,9 @@ const ProviderSignup: React.FC = () => {
         city: '',
         state: '',
         zip: '',
-        phone: ''
+        phone: '',
+        in_home_waitlist: null,
+        in_clinic_waitlist: null
       },
       service_delivery: {
         in_clinic: false,
@@ -1926,6 +1945,38 @@ const ProviderSignup: React.FC = () => {
                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                             placeholder="(801) 555-0123"
                           />
+                        </div>
+                        <div className="form-group">
+                          <label className="block text-xs text-gray-600 mb-1">In-Home Waitlist</label>
+                          <p className="text-xs text-gray-500 mb-1">Select the current waitlist status for in-home services</p>
+                          <select
+                            value={commonFields.primary_address?.in_home_waitlist || ""}
+                            onChange={(e) => handleCommonFieldChange('primary_address', { ...commonFields.primary_address, in_home_waitlist: e.target.value || null })}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          >
+                            <option value="">Select waitlist status...</option>
+                            {WAITLIST_OPTIONS.map((option) => (
+                              <option key={option} value={option}>
+                                {option}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className="form-group">
+                          <label className="block text-xs text-gray-600 mb-1">In-Clinic Waitlist</label>
+                          <p className="text-xs text-gray-500 mb-1">Select the current waitlist status for in-clinic services</p>
+                          <select
+                            value={commonFields.primary_address?.in_clinic_waitlist || ""}
+                            onChange={(e) => handleCommonFieldChange('primary_address', { ...commonFields.primary_address, in_clinic_waitlist: e.target.value || null })}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          >
+                            <option value="">Select waitlist status...</option>
+                            {WAITLIST_OPTIONS.filter(option => option !== "No in-home services available at this location").map((option) => (
+                              <option key={option} value={option}>
+                                {option}
+                              </option>
+                            ))}
+                          </select>
                         </div>
                       </div>
                     </div>
