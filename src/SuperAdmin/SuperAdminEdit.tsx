@@ -11,6 +11,9 @@ import {
   Languages,
   X,
   Plus,
+  Star,
+  ChevronUp,
+  ChevronDown,
 } from "lucide-react";
 import moment from "moment";
 import InsuranceModal from "../Provider-edit/InsuranceModal";
@@ -68,6 +71,13 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
       services: location.services || []
     })) || []
   );
+  // Track primary_location_id separately to ensure it's preserved when adding/reordering locations
+  const [primaryLocationId, setPrimaryLocationId] = useState<number | null>(
+    (currentProvider?.attributes as any)?.primary_location_id || null
+  );
+  // Track unique keys for new locations (ones without IDs) to prevent remounting on name change
+  const newLocationKeysRef = useRef<Map<number, string>>(new Map());
+  const newLocationCounterRef = useRef(0);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [services, setServices] = useState<Service[]>([]);
@@ -128,6 +138,8 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
         ...location,
         services: location.services || []
       })) || []);
+      // Update primary_location_id from fullProviderData
+      setPrimaryLocationId((fullProviderData.attributes as any)?.primary_location_id || null);
       // Update provider state
       setProviderState(fullProviderData.states || []);
       // Update selected counties
@@ -589,6 +601,11 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
   };
 
   const addNewLocation = () => {
+    console.log('🚀🚀🚀 SuperAdmin addNewLocation CALLED 🚀🚀🚀');
+    console.log('📍 Current primaryLocationId state:', primaryLocationId);
+    console.log('📍 Current locations count:', locations.length);
+    console.log('📍 Current locations:', locations.map((l: any) => ({ id: l.id, name: l.name })));
+    
     const newLocation: ProviderLocation = {
       id: null,
       name: null,
@@ -602,14 +619,166 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
       in_home_waitlist: "Contact for availability",
       in_clinic_waitlist: "Contact for availability"
     };
-    setLocations([newLocation, ...locations]);
+    
+    // Add new location at the END to avoid any potential issues with primary location
+    // Primary location is determined by primary_location_id (ID-based), not array index
+    const updatedLocations = [...locations, newLocation];
+    const newLocationIndex = updatedLocations.length - 1;
+    
+    // Generate a stable key for this new location based on index (won't change when name changes)
+    newLocationKeysRef.current.set(newLocationIndex, `new-location-${newLocationCounterRef.current++}-${Date.now()}`);
+    
+    setLocations(updatedLocations);
+    
+    // Note: services state doesn't need to be updated here since each location
+    // has its own services array (location.services), not a separate services state per location
+    
+    console.log('✅ New location added at END of array. Primary location ID preserved:', primaryLocationId);
+    
+    // Auto-scroll to the new location after a brief delay to allow DOM update
+    setTimeout(() => {
+      // Find the last location element (the newly added one) using the index
+      const newLocationElement = document.querySelector(`[data-location-index="${newLocationIndex}"]`);
+      if (newLocationElement) {
+        newLocationElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
   };
 
   const removeLocation = (index: number) => {
     const updatedLocations = locations.filter((_, i) => i !== index);
     const updatedServices = services.filter((_, i) => i !== index);
+    
+    // Clean up the key mapping for removed location and reindex remaining new locations
+    if (updatedLocations.length > 0) {
+      const newKeysMap = new Map<number, string>();
+      updatedLocations.forEach((loc, newIndex) => {
+        if (!loc.id && newLocationKeysRef.current.has(index)) {
+          // Preserve the key for locations that were after the removed one
+          const oldKey = newLocationKeysRef.current.get(index);
+          if (oldKey) {
+            newKeysMap.set(newIndex, oldKey);
+          }
+        }
+      });
+      // Also preserve keys for locations before the removed index
+      newLocationKeysRef.current.forEach((key, oldIndex) => {
+        if (oldIndex < index) {
+          newKeysMap.set(oldIndex, key);
+        } else if (oldIndex > index) {
+          newKeysMap.set(oldIndex - 1, key);
+        }
+      });
+      newLocationKeysRef.current = newKeysMap;
+    } else {
+      newLocationKeysRef.current.clear();
+    }
+    
     setServices(updatedServices);
     setLocations(updatedLocations);
+  };
+
+  // Move location to top (set as primary)
+  const handleSetAsPrimary = (index: number) => {
+    if (index < 0 || index >= locations.length) return;
+    
+    const locationToMakePrimary = locations[index];
+    
+    // If location doesn't have an ID yet (new location), can't set as primary
+    if (!locationToMakePrimary.id) {
+      toast.error('Cannot set a new location as primary until it is saved');
+      return;
+    }
+    
+    // Update primary_location_id to the selected location's ID
+    setPrimaryLocationId(locationToMakePrimary.id);
+    console.log('🎯 Setting primary_location_id to:', locationToMakePrimary.id);
+    
+    const reorderedLocations = [
+      locations[index],
+      ...locations.slice(0, index),
+      ...locations.slice(index + 1)
+    ];
+    
+    // Also reorder services array to match
+    const reorderedServices = [
+      services[index],
+      ...services.slice(0, index),
+      ...services.slice(index + 1)
+    ];
+    
+    setLocations(reorderedLocations);
+    setServices(reorderedServices);
+    
+    // Update editedProvider if it exists
+    if (editedProvider) {
+      const updatedEditedProvider = { ...editedProvider };
+      if (!updatedEditedProvider.locations) {
+        updatedEditedProvider.locations = [];
+      }
+      updatedEditedProvider.locations = reorderedLocations;
+      setEditedProvider(updatedEditedProvider);
+    }
+    
+    toast.success('Location set as primary (will appear first)');
+  };
+
+  // Move location up in the list
+  const handleMoveUp = (index: number) => {
+    if (index <= 0 || index >= locations.length) return;
+    
+    const reorderedLocations = [...locations];
+    [reorderedLocations[index - 1], reorderedLocations[index]] = 
+      [reorderedLocations[index], reorderedLocations[index - 1]];
+    
+    // Also reorder services array to match
+    const reorderedServices = [...services];
+    [reorderedServices[index - 1], reorderedServices[index]] = 
+      [reorderedServices[index], reorderedServices[index - 1]];
+    
+    setLocations(reorderedLocations);
+    setServices(reorderedServices);
+    
+    // Update editedProvider if it exists
+    if (editedProvider) {
+      const updatedEditedProvider = { ...editedProvider };
+      if (!updatedEditedProvider.locations) {
+        updatedEditedProvider.locations = [];
+      }
+      updatedEditedProvider.locations = reorderedLocations;
+      setEditedProvider(updatedEditedProvider);
+    }
+    
+    toast.info('Location order updated');
+  };
+
+  // Move location down in the list
+  const handleMoveDown = (index: number) => {
+    if (index < 0 || index >= locations.length - 1) return;
+    
+    const reorderedLocations = [...locations];
+    [reorderedLocations[index], reorderedLocations[index + 1]] = 
+      [reorderedLocations[index + 1], reorderedLocations[index]];
+    
+    // Also reorder services array to match
+    const reorderedServices = [...services];
+    [reorderedServices[index], reorderedServices[index + 1]] = 
+      [reorderedServices[index + 1], reorderedServices[index]];
+    
+    setLocations(reorderedLocations);
+    setServices(reorderedServices);
+    
+    // Update editedProvider if it exists
+    if (editedProvider) {
+      const updatedEditedProvider = { ...editedProvider };
+      if (!updatedEditedProvider.locations) {
+        updatedEditedProvider.locations = [];
+      }
+      updatedEditedProvider.locations = reorderedLocations;
+      setEditedProvider(updatedEditedProvider);
+    }
+    
+    toast.info('Location order updated');
   };
 
   const handleInsurancesChange = (insurances: Insurance[]) => {
@@ -692,14 +861,10 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
     setIsSaving(true);
 
     try {
-      // Filter out locations that have no services before sending to the server
+      // CRITICAL: Backend uses "replace all" strategy - MUST send ALL locations or they get deleted!
+      // Send ALL locations from state - do NOT filter any out
       // Strip null IDs from new locations to prevent validation issues
       const filteredLocations = locations
-        .filter(location => 
-          // Only filter out completely empty locations
-          // Allow locations with partial data to be saved
-          location.name || location.address_1 || location.city || location.state || location.phone
-        )
         .map(({ id, in_home_waitlist, in_clinic_waitlist, ...rest }) => {
           const base = {
             ...rest,
@@ -766,9 +931,25 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
           })),
         locations: filteredLocations,
         states: providerState,
-        // Remove top-level services array - API may not expect it
-        // services: filteredLocations.flatMap(l => l.services || []),
       };
+      
+      // CRITICAL VALIDATION: Ensure we're sending ALL locations
+      if (filteredLocations.length !== locations.length) {
+        console.error('❌ Location count mismatch in SuperAdminEdit!', {
+          sending: filteredLocations.length,
+          expected: locations.length
+        });
+        throw new Error(`Location count mismatch: sending ${filteredLocations.length} but expected ${locations.length}. This would delete locations!`);
+      }
+      
+      // Always include primary_location_id if it exists (use state variable, not currentProvider)
+      if (primaryLocationId !== null && primaryLocationId !== undefined) {
+        attributes.primary_location_id = primaryLocationId;
+      }
+      
+      console.log('💾 Saving with primary_location_id:', primaryLocationId);
+      console.log('💾 Sending ALL', filteredLocations.length, 'locations:', filteredLocations.map((l: any) => ({ id: l.id, name: l.name })));
+      console.log('💾 Full attributes object:', JSON.stringify(attributes, null, 2));
 
       // Add provider_attributes for Educational Programs separately to ensure they're included
       const isEducationalPrograms = provider.attributes.category === 'educational_programs' || editedProvider?.category === 'educational_programs';
@@ -899,6 +1080,10 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
           attributes: {
             ...fullProviderData.attributes,
             ...updatedProvider.attributes,
+            // Include primary_location_id if it was updated
+            ...((completeUpdatedData as any).primary_location_id !== undefined && {
+              primary_location_id: (completeUpdatedData as any).primary_location_id
+            }),
             // Include provider_attributes if they were updated
             ...(completeUpdatedData.provider_attributes && {
               provider_attributes: completeUpdatedData.provider_attributes
@@ -945,6 +1130,14 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
       
       // Update local locations state with our merged locations
       setLocations(completeUpdatedData.locations);
+      
+      // Update primary_location_id from the API response (check both updatedProvider and completeUpdatedData)
+      const newPrimaryLocationId = (completeUpdatedData as any).primary_location_id || 
+                                   (updatedProvider.attributes as any)?.primary_location_id;
+      if (newPrimaryLocationId !== undefined) {
+        setPrimaryLocationId(newPrimaryLocationId || null);
+        console.log('🔄 Updated primary_location_id from API response:', newPrimaryLocationId);
+      }
       
       // Update local counties state to match what was saved
       if (updatedProvider.attributes.counties_served) {
@@ -1516,27 +1709,96 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                     </button>
                   </div>
 
-                  {locations.map((location, index) => (
+                  {locations.map((location, index) => {
+                    // Generate a unique key: use ID if available, otherwise use a stable key from ref
+                    // For new locations (id is null), use a stable key that doesn't change when name changes
+                    // This prevents React from remounting the component when typing in the name field
+                    const locationKey = location.id 
+                      ? `location-${location.id}` 
+                      : (newLocationKeysRef.current.get(index) || `new-location-${index}`);
+                    
+                    const isPrimary = location.id !== null && location.id === primaryLocationId;
+                    const isNewLocation = location.id === null;
+                    
+                    return (
                     <div
-                      key={location.id || `location-${index}`}
-                      className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
+                      key={locationKey}
+                      data-location-index={index}
+                      className={`rounded-lg shadow-sm border p-6 ${
+                        isNewLocation 
+                          ? 'border-2 border-blue-400 border-dashed bg-blue-50' 
+                          : 'bg-white border-gray-200'
+                      }`}
                     >
+                      {isNewLocation && (
+                        <div className="mb-4 p-3 bg-blue-100 border border-blue-300 rounded-md">
+                          <p className="text-sm font-semibold text-blue-800 flex items-center">
+                            <span className="mr-2">🆕</span>
+                            New Location - Fill in the details below and save
+                          </p>
+                        </div>
+                      )}
                       <div className="flex justify-between items-center mb-6">
                         <div className="flex items-center space-x-3">
                           <div className="p-2 bg-blue-100 rounded-lg">
                             <Building2 className="w-5 h-5 text-blue-600" />
                           </div>
-                          <h3 className="text-lg font-semibold text-gray-900">
-                            Location {index + 1} of {locations.length}
-                          </h3>
+                          <div className="flex items-center gap-2">
+                            {isPrimary && (
+                              <span title="Primary location">
+                                <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+                              </span>
+                            )}
+                            <h3 className="text-lg font-semibold text-gray-900">
+                              Location {index + 1} of {locations.length}
+                              {isPrimary && (
+                                <span className="ml-2 text-sm text-gray-500">(Primary)</span>
+                              )}
+                            </h3>
+                          </div>
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => removeLocation(index)}
-                          className="p-2 text-gray-400 hover:text-red-600 rounded-full hover:bg-gray-100"
-                        >
-                          <X className="w-5 h-5" />
-                        </button>
+                        <div className="flex items-center space-x-1">
+                          {/* Reorder buttons - only show if more than one location */}
+                          {locations.length > 1 && (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => handleSetAsPrimary(index)}
+                                disabled={isPrimary || !location.id}
+                                className="p-2 text-gray-400 hover:text-yellow-600 rounded-full hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed"
+                                title={!location.id ? "Save location first to set as primary" : "Set as primary location (appears first)"}
+                              >
+                                <Star className="w-5 h-5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleMoveUp(index)}
+                                disabled={index === 0}
+                                className="p-2 text-gray-400 hover:text-blue-600 rounded-full hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed"
+                                title="Move up"
+                              >
+                                <ChevronUp className="w-5 h-5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleMoveDown(index)}
+                                disabled={index === locations.length - 1}
+                                className="p-2 text-gray-400 hover:text-blue-600 rounded-full hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed"
+                                title="Move down"
+                              >
+                                <ChevronDown className="w-5 h-5" />
+                              </button>
+                            </>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => removeLocation(index)}
+                            className="p-2 text-gray-400 hover:text-red-600 rounded-full hover:bg-gray-100"
+                            title="Remove location"
+                          >
+                            <X className="w-5 h-5" />
+                          </button>
+                        </div>
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1754,7 +2016,8 @@ export const SuperAdminEdit: React.FC<SuperAdminEditProps> = ({
                         </select>
                       </div>
                     </div>
-                  ))}
+                    )
+                  })}
                 </div>
               )}
 
