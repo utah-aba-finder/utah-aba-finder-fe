@@ -103,6 +103,8 @@ export interface ProviderAttributes {
     in_home_only: boolean;
     service_delivery: ServiceDelivery;
     // Additional common fields for registration and editing
+    // Backend now uses "phone" (prefer it), but keep "contact_phone" for backward compatibility
+    phone?: string | null;
     contact_phone?: string | null;
     service_areas?: string[];
     waitlist_status?: string | null;
