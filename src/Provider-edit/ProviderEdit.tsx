@@ -303,8 +303,9 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       setCategoryFields(newProviderData.attributes.category_fields || []);
     
     // Initialize common fields with provider data
+    // Backend now returns "phone" (prefer it over "contact_phone" for backward compatibility)
     setCommonFields({
-      contact_phone: newProviderData.attributes.contact_phone || '',
+      contact_phone: (newProviderData.attributes as any).phone || newProviderData.attributes.contact_phone || '',
       website: newProviderData.attributes.website || '',
       service_areas: newProviderData.attributes.service_areas || [],
       waitlist_status: newProviderData.attributes.waitlist_status || '',
@@ -359,8 +360,9 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       }
       
       // Initialize common fields with initial provider data
+      // Backend now returns "phone" (prefer it over "contact_phone" for backward compatibility)
       setCommonFields({
-        contact_phone: initialProviderData.attributes.contact_phone || '',
+        contact_phone: (initialProviderData.attributes as any).phone || initialProviderData.attributes.contact_phone || '',
         website: initialProviderData.attributes.website || '',
         service_areas: initialProviderData.attributes.service_areas || [],
         waitlist_status: initialProviderData.attributes.waitlist_status || '',
@@ -954,7 +956,8 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
         status: editedProvider?.status || 'approved',
         in_home_only: editedProvider?.in_home_only || false,
         // Common fields that should be saved for all provider types
-        contact_phone: commonFields.contact_phone || null,
+        // Backend expects "phone" (not "contact_phone")
+        phone: commonFields.contact_phone || null,
         waitlist_status: commonFields.waitlist_status || null,
         additional_notes: commonFields.additional_notes || null,
         service_areas: commonFields.service_areas && commonFields.service_areas.length > 0 ? commonFields.service_areas : null,
@@ -1003,6 +1006,14 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
             cleanedAttributes[key] = value;
           }
         }
+      });
+
+      // Log phone-related fields for debugging
+      console.log('📞 Phone update debugging:', {
+        'commonFields.contact_phone (form field)': commonFields.contact_phone,
+        'updatedAttributes.phone (API field)': updatedAttributes.phone,
+        'cleanedAttributes.phone (API field)': cleanedAttributes.phone,
+        'phone in cleanedAttributes': 'phone' in cleanedAttributes
       });
 
       // Essential debugging for provider_type issue
@@ -1070,6 +1081,14 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
           attributes: cleanedAttributes,
         }]
       };
+
+      // Debug: Log the exact data being sent, especially phone field
+      console.log('📤 Request body being sent:', JSON.stringify(requestBody, null, 2));
+      console.log('📤 Phone field in request body:', {
+        'phone in attributes': 'phone' in requestBody.data[0].attributes,
+        'phone value': requestBody.data[0].attributes.phone,
+        'contact_phone in attributes (should be false)': 'contact_phone' in requestBody.data[0].attributes
+      });
 
       // Debug: Log the exact data being sent to help debug 500 error
 
@@ -2181,8 +2200,9 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                       <button
                         onClick={() => {
                           // Reset to original values
+                          // Backend now returns "phone" (prefer it over "contact_phone" for backward compatibility)
                           setCommonFields({
-                            contact_phone: currentProvider?.attributes?.contact_phone || '',
+                            contact_phone: (currentProvider?.attributes as any)?.phone || currentProvider?.attributes?.contact_phone || '',
                             website: currentProvider?.attributes?.website || '',
                             service_areas: currentProvider?.attributes?.service_areas || [],
                             waitlist_status: currentProvider?.attributes?.waitlist_status || '',
