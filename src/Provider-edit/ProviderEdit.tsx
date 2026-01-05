@@ -303,9 +303,18 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       setCategoryFields(newProviderData.attributes.category_fields || []);
     
     // Initialize common fields with provider data
-    // Backend now returns "phone" (prefer it over "contact_phone" for backward compatibility)
+    // Phone comes from primary location (not provider-level), since UI displays primaryLocation.phone
+    const primaryLocationId = (newProviderData.attributes as any)?.primary_location_id || null;
+    const locations = newProviderData.attributes?.locations || [];
+    const primaryLocation = primaryLocationId 
+      ? locations.find((loc: any) => loc.id === primaryLocationId)
+      : locations[0]; // Fallback to first location if no primary set
+    const phoneFromLocation = primaryLocation?.phone || '';
+    // Also check provider-level phone as fallback (for backward compatibility)
+    const phoneFromProvider = (newProviderData.attributes as any).phone || newProviderData.attributes.contact_phone || '';
+    
     setCommonFields({
-      contact_phone: (newProviderData.attributes as any).phone || newProviderData.attributes.contact_phone || '',
+      contact_phone: phoneFromLocation || phoneFromProvider,
       website: newProviderData.attributes.website || '',
       service_areas: newProviderData.attributes.service_areas || [],
       waitlist_status: newProviderData.attributes.waitlist_status || '',
@@ -360,9 +369,18 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       }
       
       // Initialize common fields with initial provider data
-      // Backend now returns "phone" (prefer it over "contact_phone" for backward compatibility)
+      // Phone comes from primary location (not provider-level), since UI displays primaryLocation.phone
+      const primaryLocationId = (initialProviderData.attributes as any)?.primary_location_id || null;
+      const locations = initialProviderData.attributes?.locations || [];
+      const primaryLocation = primaryLocationId 
+        ? locations.find((loc: any) => loc.id === primaryLocationId)
+        : locations[0]; // Fallback to first location if no primary set
+      const phoneFromLocation = primaryLocation?.phone || '';
+      // Also check provider-level phone as fallback (for backward compatibility)
+      const phoneFromProvider = (initialProviderData.attributes as any).phone || initialProviderData.attributes.contact_phone || '';
+      
       setCommonFields({
-        contact_phone: (initialProviderData.attributes as any).phone || initialProviderData.attributes.contact_phone || '',
+        contact_phone: phoneFromLocation || phoneFromProvider,
         website: initialProviderData.attributes.website || '',
         service_areas: initialProviderData.attributes.service_areas || [],
         waitlist_status: initialProviderData.attributes.waitlist_status || '',
@@ -943,6 +961,49 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       // Ensure we preserve the current logo URL if it exists
       const currentLogo = currentProvider?.attributes?.logo || editedProvider?.logo || null;
       
+      // Get primary location ID and current locations
+      const primaryLocationId = (currentProvider?.attributes as any)?.primary_location_id || null;
+      const currentLocations = currentProvider?.attributes?.locations || [];
+      
+      // If there's a phone number in Contact & Services tab, update the primary location's phone
+      // (since the UI displays primaryLocation.phone, not provider.attributes.phone)
+      let locationsToSend = [...currentLocations];
+      if (commonFields.contact_phone !== undefined && commonFields.contact_phone !== null) {
+        if (primaryLocationId) {
+          // Update primary location's phone
+          locationsToSend = locationsToSend.map((loc: any) => {
+            if (loc.id === primaryLocationId) {
+              console.log('📞 Updating primary location phone:', {
+                locationId: loc.id,
+                oldPhone: loc.phone,
+                newPhone: commonFields.contact_phone
+              });
+              return {
+                ...loc,
+                phone: commonFields.contact_phone || null
+              };
+            }
+            return loc;
+          });
+        } else if (locationsToSend.length > 0) {
+          // If no primary location set, update the first location
+          locationsToSend = locationsToSend.map((loc: any, index: number) => {
+            if (index === 0) {
+              console.log('📞 Updating first location phone (no primary set):', {
+                locationId: loc.id,
+                oldPhone: loc.phone,
+                newPhone: commonFields.contact_phone
+              });
+              return {
+                ...loc,
+                phone: commonFields.contact_phone || null
+              };
+            }
+            return loc;
+          });
+        }
+      }
+      
       const updatedAttributes = {
         // Basic fields only - remove complex nested objects temporarily
         name: editedProvider?.name || '',
@@ -955,9 +1016,11 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
         // Add some fields that might be required by the backend
         status: editedProvider?.status || 'approved',
         in_home_only: editedProvider?.in_home_only || false,
+        // Always include locations array (with updated phone if Contact & Services phone was changed)
+        // Backend expects locations array to update location.phone (not provider.attributes.phone)
+        ...(locationsToSend.length > 0 && { locations: locationsToSend }),
         // Common fields that should be saved for all provider types
-        // Backend expects "phone" (not "contact_phone")
-        phone: commonFields.contact_phone || null,
+        // Note: We're NOT saving phone at provider level - it goes to primary location instead
         waitlist_status: commonFields.waitlist_status || null,
         additional_notes: commonFields.additional_notes || null,
         service_areas: commonFields.service_areas && commonFields.service_areas.length > 0 ? commonFields.service_areas : null,
@@ -1009,11 +1072,15 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       });
 
       // Log phone-related fields for debugging
+      const primaryLocationInRequest = locationsToSend.find((loc: any) => 
+        loc.id === primaryLocationId || (primaryLocationId === null && locationsToSend.indexOf(loc) === 0)
+      );
       console.log('📞 Phone update debugging:', {
         'commonFields.contact_phone (form field)': commonFields.contact_phone,
-        'updatedAttributes.phone (API field)': updatedAttributes.phone,
-        'cleanedAttributes.phone (API field)': cleanedAttributes.phone,
-        'phone in cleanedAttributes': 'phone' in cleanedAttributes
+        'primaryLocationId': primaryLocationId,
+        'primaryLocation phone in request': primaryLocationInRequest?.phone,
+        'locations array length': locationsToSend.length,
+        'locations included in request': 'locations' in cleanedAttributes
       });
 
       // Essential debugging for provider_type issue
@@ -1181,6 +1248,20 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
         }
         if (responseData.data?.attributes.provider_type) {
           setSelectedProviderTypes(responseData.data.attributes.provider_type);
+        }
+        
+        // Update commonFields with phone value from primary location (since that's what UI displays)
+        const responsePrimaryLocationId = (responseData.data?.attributes as any)?.primary_location_id || null;
+        const responseLocations = responseData.data?.attributes?.locations || [];
+        const responsePrimaryLocation = responsePrimaryLocationId 
+          ? responseLocations.find((loc: any) => loc.id === responsePrimaryLocationId)
+          : responseLocations[0]; // Fallback to first location if no primary set
+        const savedPhone = responsePrimaryLocation?.phone || (responseData.data?.attributes as any)?.phone || responseData.data?.attributes?.contact_phone;
+        if (savedPhone !== undefined) {
+          setCommonFields(prev => ({
+            ...prev,
+            contact_phone: savedPhone || ''
+          }));
         }
         
         // Update currentProvider state to keep it in sync
@@ -1992,6 +2073,7 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">Contact Phone</label>
+                        {/* Note: Form uses "contact_phone" internally, but maps to "phone" when sending to API */}
                         <input
                           type="tel"
                           value={commonFields.contact_phone || ''}
@@ -2200,9 +2282,18 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                       <button
                         onClick={() => {
                           // Reset to original values
-                          // Backend now returns "phone" (prefer it over "contact_phone" for backward compatibility)
+                          // Phone comes from primary location (not provider-level), since UI displays primaryLocation.phone
+                          const primaryLocationId = (currentProvider?.attributes as any)?.primary_location_id || null;
+                          const locations = currentProvider?.attributes?.locations || [];
+                          const primaryLocation = primaryLocationId 
+                            ? locations.find((loc: any) => loc.id === primaryLocationId)
+                            : locations[0]; // Fallback to first location if no primary set
+                          const phoneFromLocation = primaryLocation?.phone || '';
+                          // Also check provider-level phone as fallback (for backward compatibility)
+                          const phoneFromProvider = (currentProvider?.attributes as any)?.phone || currentProvider?.attributes?.contact_phone || '';
+                          
                           setCommonFields({
-                            contact_phone: (currentProvider?.attributes as any)?.phone || currentProvider?.attributes?.contact_phone || '',
+                            contact_phone: phoneFromLocation || phoneFromProvider,
                             website: currentProvider?.attributes?.website || '',
                             service_areas: currentProvider?.attributes?.service_areas || [],
                             waitlist_status: currentProvider?.attributes?.waitlist_status || '',
