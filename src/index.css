@@ -17,3 +17,56 @@
       monospace;
   }
 }
+
+/* Protect Tawk.to widget from global CSS resets */
+/* Use revert (not !important) to allow Tawk.to's own styles to work */
+#tawkchat-container,
+#tawkchat-container *,
+iframe[id*="tawk"],
+iframe[id*="tawk"] * {
+  all: revert;
+  box-sizing: border-box;
+}
+
+/* Ensure Tawk.to buttons and icons display correctly */
+#tawkchat-container button,
+#tawkchat-container svg,
+#tawkchat-container i,
+#tawkchat-container [class*="icon"],
+#tawkchat-container [class*="Icon"],
+iframe[id*="tawk"] button,
+iframe[id*="tawk"] svg,
+iframe[id*="tawk"] i,
+iframe[id*="tawk"] [class*="icon"],
+iframe[id*="tawk"] [class*="Icon"] {
+  display: inline-block !important;
+  width: auto !important;
+  height: auto !important;
+  min-width: auto !important;
+  min-height: auto !important;
+  max-width: none !important;
+  max-height: none !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Ensure Tawk.to icon fonts and SVG elements work */
+#tawkchat-container svg,
+iframe[id*="tawk"] svg {
+  display: inline-block !important;
+  width: auto !important;
+  height: auto !important;
+  fill: currentColor !important;
+  stroke: none !important;
+}
+
+/* Protect icon font containers */
+#tawkchat-container [class*="icon"]::before,
+#tawkchat-container [class*="Icon"]::before,
+iframe[id*="tawk"] [class*="icon"]::before,
+iframe[id*="tawk"] [class*="Icon"]::before {
+  font-family: inherit !important;
+  font-style: normal !important;
+  font-weight: normal !important;
+  display: inline-block !important;
+}
