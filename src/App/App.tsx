@@ -272,8 +272,8 @@ function App() {
           </Routes>
         </div>
         <Footer />
+        {/* Tawk.to script is loaded in index.html - this component only handles visitor info */}
         <TawkToWidget 
-          widgetId="1j0pk77o9"
           visitorName={undefined}
           visitorEmail={undefined}
         />
