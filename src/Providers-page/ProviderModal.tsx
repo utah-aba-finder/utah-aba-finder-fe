@@ -667,7 +667,7 @@ const ProviderModal: React.FC<ProviderModalProps> = ({
                   </div>
                 ))
               ) : (
-                <p><strong>No locations available in {selectedState}</strong></p>
+                <p><strong>No locations available in {selectedStateDisplayLabel ?? 'the selected state'}</strong></p>
               )}
             </div>
           </div>
@@ -686,13 +686,37 @@ const ProviderModal: React.FC<ProviderModalProps> = ({
 
   if (!provider) return null;
 
-  // Filter locations based on selected state
-  const filteredLocations = selectedState && selectedState !== 'none'
-    ? provider.attributes.locations.filter(location => {
-        if (!location.state || !selectedState) return false;
-        return location.state.trim().toUpperCase() === selectedState.trim().toUpperCase();
-      })
-    : provider.attributes.locations;
+  // Resolve selected state (may be ID like "61") to name/abbreviation for filtering and display
+  const selectedStateDisplayLabel: string | null = (() => {
+    if (!selectedState || selectedState === 'none' || selectedState.trim() === '') return null;
+    if (/^\d+$/.test(selectedState) && availableStates.length > 0) {
+      const match = availableStates.find((s: { id: number }) => s.id === parseInt(selectedState, 10));
+      return match?.attributes?.name ?? match?.attributes?.abbreviation ?? selectedState;
+    }
+    // Already a name or abbreviation
+    return selectedState.trim();
+  })();
+
+  // Build set of state names/abbreviations to match (location.state may be "UT" or "Utah")
+  const stateMatchSet = new Set<string>();
+  if (selectedState && selectedState !== 'none') {
+    if (/^\d+$/.test(selectedState) && availableStates.length > 0) {
+      const match = availableStates.find((s: { id: number }) => s.id === parseInt(selectedState, 10));
+      if (match?.attributes?.name) stateMatchSet.add(match.attributes.name.trim().toUpperCase());
+      if (match?.attributes?.abbreviation) stateMatchSet.add(match.attributes.abbreviation.trim().toUpperCase());
+    } else {
+      stateMatchSet.add(selectedState.trim().toUpperCase());
+    }
+  }
+
+  // Filter locations by selected state (compare to resolved name/abbreviation, not raw ID)
+  const filteredLocations =
+    selectedState && selectedState !== 'none' && stateMatchSet.size > 0
+      ? provider.attributes.locations.filter((location) => {
+          if (!location.state) return false;
+          return stateMatchSet.has(location.state.trim().toUpperCase());
+        })
+      : provider.attributes.locations;
 
   // Use the first matching location, or fall back to the first location if none match
   const primaryLocation = filteredLocations[0] || provider.attributes.locations[0];
