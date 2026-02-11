@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { toast } from "react-toastify";
 import { useAuth } from "../Provider-login/AuthProvider";
 import { useSearchParams } from "react-router-dom";
@@ -46,7 +46,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
     const tab = searchParams.get('tab');
     return tab || "dashboard";
   });
-  const [isSavingBeforeTabSwitch, setIsSavingBeforeTabSwitch] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false); // Disabled - session management improved, no longer needed
   const [sessionTimeLeft, setSessionTimeLeft] = useState<number | null>(null);
   
@@ -1348,72 +1347,21 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
     refreshProviderData
   ]);
 
-  // Handle tab switching with auto-save and data refresh
-  const handleTabSwitch = useCallback(async (newTab: string) => {
-    // Don't do anything if already saving or if switching to the same tab
-    if (isSavingBeforeTabSwitch || newTab === selectedTab) {
-      return;
-    }
-    
-    // Check if we have unsaved changes (check categoryFields and editedProvider)
-    const hasChanges = 
-      (categoryFields && categoryFields.length > 0) ? 
-        categoryFields.some((field: any) => {
-          // Get the original value from provider_attributes if available
-          const providerAttributes = currentProvider?.attributes?.provider_attributes || {};
-          const originalValue = providerAttributes[field.name] || providerAttributes[field.slug];
-          const newValue = field.value;
-          
-          // If original value doesn't exist, check if new value is non-empty
-          if (originalValue === undefined || originalValue === null) {
-            // New field with value is a change
-            return newValue !== null && newValue !== undefined && newValue !== '';
-          }
-          
-          // Normalize values for comparison (handle arrays, strings, booleans)
-          let normalizedOriginal = originalValue;
-          let normalizedNew = newValue;
-          
-          // Handle multi_select arrays
-          if (Array.isArray(normalizedOriginal) && Array.isArray(normalizedNew)) {
-            return JSON.stringify(normalizedOriginal.sort()) !== JSON.stringify(normalizedNew.sort());
-          }
-          
-          // Compare values
-          return JSON.stringify(normalizedNew) !== JSON.stringify(normalizedOriginal);
-        }) : false;
-    
-    if (hasChanges) {
-      setIsSavingBeforeTabSwitch(true);
-      try {
-        // Save changes silently before switching tabs
-        const saved = await handleSaveChanges();
-        if (saved) {
-          // Refresh data from backend to ensure we have the latest after save
-          await refreshProviderData();
-        }
-      } catch (error) {
-        // If save fails, still allow tab switch but show a warning
-        console.error('Failed to save before tab switch:', error);
-        toast.warning('Some changes may not have been saved');
-      } finally {
-        setIsSavingBeforeTabSwitch(false);
-      }
-    } else {
-      // Even if no changes, refresh data when switching tabs to ensure we have latest from backend
-      // This helps with the issue where data shows on some tabs but not others
-      try {
-        await refreshProviderData();
-      } catch (error) {
-        // Silent fail - refreshing data is nice to have but not critical
-        console.error('Failed to refresh data on tab switch:', error);
-      }
-    }
-    
-    // Switch to the new tab
+  // Switch tabs immediately; no save or blocking refresh (user saves explicitly)
+  const handleTabSwitch = useCallback((newTab: string) => {
+    if (newTab === selectedTab) return;
     setSelectedTab(newTab);
     setSearchParams({});
-  }, [categoryFields, currentProvider, selectedTab, isSavingBeforeTabSwitch, handleSaveChanges, refreshProviderData, setSearchParams]);
+    // Optional: refresh in background so data stays fresh without blocking the UI
+    refreshProviderData().catch((err) => {
+      console.error('Background refresh on tab switch:', err);
+    });
+  }, [selectedTab, refreshProviderData, setSearchParams]);
+
+  const hasUnsavedChanges = useMemo(() => {
+    if (!editedProvider || !currentProvider?.attributes) return false;
+    return JSON.stringify(editedProvider) !== JSON.stringify(currentProvider.attributes);
+  }, [editedProvider, currentProvider]);
 
   // Check if we have a valid provider to work with
   const hasValidProvider = currentProvider && currentProvider.id && Number(currentProvider.id) > 0;
@@ -1596,7 +1544,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
         <nav className="flex-1 overflow-y-auto flex flex-col justify-start gap-2 py-4 px-4">
           <button
             onClick={() => handleTabSwitch("dashboard")}
-            disabled={isSavingBeforeTabSwitch}
             className={`
               flex items-center justify-center gap-2 px-3 py-2 rounded-lg
               transition-colors duration-200
@@ -1605,7 +1552,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                   ? "bg-[#4A6FA5] text-white"
                   : "text-gray-700 hover:bg-gray-100"
               }
-              ${isSavingBeforeTabSwitch ? "opacity-50 cursor-not-allowed" : ""}
             `}
           >
             <BarChart className="w-4 h-4" />
@@ -1614,7 +1560,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
 
           <button
             onClick={() => handleTabSwitch("edit")}
-            disabled={isSavingBeforeTabSwitch}
             className={`
               flex items-center justify-center gap-2 px-3 py-2 rounded-lg
               transition-colors duration-200
@@ -1623,7 +1568,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                   ? "bg-[#4A6FA5] text-white"
                   : "text-gray-700 hover:bg-gray-100"
               }
-              ${isSavingBeforeTabSwitch ? "opacity-50 cursor-not-allowed" : ""}
             `}
           >
             <Building2 className="w-4 h-4" />
@@ -1632,7 +1576,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
 
           <button
             onClick={() => handleTabSwitch("details")}
-            disabled={isSavingBeforeTabSwitch}
             className={`
               flex items-center justify-center gap-2 px-3 py-2 rounded-lg
               transition-colors duration-200
@@ -1641,7 +1584,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                   ? "bg-[#4A6FA5] text-white"
                   : "text-gray-700 hover:bg-gray-100"
               }
-              ${isSavingBeforeTabSwitch ? "opacity-50 cursor-not-allowed" : ""}
             `}
           >
             <Building2 className="w-4 h-4" />
@@ -1650,7 +1592,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
 
           <button
             onClick={() => handleTabSwitch("provider-types")}
-            disabled={isSavingBeforeTabSwitch}
             className={`
               flex items-center justify-center gap-2 px-3 py-2 rounded-lg
               transition-colors duration-200
@@ -1659,7 +1600,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                   ? "bg-[#4A6FA5] text-white"
                   : "text-gray-700 hover:bg-gray-100"
               }
-              ${isSavingBeforeTabSwitch ? "opacity-50 cursor-not-allowed" : ""}
             `}
           >
             <Tag className="w-4 h-4" />
@@ -1668,7 +1608,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
 
           <button
             onClick={() => handleTabSwitch("common-fields")}
-            disabled={isSavingBeforeTabSwitch}
             className={`
               flex items-center justify-center gap-2 px-3 py-2 rounded-lg
               transition-colors duration-200
@@ -1677,7 +1616,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                   ? "bg-[#4A6FA5] text-white"
                   : "text-gray-700 hover:bg-gray-100"
               }
-              ${isSavingBeforeTabSwitch ? "opacity-50 cursor-not-allowed" : ""}
             `}
           >
             <DollarSign className="w-4 h-4" />
@@ -1686,7 +1624,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
 
           <button
             onClick={() => handleTabSwitch("coverage")}
-            disabled={isSavingBeforeTabSwitch}
             className={`
               flex items-center justify-center gap-2 px-3 py-2 rounded-lg
               transition-colors duration-200
@@ -1695,7 +1632,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                   ? "bg-[#4A6FA5] text-white"
                   : "text-gray-700 hover:bg-gray-100"
               }
-              ${isSavingBeforeTabSwitch ? "opacity-50 cursor-not-allowed" : ""}
             `}
           >
             <MapPin className="w-4 h-4" />
@@ -1704,7 +1640,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
 
           <button
             onClick={() => handleTabSwitch("locations")}
-            disabled={isSavingBeforeTabSwitch}
             className={`
               flex items-center justify-center gap-2 px-3 py-2 rounded-lg
               transition-colors duration-200
@@ -1713,7 +1648,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                   ? "bg-[#4A6FA5] text-white"
                   : "text-gray-700 hover:bg-gray-100"
               }
-              ${isSavingBeforeTabSwitch ? "opacity-50 cursor-not-allowed" : ""}
             `}
           >
             <Building2 className="w-4 h-4" />
@@ -1722,7 +1656,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
 
           <button
             onClick={() => handleTabSwitch("insurance")}
-            disabled={isSavingBeforeTabSwitch}
             className={`
               flex items-center justify-center gap-2 px-3 py-2 rounded-lg
               transition-colors duration-200
@@ -1731,7 +1664,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                   ? "bg-[#4A6FA5] text-white"
                   : "text-gray-700 hover:bg-gray-100"
               }
-              ${isSavingBeforeTabSwitch ? "opacity-50 cursor-not-allowed" : ""}
             `}
           >
             <DollarSign className="w-4 h-4" />
@@ -1740,7 +1672,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
 
               <button
                 onClick={() => handleTabSwitch("sponsorship")}
-                disabled={isSavingBeforeTabSwitch}
                 className={`
                   flex items-center justify-center gap-2 px-3 py-2 rounded-lg
                   transition-colors duration-200
@@ -1749,7 +1680,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                       ? "bg-[#4A6FA5] text-white"
                       : "text-gray-700 hover:bg-gray-100"
                   }
-                  ${isSavingBeforeTabSwitch ? "opacity-50 cursor-not-allowed" : ""}
                 `}
               >
                 <Crown className="w-4 h-4" />
@@ -1758,7 +1688,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
 
               <button
                 onClick={() => handleTabSwitch("account")}
-                disabled={isSavingBeforeTabSwitch}
                 className={`
                   flex items-center justify-center gap-2 px-3 py-2 rounded-lg
                   transition-colors duration-200
@@ -1767,7 +1696,6 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                       ? "bg-[#4A6FA5] text-white"
                       : "text-gray-700 hover:bg-gray-100"
                   }
-                  ${isSavingBeforeTabSwitch ? "opacity-50 cursor-not-allowed" : ""}
                 `}
               >
                 <User className="w-4 h-4" />
@@ -1782,6 +1710,11 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
           <div className="flex-1 flex flex-col min-w-0 h-screen">
             {/* Main Content */}
             <main className="flex-1 overflow-y-auto p-8 max-w-none">
+              {hasUnsavedChanges && !isSaving && (
+                <div className="mb-4 flex items-center justify-between rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-800">
+                  <span>You have unsaved changes. Save to keep them.</span>
+                </div>
+              )}
               {/* Tab Navigation */}
               {selectedTab === "dashboard" && (
                 <Dashboard key={currentProvider?.id} provider={currentProvider} />
