@@ -3,6 +3,7 @@ import { toast } from "react-toastify";
 import { Building2, DollarSign, Clock, Stethoscope, Languages, Mail, Globe } from "lucide-react";
 import moment from "moment";
 import { ProviderData, ProviderAttributes, Insurance, CountiesServed, Location } from "../../Utility/Types";
+import { getApiBaseUrl } from "../../Utility/config";
 import { fetchStates, fetchCountiesByState } from "../../Utility/ApiCall";
 import { useAuth } from "../../Provider-login/AuthProvider";
 
@@ -69,42 +70,38 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
           ]
         : [];
 
-      const requestBody = {
-        data: {
-          attributes: {
-            ...formData,
-            id: provider.attributes.id,
-            provider_type,
-            insurance: selectedInsurances,
-            counties_served: selectedCounties,
-            locations: locations.map((location) => ({
-              ...location,
-              id: location.id || null,
-            })),
-            password: provider.attributes.password,
-            username: provider.attributes.username,
-            status: formData.status || provider.attributes.status,
-          },
-        },
+      const attributes = {
+        ...formData,
+        id: provider.attributes.id,
+        provider_type,
+        insurance: selectedInsurances,
+        counties_served: selectedCounties,
+        locations: locations.map((location) => ({
+          ...location,
+          id: location.id || null,
+        })),
+        password: provider.attributes.password,
+        username: provider.attributes.username,
+        status: formData.status || provider.attributes.status,
       };
 
-      
-
-      // Get user ID for authorization
       const userId = currentUser?.id?.toString();
       if (!userId) {
         throw new Error('No user ID available for authorization. Please log out and log back in.');
       }
 
+      // Self-service: PATCH provider_self (no provider ID in URL)
       const response = await fetch(
-        `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${provider.id}`,
+        `${getApiBaseUrl()}/api/v1/provider_self`,
         {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
             'Authorization': `Bearer ${userId}`,
           },
-          body: JSON.stringify(requestBody),
+          body: JSON.stringify({
+            data: [{ id: provider.id, attributes }],
+          }),
         }
       );
 
@@ -132,10 +129,10 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
         throw new Error(errorData.message || `HTTP ${response.status}: Failed to update provider`);
       }
 
-      // Only refresh data if the save was successful
+      // Refresh from provider_self (self-service)
       try {
         const refreshResponse = await fetch(
-          `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${provider.id}`,
+          `${getApiBaseUrl()}/api/v1/provider_self`,
           {
             method: "GET",
             headers: {
@@ -146,7 +143,6 @@ const EditLocation: FC<EditLocationProps> = ({ provider, onUpdate }) => {
         );
 
         if (!refreshResponse.ok) {
-
           // Don't throw error here, just log warning
         } else {
           const refreshedData = await refreshResponse.json();

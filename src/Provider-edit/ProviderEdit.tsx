@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import "react-toastify/dist/ReactToastify.css";
 import { ProviderData, ProviderAttributes } from "../Utility/Types";
+import { getApiBaseUrl } from "../Utility/config";
 import { fetchStates, fetchCountiesByState, uploadProviderLogo, removeProviderLogo, fetchPracticeTypes, PracticeType, fetchInsurance } from "../Utility/ApiCall";
 import InsuranceModal from "./InsuranceModal";
 import CountiesModal from "./CountiesModal";
@@ -509,9 +510,9 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
         return;
       }
       
-      // Use provider_self endpoint to match the PATCH endpoint and ensure primary_location_id is returned
+      // Use provider_self endpoint (self-service; no provider ID in URL)
       const response = await fetch(
-        `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/provider_self`,
+        `${getApiBaseUrl()}/api/v1/provider_self`,
         {
           headers: {
             'Authorization': `Bearer ${currentUser?.id?.toString() || ''}`,
@@ -1103,17 +1104,17 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
         throw new Error(`Invalid provider ID: ${providerId}`);
       }
 
-      // Verify the provider exists and user has access before attempting update
+      // Verify via provider_self (self-service; backend uses authenticated user's provider)
       try {
         const verifyResponse = await fetch(
-          `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${providerId}`,
+          `${getApiBaseUrl()}/api/v1/provider_self`,
           {
             headers: {
               'Authorization': `Bearer ${authUserId}`,
             },
           }
         );
-        
+
         if (!verifyResponse.ok) {
           if (verifyResponse.status === 401) {
             const errorText = await verifyResponse.text();
@@ -1123,27 +1124,26 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
               currentUser: currentUser,
               errorText: errorText
             });
-            throw new Error(`Unauthorized: You may not have permission to access this provider. Please ensure you are assigned to provider ID ${providerId}. Error: ${errorText}`);
+            throw new Error(`Unauthorized: You may not have permission to access this provider. Please log in again. Error: ${errorText}`);
           } else if (verifyResponse.status === 404) {
-            throw new Error(`Provider ID ${providerId} does not exist in the database`);
+            throw new Error(`Provider not found for your account`);
           } else {
             const errorText = await verifyResponse.text();
             throw new Error(`Failed to verify provider: ${verifyResponse.status} ${verifyResponse.statusText}. ${errorText}`);
           }
         }
-        
+
       } catch (verifyError) {
         throw verifyError;
       }
 
-      // Determine which endpoint to use based on what provider is being edited
-      // Use the correct provider_self endpoint as per API documentation
-      const apiEndpoint = 'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/provider_self';
+      // Self-service: PATCH provider_self (no provider ID in URL)
+      const apiEndpoint = `${getApiBaseUrl()}/api/v1/provider_self`;
       
 
       const requestBody = {
         data: [{
-          id: providerId, // Add the provider ID so backend knows which provider to update
+          id: providerId,
           attributes: cleanedAttributes,
         }]
       };

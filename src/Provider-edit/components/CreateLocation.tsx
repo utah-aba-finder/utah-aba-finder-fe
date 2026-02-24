@@ -15,7 +15,7 @@ import {
 } from "../../Utility/Types";
 import { fetchStates, fetchCountiesByState, fetchPracticeTypes, PracticeType } from "../../Utility/ApiCall";
 import { Building2, MapPin, Phone, X } from 'lucide-react';
-import { getAdminAuthHeader } from "../../Utility/config";
+import { getApiBaseUrl } from "../../Utility/config";
 import { useAuth } from "../../Provider-login/AuthProvider";
 
 // Valid waitlist options for in_home_waitlist and in_clinic_waitlist
@@ -130,23 +130,25 @@ const CreateLocation: React.FC<CreateLocationProps> = ({
         throw new Error('No user ID available for authorization. Please log out and log back in.');
       }
 
+      // Self-service: PATCH provider_self (no provider ID in URL)
                 const response = await fetch(
-            `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/providers/${provider.id}`,
+            `${getApiBaseUrl()}/api/v1/provider_self`,
             {
               method: 'PATCH',
               headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${userId}`
               },
-          body: JSON.stringify({
-            data: {
-              attributes: {
-                ...provider.attributes,
-                locations: updatedLocations
-              }
+              body: JSON.stringify({
+                data: [{
+                  id: provider.id,
+                  attributes: {
+                    ...provider.attributes,
+                    locations: updatedLocations
+                  }
+                }]
+              })
             }
-          })
-        }
       );
 
       if (!response.ok) {
