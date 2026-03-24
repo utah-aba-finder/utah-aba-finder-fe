@@ -3,7 +3,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import './SearchBar.css';
 import { CountyData, Providers, ProviderAttributes, InsuranceData } from '../Utility/Types';
 import { fetchCountiesByState, fetchStates, fetchPracticeTypes, PracticeType } from '../Utility/ApiCall';
-import { ChevronDown, ChevronUp, Search, RotateCcw } from 'lucide-react';
+import { ChevronDown, ChevronUp, Search, RotateCcw, MapPin } from 'lucide-react';
 
 interface SearchBarProps {
   onResults: (results: Providers) => void;
@@ -34,6 +34,9 @@ interface SearchBarProps {
   onStateChange?: (stateId: string) => void;
   totalProviders: number;
   showSearchNotification?: boolean;
+  nearMeFilter?: { zip: string; radiusMiles: number } | null;
+  onNearMeSearch?: (zip: string, radiusMiles: number) => void;
+  onClearNearMe?: () => void;
 }
 
 const SearchBar: React.FC<SearchBarProps> = ({
@@ -51,7 +54,10 @@ const SearchBar: React.FC<SearchBarProps> = ({
   totalProviders,
   onProviderTypeChange,
   onStateChange,
-  showSearchNotification = false
+  showSearchNotification = false,
+  nearMeFilter = null,
+  onNearMeSearch,
+  onClearNearMe,
 }) => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedCounty, setSelectedCounty] = useState<string>('');
@@ -70,6 +76,18 @@ const SearchBar: React.FC<SearchBarProps> = ({
   const [counties, setCounties] = useState<CountyData[]>([]);
   const [advancedOptions, setAdvancedOptions] = useState(false);
   const [practiceTypes, setPracticeTypes] = useState<PracticeType[]>([]);
+  const [nearZipInput, setNearZipInput] = useState("");
+  const [nearRadiusMiles, setNearRadiusMiles] = useState(25);
+
+  useEffect(() => {
+    if (nearMeFilter) {
+      setNearZipInput(nearMeFilter.zip);
+      setNearRadiusMiles(nearMeFilter.radiusMiles);
+    } else {
+      setNearZipInput("");
+      setNearRadiusMiles(25);
+    }
+  }, [nearMeFilter]);
 
   // Ensure props are always arrays to prevent runtime errors
   const safeProviders = Array.isArray(providers) ? providers : [];
@@ -224,6 +242,17 @@ const SearchBar: React.FC<SearchBarProps> = ({
     onReviewsChange('');
     onProviderTypeChange('none');
     setSelectedState('none');
+    onClearNearMe?.();
+  };
+
+  const handleNearMeClick = () => {
+    if (onNearMeSearch) {
+      onNearMeSearch(nearZipInput.trim(), nearRadiusMiles);
+    }
+  };
+
+  const handleClearNearMeClick = () => {
+    onClearNearMe?.();
   };
 
   const ageOptions = [
@@ -251,6 +280,70 @@ const SearchBar: React.FC<SearchBarProps> = ({
     <section className="provider-map-search-section">
 
       <div className="provider-map-searchbar">
+        <div className="near-me-panel">
+          <div className="near-me-panel-header">
+            <MapPin className="near-me-icon" size={20} aria-hidden />
+            <span className="near-me-title">Find providers near me</span>
+            {nearMeFilter && (
+              <span className="near-me-active-badge">Active</span>
+            )}
+          </div>
+          <p className="near-me-help">
+            Enter your ZIP code and how far you&apos;re willing to travel.
+            Distance uses ZIP centroids (approximate).
+          </p>
+          <div className="near-me-controls">
+            <label className="near-me-label">
+              <span className="sr-only">ZIP code</span>
+              <input
+                type="text"
+                inputMode="numeric"
+                autoComplete="postal-code"
+                maxLength={10}
+                placeholder="ZIP code"
+                className="near-me-zip-input"
+                value={nearZipInput}
+                onChange={(e) => setNearZipInput(e.target.value)}
+                aria-label="ZIP code for near me search"
+              />
+            </label>
+            <label className="near-me-label">
+              <span className="sr-only">Radius in miles</span>
+              <select
+                className="near-me-radius-select"
+                value={nearRadiusMiles}
+                onChange={(e) =>
+                  setNearRadiusMiles(Number(e.target.value))
+                }
+                aria-label="Search radius in miles"
+              >
+                <option value={5}>5 mi</option>
+                <option value={10}>10 mi</option>
+                <option value={25}>25 mi</option>
+                <option value={50}>50 mi</option>
+                <option value={100}>100 mi</option>
+              </select>
+            </label>
+            <button
+              type="button"
+              className="near-me-search-btn"
+              onClick={handleNearMeClick}
+              disabled={!onNearMeSearch}
+            >
+              Search near me
+            </button>
+            {nearMeFilter && onClearNearMe && (
+              <button
+                type="button"
+                className="near-me-clear-btn"
+                onClick={handleClearNearMeClick}
+              >
+                Clear location
+              </button>
+            )}
+          </div>
+        </div>
+
         <div className="filter-container">
           <div className="filter-item provider-state-dropdown">
             <select

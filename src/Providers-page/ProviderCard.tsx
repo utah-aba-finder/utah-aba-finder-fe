@@ -1,6 +1,6 @@
 import React from 'react';
 import { ProviderAttributes } from '../Utility/Types';
-import { MapPin, Phone, Mail, Globe, Eye, ToggleLeft, ToggleRight, Briefcase, Home, Building, Monitor } from 'lucide-react';
+import { MapPin, Phone, Mail, Globe, Eye, Briefcase, Home, Building, Monitor, GitCompare } from 'lucide-react';
 import './ProviderCard.css';
 import { toast } from 'react-toastify';
 import ProviderLogo from '../Utility/ProviderLogo';
@@ -8,9 +8,10 @@ import ProviderLogo from '../Utility/ProviderLogo';
 interface ProviderCardProps {
   provider: ProviderAttributes;
   onViewDetails: (provider: ProviderAttributes) => void;
-  onToggleFavorite: (providerId: number, date?: string) => void;
-  isFavorited: boolean;
-  favoritedDate?: string;
+  onToggleCompare: (providerId: number) => void;
+  isInCompare: boolean;
+  /** True when compare list is full (3) and this provider is not in the list */
+  compareSlotFull: boolean;
   selectedState: string;
   hasReviews?: boolean;
 }
@@ -18,31 +19,30 @@ interface ProviderCardProps {
 const ProviderCard: React.FC<ProviderCardProps> = ({
   provider,
   onViewDetails,
-  onToggleFavorite,
-  isFavorited,
-  favoritedDate,
+  onToggleCompare,
+  isInCompare,
+  compareSlotFull,
   selectedState,
   hasReviews
 }) => {
-  const handleToggleFavorite = (e: React.MouseEvent) => {
+  const handleToggleCompare = (e: React.MouseEvent) => {
     e.stopPropagation();
-
-    const currentDate = new Date().toLocaleDateString('en-US', {
-      month: '2-digit',
-      day: '2-digit',
-      year: '2-digit'
-    });
-
-    if (isFavorited) {
+    if (!isInCompare && compareSlotFull) {
+      toast.info('You can compare up to 3 providers. Remove one on the Compare page.', {
+        autoClose: 4000,
+      });
+      return;
+    }
+    if (isInCompare) {
       setTimeout(() => {
-        toast.info(`${provider.name} removed from favorites`, { autoClose: 3000 });
-      }, 500); // 500ms delay
-      onToggleFavorite(provider.id);
+        toast.info(`${provider.name} removed from compare`, { autoClose: 2500 });
+      }, 200);
+      onToggleCompare(provider.id);
     } else {
       setTimeout(() => {
-        toast.success(`${provider.name} added to favorites`, { autoClose: 3000 });
-      }, 500); // 500ms delay
-      onToggleFavorite(provider.id, currentDate);
+        toast.success(`${provider.name} added to compare`, { autoClose: 2500 });
+      }, 200);
+      onToggleCompare(provider.id);
     }
   };
 
@@ -363,9 +363,9 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
                   )}
                 </h4>
               )}
-              {isFavorited && favoritedDate && (
-                <div className="favorited-date text">
-                  Favorited on {favoritedDate}
+              {isInCompare && (
+                <div className="compare-badge text">
+                  In compare
                 </div>
               )}
             </div>
@@ -375,15 +375,17 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
                 Details
               </button>
               <button
-                className={`favorite-button ${isFavorited ? 'favorited' : ''}`}
-                onClick={handleToggleFavorite}
+                type="button"
+                className={`compare-button ${isInCompare ? 'in-compare' : ''}`}
+                onClick={handleToggleCompare}
+                title={
+                  !isInCompare && compareSlotFull
+                    ? 'Compare list is full (3) — open Compare to remove one'
+                    : undefined
+                }
               >
-                {isFavorited ? (
-                  <ToggleRight size={16} style={{ marginRight: '8px', verticalAlign: 'middle' }} />
-                ) : (
-                  <ToggleLeft size={16} style={{ marginRight: '8px', verticalAlign: 'middle' }} />
-                )}
-                {isFavorited ? 'Unfavorite' : 'Favorite'}
+                <GitCompare size={16} style={{ marginRight: '8px', verticalAlign: 'middle' }} />
+                {isInCompare ? 'Remove' : 'Add to compare'}
               </button>
             </div>
           </div>

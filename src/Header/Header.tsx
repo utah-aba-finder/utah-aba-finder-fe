@@ -16,7 +16,7 @@ const navigationItems = [
     name: "Providers",
     dropdown: [
       { name: "Find Providers", href: "/providers" },
-      { name: "Favorite Providers", href: "/favoriteproviders" },
+      { name: "Compare providers", href: "/providers/compare" },
     ],
   },
   { 
