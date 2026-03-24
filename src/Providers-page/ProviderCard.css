@@ -123,6 +123,22 @@
     background-color: #a0aec0;
 }
 
+.compare-badge {
+    text-align: center;
+    margin-top: 0.5em;
+    padding: 0.3em;
+    font-size: 0.80em;
+    font-weight: 700;
+    font-family: "Gotham", sans-serif;
+    border-top: 1px solid rgba(74, 111, 165, 0.35);
+    color: #4a6fa5;
+}
+
+.provider-card:hover .compare-badge {
+    color: inherit;
+    border-top: 1px solid rgba(74, 111, 165, 0.35);
+}
+
 .favorited-date {
     text-align: center;
     margin-top: 0.5em;
@@ -229,15 +245,17 @@
 }
 
 .view-details-button,
-.favorite-button {
+.compare-button {
     align-items: center;
     justify-content: center;
     text-decoration: none;
     color: #ffffff;
     border: none;
-    font-size: 18px;
+    font-size: 16px;
     border-radius: 25px;
-    width: 140px;
+    min-width: 140px;
+    width: auto;
+    padding: 0 12px;
     height: 35px;
     font-weight: bold;
     position: relative;
@@ -250,15 +268,15 @@
 }
 
 .view-details-button:hover,
-.favorite-button:hover {
+.compare-button:hover {
     background-color: #74a3ea;
 }
 
-.favorite-button.favorited {
+.compare-button.in-compare {
     background-color: #A54A4A;
 }
 
-.favorite-button.favorited:hover {
+.compare-button.in-compare:hover {
     background-color: #e68181;
 }
 
@@ -277,7 +295,7 @@
 }
 
 /* .view-details-button::before,
-  .favorite-button::before {
+  .compare-button::before {
     content: '';
     position: absolute;
     top: 3px;
@@ -416,7 +434,7 @@
     }
 
     .view-details-button,
-    .favorite-button {
+    .compare-button {
         font-size: 18px;
         border-radius: 25px;
         width: fit-content;
@@ -857,7 +875,7 @@
     }
     
     .view-details-button,
-    .favorite-button {
+    .compare-button {
         width: 120px; /* Smaller buttons on mobile */
         height: 32px;
         font-size: 16px;
@@ -917,7 +935,7 @@
     }
     
     .view-details-button,
-    .favorite-button {
+    .compare-button {
         width: 100px;
         height: 28px;
         font-size: 14px;

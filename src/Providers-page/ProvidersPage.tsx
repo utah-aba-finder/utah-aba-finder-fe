@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
+import { Link } from "react-router-dom";
 import "./ProvidersPage.css";
 import childrenBanner from "../Assets/children-banner-2.jpg";
 import ProviderModal from "./ProviderModal";
@@ -9,10 +10,19 @@ import gearImage from "../Assets/Gear@1x-0.5s-200px-200px.svg";
 import Joyride, { Step, STATUS } from "react-joyride";
 import { fetchPublicProviders, fetchInsurance, fetchProvidersByStateIdAndProviderType } from "../Utility/ApiCall";
 import SEO from "../Utility/SEO";
+import { toast } from "react-toastify";
 import { AlertTriangle, RefreshCw, Wifi, WifiOff } from "lucide-react";
-interface FavoriteDate {
-  [providerId: number]: string;
-}
+import {
+  getCompareProviderIds,
+  toggleCompareProviderId,
+} from "../Utility/compareProvidersStorage";
+import { resolvePublicProviderId } from "../Utility/resolvePublicProviderId";
+import {
+  filterProvidersByZipRadius,
+  isValidUsZipForLookup,
+  normalizeUsZip,
+} from "../Utility/nearMeZipFilter";
+
 const ProvidersPage: React.FC = () => {
   const [selectedProvider, setSelectedProvider] =
     useState<ProviderAttributes | null>(null);
@@ -37,10 +47,13 @@ const ProvidersPage: React.FC = () => {
   const [showError, setShowError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const errorTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const [favoriteProviders, setFavoriteProviders] = useState<
-    ProviderAttributes[]
-  >([]);
-  const [favoriteDates, setFavoriteDates] = useState<FavoriteDate>({});
+  const [compareIds, setCompareIds] = useState<number[]>(() =>
+    getCompareProviderIds()
+  );
+  const [nearMeFilter, setNearMeFilter] = useState<{
+    zip: string;
+    radiusMiles: number;
+  } | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedAge, setSelectedAge] = useState<string>("");
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -90,7 +103,7 @@ const ProvidersPage: React.FC = () => {
     {
       target: ".provider-cards-grid",
       content:
-        "Here you can see the available providers. Click on a provider to see more details, and to add them to your favorites.",
+        "Here you can see the available providers. Click Details for more info, or Add to compare (up to 3) to review them side by side.",
       placement: "top",
     },
     {
@@ -122,88 +135,38 @@ const ProvidersPage: React.FC = () => {
   };
 
   useEffect(() => {
-    const storedFavorites = localStorage.getItem("favoriteProviders");
-    const storedDates = localStorage.getItem("favoriteDates");
+    const sync = () => setCompareIds(getCompareProviderIds());
+    sync();
+    window.addEventListener("compareProvidersChanged", sync);
+    return () =>
+      window.removeEventListener("compareProvidersChanged", sync);
+  }, []);
 
-    if (storedFavorites) {
-      const parsedFavorites = JSON.parse(storedFavorites);
-      const sortedFavorites = parsedFavorites.sort(
-        (a: ProviderAttributes, b: ProviderAttributes) => {
-          const nameA = a.name?.toLowerCase() ?? "";
-          const nameB = b.name?.toLowerCase() ?? "";
-          return nameA.localeCompare(nameB);
-        }
+  const handleToggleCompare = useCallback((providerId: number) => {
+    const result = toggleCompareProviderId(providerId);
+    setCompareIds(getCompareProviderIds());
+    if (!result.ok && result.reason === "invalid") {
+      toast.error(
+        "Could not add this provider to compare. Try refreshing the page."
       );
-      setFavoriteProviders(sortedFavorites);
-    }
-
-    if (storedDates) {
-      setFavoriteDates(JSON.parse(storedDates));
     }
   }, []);
 
-  const toggleFavorite = useCallback(
-    (providerId: number, date?: string) => {
-      // toggleFavorite called
-      
-      setFavoriteProviders((prevFavorites) => {
-        // First try to find the provider in filtered providers, then in all providers
-        const provider = filteredProviders.find((p) => p.id === providerId) || 
-                        allProviders.find((p) => p.id === providerId);
-        
-        // Found provider
-        
-        if (!provider) {
-          // Provider not found
-          return prevFavorites;
-        }
+  const handleNearMeSearch = useCallback((zip: string, radiusMiles: number) => {
+    const z = normalizeUsZip(zip);
+    if (!z || !isValidUsZipForLookup(z)) {
+      toast.error("Please enter a valid US ZIP code.");
+      return;
+    }
+    setNearMeFilter({ zip: z, radiusMiles });
+    setCurrentPage(1);
+    setIsSearchRefined(true);
+  }, []);
 
-        const isFavorited = (prevFavorites ?? []).some((fav) => fav.id === providerId);
-        // Current favorited state checked
-
-        let newFavorites;
-        if (isFavorited) {
-          newFavorites = prevFavorites.filter((fav) => fav.id !== providerId);
-          // Removing from favorites
-
-          setFavoriteDates((prevDates) => {
-            const { [providerId]: _, ...rest } = prevDates;
-            localStorage.setItem("favoriteDates", JSON.stringify(rest));
-            return rest;
-          });
-        } else {
-          newFavorites = [...prevFavorites, provider];
-          // Adding to favorites
-
-          const currentDate = date || new Date().toLocaleDateString("en-US", {
-            month: "2-digit",
-            day: "2-digit",
-            year: "2-digit",
-          });
-          setFavoriteDates((prevDates) => {
-            const newDates = { ...prevDates, [providerId]: currentDate };
-            localStorage.setItem("favoriteDates", JSON.stringify(newDates));
-            return newDates;
-          });
-        }
-
-        const sortedFavorites = newFavorites.sort((a, b) => {
-          const nameA = a.name?.toLowerCase() ?? "";
-          const nameB = b.name?.toLowerCase() ?? "";
-          return nameA.localeCompare(nameB);
-        });
-
-        localStorage.setItem(
-          "favoriteProviders",
-          JSON.stringify(sortedFavorites)
-        );
-
-        // New favorites count updated
-        return sortedFavorites;
-      });
-    },
-    [allProviders, filteredProviders]
-  );
+  const handleClearNearMe = useCallback(() => {
+    setNearMeFilter(null);
+    setCurrentPage(1);
+  }, []);
 
   useEffect(() => {
     const getProviders = async () => {
@@ -269,7 +232,7 @@ const ProvidersPage: React.FC = () => {
         }
         
         const mappedProviders = providers.data.map((p: ProviderData) => ({
-          id: p.attributes.id,
+          id: resolvePublicProviderId(p),
           name: p.attributes.name,
           locations: p.attributes.locations,
           insurance: p.attributes.insurance,
@@ -364,7 +327,7 @@ const ProvidersPage: React.FC = () => {
       }
       
       const mappedProviders = providers.data.map((p: ProviderData) => ({
-        id: p.attributes.id,
+        id: resolvePublicProviderId(p),
         name: p.attributes.name,
         locations: p.attributes.locations,
         insurance: p.attributes.insurance,
@@ -437,10 +400,10 @@ const ProvidersPage: React.FC = () => {
         return;
       }
       
-      // Map API response to ProviderAttributes
+      // Map API response to ProviderAttributes (id must win over attributes spread)
       const mappedProviders = results.data.map((p: any) => ({
-        id: p.attributes.id || p.id, // Use attributes.id if available, fallback to p.id
         ...p.attributes,
+        id: resolvePublicProviderId(p),
         states: p.states || [],
         provider_type: p.attributes.provider_type || [],
         updated_last: p.attributes.updated_last,
@@ -688,6 +651,7 @@ const ProvidersPage: React.FC = () => {
     setShowError("");
     setIsSearchRefined(false);
     setShowResultMessage(false);
+    setNearMeFilter(null);
   };
 
   const handleCountyChange = (county: string) => {
@@ -728,7 +692,7 @@ const ProvidersPage: React.FC = () => {
     }
     
     const mappedResults = results.data.map((p: ProviderData) => ({
-      id: p.attributes.id,
+      id: resolvePublicProviderId(p),
       name: p.attributes.name,
       locations: p.attributes.locations,
       insurance: p.attributes.insurance,
@@ -833,7 +797,18 @@ const ProvidersPage: React.FC = () => {
   });
 
   // Combine all filtered providers without location filtering
-  const combinedProviders = [...filteredWithService, ...filteredWithoutService];
+  const combinedProvidersBase = [
+    ...filteredWithService,
+    ...filteredWithoutService,
+  ];
+
+  const combinedProviders = nearMeFilter
+    ? filterProvidersByZipRadius(
+        combinedProvidersBase,
+        nearMeFilter.zip,
+        nearMeFilter.radiusMiles
+      )
+    : combinedProvidersBase;
 
   // Then do pagination on the filtered list
   const indexOfLastProvider = currentPage * providersPerPage;
@@ -966,7 +941,9 @@ const ProvidersPage: React.FC = () => {
         <h1 className="providers-banner-title">Find Your Provider</h1>
       </section>
       
-      <main>
+      <main
+        className={compareIds.length > 0 ? "providers-main-with-compare" : undefined}
+      >
         <div className="provider-page-search-cards-section">
           <SearchBar
             providers={filteredProviders}
@@ -985,6 +962,9 @@ const ProvidersPage: React.FC = () => {
             onStateChange={handleStateChange}
             onReset={handleResetSearch}
             showSearchNotification={showSearchNotification}
+            nearMeFilter={nearMeFilter}
+            onNearMeSearch={handleNearMeSearch}
+            onClearNearMe={handleClearNearMe}
           />
           <section className="glass">
             <section className="searched-provider-map-locations-list-section">
@@ -1170,18 +1150,44 @@ const ProvidersPage: React.FC = () => {
                           </svg>
                         </div>
                         <h3 className="text-xl font-semibold text-gray-700 mb-2">
-                          No providers found
+                          {nearMeFilter
+                            ? "No providers in that area"
+                            : "No providers found"}
                         </h3>
                         <p className="text-gray-600 mb-4">
-                          We couldn't find any {selectedProviderType} providers matching your current search criteria.
+                          {nearMeFilter ? (
+                            <>
+                              No providers in your current list with a location
+                              within {nearMeFilter.radiusMiles} miles of ZIP{" "}
+                              <strong>{nearMeFilter.zip}</strong> (by ZIP
+                              centroid). Try a larger radius or clear the
+                              location filter.
+                            </>
+                          ) : (
+                            <>
+                              We couldn&apos;t find any{" "}
+                              {selectedProviderType} providers matching your
+                              current search criteria.
+                            </>
+                          )}
                         </p>
                         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
                           <h4 className="font-medium text-blue-800 mb-2">💡 Try these suggestions:</h4>
                           <ul className="text-sm text-blue-700 space-y-1">
-                            <li>Expand your search area by selecting a different state</li>
-                            <li>Try a different provider type</li>
-                            <li>Remove some advanced filters to see more results</li>
-                            <li>Check back periodically as new providers are added regularly</li>
+                            {nearMeFilter ? (
+                              <>
+                                <li>Increase the search radius</li>
+                                <li>Clear “near me” and use state or county filters</li>
+                                <li>Run a broader search first, then narrow by ZIP</li>
+                              </>
+                            ) : (
+                              <>
+                                <li>Expand your search area by selecting a different state</li>
+                                <li>Try a different provider type</li>
+                                <li>Remove some advanced filters to see more results</li>
+                                <li>Check back periodically as new providers are added regularly</li>
+                              </>
+                            )}
                           </ul>
                         </div>
                         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
@@ -1210,11 +1216,14 @@ const ProvidersPage: React.FC = () => {
                             <ProviderCard
                               provider={provider}
                               onViewDetails={handleProviderCardClick}
-                              onToggleFavorite={toggleFavorite}
-                              isFavorited={(favoriteProviders ?? []).some(
-                                (fav) => fav.id === provider.id
+                              onToggleCompare={handleToggleCompare}
+                              isInCompare={compareIds.includes(
+                                Number(provider.id)
                               )}
-                              favoritedDate={favoriteDates[provider.id]}
+                              compareSlotFull={
+                                compareIds.length >= 3 &&
+                                !compareIds.includes(Number(provider.id))
+                              }
                               selectedState={selectedStateId === 'none' ? '' : selectedStateId || ''}
                               hasReviews={providersWithReviews.has(provider.id)}
                             />
@@ -1301,6 +1310,21 @@ const ProvidersPage: React.FC = () => {
             selectedState={selectedStateId || null}
             availableCounties={[]} // Counties are no longer fetched here
           />
+        )}
+        {compareIds.length > 0 && (
+          <div
+            className="compare-sticky-bar"
+            role="status"
+            aria-live="polite"
+          >
+            <span className="compare-sticky-text">
+              {compareIds.length} provider
+              {compareIds.length !== 1 ? "s" : ""} selected to compare
+            </span>
+            <Link to="/providers/compare" className="compare-sticky-link">
+              Open compare
+            </Link>
+          </div>
         )}
       </main>
     </div>

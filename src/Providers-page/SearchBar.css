@@ -597,3 +597,150 @@ select {
         box-sizing: border-box;
     }
 }
+
+/* Find providers near me (ZIP + radius) */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.near-me-panel {
+    flex: 1 1 100%;
+    width: 100%;
+    padding: 1rem 1.1rem;
+    background: #f0f4fa;
+    border: 1px solid #c7d4eb;
+    border-radius: 0.75rem;
+    box-sizing: border-box;
+}
+
+.near-me-panel-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.35rem;
+}
+
+.near-me-icon {
+    color: #4a6fa5;
+    flex-shrink: 0;
+}
+
+.near-me-title {
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: #1e293b;
+}
+
+.near-me-active-badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-left: 0.25rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+    background: #4a6fa5;
+    color: #fff;
+}
+
+.near-me-help {
+    font-size: 0.85rem;
+    color: #64748b;
+    margin: 0 0 0.75rem;
+    line-height: 1.4;
+}
+
+.near-me-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.near-me-label {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.near-me-zip-input {
+    width: 8.5rem;
+    min-height: 38px;
+    padding: 0 0.75rem;
+    border-radius: 0.5rem;
+    border: 1px solid #94a3b8;
+    font-size: 1rem;
+    background: #fff;
+    color: #0f172a;
+}
+
+.near-me-radius-select {
+    min-width: 5.5rem;
+    min-height: 38px;
+    padding: 0 0.5rem;
+    border-radius: 0.5rem;
+    border: 1px solid #94a3b8;
+    font-size: 0.95rem;
+    background: #fff;
+    color: #0f172a;
+}
+
+.near-me-search-btn {
+    min-height: 38px;
+    padding: 0 1rem;
+    border-radius: 0.5rem;
+    border: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    background: #4a6fa5;
+    color: #fff;
+    cursor: pointer;
+}
+
+.near-me-search-btn:hover:not(:disabled) {
+    background: #3d5d8a;
+}
+
+.near-me-search-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.near-me-clear-btn {
+    min-height: 38px;
+    padding: 0 0.75rem;
+    border-radius: 0.5rem;
+    border: 1px solid #94a3b8;
+    background: #fff;
+    color: #475569;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.near-me-clear-btn:hover {
+    background: #f8fafc;
+}
+
+@media (max-width: 640px) {
+    .near-me-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .near-me-zip-input,
+    .near-me-radius-select {
+        width: 100%;
+    }
+
+    .near-me-search-btn,
+    .near-me-clear-btn {
+        width: 100%;
+    }
+}

@@ -1,6 +1,6 @@
 import React from "react";
 import "./App.css";
-import { Routes, Route, useParams } from "react-router-dom";
+import { Routes, Route, useParams, Navigate } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Homepage from "../Homepage/Homepage";
@@ -28,7 +28,7 @@ import SuperAdmin from "../SuperAdmin/SuperAdmin";
 import Resources from "../Resources/Resources";
 import { fetchPublicProviders } from "../Utility/ApiCall";
 import { SuperAdminEdit } from "../SuperAdmin/SuperAdminEdit";
-import FavoriteProviders from "../FavoriteProviders-page/FavoriteProviders";
+import CompareProviders from "../CompareProviders-page/CompareProviders";
 import ServiceDisclaimer from "../Footer/servicedisclaimer";
 import Careers from "../Footer/Careers";
 import { handleMobileIssues } from "../Utility/cacheUtils";
@@ -206,7 +206,11 @@ function App() {
             <Route path="/provider-walkthrough" element={<ProviderWalkthrough />} />
             <Route path="/about" element={<AboutUs />} />
             <Route path="/resources" element={<Resources />} />
-            <Route path="/favoriteproviders" element={<FavoriteProviders />} />
+            <Route path="/providers/compare" element={<CompareProviders />} />
+            <Route
+              path="/favoriteproviders"
+              element={<Navigate to="/providers/compare" replace />}
+            />
             <Route path="/donate" element={<Donations />} />
             <Route path="/sponsor" element={<SponsorLanding />} />
             <Route path="/servicedisclaimer" element={<ServiceDisclaimer />} />
