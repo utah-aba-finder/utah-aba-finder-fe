@@ -13,6 +13,10 @@ import ReCAPTCHA from "react-google-recaptcha";
 import './InsuranceInput.css';
 import './ProviderSignup.css';
 
+function isValidEmailFormat(value: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+}
+
 // Valid waitlist options for in_home_waitlist and in_clinic_waitlist
 const WAITLIST_OPTIONS = [
   "No waitlist",
@@ -93,7 +97,10 @@ interface ProviderCategory {
 }
 
 type ProviderRegistration = {
+  /** Practice / public listing email (e.g. info@practice.com) — sent as `email` to the API */
   email: string;
+  /** Optional: person completing the form — confirmations & login when different from practice email */
+  applicant_email: string;
   provider_name: string;
   service_types: string[]; // Changed from provider_type to service_types
   submitted_data: Record<string, any>;
@@ -109,6 +116,7 @@ const ProviderSignup: React.FC = () => {
   const [selectedCategories, setSelectedCategories] = useState<ProviderCategory[]>([]);
   const [formData, setFormData] = useState<ProviderRegistration>({
     email: '',
+    applicant_email: '',
     provider_name: '',
     service_types: [], // Changed from provider_type to service_types
     submitted_data: {},
@@ -179,7 +187,11 @@ const ProviderSignup: React.FC = () => {
   
   // Success state
   const [showSuccess, setShowSuccess] = useState(false);
-  const [successData, setSuccessData] = useState<{ providerName: string; email: string } | null>(null);
+  const [successData, setSuccessData] = useState<{
+    providerName: string;
+    practiceEmail: string;
+    confirmationEmail: string;
+  } | null>(null);
   
   // Mode toggle state
   const [isClaimMode, setIsClaimMode] = useState(false);
@@ -193,13 +205,15 @@ const ProviderSignup: React.FC = () => {
       try {
         const draft = JSON.parse(savedDraft);
         if (draft.timestamp && Date.now() - draft.timestamp < 24 * 60 * 60 * 1000) { // 24 hours
-                  setFormData(draft.formData || {
-          email: '',
-          provider_name: '',
-          service_types: [], // Changed from provider_type to service_types
-          submitted_data: {},
-          logo: ''
-        });
+                  setFormData({
+                    email: '',
+                    applicant_email: '',
+                    provider_name: '',
+                    service_types: [],
+                    submitted_data: {},
+                    logo: '',
+                    ...(draft.formData || {}),
+                  });
           setCommonFields(draft.commonFields || {
             contact_phone: '',
             website: '',
@@ -247,6 +261,7 @@ const ProviderSignup: React.FC = () => {
     // Reset all form data
     setFormData({
       email: '',
+      applicant_email: '',
       provider_name: '',
       service_types: [], // Changed from provider_type to service_types
       submitted_data: {},
@@ -753,7 +768,7 @@ const ProviderSignup: React.FC = () => {
         const isDuplicate = existingProviders.some((provider: any) => {
           const providerEmail = provider.attributes?.email?.toLowerCase();
           const providerName = provider.attributes?.provider_name?.toLowerCase();
-          const newEmail = formData.email.toLowerCase();
+          const newEmail = formData.email.trim().toLowerCase();
           const newName = formData.provider_name.toLowerCase();
           
           return providerEmail === newEmail || providerName === newName;
@@ -824,6 +839,17 @@ const ProviderSignup: React.FC = () => {
       } finally {
         setIsCheckingDuplicate(false);
       }
+    }
+
+    const practiceEmail = formData.email.trim();
+    if (!practiceEmail || !isValidEmailFormat(practiceEmail)) {
+      toast.error('Please enter a valid practice / listing email address.');
+      return;
+    }
+    const applicantTrimmed = (formData.applicant_email || '').trim();
+    if (applicantTrimmed && !isValidEmailFormat(applicantTrimmed)) {
+      toast.error('Please enter a valid applicant email, or leave it blank.');
+      return;
     }
 
     // Check reCAPTCHA completion (real token or development fallback)
@@ -926,16 +952,25 @@ const ProviderSignup: React.FC = () => {
         return serviceTypeMap[categorySlug] || categorySlug;
       };
 
+      const sendApplicantEmail =
+        applicantTrimmed.length > 0 &&
+        applicantTrimmed.toLowerCase() !== practiceEmail.toLowerCase();
+
+      const registrationPayload: Record<string, unknown> = {
+        email: practiceEmail,
+        provider_name: formData.provider_name,
+        service_types: selectedCategories.map(cat => mapCategoryToServiceType(cat.attributes.slug)),
+        category: selectedCategories.map(cat => mapCategoryToServiceType(cat.attributes.slug)),
+        submitted_data: structuredSubmittedData,
+        logo: formData.logo,
+      };
+      if (sendApplicantEmail) {
+        registrationPayload.applicant_email = applicantTrimmed;
+      }
+
       const submitData = {
-        provider_registration: {
-          email: formData.email,
-          provider_name: formData.provider_name,
-          service_types: selectedCategories.map(cat => mapCategoryToServiceType(cat.attributes.slug)), // Map to correct service types
-          category: selectedCategories.map(cat => mapCategoryToServiceType(cat.attributes.slug)), // Map to correct service types
-          submitted_data: structuredSubmittedData,
-          logo: formData.logo
-        },
-        recaptcha_token: recaptchaToken
+        provider_registration: registrationPayload,
+        recaptcha_token: recaptchaToken,
       };
 
       // Debug logging only in development
@@ -970,7 +1005,11 @@ const ProviderSignup: React.FC = () => {
         
         // Set success state and data
         setShowSuccess(true);
-        setSuccessData({ providerName: formData.provider_name, email: formData.email });
+        setSuccessData({
+          providerName: formData.provider_name,
+          practiceEmail,
+          confirmationEmail: sendApplicantEmail ? applicantTrimmed : practiceEmail,
+        });
 
         // Reset form using the comprehensive reset function
         resetForm();
@@ -1695,14 +1734,40 @@ const ProviderSignup: React.FC = () => {
                       />
                     </div>
                     <div className="form-group">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Email Address *</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Practice / listing email (required)
+                      </label>
                       <input
                         type="email"
                         value={formData.email || ''}
                         onChange={(e) => handleInputChange('email', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         required
+                        autoComplete="email"
+                        placeholder="e.g. info@yourpractice.com"
                       />
+                      <p className="mt-1 text-sm text-gray-500">
+                        This is the email families and your public listing will associate with the practice.
+                      </p>
+                    </div>
+                    <div className="form-group md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Your email (optional) — for confirmations &amp; login if not the practice inbox
+                      </label>
+                      <input
+                        type="email"
+                        value={formData.applicant_email || ''}
+                        onChange={(e) => handleInputChange('applicant_email', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        autoComplete="email"
+                        placeholder="Use if you are not the same inbox as the practice email above"
+                      />
+                      <p className="mt-1 text-sm text-gray-500">
+                        Use this when you are not the same inbox as the practice / listing email. We send confirmations
+                        and login instructions here when it differs from the practice email. If you leave it blank or
+                        it matches the practice email, only the practice email is used for notifications and your
+                        account—same as before.
+                      </p>
                     </div>
                     <div className="form-group md:col-span-2">
                       <label className="block text-sm font-medium text-gray-700 mb-2">Business Logo</label>
@@ -2140,10 +2205,17 @@ const ProviderSignup: React.FC = () => {
                       <span className="font-medium">Provider Name:</span>
                       <span>{formData.provider_name}</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="font-medium">Email:</span>
-                      <span>{formData.email}</span>
+                    <div className="flex justify-between gap-4">
+                      <span className="font-medium">Practice / listing email:</span>
+                      <span className="text-right break-all">{formData.email}</span>
                     </div>
+                    {formData.applicant_email?.trim() &&
+                      formData.applicant_email.trim().toLowerCase() !== formData.email.trim().toLowerCase() && (
+                        <div className="flex justify-between gap-4">
+                          <span className="font-medium">Applicant email (confirmations):</span>
+                          <span className="text-right break-all">{formData.applicant_email.trim()}</span>
+                        </div>
+                      )}
                     <div className="flex justify-between">
                       <span className="font-medium">Categories:</span>
                       <span>{selectedCategories.map(cat => cat.attributes.name).join(', ')}</span>
@@ -2269,9 +2341,18 @@ const ProviderSignup: React.FC = () => {
                   Thank you, <span className="font-semibold text-gray-900">{successData.providerName}</span>!
                 </p>
                 <p>
-                  Your provider registration has been submitted successfully. We've sent a confirmation email to{' '}
-                  <span className="font-semibold text-gray-900">{successData.email}</span>.
+                  Your registration was submitted successfully. We&apos;ve sent a confirmation to{' '}
+                  <span className="font-semibold text-gray-900">{successData.confirmationEmail}</span>. Further notices
+                  and login instructions will go to the same address.
                 </p>
+                {successData.confirmationEmail.toLowerCase() !==
+                  successData.practiceEmail.toLowerCase() && (
+                  <p className="text-sm text-gray-600">
+                    Your directory listing will still show{' '}
+                    <span className="font-semibold text-gray-900">{successData.practiceEmail}</span> as the practice
+                    contact email.
+                  </p>
+                )}
               </div>
               
               {/* Next Steps */}

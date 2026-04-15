@@ -15,6 +15,7 @@ interface ProviderRegistration {
   type: 'provider_registration';
   attributes: {
     email: string;
+    applicant_email?: string | null;
     provider_name: string;
     service_types: string[];
     category?: string; // Category slug (e.g., "autism_evaluations")
@@ -506,9 +507,21 @@ const ProviderRegistrations: React.FC = () => {
                     <p className="text-sm font-medium text-gray-900">{selectedRegistration.attributes.provider_name}</p>
                   </div>
                   <div className="bg-white p-3 rounded border border-gray-200">
-                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Email</label>
+                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
+                      Practice / listing email
+                    </label>
                     <p className="text-sm font-medium text-gray-900 break-words">{selectedRegistration.attributes.email}</p>
                   </div>
+                  {selectedRegistration.attributes.applicant_email && (
+                    <div className="bg-white p-3 rounded border border-gray-200">
+                      <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
+                        Applicant email
+                      </label>
+                      <p className="text-sm font-medium text-gray-900 break-words">
+                        {selectedRegistration.attributes.applicant_email}
+                      </p>
+                    </div>
+                  )}
                   <div className="bg-white p-3 rounded border border-gray-200">
                     <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Provider Type/Category</label>
                     <p className="text-sm font-medium text-gray-900">
