@@ -9,6 +9,7 @@ import {
   X
 } from 'lucide-react';
 import { useAuth } from '../Provider-login/AuthProvider';
+import { getApiBaseUrl, getSuperAdminAuthHeader } from '../Utility/config';
 
 interface ProviderRegistration {
   id: string;
@@ -37,34 +38,52 @@ const ProviderRegistrations: React.FC = () => {
   const [selectedRegistration, setSelectedRegistration] = useState<ProviderRegistration | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Fetch registrations
+  // Fetch registrations — same auth + base URL pattern as ProviderClaimRequests / ApiCall
   const fetchRegistrations = useCallback(async () => {
     if (!currentUser?.id) {
+      setIsLoading(false);
       return;
     }
-    
+
+    let authHeader: string;
+    try {
+      authHeader = getSuperAdminAuthHeader();
+    } catch {
+      toast.error('Authentication failed. Please log out and log back in.');
+      setIsLoading(false);
+      return;
+    }
+
     setIsLoading(true);
     try {
       const response = await fetch(
-        'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/provider_registrations',
+        `${getApiBaseUrl()}/api/v1/provider_registrations`,
         {
           headers: {
-            'Authorization': `Bearer ${currentUser.id}`,
-            'Content-Type': 'application/json'
-          }
+            Authorization: authHeader,
+            'Content-Type': 'application/json',
+          },
         }
       );
 
-      
       if (response.ok) {
         const data = await response.json();
         setRegistrations(data.data || []);
       } else {
         const errorText = await response.text();
-        throw new Error(`HTTP error: ${response.status} - ${errorText}`);
+        if (response.status === 401) {
+          toast.error('Authentication failed. Please log out and log back in.');
+        } else {
+          toast.error(
+            `Failed to load registrations (${response.status}). ${errorText?.slice(0, 160) || response.statusText}`
+          );
+        }
       }
     } catch (error) {
-      toast.error('Failed to fetch registrations');
+      console.error('ProviderRegistrations fetch:', error);
+      toast.error(
+        error instanceof Error ? error.message : 'Network error while loading registrations'
+      );
     } finally {
       setIsLoading(false);
     }
@@ -76,22 +95,30 @@ const ProviderRegistrations: React.FC = () => {
       toast.error('You must be logged in to approve registrations');
       return;
     }
-    
+
+    let authHeader: string;
+    try {
+      authHeader = getSuperAdminAuthHeader();
+    } catch {
+      toast.error('Authentication failed. Please log out and log back in.');
+      return;
+    }
+
     if (processingId === registrationId) {
       return;
     }
-    
+
     setProcessingId(registrationId);
-    
+
     try {
       const response = await fetch(
-        `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/provider_registrations/${registrationId}/approve`,
+        `${getApiBaseUrl()}/api/v1/provider_registrations/${registrationId}/approve`,
         {
           method: 'PATCH',
           headers: {
-            'Authorization': `Bearer ${currentUser.id}`,
-            'Content-Type': 'application/json'
-          }
+            Authorization: authHeader,
+            'Content-Type': 'application/json',
+          },
         }
       );
 
@@ -117,22 +144,30 @@ const ProviderRegistrations: React.FC = () => {
       toast.error('You must be logged in to reject registrations');
       return;
     }
-    
+
+    let authHeader: string;
+    try {
+      authHeader = getSuperAdminAuthHeader();
+    } catch {
+      toast.error('Authentication failed. Please log out and log back in.');
+      return;
+    }
+
     if (processingId === registrationId) {
       return;
     }
-    
+
     setProcessingId(registrationId);
-    
+
     try {
       const response = await fetch(
-        `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/provider_registrations/${registrationId}/reject`,
+        `${getApiBaseUrl()}/api/v1/provider_registrations/${registrationId}/reject`,
         {
           method: 'PATCH',
           headers: {
-            'Authorization': `Bearer ${currentUser.id}`,
-            'Content-Type': 'application/json'
-          }
+            Authorization: authHeader,
+            'Content-Type': 'application/json',
+          },
         }
       );
 
