@@ -16,19 +16,22 @@ export const API_CONFIG = {
   IS_DEVELOPMENT: process.env.NODE_ENV === 'development',
 };
 
+/**
+ * Build `Authorization` for session-based admin calls.
+ * Same convention as super-admin: `Bearer <numeric id>` or `Bearer <email>` (see `getSuperAdminAuthHeader`).
+ */
 // Helper function to get admin authorization header
 export const getAdminAuthHeader = () => {
-  // For super admin operations, we need to send Bearer {user_id}
-  // The user_id should be extracted from the current user's session
   const currentUser = sessionStorage.getItem('currentUser');
   if (currentUser) {
     try {
-      const user = JSON.parse(currentUser);
-      return `Bearer ${user.id}`;
-    } catch (error) {
+      const user = JSON.parse(currentUser) as { id?: number | string; email?: string };
+      const bearer = bearerFromSessionUser(user);
+      if (bearer) return bearer;
+    } catch {
     }
   }
-  
+
   // Fallback to API key if no user session
   return API_CONFIG.ADMIN_API_KEY;
 };
@@ -38,14 +41,38 @@ export const getUserAuthHeader = () => {
   return sessionStorage.getItem('authToken');
 };
 
+/**
+ * Super-admin routes (e.g. GET /api/v1/provider_registrations) expect:
+ * `Authorization: Bearer <numeric user id>` or `Bearer <user email>`.
+ * The API uses `authenticate_user!` on that value (not a JWT unless enabled server-side).
+ * User must have `role === 'super_admin'` or the API returns 403 `{ "error": "Unauthorized" }`.
+ */
+function bearerFromSessionUser(user: {
+  id?: number | string;
+  email?: string;
+}): string | null {
+  if (user.id != null && String(user.id).trim() !== '') {
+    return `Bearer ${user.id}`;
+  }
+  if (user.email != null && String(user.email).trim() !== '') {
+    return `Bearer ${user.email}`;
+  }
+  return null;
+}
+
 // Helper function specifically for super admin operations
 export const getSuperAdminAuthHeader = () => {
-  const currentUser = sessionStorage.getItem('currentUser');
-  if (currentUser) {
+  const raw = sessionStorage.getItem('currentUser');
+  if (raw) {
     try {
-      const user = JSON.parse(currentUser);
-      return `Bearer ${user.id}`;
-    } catch (error) {
+      const user = JSON.parse(raw) as { id?: number | string; email?: string };
+      const bearer = bearerFromSessionUser(user);
+      if (bearer) return bearer;
+      throw new Error(
+        'Super admin authentication failed: No user id or email in session'
+      );
+    } catch (e) {
+      if (e instanceof Error && e.message.includes('Super admin authentication failed')) throw e;
       throw new Error('Super admin authentication failed: No valid user session');
     }
   }
