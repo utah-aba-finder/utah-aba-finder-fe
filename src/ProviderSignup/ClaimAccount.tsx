@@ -1,20 +1,41 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { Mail, Building2, Phone, Globe, AlertCircle } from 'lucide-react';
 import 'react-toastify/dist/ReactToastify.css';
 
-interface ClaimAccountProps {
-  onBackToSignup: () => void;
+export interface ClaimAccountPrefill {
+  provider_id?: number;
+  provider_name?: string;
+  website?: string;
 }
 
-const ClaimAccount: React.FC<ClaimAccountProps> = ({ onBackToSignup }) => {
+interface ClaimAccountProps {
+  onBackToSignup: () => void;
+  /** Set when user opens claim flow from a directory card/modal deep link */
+  prefill?: ClaimAccountPrefill | null;
+}
+
+const ClaimAccount: React.FC<ClaimAccountProps> = ({ onBackToSignup, prefill }) => {
   const [formData, setFormData] = useState({
+    provider_id: undefined as number | undefined,
     provider_name: '',
     contact_email: '',
     contact_phone: '',
     website: '',
     additional_info: ''
   });
+
+  useEffect(() => {
+    if (!prefill) return;
+    setFormData((prev) => ({
+      ...prev,
+      ...(prefill.provider_id != null && Number.isFinite(prefill.provider_id)
+        ? { provider_id: prefill.provider_id }
+        : {}),
+      ...(prefill.provider_name ? { provider_name: prefill.provider_name } : {}),
+      ...(prefill.website ? { website: prefill.website } : {}),
+    }));
+  }, [prefill]);
   
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -36,9 +57,13 @@ const ClaimAccount: React.FC<ClaimAccountProps> = ({ onBackToSignup }) => {
     // Build request body based on what user provided
     // Backend accepts: provider_id, provider_name, or email (provider's registered email)
     // Always requires claimer_email (the person requesting access)
-    let requestBody: any = {
+    let requestBody: Record<string, unknown> = {
       claimer_email: formData.contact_email
     };
+
+    if (formData.provider_id != null && Number.isFinite(Number(formData.provider_id))) {
+      requestBody.provider_id = Number(formData.provider_id);
+    }
 
     // If provider name is provided, use it
     if (formData.provider_name && formData.provider_name.trim()) {
@@ -77,6 +102,7 @@ const ClaimAccount: React.FC<ClaimAccountProps> = ({ onBackToSignup }) => {
         
         // Reset form
         setFormData({
+          provider_id: undefined,
           provider_name: '',
           contact_email: '',
           contact_phone: '',
@@ -174,6 +200,13 @@ const ClaimAccount: React.FC<ClaimAccountProps> = ({ onBackToSignup }) => {
             Your provider information is already in our system! Request access to your account.
           </p>
         </div>
+
+        {formData.provider_id != null && (
+          <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4 text-sm text-green-900">
+            Request applies to the listing you opened from our directory
+            {formData.provider_name ? ` (${formData.provider_name})` : ''}.
+          </div>
+        )}
 
         {/* Info Alert */}
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">

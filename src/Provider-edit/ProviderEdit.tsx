@@ -28,6 +28,86 @@ import InsuranceModal from "./InsuranceModal";
 import CountiesModal from "./CountiesModal";
 import { SponsorshipPage } from "../Sponsorship";
 
+type StateOption = {
+  id: number;
+  attributes: { name: string; abbreviation: string };
+};
+
+function resolveProviderLogo(attrs: unknown): string | null {
+  if (!attrs || typeof attrs !== 'object') return null;
+  const record = attrs as Record<string, unknown>;
+  const logo = record.logo ?? record.logo_url;
+  return typeof logo === 'string' && logo.trim() ? logo : null;
+}
+
+function normalizeStateNames(
+  rawStates: string[] | undefined,
+  availableStates: StateOption[]
+): string[] {
+  if (!rawStates?.length) return [];
+
+  return rawStates
+    .map((entry) => {
+      const trimmed = String(entry).trim();
+      if (!trimmed) return trimmed;
+
+      const byId = availableStates.find((state) => String(state.id) === trimmed);
+      if (byId) return byId.attributes.name;
+
+      const upper = trimmed.toUpperCase();
+      const byAbbrev = availableStates.find(
+        (state) => state.attributes.abbreviation?.toUpperCase() === upper
+      );
+      if (byAbbrev) return byAbbrev.attributes.name;
+
+      const byName = availableStates.find(
+        (state) => state.attributes.name?.toLowerCase() === trimmed.toLowerCase()
+      );
+      if (byName) return byName.attributes.name;
+
+      return trimmed;
+    })
+    .filter(Boolean);
+}
+
+function buildCommonFieldsFromProvider(
+  provider: ProviderData,
+  normalizedStates: string[]
+) {
+  const primaryLocationId = (provider.attributes as any)?.primary_location_id || null;
+  const locations = provider.attributes?.locations || [];
+  const primaryLocation = primaryLocationId
+    ? locations.find((loc: any) => loc.id === primaryLocationId)
+    : locations[0];
+  const phoneFromLocation = primaryLocation?.phone || '';
+  const phoneFromProvider =
+    (provider.attributes as any).phone || provider.attributes.contact_phone || '';
+
+  return {
+    contact_phone: phoneFromLocation || phoneFromProvider,
+    website: provider.attributes.website || '',
+    service_areas:
+      provider.attributes.service_areas?.length
+        ? provider.attributes.service_areas
+        : normalizedStates,
+    waitlist_status: provider.attributes.waitlist_status || '',
+    additional_notes: provider.attributes.additional_notes || '',
+    primary_address: provider.attributes.primary_address || {
+      street: '',
+      suite: '',
+      city: '',
+      state: '',
+      zip: '',
+      phone: '',
+    },
+    service_delivery: provider.attributes.service_delivery || {
+      in_clinic: false,
+      in_home: false,
+      telehealth: false,
+    },
+  };
+}
+
 interface ProviderEditProps {
   loggedInProvider: ProviderData;
   clearProviderData: () => void;
@@ -192,73 +272,12 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
     });
   }, []);
 
-  // Debug effect to track activeProvider changes
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    
-    // If activeProvider has valid data but currentProvider doesn't match, force an update
-    if (activeProvider && activeProvider.id && activeProvider.id !== currentProvider?.id) {
-      
-      // Force an update by calling handleProviderSwitchWithData directly
-      if (activeProvider.attributes) {
-        handleProviderSwitchWithData(activeProvider);
-      } else {
-
-      }
-    }
-  }, [activeProvider, currentProvider?.id]);
-  
-  // Sync currentProvider with activeProvider from auth context
-  // previousProviderId.current = useRef<number | null>(null); // This line is removed as it's now in the component level
-  
-  // Main provider switching useEffect
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    
-    // Check if we actually need to do anything
-    if (!activeProvider) {
-      return;
-    }
-    
-    // Check if this is just a re-render with the same provider data
-    if (activeProvider.id === previousProviderId.current && 
-        activeProvider.id === currentProvider?.id) {
-      return;
-    }
-    
-    // Check if we need to switch providers (either different provider or currentProvider is out of sync)
-    const needsProviderSwitch = activeProvider.id !== currentProvider?.id;
-    
-    if (needsProviderSwitch) {
-      
-      // Check if we have the full provider data with attributes
-      if (!activeProvider.attributes) {
-
-        
-        // Don't try to fetch data here - let the AuthProvider handle it
-        // The AuthProvider should always provide complete data with attributes
-        return;
-      }
-      
-      // If we have attributes, proceed with the provider switch
-      handleProviderSwitchWithData(activeProvider);
-    } else {
-
-    }
-  }, [activeProvider, currentProvider?.id, loggedInProvider.id]);
-  
-  // Helper function to handle provider switching with data
-  const handleProviderSwitchWithData = (providerData: any) => {
-    
-    // Always update the state to ensure data consistency
-    // Even if it's the "same" provider, the data might be different or more complete
-    
-    // Convert the provider data to the format expected by ProviderEdit
-      const newProviderData: ProviderData = {
+  const handleProviderSwitchWithData = useCallback((providerData: any) => {
+    const newProviderData: ProviderData = {
       id: providerData.id,
       type: providerData.type,
       states: providerData.states || [],
-        attributes: {
+      attributes: {
         id: providerData.id,
         states: providerData.states || [],
         password: '',
@@ -278,67 +297,70 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
         insurance: providerData.attributes?.insurance || providerData.insurance || [],
         counties_served: providerData.attributes?.counties_served || providerData.counties_served || [],
         locations: providerData.attributes?.locations || providerData.locations || [],
-        logo: providerData.attributes?.logo || providerData.logo || null,
+        logo:
+          resolveProviderLogo(providerData.attributes) ||
+          resolveProviderLogo(providerData as Record<string, unknown>) ||
+          null,
+        service_areas: providerData.attributes?.service_areas || providerData.service_areas || [],
+        waitlist_status: providerData.attributes?.waitlist_status || providerData.waitlist_status || '',
+        additional_notes: providerData.attributes?.additional_notes || providerData.additional_notes || '',
+        primary_address: providerData.attributes?.primary_address || providerData.primary_address,
         updated_last: providerData.attributes?.updated_last || providerData.updated_last || null,
         status: providerData.attributes?.status || providerData.status || null,
         in_home_only: providerData.attributes?.in_home_only || providerData.in_home_only || false,
         service_delivery: providerData.attributes?.service_delivery || providerData.service_delivery || { in_home: false, in_clinic: false, telehealth: false }
       }
     };
-    
-    
-      setCurrentProvider(newProviderData);
+
+    const normalizedStates = normalizeStateNames(newProviderData.states || [], availableStates);
+    const statesForUi =
+      normalizedStates.length > 0
+        ? normalizedStates
+        : normalizeStateNames(newProviderData.attributes.service_areas || [], availableStates);
+
+    setCurrentProvider(newProviderData);
     previousProviderId.current = providerData.id;
-      
-    // Always update all local state variables to match the new provider data
-    
-    // Update all local state variables to match the new provider
-      setEditedProvider(newProviderData.attributes);
-      setProviderState(newProviderData.states || []);
-    setActiveStateForCounties(newProviderData.states?.[0] || '');
-      setSelectedCounties(newProviderData.attributes.counties_served || []);
-      setSelectedProviderTypes(newProviderData.attributes.provider_type || []);
-      setSelectedInsurances(newProviderData.attributes.insurance || []);
-      setSelectedLogoFile(null);
-      setCategoryFields(newProviderData.attributes.category_fields || []);
-    
-    // Initialize common fields with provider data
-    // Phone comes from primary location (not provider-level), since UI displays primaryLocation.phone
-    const primaryLocationId = (newProviderData.attributes as any)?.primary_location_id || null;
-    const locations = newProviderData.attributes?.locations || [];
-    const primaryLocation = primaryLocationId 
-      ? locations.find((loc: any) => loc.id === primaryLocationId)
-      : locations[0]; // Fallback to first location if no primary set
-    const phoneFromLocation = primaryLocation?.phone || '';
-    // Also check provider-level phone as fallback (for backward compatibility)
-    const phoneFromProvider = (newProviderData.attributes as any).phone || newProviderData.attributes.contact_phone || '';
-    
-    setCommonFields({
-      contact_phone: phoneFromLocation || phoneFromProvider,
-      website: newProviderData.attributes.website || '',
-      service_areas: newProviderData.attributes.service_areas || [],
-      waitlist_status: newProviderData.attributes.waitlist_status || '',
-      additional_notes: newProviderData.attributes.additional_notes || '',
-      primary_address: newProviderData.attributes.primary_address || {
-        street: '',
-        suite: '',
-        city: '',
-        state: '',
-        zip: '',
-        phone: ''
-      },
-      service_delivery: newProviderData.attributes.service_delivery || {
-        in_clinic: false,
-        in_home: false,
-        telehealth: false
-      }
-    });
-    
-    // Reset form state when switching providers
+    setEditedProvider(newProviderData.attributes);
+    setProviderState(statesForUi);
+    setActiveStateForCounties(statesForUi[0] || '');
+    setSelectedCounties(newProviderData.attributes.counties_served || []);
+    setSelectedProviderTypes(newProviderData.attributes.provider_type || []);
+    setSelectedInsurances(newProviderData.attributes.insurance || []);
+    setSelectedLogoFile(null);
+    setCategoryFields(newProviderData.attributes.category_fields || []);
+    setCommonFields(buildCommonFieldsFromProvider(newProviderData, statesForUi));
     setSelectedTab("dashboard");
     setIsOpen(false);
-    
-  };
+  }, [availableStates]);
+
+  useEffect(() => {
+    if (activeProvider && activeProvider.id && activeProvider.id !== currentProvider?.id) {
+      if (activeProvider.attributes) {
+        handleProviderSwitchWithData(activeProvider);
+      }
+    }
+  }, [activeProvider, currentProvider?.id, handleProviderSwitchWithData]);
+
+  useEffect(() => {
+    if (!activeProvider) {
+      return;
+    }
+
+    if (activeProvider.id === previousProviderId.current &&
+        activeProvider.id === currentProvider?.id) {
+      return;
+    }
+
+    const needsProviderSwitch = activeProvider.id !== currentProvider?.id;
+
+    if (needsProviderSwitch) {
+      if (!activeProvider.attributes) {
+        return;
+      }
+
+      handleProviderSwitchWithData(activeProvider);
+    }
+  }, [activeProvider, currentProvider?.id, loggedInProvider.id, handleProviderSwitchWithData]);
 
   // Also sync when loggedInProvider changes (for initial load)
   useEffect(() => {
@@ -582,25 +604,50 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       };
       
       const normalizedInsurance = normalizeInsuranceData(providerData.attributes?.insurance || []);
-      
+
+      let stateCatalog = availableStates;
+      if (!stateCatalog.length) {
+        try {
+          stateCatalog = await fetchStates();
+          setAvailableStates(stateCatalog);
+        } catch {
+          stateCatalog = [];
+        }
+      }
+
+      const apiLogo =
+        resolveProviderLogo(providerData.attributes) ||
+        resolveProviderLogo(providerData as Record<string, unknown>);
+      const preservedLogo =
+        apiLogo ||
+        resolveProviderLogo(currentProvider?.attributes) ||
+        null;
+
+      const rawStates = providerData.states || providerData.attributes?.states || [];
+      const normalizedStates = normalizeStateNames(rawStates, stateCatalog);
+      const statesForUi =
+        normalizedStates.length > 0
+          ? normalizedStates
+          : normalizeStateNames(providerData.attributes?.service_areas || [], stateCatalog);
+
       // Ensure we have all required properties with defaults
       const updatedProvider: ProviderData = {
         id: providerData.id || currentProvider?.id || 0,
         type: providerData.type || 'Provider',
-        states: providerData.states || [],
+        states: statesForUi,
         attributes: {
           id: providerData.id || currentProvider?.id || 0,
-          states: providerData.states || [],
+          states: statesForUi,
           password: '',
           username: providerData.attributes?.email || providerData.email || '',
           name: providerData.attributes?.name || providerData.name || '',
           email: providerData.attributes?.email || providerData.email || '',
           website: providerData.attributes?.website || providerData.website || '',
-          logo: providerData.attributes?.logo || providerData.logo || null,
+          logo: preservedLogo,
           provider_type: providerData.attributes?.provider_type || [],
           insurance: normalizedInsurance,
           counties_served: providerData.attributes?.counties_served || [],
-          locations: providerData.attributes?.locations || [],
+          locations: providerData.attributes?.locations || currentProvider?.attributes?.locations || [],
           cost: providerData.attributes?.cost || null,
           min_age: providerData.attributes?.min_age || null,
           max_age: providerData.attributes?.max_age || null,
@@ -613,6 +660,10 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
           status: providerData.attributes?.status || null,
           in_home_only: providerData.attributes?.in_home_only || false,
           service_delivery: providerData.attributes?.service_delivery || { in_home: false, in_clinic: false, telehealth: false },
+          service_areas: providerData.attributes?.service_areas || statesForUi,
+          waitlist_status: providerData.attributes?.waitlist_status || '',
+          additional_notes: providerData.attributes?.additional_notes || '',
+          primary_address: providerData.attributes?.primary_address || currentProvider?.attributes?.primary_address,
           // Include category fields for Educational Programs
           category: providerData.attributes?.category || null,
           category_name: providerData.attributes?.category_name || null,
@@ -691,24 +742,27 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       setCurrentProvider(updatedProvider);
       setEditedProvider({
         ...updatedProvider.attributes,
-        insurance: normalizedInsurance
+        insurance: normalizedInsurance,
+        logo: preservedLogo,
       });
-      setProviderState(updatedProvider.states || []);
+      setProviderState(statesForUi);
+      if (statesForUi.length > 0 && !activeStateForCounties) {
+        setActiveStateForCounties(statesForUi[0]);
+      }
       setSelectedCounties(updatedProvider.attributes.counties_served || []);
       setSelectedProviderTypes(updatedProvider.attributes.provider_type || []);
       setSelectedInsurances(normalizedInsurance);
       setSelectedLogoFile(null);
-      
+      setCommonFields(buildCommonFieldsFromProvider(updatedProvider, statesForUi));
+
       // Update categoryFields if provider_attributes were refreshed (for Educational Programs)
       // This will trigger the useEffect that loads category fields, which will merge with the refreshed provider_attributes
       // The useEffect at line 382 will handle updating categoryFields with the new provider_attributes
-      
-      toast.success('Provider data refreshed successfully');
     } catch (error) {
       toast.error('Failed to refresh provider data');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentProvider?.id, currentUser?.id, token]); // selectedInsurances intentionally omitted to avoid loops
+  }, [currentProvider?.id, currentUser?.id, token, availableStates, activeStateForCounties]);
 
   // Initialize provider state and fetch counties for saved states
   useEffect(() => {
@@ -719,16 +773,32 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
         setAvailableStates(states);
 
         // Get the provider's saved states - prioritize currentProvider as it's updated after saves
-        const savedStates = currentProvider?.states || activeProvider?.states || loggedInProvider?.states || [];
-        setProviderState(savedStates);
+        const rawStates =
+          currentProvider?.states ||
+          activeProvider?.states ||
+          loggedInProvider?.states ||
+          currentProvider?.attributes?.service_areas ||
+          [];
+        const savedStates = normalizeStateNames(rawStates, states);
+        const statesForUi =
+          savedStates.length > 0
+            ? savedStates
+            : normalizeStateNames(
+                currentProvider?.attributes?.service_areas ||
+                  activeProvider?.attributes?.service_areas ||
+                  loggedInProvider?.attributes?.service_areas ||
+                  [],
+                states
+              );
+        setProviderState(statesForUi);
 
         // If there are saved states, set the first one as active and fetch counties
-        if (savedStates.length > 0) {
-          setActiveStateForCounties(savedStates[0]);
+        if (statesForUi.length > 0) {
+          setActiveStateForCounties((prev) => prev || statesForUi[0]);
           
           // Fetch counties for all saved states
           const stateIds = states
-            .filter(s => savedStates.includes(s.attributes.name))
+            .filter(s => statesForUi.includes(s.attributes.name))
             .map(s => s.id);
           
           const countiesPromises = stateIds.map(id => fetchCountiesByState(id));
@@ -743,7 +813,14 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
     };
 
     initializeStatesAndCounties();
-  }, [currentProvider?.states, activeProvider?.states, loggedInProvider?.states]); // Prioritize currentProvider as source of truth
+  }, [
+    currentProvider?.states,
+    activeProvider?.states,
+    loggedInProvider?.states,
+    currentProvider?.attributes?.service_areas,
+    activeProvider?.attributes?.service_areas,
+    loggedInProvider?.attributes?.service_areas,
+  ]);
   
   // Refresh provider data from server after initial load to ensure data is fresh
   // This runs once when currentProvider is first set (e.g., after page refresh)
@@ -905,14 +982,18 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       setIsSaving(true);
       
       // Check if we have a valid token for authorization
-      if (!token) {
+      const authUserId = extractUserId();
+      if (!authUserId) {
         toast.error('No authentication token available');
         return;
       }
 
-      // Use the corrected uploadProviderLogo function
-      // For regular providers, isSuperAdmin should be false to use Bearer token
-      const result = await uploadProviderLogo(currentProvider?.id || 0, selectedLogoFile, token, false);
+      const result = await uploadProviderLogo(
+        currentProvider?.id || 0,
+        selectedLogoFile,
+        `Bearer ${authUserId}`,
+        false
+      );
       
       if (!result.success) {
         toast.error(`Failed to upload logo: ${result.error}`);
@@ -922,9 +1003,11 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
       toast.success('Logo uploaded successfully!');
       setSelectedLogoFile(null);
       
+      const uploadedAttrs = result.updatedProvider?.data?.[0]?.attributes || result.updatedProvider?.data?.attributes;
+      const newLogoUrl = resolveProviderLogo(uploadedAttrs);
+      
       // Update both currentProvider and editedProvider states with the new logo
-      if (result.updatedProvider?.data?.attributes?.logo) {
-        const newLogoUrl = result.updatedProvider.data.attributes.logo;
+      if (newLogoUrl) {
         
         // Update currentProvider state
         setCurrentProvider(prev => prev ? {
@@ -1012,7 +1095,18 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
         logo: currentLogo || null,
         provider_type: selectedProviderTypes.map(type => ({ name: type.name })), // Send objects with name property as per API docs
         insurance: selectedInsurances.map(ins => ins.name || ins), // Send just names
-        counties_served: selectedCounties.map(county => county.name || county), // Send just names (states are computed from counties on backend)
+        states: providerState,
+        counties_served: selectedCounties
+          .filter((county) => {
+            if (county.county_id === 0) return true;
+            const countyData = availableCounties.find((c) => c.id === county.county_id);
+            if (!countyData) return true;
+            return providerState.includes(countyData.attributes.state);
+          })
+          .map((county) => ({
+            county_id: county.county_id,
+            county_name: county.county_name,
+          })),
         // Add some fields that might be required by the backend
         status: editedProvider?.status || 'approved',
         in_home_only: editedProvider?.in_home_only || false,
@@ -1023,7 +1117,12 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
         // Note: We're NOT saving phone at provider level - it goes to primary location instead
         waitlist_status: commonFields.waitlist_status || null,
         additional_notes: commonFields.additional_notes || null,
-        service_areas: commonFields.service_areas && commonFields.service_areas.length > 0 ? commonFields.service_areas : null,
+        service_areas:
+          providerState.length > 0
+            ? providerState
+            : commonFields.service_areas && commonFields.service_areas.length > 0
+              ? commonFields.service_areas
+              : null,
         // Category fields for Educational Programs
         ...(currentProvider?.attributes?.category === 'educational_programs' && categoryFields && categoryFields.length > 0 && {
           // Backend expects field names (e.g., "Program Types") not slugs (e.g., "program_types")
@@ -1222,7 +1321,11 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
         // Update local state immediately with the saved data to reflect changes in UI
         // This ensures states and insurances show up right away, especially on mobile
         if (responseData.data?.attributes.states) {
-          setProviderState(responseData.data.attributes.states);
+          const apiStates = normalizeStateNames(
+            responseData.data.attributes.states,
+            availableStates
+          );
+          setProviderState(apiStates.length > 0 ? apiStates : providerState);
         }
         if (responseData.data?.attributes.insurance) {
           // Normalize insurance data - handle both string names and Insurance objects
@@ -1279,10 +1382,18 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
           
           setCurrentProvider(prev => prev ? {
             ...prev,
-            states: responseData.data?.attributes?.states || prev.states,
+            states: normalizeStateNames(
+              responseData.data?.attributes?.states || prev.states,
+              availableStates
+            ).length > 0
+              ? normalizeStateNames(responseData.data?.attributes?.states || prev.states, availableStates)
+              : providerState,
             attributes: {
               ...prev.attributes,
               ...responseData.data.attributes,
+              logo:
+                resolveProviderLogo(responseData.data.attributes) ||
+                prev.attributes.logo,
               insurance: normalizedInsurance
             }
           } : null);
@@ -1344,6 +1455,9 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
     setSelectedCounties,
     setSelectedProviderTypes,
     setCurrentProvider,
+    providerState,
+    availableCounties,
+    availableStates,
     refreshProviderData
   ]);
 
@@ -2303,7 +2417,11 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                                   <X
                                     className="ml-2 h-4 w-4 cursor-pointer"
                                     onClick={() => {
-                                      setProviderState(prev => prev.filter(s => s !== stateName));
+                                      setProviderState(prev => {
+                                        const next = prev.filter(s => s !== stateName);
+                                        setCommonFields((fields) => ({ ...fields, service_areas: next }));
+                                        return next;
+                                      });
                                       setSelectedCounties(prev => prev.filter(c => c.state !== stateName));
                                       if (activeStateForCounties === stateName) {
                                         setActiveStateForCounties('');
@@ -2328,7 +2446,11 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
                                   const stateData = availableStates.find(s => s.attributes.name === selectedStateName);
                                   if (stateData) {
                                     setActiveStateForCounties(selectedStateName);
-                                    setProviderState(prev => [...prev, selectedStateName]);
+                                    setProviderState(prev => {
+                                      const next = [...prev, selectedStateName];
+                                      setCommonFields((fields) => ({ ...fields, service_areas: next }));
+                                      return next;
+                                    });
                                     const counties = await fetchCountiesByState(stateData.id);
                                     setAvailableCounties(prev => {
                                       const filtered = prev.filter(c => c.attributes.state !== selectedStateName);

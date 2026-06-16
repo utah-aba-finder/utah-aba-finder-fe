@@ -9,6 +9,7 @@ import {
   X
 } from 'lucide-react';
 import { useAuth } from '../Provider-login/AuthProvider';
+import { getApiBaseUrl, getSuperAdminAuthHeader } from '../Utility/config';
 
 interface ProviderRegistration {
   id: string;
@@ -37,34 +38,52 @@ const ProviderRegistrations: React.FC = () => {
   const [selectedRegistration, setSelectedRegistration] = useState<ProviderRegistration | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Fetch registrations
+  // Fetch registrations — same auth + base URL pattern as ProviderClaimRequests / ApiCall
   const fetchRegistrations = useCallback(async () => {
     if (!currentUser?.id) {
+      setIsLoading(false);
       return;
     }
-    
+
+    let authHeader: string;
+    try {
+      authHeader = getSuperAdminAuthHeader();
+    } catch {
+      toast.error('Authentication failed. Please log out and log back in.');
+      setIsLoading(false);
+      return;
+    }
+
     setIsLoading(true);
     try {
       const response = await fetch(
-        'https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/provider_registrations',
+        `${getApiBaseUrl()}/api/v1/provider_registrations`,
         {
           headers: {
-            'Authorization': `Bearer ${currentUser.id}`,
-            'Content-Type': 'application/json'
-          }
+            Authorization: authHeader,
+            'Content-Type': 'application/json',
+          },
         }
       );
 
-      
       if (response.ok) {
         const data = await response.json();
         setRegistrations(data.data || []);
       } else {
         const errorText = await response.text();
-        throw new Error(`HTTP error: ${response.status} - ${errorText}`);
+        if (response.status === 401) {
+          toast.error('Authentication failed. Please log out and log back in.');
+        } else {
+          toast.error(
+            `Failed to load registrations (${response.status}). ${errorText?.slice(0, 160) || response.statusText}`
+          );
+        }
       }
     } catch (error) {
-      toast.error('Failed to fetch registrations');
+      console.error('ProviderRegistrations fetch:', error);
+      toast.error(
+        error instanceof Error ? error.message : 'Network error while loading registrations'
+      );
     } finally {
       setIsLoading(false);
     }
@@ -76,22 +95,30 @@ const ProviderRegistrations: React.FC = () => {
       toast.error('You must be logged in to approve registrations');
       return;
     }
-    
+
+    let authHeader: string;
+    try {
+      authHeader = getSuperAdminAuthHeader();
+    } catch {
+      toast.error('Authentication failed. Please log out and log back in.');
+      return;
+    }
+
     if (processingId === registrationId) {
       return;
     }
-    
+
     setProcessingId(registrationId);
-    
+
     try {
       const response = await fetch(
-        `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/provider_registrations/${registrationId}/approve`,
+        `${getApiBaseUrl()}/api/v1/provider_registrations/${registrationId}/approve`,
         {
           method: 'PATCH',
           headers: {
-            'Authorization': `Bearer ${currentUser.id}`,
-            'Content-Type': 'application/json'
-          }
+            Authorization: authHeader,
+            'Content-Type': 'application/json',
+          },
         }
       );
 
@@ -117,22 +144,30 @@ const ProviderRegistrations: React.FC = () => {
       toast.error('You must be logged in to reject registrations');
       return;
     }
-    
+
+    let authHeader: string;
+    try {
+      authHeader = getSuperAdminAuthHeader();
+    } catch {
+      toast.error('Authentication failed. Please log out and log back in.');
+      return;
+    }
+
     if (processingId === registrationId) {
       return;
     }
-    
+
     setProcessingId(registrationId);
-    
+
     try {
       const response = await fetch(
-        `https://utah-aba-finder-api-c9d143f02ce8.herokuapp.com/api/v1/provider_registrations/${registrationId}/reject`,
+        `${getApiBaseUrl()}/api/v1/provider_registrations/${registrationId}/reject`,
         {
           method: 'PATCH',
           headers: {
-            'Authorization': `Bearer ${currentUser.id}`,
-            'Content-Type': 'application/json'
-          }
+            Authorization: authHeader,
+            'Content-Type': 'application/json',
+          },
         }
       );
 
@@ -159,7 +194,8 @@ const ProviderRegistrations: React.FC = () => {
     
     const matchesSearch = 
       (registration.attributes.provider_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (registration.attributes.email || '').toLowerCase().includes(searchTerm.toLowerCase());
+      (registration.attributes.email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (registration.attributes.applicant_email || '').toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesStatus = statusFilter === 'all' || registration.attributes.status === statusFilter;
     
@@ -249,7 +285,7 @@ const ProviderRegistrations: React.FC = () => {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <input
                 type="text"
-                placeholder="Provider name or email..."
+                placeholder="Provider name, practice email, or applicant email..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-64 pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -344,6 +380,13 @@ const ProviderRegistrations: React.FC = () => {
                         <div className="text-sm text-gray-500">
                           {registration.attributes.email}
                         </div>
+                        {registration.attributes.applicant_email &&
+                          registration.attributes.applicant_email.toLowerCase() !==
+                            (registration.attributes.email || '').toLowerCase() && (
+                          <div className="text-xs text-gray-400">
+                            Applicant: {registration.attributes.applicant_email}
+                          </div>
+                        )}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">

@@ -132,6 +132,9 @@ export interface ProviderAttributes {
     sponsorship_tier?: string | number | null;
     is_sponsored?: boolean;
     sponsored_until?: string | null;
+    /** Present when API exposes ownership — null/false means listing is not claimed */
+    user_id?: number | null;
+    claimed?: boolean | null;
 }
 
 export interface InsuranceData {

@@ -33,7 +33,9 @@ const ProviderWalkthrough: React.FC = () => {
       description: "Complete the provider registration form",
       icon: <FileText className="h-8 w-8 text-blue-600" />,
       details: [
-        "Fill out basic provider information (name, email, contact details)",
+        "Fill out basic provider information (name, contact details)",
+        "Enter the practice / listing email shown on your public profile",
+        "Enter your email as the person requesting this account (confirmations & login)",
         "Select your provider category from available options",
         "Upload your provider logo (optional but recommended)",
         "Provide website and contact information",
@@ -41,7 +43,7 @@ const ProviderWalkthrough: React.FC = () => {
       ],
       tips: [
         "Have your business information ready before starting",
-        "Use a professional email address",
+        "Use a professional practice email for your listing; use your own email if you need confirmations separately",
         "Ensure your logo meets size requirements (PNG, JPG, GIF up to 5MB)"
       ],
       estimatedTime: "10-15 minutes"
