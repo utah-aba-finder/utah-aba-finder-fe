@@ -272,73 +272,12 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
     });
   }, []);
 
-  // Debug effect to track activeProvider changes
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    
-    // If activeProvider has valid data but currentProvider doesn't match, force an update
-    if (activeProvider && activeProvider.id && activeProvider.id !== currentProvider?.id) {
-      
-      // Force an update by calling handleProviderSwitchWithData directly
-      if (activeProvider.attributes) {
-        handleProviderSwitchWithData(activeProvider);
-      } else {
-
-      }
-    }
-  }, [activeProvider, currentProvider?.id]);
-  
-  // Sync currentProvider with activeProvider from auth context
-  // previousProviderId.current = useRef<number | null>(null); // This line is removed as it's now in the component level
-  
-  // Main provider switching useEffect
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    
-    // Check if we actually need to do anything
-    if (!activeProvider) {
-      return;
-    }
-    
-    // Check if this is just a re-render with the same provider data
-    if (activeProvider.id === previousProviderId.current && 
-        activeProvider.id === currentProvider?.id) {
-      return;
-    }
-    
-    // Check if we need to switch providers (either different provider or currentProvider is out of sync)
-    const needsProviderSwitch = activeProvider.id !== currentProvider?.id;
-    
-    if (needsProviderSwitch) {
-      
-      // Check if we have the full provider data with attributes
-      if (!activeProvider.attributes) {
-
-        
-        // Don't try to fetch data here - let the AuthProvider handle it
-        // The AuthProvider should always provide complete data with attributes
-        return;
-      }
-      
-      // If we have attributes, proceed with the provider switch
-      handleProviderSwitchWithData(activeProvider);
-    } else {
-
-    }
-  }, [activeProvider, currentProvider?.id, loggedInProvider.id]);
-  
-  // Helper function to handle provider switching with data
-  const handleProviderSwitchWithData = (providerData: any) => {
-    
-    // Always update the state to ensure data consistency
-    // Even if it's the "same" provider, the data might be different or more complete
-    
-    // Convert the provider data to the format expected by ProviderEdit
-      const newProviderData: ProviderData = {
+  const handleProviderSwitchWithData = useCallback((providerData: any) => {
+    const newProviderData: ProviderData = {
       id: providerData.id,
       type: providerData.type,
       states: providerData.states || [],
-        attributes: {
+      attributes: {
         id: providerData.id,
         states: providerData.states || [],
         password: '',
@@ -372,36 +311,56 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
         service_delivery: providerData.attributes?.service_delivery || providerData.service_delivery || { in_home: false, in_clinic: false, telehealth: false }
       }
     };
-    
-    
+
     const normalizedStates = normalizeStateNames(newProviderData.states || [], availableStates);
     const statesForUi =
       normalizedStates.length > 0
         ? normalizedStates
         : normalizeStateNames(newProviderData.attributes.service_areas || [], availableStates);
 
-      setCurrentProvider(newProviderData);
+    setCurrentProvider(newProviderData);
     previousProviderId.current = providerData.id;
-      
-    // Always update all local state variables to match the new provider data
-    
-    // Update all local state variables to match the new provider
-      setEditedProvider(newProviderData.attributes);
-      setProviderState(statesForUi);
+    setEditedProvider(newProviderData.attributes);
+    setProviderState(statesForUi);
     setActiveStateForCounties(statesForUi[0] || '');
-      setSelectedCounties(newProviderData.attributes.counties_served || []);
-      setSelectedProviderTypes(newProviderData.attributes.provider_type || []);
-      setSelectedInsurances(newProviderData.attributes.insurance || []);
-      setSelectedLogoFile(null);
-      setCategoryFields(newProviderData.attributes.category_fields || []);
-    
+    setSelectedCounties(newProviderData.attributes.counties_served || []);
+    setSelectedProviderTypes(newProviderData.attributes.provider_type || []);
+    setSelectedInsurances(newProviderData.attributes.insurance || []);
+    setSelectedLogoFile(null);
+    setCategoryFields(newProviderData.attributes.category_fields || []);
     setCommonFields(buildCommonFieldsFromProvider(newProviderData, statesForUi));
-    
-    // Reset form state when switching providers
     setSelectedTab("dashboard");
     setIsOpen(false);
-    
-  };
+  }, [availableStates]);
+
+  useEffect(() => {
+    if (activeProvider && activeProvider.id && activeProvider.id !== currentProvider?.id) {
+      if (activeProvider.attributes) {
+        handleProviderSwitchWithData(activeProvider);
+      }
+    }
+  }, [activeProvider, currentProvider?.id, handleProviderSwitchWithData]);
+
+  useEffect(() => {
+    if (!activeProvider) {
+      return;
+    }
+
+    if (activeProvider.id === previousProviderId.current &&
+        activeProvider.id === currentProvider?.id) {
+      return;
+    }
+
+    const needsProviderSwitch = activeProvider.id !== currentProvider?.id;
+
+    if (needsProviderSwitch) {
+      if (!activeProvider.attributes) {
+        return;
+      }
+
+      handleProviderSwitchWithData(activeProvider);
+    }
+  }, [activeProvider, currentProvider?.id, loggedInProvider.id, handleProviderSwitchWithData]);
 
   // Also sync when loggedInProvider changes (for initial load)
   useEffect(() => {
@@ -854,7 +813,14 @@ const ProviderEdit: React.FC<ProviderEditProps> = ({
     };
 
     initializeStatesAndCounties();
-  }, [currentProvider?.states, activeProvider?.states, loggedInProvider?.states]); // Prioritize currentProvider as source of truth
+  }, [
+    currentProvider?.states,
+    activeProvider?.states,
+    loggedInProvider?.states,
+    currentProvider?.attributes?.service_areas,
+    activeProvider?.attributes?.service_areas,
+    loggedInProvider?.attributes?.service_areas,
+  ]);
   
   // Refresh provider data from server after initial load to ensure data is fresh
   // This runs once when currentProvider is first set (e.g., after page refresh)
