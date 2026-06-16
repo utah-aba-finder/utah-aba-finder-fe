@@ -1,6 +1,24 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { ProviderAttributes } from '../Utility/Types';
-import { MapPin, Phone, Mail, Globe, Eye, Briefcase, Home, Building, Monitor, GitCompare } from 'lucide-react';
+import {
+  MapPin,
+  Phone,
+  Mail,
+  Globe,
+  Eye,
+  Briefcase,
+  Home,
+  Building,
+  Monitor,
+  GitCompare,
+  UserPlus,
+} from 'lucide-react';
+import {
+  buildProviderClaimSignupPath,
+  shouldShowClaimListingEntry,
+  getClaimListingCtaTone,
+} from '../Utility/claimListingSignup';
 import './ProviderCard.css';
 import { toast } from 'react-toastify';
 import ProviderLogo from '../Utility/ProviderLogo';
@@ -53,6 +71,13 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
 
   // Use the first matching location, or fall back to the first location if none match
   const primaryLocation = filteredLocations[0] || provider.locations[0];
+
+  const claimListingHref = buildProviderClaimSignupPath(provider.id, {
+    name: provider.name,
+    website: provider.website,
+  });
+  const showClaimListing = shouldShowClaimListingEntry(provider);
+  const claimListingTone = getClaimListingCtaTone(provider);
 
   // Render service delivery badges
   const renderServiceDeliveryBadges = () => {
@@ -366,6 +391,32 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
               {isInCompare && (
                 <div className="compare-badge text">
                   In compare
+                </div>
+              )}
+              {showClaimListing && (
+                <div
+                  className={`provider-card-claim-cta ${
+                    claimListingTone === 'prominent'
+                      ? 'provider-card-claim-cta--prominent'
+                      : 'provider-card-claim-cta--subtle'
+                  }`}
+                >
+                  <UserPlus size={14} className="provider-card-claim-icon" aria-hidden />
+                  {claimListingTone === 'prominent' ? (
+                    <>
+                      <span className="provider-card-claim-text">Unclaimed listing.</span>
+                      <Link to={claimListingHref} className="provider-card-claim-link" onClick={(e) => e.stopPropagation()}>
+                        Claim your practice
+                      </Link>
+                    </>
+                  ) : (
+                    <>
+                      <span className="provider-card-claim-text">Is this your practice?</span>
+                      <Link to={claimListingHref} className="provider-card-claim-link" onClick={(e) => e.stopPropagation()}>
+                        Request access
+                      </Link>
+                    </>
+                  )}
                 </div>
               )}
             </div>

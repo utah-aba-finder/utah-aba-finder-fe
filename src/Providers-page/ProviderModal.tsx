@@ -1,12 +1,18 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import './ProviderModal.css';
 import GoogleMap from './GoogleMap';
-import { MapPin, Phone, Globe, Mail, Briefcase, Home, Building, Monitor } from 'lucide-react';
+import { MapPin, Phone, Globe, Mail, Briefcase, Home, Building, Monitor, UserPlus } from 'lucide-react';
 import moment from 'moment';
 import GoogleReviewsSection from './GoogleReviewsSection';
 import ProviderLogo from '../Utility/ProviderLogo';
 import { getApiBaseUrl } from '../Utility/config';
 import { ProviderAttributes, CategoryField } from '../Utility/Types';
+import {
+  buildProviderClaimSignupPath,
+  shouldShowClaimListingEntry,
+  getClaimListingCtaTone,
+} from '../Utility/claimListingSignup';
 import { fetchStates, fetchCountiesByState } from '../Utility/ApiCall';
 
 // Category field with value (merged definition + value from provider_attributes)
@@ -721,6 +727,13 @@ const ProviderModal: React.FC<ProviderModalProps> = ({
   // Use the first matching location, or fall back to the first location if none match
   const primaryLocation = filteredLocations[0] || provider.attributes.locations[0];
 
+  const claimModalHref = buildProviderClaimSignupPath(provider.id, {
+    name: provider.attributes.name,
+    website: provider.attributes.website,
+  });
+  const showClaimInModal = shouldShowClaimListingEntry(provider.attributes);
+  const claimModalTone = getClaimListingCtaTone(provider.attributes);
+
   return (
     <div className={`modal-overlay ${isVisible ? 'show' : ''} ${isClosing ? 'hide' : ''}`}>
       <div className="modal-container">
@@ -755,6 +768,30 @@ const ProviderModal: React.FC<ProviderModalProps> = ({
                 size="large"
               />
               <h2 className="provider-name title">{provider.attributes.name}</h2>
+              {showClaimInModal && (
+                <div
+                  className={`modal-claim-cta ${
+                    claimModalTone === 'prominent' ? 'modal-claim-cta--prominent' : 'modal-claim-cta--subtle'
+                  }`}
+                >
+                  <UserPlus size={16} className="modal-claim-icon" aria-hidden />
+                  {claimModalTone === 'prominent' ? (
+                    <>
+                      <span>This listing has not been claimed yet.</span>
+                      <Link to={claimModalHref} className="modal-claim-link">
+                        Claim your practice
+                      </Link>
+                    </>
+                  ) : (
+                    <>
+                      <span>Is this your practice?</span>
+                      <Link to={claimModalHref} className="modal-claim-link">
+                        Request account access
+                      </Link>
+                    </>
+                  )}
+                </div>
+              )}
             </section>
             <div className="modal-tabs">
               <button

@@ -52,6 +52,46 @@
   transition: background-color 0.3s ease; 
 }
 
+.modal-claim-cta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.6rem;
+  margin: 0.75rem 1rem 0;
+  padding: 0.55rem 0.75rem;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  line-height: 1.35;
+}
+
+.modal-claim-cta--subtle {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #475569;
+}
+
+.modal-claim-cta--prominent {
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+  color: #92400e;
+}
+
+.modal-claim-icon {
+  flex-shrink: 0;
+  opacity: 0.9;
+}
+
+.modal-claim-link {
+  font-weight: 600;
+  color: #2563eb;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.modal-claim-cta--prominent .modal-claim-link {
+  color: #b45309;
+}
+
 .modal-img {
   width: 180px;
   height: auto;

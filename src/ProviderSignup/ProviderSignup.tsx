@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { toast } from 'react-toastify';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { 
   Building2, Heart, Brain, Scissors, Activity, Target, 
   Smile, ClipboardCheck, Baby, Dumbbell, Shield, Ear, Mail, BookOpen
@@ -8,7 +8,7 @@ import {
 import { fetchStates } from '../Utility/ApiCall';
 import { API_CONFIG } from '../Utility/config';
 import InsuranceInput from './InsuranceInput';
-import ClaimAccount from './ClaimAccount';
+import ClaimAccount, { ClaimAccountPrefill } from './ClaimAccount';
 import ReCAPTCHA from "react-google-recaptcha";
 import './InsuranceInput.css';
 import './ProviderSignup.css';
@@ -99,7 +99,7 @@ interface ProviderCategory {
 type ProviderRegistration = {
   /** Practice / public listing email (e.g. info@practice.com) — sent as `email` to the API */
   email: string;
-  /** Optional: person completing the form — confirmations & login when different from practice email */
+  /** Email of the person completing the form — confirmations & login; may match practice email */
   applicant_email: string;
   provider_name: string;
   service_types: string[]; // Changed from provider_type to service_types
@@ -166,7 +166,7 @@ const ProviderSignup: React.FC = () => {
   const commonFieldsRef = useRef(commonFields);
   const selectedCategoriesRef = useRef(selectedCategories);
   const stepRef = useRef(step);
-  const hasFetchedCategoriesRef = useRef(false);
+  const categoriesAbortRef = useRef<AbortController | null>(null);
   
   // Keep refs updated
   useEffect(() => {
@@ -195,7 +195,28 @@ const ProviderSignup: React.FC = () => {
   
   // Mode toggle state
   const [isClaimMode, setIsClaimMode] = useState(false);
+  const [searchParams] = useSearchParams();
 
+  const directoryClaimPrefill = useMemo((): ClaimAccountPrefill | null => {
+    if (searchParams.get('claim') !== '1' && searchParams.get('mode') !== 'claim') {
+      return null;
+    }
+    const idStr = searchParams.get('provider_id');
+    const pid = idStr ? parseInt(idStr, 10) : NaN;
+    const next: ClaimAccountPrefill = {};
+    if (Number.isFinite(pid)) next.provider_id = pid;
+    const pname = searchParams.get('provider_name');
+    if (pname) next.provider_name = pname;
+    const ws = searchParams.get('website');
+    if (ws) next.website = ws;
+    return Object.keys(next).length > 0 ? next : null;
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (searchParams.get('claim') === '1' || searchParams.get('mode') === 'claim') {
+      setIsClaimMode(true);
+    }
+  }, [searchParams]);
 
   
   // Load draft from localStorage on mount
@@ -460,53 +481,44 @@ const ProviderSignup: React.FC = () => {
     markChanged();
   }, [markChanged]);
 
-  // Define fetchProviderCategories BEFORE the useEffect that uses it
-  const fetchProviderCategories = useCallback(async () => {
-    // Prevent multiple simultaneous calls - check both ref and sessionStorage
-    const fetchKey = 'categories_fetch_in_progress';
-    if (hasFetchedCategoriesRef.current || sessionStorage.getItem(fetchKey) === 'true') {
-      return;
-    }
-    
-    hasFetchedCategoriesRef.current = true;
-    sessionStorage.setItem(fetchKey, 'true');
+  const fetchProviderCategories = useCallback(async (signal?: AbortSignal) => {
     setIsLoadingCategories(true);
-    setCategoriesLoadError(null); // Clear any previous errors
-    
+    setCategoriesLoadError(null);
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
+    const abortFromParent = () => controller.abort();
+    signal?.addEventListener('abort', abortFromParent);
+
     try {
       const apiUrl = API_CONFIG.BASE_API_URL;
       const categoriesUrl = `${apiUrl}/api/v1/provider_categories`;
-      
-      
-      // Add timeout to prevent hanging
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => {
-        controller.abort();
-      }, 30000); // 30 second timeout
-      
+
       const response = await fetch(categoriesUrl, {
         signal: controller.signal,
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
         },
-        // Removed credentials: 'include' - causes CORS error when backend uses wildcard origin
       });
-      
-      clearTimeout(timeoutId);
-      
+
+      if (signal?.aborted || controller.signal.aborted) {
+        return;
+      }
+
       if (response.ok) {
         const data = await response.json();
-        setCategories(data.data || []);
+        const loadedCategories = (data.data || []).filter(
+          (category: ProviderCategory) => category.attributes?.is_active !== false
+        );
+        setCategories(loadedCategories);
         setCategoriesLoadError(null);
-        // Mark as successfully fetched in sessionStorage
-        sessionStorage.setItem('categories_fetched_success', 'true');
       } else {
         try {
           await response.text();
         } catch (e) {
         }
-        
+
         let errorMsg = '';
         if (response.status === 503) {
           errorMsg = 'Service temporarily unavailable. The server may be starting up. Please wait a moment and try again.';
@@ -515,43 +527,33 @@ const ProviderSignup: React.FC = () => {
         } else {
           errorMsg = `Failed to load provider categories (${response.status}). Please try again.`;
         }
-        
+
         setCategoriesLoadError(errorMsg);
         toast.error(errorMsg);
-        // Reset the ref and sessionStorage on error so user can retry
-        hasFetchedCategoriesRef.current = false;
-        sessionStorage.removeItem('categories_fetch_in_progress');
-        sessionStorage.removeItem('categories_fetched_success');
       }
     } catch (error: any) {
+      if (error.name === 'AbortError' || signal?.aborted || controller.signal.aborted) {
+        return;
+      }
+
       let errorMsg = '';
-      if (error.name === 'AbortError') {
-        errorMsg = 'Request timed out. Please check your connection and try again.';
-        toast.error(errorMsg);
-      } else if (error.message?.includes('Failed to fetch') || error.message?.includes('NetworkError')) {
+      if (error.message?.includes('Failed to fetch') || error.message?.includes('NetworkError')) {
         errorMsg = 'Network error: Unable to reach the server. Please check your internet connection and try again.';
-        toast.error(errorMsg);
       } else {
         errorMsg = `Network error: ${error.message || 'Unknown error'}. Please try again.`;
-        toast.error(errorMsg);
       }
-        setCategoriesLoadError(errorMsg);
-        // Reset the ref and sessionStorage on error so user can retry
-        hasFetchedCategoriesRef.current = false;
-        sessionStorage.removeItem('categories_fetch_in_progress');
-        sessionStorage.removeItem('categories_fetched_success');
+      toast.error(errorMsg);
+      setCategoriesLoadError(errorMsg);
     } finally {
-      setIsLoadingCategories(false);
+      clearTimeout(timeoutId);
+      signal?.removeEventListener('abort', abortFromParent);
+      if (!signal?.aborted && !controller.signal.aborted) {
+        setIsLoadingCategories(false);
+      }
     }
   }, []);
 
-  // Debug: Log mounts and unmounts to identify remount loop
-  useEffect(() => {
-    return () => {
-    };
-  }, []);
-
-  // Load states independently - always fetch states even if categories fetch is skipped
+  // Load states independently
   useEffect(() => {
     // Only fetch states if we don't have them yet
     if (states.length > 0) {
@@ -588,55 +590,28 @@ const ProviderSignup: React.FC = () => {
     };
   }, [states.length]); // Only depend on states.length to prevent re-fetch if already loaded
 
-  // Load categories on component mount - ONLY ONCE
+  // Clear legacy sessionStorage flags that could block category loading
   useEffect(() => {
-    // Prevent multiple calls - check ref, sessionStorage, and if categories are already loaded
-    const fetchKey = 'categories_fetch_in_progress';
-    const successKey = 'categories_fetched_success';
-    
-    if (hasFetchedCategoriesRef.current || sessionStorage.getItem(fetchKey) === 'true') {
-      // If fetch was successful before, ensure loading is false
-      if (sessionStorage.getItem(successKey) === 'true' && categories.length === 0) {
-        // Categories were fetched but component remounted - don't re-fetch, just stop loading
-        setIsLoadingCategories(false);
-      }
-      return;
-    }
-    
-    // If categories are already loaded, just ensure loading is false
+    sessionStorage.removeItem('categories_fetch_in_progress');
+    sessionStorage.removeItem('categories_fetched_success');
+  }, []);
+
+  // Load provider categories on mount (and after Strict Mode remounts)
+  useEffect(() => {
     if (categories.length > 0) {
       setIsLoadingCategories(false);
-      sessionStorage.setItem(successKey, 'true');
       return;
     }
-    
-    let isMounted = true;
-    
-    // Safety timeout - ensure loading stops after 35 seconds no matter what
-    const safetyTimeout = setTimeout(() => {
-      if (isMounted) {
-        setIsLoadingCategories(false);
-      }
-    }, 35000);
-    
-    const loadData = async () => {
-      try {
-        await fetchProviderCategories();
-      } catch (error) {
-        if (isMounted) {
-          setIsLoadingCategories(false);
-        }
-      }
-    };
-    
-    loadData();
-    
+
+    const controller = new AbortController();
+    categoriesAbortRef.current = controller;
+    fetchProviderCategories(controller.signal);
+
     return () => {
-      isMounted = false;
-      clearTimeout(safetyTimeout);
+      controller.abort();
+      categoriesAbortRef.current = null;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Empty array - only run once on mount. We check categories.length inside to prevent re-fetch
+  }, [categories.length, fetchProviderCategories]);
 
   // Ensure reCAPTCHA script is loaded
   useEffect(() => {
@@ -807,6 +782,26 @@ const ProviderSignup: React.FC = () => {
     return { isValid: errors.length === 0, errors };
   };
 
+  const validateBasicInfo = (): { isValid: boolean; errors: string[] } => {
+    const errors: string[] = [];
+
+    if (!formData.provider_name?.trim()) {
+      errors.push('Provider name is required');
+    }
+
+    const practiceEmail = formData.email.trim();
+    if (!practiceEmail || !isValidEmailFormat(practiceEmail)) {
+      errors.push('A valid practice / listing email is required');
+    }
+
+    const applicantEmail = (formData.applicant_email || '').trim();
+    if (!applicantEmail || !isValidEmailFormat(applicantEmail)) {
+      errors.push('A valid email for the person requesting this account is required');
+    }
+
+    return { isValid: errors.length === 0, errors };
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedCategories.length) {
@@ -847,8 +842,8 @@ const ProviderSignup: React.FC = () => {
       return;
     }
     const applicantTrimmed = (formData.applicant_email || '').trim();
-    if (applicantTrimmed && !isValidEmailFormat(applicantTrimmed)) {
-      toast.error('Please enter a valid applicant email, or leave it blank.');
+    if (!applicantTrimmed || !isValidEmailFormat(applicantTrimmed)) {
+      toast.error('Please enter a valid email for the person requesting this account.');
       return;
     }
 
@@ -1040,7 +1035,23 @@ const ProviderSignup: React.FC = () => {
     }
   };
 
-  const nextStep = () => { if (step < 3) setStep(step + 1); };
+  const nextStep = () => {
+    if (step === 2) {
+      const basicValidation = validateBasicInfo();
+      if (!basicValidation.isValid) {
+        toast.error(basicValidation.errors.join('\n'));
+        return;
+      }
+
+      const validation = validateServiceFields();
+      if (!validation.isValid) {
+        toast.error(`Please fill out all required fields:\n${validation.errors.join('\n')}`);
+        return;
+      }
+    }
+
+    if (step < 3) setStep(step + 1);
+  };
   const prevStep = () => { if (step > 1) setStep(step - 1); };
 
   const renderDynamicFields = (categoryFields: CategoryField[], categorySlug: string) => {
@@ -1558,7 +1569,10 @@ const ProviderSignup: React.FC = () => {
 
         {/* Show Claim Account form if in claim mode */}
         {isClaimMode ? (
-          <ClaimAccount onBackToSignup={() => setIsClaimMode(false)} />
+          <ClaimAccount
+            onBackToSignup={() => setIsClaimMode(false)}
+            prefill={directoryClaimPrefill}
+          />
         ) : (
           <>
             {/* Draft Management */}
@@ -1647,10 +1661,7 @@ const ProviderSignup: React.FC = () => {
                     <p className="text-red-600 font-medium mb-2">Failed to load categories</p>
                     <p className="text-gray-600 text-sm mb-4">{categoriesLoadError}</p>
                     <button
-                      onClick={() => {
-                        hasFetchedCategoriesRef.current = false;
-                        fetchProviderCategories();
-                      }}
+                      onClick={() => fetchProviderCategories()}
                       className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                     >
                       Retry
@@ -1752,21 +1763,21 @@ const ProviderSignup: React.FC = () => {
                     </div>
                     <div className="form-group md:col-span-2">
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Your email (optional) — for confirmations &amp; login if not the practice inbox
+                        Your email (required) — person requesting this account
                       </label>
                       <input
                         type="email"
                         value={formData.applicant_email || ''}
                         onChange={(e) => handleInputChange('applicant_email', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        required
                         autoComplete="email"
-                        placeholder="Use if you are not the same inbox as the practice email above"
+                        placeholder="e.g. you@example.com"
                       />
                       <p className="mt-1 text-sm text-gray-500">
-                        Use this when you are not the same inbox as the practice / listing email. We send confirmations
-                        and login instructions here when it differs from the practice email. If you leave it blank or
-                        it matches the practice email, only the practice email is used for notifications and your
-                        account—same as before.
+                        This is the email for the person submitting this registration. We send confirmations and
+                        login instructions here. If it is different from the practice / listing email above, both
+                        addresses are saved; if it is the same, you can enter the same address in both fields.
                       </p>
                     </div>
                     <div className="form-group md:col-span-2">
@@ -2209,13 +2220,15 @@ const ProviderSignup: React.FC = () => {
                       <span className="font-medium">Practice / listing email:</span>
                       <span className="text-right break-all">{formData.email}</span>
                     </div>
-                    {formData.applicant_email?.trim() &&
-                      formData.applicant_email.trim().toLowerCase() !== formData.email.trim().toLowerCase() && (
-                        <div className="flex justify-between gap-4">
-                          <span className="font-medium">Applicant email (confirmations):</span>
-                          <span className="text-right break-all">{formData.applicant_email.trim()}</span>
-                        </div>
-                      )}
+                    <div className="flex justify-between gap-4">
+                      <span className="font-medium">Your email (requesting account):</span>
+                      <span className="text-right break-all">{formData.applicant_email.trim()}</span>
+                    </div>
+                    {formData.applicant_email.trim().toLowerCase() !== formData.email.trim().toLowerCase() && (
+                      <p className="text-sm text-gray-500">
+                        Confirmations and login will go to your email; the public listing will show the practice email.
+                      </p>
+                    )}
                     <div className="flex justify-between">
                       <span className="font-medium">Categories:</span>
                       <span>{selectedCategories.map(cat => cat.attributes.name).join(', ')}</span>

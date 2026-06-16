@@ -266,7 +266,9 @@ const ProvidersPage: React.FC = () => {
           category: (p as any).category || p.attributes.category || null,
           category_name: (p as any).category_name || p.attributes.category_name || null,
           provider_attributes: (p as any).provider_attributes || p.attributes.provider_attributes || null,
-          category_fields: (p as any).category_fields || p.attributes.category_fields || null
+          category_fields: (p as any).category_fields || p.attributes.category_fields || null,
+          user_id: (p.attributes as any).user_id,
+          claimed: (p.attributes as any).claimed,
         }));
         
         setAllProviders(mappedProviders);
@@ -354,7 +356,9 @@ const ProvidersPage: React.FC = () => {
           in_home: false,
           in_clinic: false,
           telehealth: false
-        }
+        },
+        user_id: (p.attributes as any).user_id,
+        claimed: (p.attributes as any).claimed,
       }));
       
       setAllProviders(mappedProviders);
@@ -409,7 +413,9 @@ const ProvidersPage: React.FC = () => {
         updated_last: p.attributes.updated_last,
         status: p.attributes.status,
         in_home_only: p.attributes.in_home_only || false,
-        service_delivery: p.attributes.service_delivery || { in_home: false, in_clinic: false, telehealth: false }
+        service_delivery: p.attributes.service_delivery || { in_home: false, in_clinic: false, telehealth: false },
+        user_id: p.attributes?.user_id,
+        claimed: p.attributes?.claimed,
       }));
 
       // Debug: Check if we have any providers with the selected criteria
@@ -721,7 +727,9 @@ const ProvidersPage: React.FC = () => {
         in_home: false,
         in_clinic: false,
         telehealth: false
-      }
+      },
+      user_id: (p.attributes as any).user_id,
+      claimed: (p.attributes as any).claimed,
     }));
 
     const filteredResults = mappedResults.filter(
