@@ -1032,6 +1032,70 @@ export const removeProviderLogo = async (providerId: number, userId: string): Pr
 // Note: uploadAdminProviderLogo function has been removed and consolidated into uploadProviderLogo
 // Use uploadProviderLogo(providerId, logoFile, authToken, true) for super admin logo uploads
 
+export type PasswordResetApiResponse = {
+  message?: string;
+  errors?: string | string[];
+  error?: string;
+};
+
+async function parsePasswordResetResponse(
+  response: Response
+): Promise<PasswordResetApiResponse> {
+  const responseText = await response.text();
+  if (!responseText) return {};
+  try {
+    return JSON.parse(responseText) as PasswordResetApiResponse;
+  } catch {
+    throw new Error('Invalid response from server');
+  }
+}
+
+/** POST /api/v1/password_resets */
+export const requestPasswordReset = async (
+  email: string
+): Promise<{ ok: boolean; status: number; data: PasswordResetApiResponse }> => {
+  const response = await fetch(`${API_CONFIG.BASE_API_URL}/api/v1/password_resets`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: email.trim() }),
+  });
+  const data = await parsePasswordResetResponse(response);
+  return { ok: response.ok, status: response.status, data };
+};
+
+/** GET /api/v1/password_resets/validate_token?token=... */
+export const validatePasswordResetToken = async (
+  token: string
+): Promise<{ ok: boolean; status: number }> => {
+  const response = await fetch(
+    `${API_CONFIG.BASE_API_URL}/api/v1/password_resets/validate_token?token=${encodeURIComponent(token)}`,
+    {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    }
+  );
+  return { ok: response.ok, status: response.status };
+};
+
+/** PATCH /api/v1/password_resets */
+export const submitPasswordReset = async (
+  resetPasswordToken: string,
+  password: string,
+  passwordConfirmation: string
+): Promise<{ ok: boolean; status: number; data: PasswordResetApiResponse }> => {
+  const response = await fetch(`${API_CONFIG.BASE_API_URL}/api/v1/password_resets`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      reset_password_token: resetPasswordToken,
+      password,
+      password_confirmation: passwordConfirmation,
+    }),
+  });
+  const data = await parsePasswordResetResponse(response);
+  return { ok: response.ok, status: response.status, data };
+};
+
 export const testPasswordReset = async (email: string): Promise<{ success: boolean; error?: string; details?: any; status?: number }> => {
   try {
     // Test 1: Check if the API endpoint is reachable
