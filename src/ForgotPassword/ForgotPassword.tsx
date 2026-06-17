@@ -3,8 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { User, ArrowLeft } from 'lucide-react';
-import { testPasswordReset } from '../Utility/ApiCall';
-import { API_CONFIG } from '../Utility/config';
+import { requestPasswordReset } from '../Utility/ApiCall';
 import './ForgotPassword.css';
 
 const ForgotPassword: React.FC = () => {
@@ -61,16 +60,11 @@ const ForgotPassword: React.FC = () => {
     setIsLoading(true);
 
     try {
-      // Trim whitespace from email
       const trimmedEmail = email.trim();
-      
-      // First, test the password reset functionality
-      const testResult = await testPasswordReset(trimmedEmail);
-      
-      if (!testResult.success) {
-        
-        // Check if it's a 404 error (endpoint not found)
-        if (testResult.status === 404) {
+      const { ok, status, data } = await requestPasswordReset(trimmedEmail);
+
+      if (!ok) {
+        if (status === 404) {
           toast.error('Password reset functionality is not available. Please contact support for assistance.', {
             position: "top-center",
             autoClose: 8000,
@@ -86,102 +80,17 @@ const ForgotPassword: React.FC = () => {
               fontWeight: '500'
             }
           });
-          
-          // Show additional help information
-          setTimeout(() => {
-            toast.info('For immediate assistance, please contact the administrator or use the Contact Us page.', {
-              position: "top-center",
-              autoClose: 10000,
-              hideProgressBar: false,
-              closeOnClick: true,
-              pauseOnHover: true,
-              draggable: true,
-              progress: undefined,
-              style: {
-                background: '#3B82F6',
-                color: 'white',
-                fontSize: '16px',
-                fontWeight: '500'
-              }
-            });
-          }, 2000);
-        } else {
-          // Show generic error message
-          toast.error(`Password reset failed: ${testResult.error}`, {
-            position: "top-center",
-            autoClose: 6000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            style: {
-              background: '#EF4444',
-              color: 'white',
-              fontSize: '16px',
-              fontWeight: '500'
-            }
-          });
+          return;
         }
-        return;
+
+        const errorMessage = Array.isArray(data.errors)
+          ? data.errors.join(', ')
+          : data.errors || data.message || data.error || `Failed to send password reset email (${status})`;
+        throw new Error(errorMessage);
       }
 
-      // Use the password reset endpoint
-      const endpoint = `${API_CONFIG.BASE_API_URL}/api/v1/password_resets`;
-      
-
-
-      // If test passes, proceed with the actual request
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          email: trimmedEmail
-        })
-      });
-      
-
-
-      let responseData;
-      try {
-        const responseText = await response.text();
-        
-        if (responseText) {
-          responseData = JSON.parse(responseText);
-        } else {
-          responseData = {};
-        }
-      } catch (parseError) {
-
-        throw new Error('Invalid response from server');
-      }
-
-      if (!response.ok) {
-
-        
-        // Handle specific error cases
-        if (responseData.errors) {
-          throw new Error(responseData.errors.join(', '));
-        } else if (response.status === 422) {
-          throw new Error(responseData.message || 'Invalid request. Please check your email address.');
-        } else if (response.status === 404) {
-          throw new Error('Password reset service not found. Please contact support.');
-        } else if (response.status === 500) {
-          throw new Error('Server error. Please try again later or contact support.');
-        } else {
-          throw new Error(responseData.message || responseData.error || `Failed to send password reset email (${response.status})`);
-        }
-      }
-
-      // According to API docs, both success cases return 200 status
-      // Success case 1: "Password reset instructions sent to your email"
-      // Success case 2: "If the email exists, password reset instructions have been sent"
-      if (response.ok && (responseData.message || responseData.error?.includes("If the email exists"))) {
-        // Success case - password reset instructions sent
-        setIsSubmitted(true);
-        toast.success('✅ Password reset email sent!', {
+      setIsSubmitted(true);
+      toast.success('✅ If an account exists for that email, reset instructions have been sent.', {
           position: "top-center",
           autoClose: 5000,
           hideProgressBar: false,
@@ -194,14 +103,8 @@ const ForgotPassword: React.FC = () => {
             color: 'white',
             fontSize: '16px',
             fontWeight: '500'
-          }
-        });
-        return; // Exit early since we've handled success
-      }
-
-      // If we reach here, something unexpected happened
-
-      setIsSubmitted(true);
+        }
+      });
     } catch (error) {
 
       toast.error(error instanceof Error ? error.message : '❌ Failed to send password reset email. Please try again.', {
@@ -238,7 +141,7 @@ const ForgotPassword: React.FC = () => {
               Check Your Email
             </h2>
             <p className="mt-2 text-center text-sm text-gray-600">
-              We've sent a password reset link to <strong>{email}</strong>
+              If an account exists for <strong>{email}</strong>, we sent reset instructions to that inbox.
             </p>
             <p className="mt-4 text-center text-sm text-gray-500">
               Please check your inbox and spam folder for an email from <strong>utahabalocator@gmail.com</strong>
